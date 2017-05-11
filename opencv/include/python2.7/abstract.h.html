@@ -1,0 +1,1414 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>abstract.h source code [include/python2.7/abstract.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/python2.7/abstract.h'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>include</a>/<a href='./'>python2.7</a>/<a href='abstract.h.html'>abstract.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><u>#<span data-ppcond="1">ifndef</span> <span class="macro" data-ref="_M/Py_ABSTRACTOBJECT_H">Py_ABSTRACTOBJECT_H</span></u></td></tr>
+<tr><th id="2">2</th><td><u>#define <dfn class="macro" id="_M/Py_ABSTRACTOBJECT_H" data-ref="_M/Py_ABSTRACTOBJECT_H">Py_ABSTRACTOBJECT_H</dfn></u></td></tr>
+<tr><th id="3">3</th><td><u>#<span data-ppcond="3">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="4">4</th><td><b>extern</b> <q>"C"</q> {</td></tr>
+<tr><th id="5">5</th><td><u>#<span data-ppcond="3">endif</span></u></td></tr>
+<tr><th id="6">6</th><td></td></tr>
+<tr><th id="7">7</th><td><u>#<span data-ppcond="7">ifdef</span> <span class="macro" data-ref="_M/PY_SSIZE_T_CLEAN">PY_SSIZE_T_CLEAN</span></u></td></tr>
+<tr><th id="8">8</th><td><u>#define PyObject_CallFunction _PyObject_CallFunction_SizeT</u></td></tr>
+<tr><th id="9">9</th><td><u>#define PyObject_CallMethod _PyObject_CallMethod_SizeT</u></td></tr>
+<tr><th id="10">10</th><td><u>#<span data-ppcond="7">endif</span></u></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i>/* Abstract Object Interface (many thanks to Jim Fulton) */</i></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><i>/*</i></td></tr>
+<tr><th id="15">15</th><td><i>   PROPOSAL: A Generic Python Object Interface for Python C Modules</i></td></tr>
+<tr><th id="16">16</th><td><i></i></td></tr>
+<tr><th id="17">17</th><td><i>Problem</i></td></tr>
+<tr><th id="18">18</th><td><i></i></td></tr>
+<tr><th id="19">19</th><td><i>  Python modules written in C that must access Python objects must do</i></td></tr>
+<tr><th id="20">20</th><td><i>  so through routines whose interfaces are described by a set of</i></td></tr>
+<tr><th id="21">21</th><td><i>  include files.  Unfortunately, these routines vary according to the</i></td></tr>
+<tr><th id="22">22</th><td><i>  object accessed.  To use these routines, the C programmer must check</i></td></tr>
+<tr><th id="23">23</th><td><i>  the type of the object being used and must call a routine based on</i></td></tr>
+<tr><th id="24">24</th><td><i>  the object type.  For example, to access an element of a sequence,</i></td></tr>
+<tr><th id="25">25</th><td><i>  the programmer must determine whether the sequence is a list or a</i></td></tr>
+<tr><th id="26">26</th><td><i>  tuple:</i></td></tr>
+<tr><th id="27">27</th><td><i></i></td></tr>
+<tr><th id="28">28</th><td><i>    if(is_tupleobject(o))</i></td></tr>
+<tr><th id="29">29</th><td><i>      e=gettupleitem(o,i)</i></td></tr>
+<tr><th id="30">30</th><td><i>    else if(is_listitem(o))</i></td></tr>
+<tr><th id="31">31</th><td><i>      e=getlistitem(o,i)</i></td></tr>
+<tr><th id="32">32</th><td><i></i></td></tr>
+<tr><th id="33">33</th><td><i>  If the programmer wants to get an item from another type of object</i></td></tr>
+<tr><th id="34">34</th><td><i>  that provides sequence behavior, there is no clear way to do it</i></td></tr>
+<tr><th id="35">35</th><td><i>  correctly.</i></td></tr>
+<tr><th id="36">36</th><td><i></i></td></tr>
+<tr><th id="37">37</th><td><i>  The persistent programmer may peruse object.h and find that the</i></td></tr>
+<tr><th id="38">38</th><td><i>  _typeobject structure provides a means of invoking up to (currently</i></td></tr>
+<tr><th id="39">39</th><td><i>  about) 41 special operators.  So, for example, a routine can get an</i></td></tr>
+<tr><th id="40">40</th><td><i>  item from any object that provides sequence behavior. However, to</i></td></tr>
+<tr><th id="41">41</th><td><i>  use this mechanism, the programmer must make their code dependent on</i></td></tr>
+<tr><th id="42">42</th><td><i>  the current Python implementation.</i></td></tr>
+<tr><th id="43">43</th><td><i></i></td></tr>
+<tr><th id="44">44</th><td><i>  Also, certain semantics, especially memory management semantics, may</i></td></tr>
+<tr><th id="45">45</th><td><i>  differ by the type of object being used.  Unfortunately, these</i></td></tr>
+<tr><th id="46">46</th><td><i>  semantics are not clearly described in the current include files.</i></td></tr>
+<tr><th id="47">47</th><td><i>  An abstract interface providing more consistent semantics is needed.</i></td></tr>
+<tr><th id="48">48</th><td><i></i></td></tr>
+<tr><th id="49">49</th><td><i>Proposal</i></td></tr>
+<tr><th id="50">50</th><td><i></i></td></tr>
+<tr><th id="51">51</th><td><i>  I propose the creation of a standard interface (with an associated</i></td></tr>
+<tr><th id="52">52</th><td><i>  library of routines and/or macros) for generically obtaining the</i></td></tr>
+<tr><th id="53">53</th><td><i>  services of Python objects.  This proposal can be viewed as one</i></td></tr>
+<tr><th id="54">54</th><td><i>  components of a Python C interface consisting of several components.</i></td></tr>
+<tr><th id="55">55</th><td><i></i></td></tr>
+<tr><th id="56">56</th><td><i>  From the viewpoint of C access to Python services, we have (as</i></td></tr>
+<tr><th id="57">57</th><td><i>  suggested by Guido in off-line discussions):</i></td></tr>
+<tr><th id="58">58</th><td><i></i></td></tr>
+<tr><th id="59">59</th><td><i>  - "Very high level layer": two or three functions that let you exec or</i></td></tr>
+<tr><th id="60">60</th><td><i>    eval arbitrary Python code given as a string in a module whose name is</i></td></tr>
+<tr><th id="61">61</th><td><i>    given, passing C values in and getting C values out using</i></td></tr>
+<tr><th id="62">62</th><td><i>    mkvalue/getargs style format strings.  This does not require the user</i></td></tr>
+<tr><th id="63">63</th><td><i>    to declare any variables of type "PyObject *".  This should be enough</i></td></tr>
+<tr><th id="64">64</th><td><i>    to write a simple application that gets Python code from the user,</i></td></tr>
+<tr><th id="65">65</th><td><i>    execs it, and returns the output or errors.  (Error handling must also</i></td></tr>
+<tr><th id="66">66</th><td><i>    be part of this API.)</i></td></tr>
+<tr><th id="67">67</th><td><i></i></td></tr>
+<tr><th id="68">68</th><td><i>  - "Abstract objects layer": which is the subject of this proposal.</i></td></tr>
+<tr><th id="69">69</th><td><i>    It has many functions operating on objects, and lest you do many</i></td></tr>
+<tr><th id="70">70</th><td><i>    things from C that you can also write in Python, without going</i></td></tr>
+<tr><th id="71">71</th><td><i>    through the Python parser.</i></td></tr>
+<tr><th id="72">72</th><td><i></i></td></tr>
+<tr><th id="73">73</th><td><i>  - "Concrete objects layer": This is the public type-dependent</i></td></tr>
+<tr><th id="74">74</th><td><i>    interface provided by the standard built-in types, such as floats,</i></td></tr>
+<tr><th id="75">75</th><td><i>    strings, and lists.  This interface exists and is currently</i></td></tr>
+<tr><th id="76">76</th><td><i>    documented by the collection of include files provided with the</i></td></tr>
+<tr><th id="77">77</th><td><i>    Python distributions.</i></td></tr>
+<tr><th id="78">78</th><td><i></i></td></tr>
+<tr><th id="79">79</th><td><i>  From the point of view of Python accessing services provided by C</i></td></tr>
+<tr><th id="80">80</th><td><i>  modules:</i></td></tr>
+<tr><th id="81">81</th><td><i></i></td></tr>
+<tr><th id="82">82</th><td><i>  - "Python module interface": this interface consist of the basic</i></td></tr>
+<tr><th id="83">83</th><td><i>    routines used to define modules and their members.  Most of the</i></td></tr>
+<tr><th id="84">84</th><td><i>    current extensions-writing guide deals with this interface.</i></td></tr>
+<tr><th id="85">85</th><td><i></i></td></tr>
+<tr><th id="86">86</th><td><i>  - "Built-in object interface": this is the interface that a new</i></td></tr>
+<tr><th id="87">87</th><td><i>    built-in type must provide and the mechanisms and rules that a</i></td></tr>
+<tr><th id="88">88</th><td><i>    developer of a new built-in type must use and follow.</i></td></tr>
+<tr><th id="89">89</th><td><i></i></td></tr>
+<tr><th id="90">90</th><td><i>  This proposal is a "first-cut" that is intended to spur</i></td></tr>
+<tr><th id="91">91</th><td><i>  discussion. See especially the lists of notes.</i></td></tr>
+<tr><th id="92">92</th><td><i></i></td></tr>
+<tr><th id="93">93</th><td><i>  The Python C object interface will provide four protocols: object,</i></td></tr>
+<tr><th id="94">94</th><td><i>  numeric, sequence, and mapping.  Each protocol consists of a</i></td></tr>
+<tr><th id="95">95</th><td><i>  collection of related operations.  If an operation that is not</i></td></tr>
+<tr><th id="96">96</th><td><i>  provided by a particular type is invoked, then a standard exception,</i></td></tr>
+<tr><th id="97">97</th><td><i>  NotImplementedError is raised with a operation name as an argument.</i></td></tr>
+<tr><th id="98">98</th><td><i>  In addition, for convenience this interface defines a set of</i></td></tr>
+<tr><th id="99">99</th><td><i>  constructors for building objects of built-in types.  This is needed</i></td></tr>
+<tr><th id="100">100</th><td><i>  so new objects can be returned from C functions that otherwise treat</i></td></tr>
+<tr><th id="101">101</th><td><i>  objects generically.</i></td></tr>
+<tr><th id="102">102</th><td><i></i></td></tr>
+<tr><th id="103">103</th><td><i>Memory Management</i></td></tr>
+<tr><th id="104">104</th><td><i></i></td></tr>
+<tr><th id="105">105</th><td><i>  For all of the functions described in this proposal, if a function</i></td></tr>
+<tr><th id="106">106</th><td><i>  retains a reference to a Python object passed as an argument, then the</i></td></tr>
+<tr><th id="107">107</th><td><i>  function will increase the reference count of the object.  It is</i></td></tr>
+<tr><th id="108">108</th><td><i>  unnecessary for the caller to increase the reference count of an</i></td></tr>
+<tr><th id="109">109</th><td><i>  argument in anticipation of the object's retention.</i></td></tr>
+<tr><th id="110">110</th><td><i></i></td></tr>
+<tr><th id="111">111</th><td><i>  All Python objects returned from functions should be treated as new</i></td></tr>
+<tr><th id="112">112</th><td><i>  objects.  Functions that return objects assume that the caller will</i></td></tr>
+<tr><th id="113">113</th><td><i>  retain a reference and the reference count of the object has already</i></td></tr>
+<tr><th id="114">114</th><td><i>  been incremented to account for this fact.  A caller that does not</i></td></tr>
+<tr><th id="115">115</th><td><i>  retain a reference to an object that is returned from a function</i></td></tr>
+<tr><th id="116">116</th><td><i>  must decrement the reference count of the object (using</i></td></tr>
+<tr><th id="117">117</th><td><i>  DECREF(object)) to prevent memory leaks.</i></td></tr>
+<tr><th id="118">118</th><td><i></i></td></tr>
+<tr><th id="119">119</th><td><i>  Note that the behavior mentioned here is different from the current</i></td></tr>
+<tr><th id="120">120</th><td><i>  behavior for some objects (e.g. lists and tuples) when certain</i></td></tr>
+<tr><th id="121">121</th><td><i>  type-specific routines are called directly (e.g. setlistitem).  The</i></td></tr>
+<tr><th id="122">122</th><td><i>  proposed abstraction layer will provide a consistent memory</i></td></tr>
+<tr><th id="123">123</th><td><i>  management interface, correcting for inconsistent behavior for some</i></td></tr>
+<tr><th id="124">124</th><td><i>  built-in types.</i></td></tr>
+<tr><th id="125">125</th><td><i></i></td></tr>
+<tr><th id="126">126</th><td><i>Protocols</i></td></tr>
+<tr><th id="127">127</th><td><i></i></td></tr>
+<tr><th id="128">128</th><td><i>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx*/</i></td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td><i>/*  Object Protocol: */</i></td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="133">133</th><td><i></i></td></tr>
+<tr><th id="134">134</th><td><i>     int PyObject_Print(PyObject *o, FILE *fp, int flags);</i></td></tr>
+<tr><th id="135">135</th><td><i></i></td></tr>
+<tr><th id="136">136</th><td><i>     Print an object, o, on file, fp.  Returns -1 on</i></td></tr>
+<tr><th id="137">137</th><td><i>     error.  The flags argument is used to enable certain printing</i></td></tr>
+<tr><th id="138">138</th><td><i>     options. The only option currently supported is Py_Print_RAW.</i></td></tr>
+<tr><th id="139">139</th><td><i></i></td></tr>
+<tr><th id="140">140</th><td><i>     (What should be said about Py_Print_RAW?)</i></td></tr>
+<tr><th id="141">141</th><td><i></i></td></tr>
+<tr><th id="142">142</th><td><i>       */</i></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="145">145</th><td><i></i></td></tr>
+<tr><th id="146">146</th><td><i>     int PyObject_HasAttrString(PyObject *o, char *attr_name);</i></td></tr>
+<tr><th id="147">147</th><td><i></i></td></tr>
+<tr><th id="148">148</th><td><i>     Returns 1 if o has the attribute attr_name, and 0 otherwise.</i></td></tr>
+<tr><th id="149">149</th><td><i>     This is equivalent to the Python expression:</i></td></tr>
+<tr><th id="150">150</th><td><i>     hasattr(o,attr_name).</i></td></tr>
+<tr><th id="151">151</th><td><i></i></td></tr>
+<tr><th id="152">152</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="153">153</th><td><i></i></td></tr>
+<tr><th id="154">154</th><td><i>       */</i></td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="157">157</th><td><i></i></td></tr>
+<tr><th id="158">158</th><td><i>     PyObject* PyObject_GetAttrString(PyObject *o, char *attr_name);</i></td></tr>
+<tr><th id="159">159</th><td><i></i></td></tr>
+<tr><th id="160">160</th><td><i>     Retrieve an attributed named attr_name form object o.</i></td></tr>
+<tr><th id="161">161</th><td><i>     Returns the attribute value on success, or NULL on failure.</i></td></tr>
+<tr><th id="162">162</th><td><i>     This is the equivalent of the Python expression: o.attr_name.</i></td></tr>
+<tr><th id="163">163</th><td><i></i></td></tr>
+<tr><th id="164">164</th><td><i>       */</i></td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="167">167</th><td><i></i></td></tr>
+<tr><th id="168">168</th><td><i>     int PyObject_HasAttr(PyObject *o, PyObject *attr_name);</i></td></tr>
+<tr><th id="169">169</th><td><i></i></td></tr>
+<tr><th id="170">170</th><td><i>     Returns 1 if o has the attribute attr_name, and 0 otherwise.</i></td></tr>
+<tr><th id="171">171</th><td><i>     This is equivalent to the Python expression:</i></td></tr>
+<tr><th id="172">172</th><td><i>     hasattr(o,attr_name).</i></td></tr>
+<tr><th id="173">173</th><td><i></i></td></tr>
+<tr><th id="174">174</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="175">175</th><td><i></i></td></tr>
+<tr><th id="176">176</th><td><i>       */</i></td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="179">179</th><td><i></i></td></tr>
+<tr><th id="180">180</th><td><i>     PyObject* PyObject_GetAttr(PyObject *o, PyObject *attr_name);</i></td></tr>
+<tr><th id="181">181</th><td><i></i></td></tr>
+<tr><th id="182">182</th><td><i>     Retrieve an attributed named attr_name form object o.</i></td></tr>
+<tr><th id="183">183</th><td><i>     Returns the attribute value on success, or NULL on failure.</i></td></tr>
+<tr><th id="184">184</th><td><i>     This is the equivalent of the Python expression: o.attr_name.</i></td></tr>
+<tr><th id="185">185</th><td><i></i></td></tr>
+<tr><th id="186">186</th><td><i>       */</i></td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="190">190</th><td><i></i></td></tr>
+<tr><th id="191">191</th><td><i>     int PyObject_SetAttrString(PyObject *o, char *attr_name, PyObject *v);</i></td></tr>
+<tr><th id="192">192</th><td><i></i></td></tr>
+<tr><th id="193">193</th><td><i>     Set the value of the attribute named attr_name, for object o,</i></td></tr>
+<tr><th id="194">194</th><td><i>     to the value, v. Returns -1 on failure.  This is</i></td></tr>
+<tr><th id="195">195</th><td><i>     the equivalent of the Python statement: o.attr_name=v.</i></td></tr>
+<tr><th id="196">196</th><td><i></i></td></tr>
+<tr><th id="197">197</th><td><i>       */</i></td></tr>
+<tr><th id="198">198</th><td></td></tr>
+<tr><th id="199">199</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="200">200</th><td><i></i></td></tr>
+<tr><th id="201">201</th><td><i>     int PyObject_SetAttr(PyObject *o, PyObject *attr_name, PyObject *v);</i></td></tr>
+<tr><th id="202">202</th><td><i></i></td></tr>
+<tr><th id="203">203</th><td><i>     Set the value of the attribute named attr_name, for object o,</i></td></tr>
+<tr><th id="204">204</th><td><i>     to the value, v. Returns -1 on failure.  This is</i></td></tr>
+<tr><th id="205">205</th><td><i>     the equivalent of the Python statement: o.attr_name=v.</i></td></tr>
+<tr><th id="206">206</th><td><i></i></td></tr>
+<tr><th id="207">207</th><td><i>       */</i></td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>     <i>/* implemented as a macro:</i></td></tr>
+<tr><th id="210">210</th><td><i></i></td></tr>
+<tr><th id="211">211</th><td><i>     int PyObject_DelAttrString(PyObject *o, char *attr_name);</i></td></tr>
+<tr><th id="212">212</th><td><i></i></td></tr>
+<tr><th id="213">213</th><td><i>     Delete attribute named attr_name, for object o. Returns</i></td></tr>
+<tr><th id="214">214</th><td><i>     -1 on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="215">215</th><td><i>     statement: del o.attr_name.</i></td></tr>
+<tr><th id="216">216</th><td><i></i></td></tr>
+<tr><th id="217">217</th><td><i>       */</i></td></tr>
+<tr><th id="218">218</th><td><u>#define  <dfn class="macro" id="_M/PyObject_DelAttrString" data-ref="_M/PyObject_DelAttrString">PyObject_DelAttrString</dfn>(O,A) PyObject_SetAttrString((O),(A),NULL)</u></td></tr>
+<tr><th id="219">219</th><td></td></tr>
+<tr><th id="220">220</th><td>     <i>/* implemented as a macro:</i></td></tr>
+<tr><th id="221">221</th><td><i></i></td></tr>
+<tr><th id="222">222</th><td><i>     int PyObject_DelAttr(PyObject *o, PyObject *attr_name);</i></td></tr>
+<tr><th id="223">223</th><td><i></i></td></tr>
+<tr><th id="224">224</th><td><i>     Delete attribute named attr_name, for object o. Returns -1</i></td></tr>
+<tr><th id="225">225</th><td><i>     on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="226">226</th><td><i>     statement: del o.attr_name.</i></td></tr>
+<tr><th id="227">227</th><td><i></i></td></tr>
+<tr><th id="228">228</th><td><i>       */</i></td></tr>
+<tr><th id="229">229</th><td><u>#define  <dfn class="macro" id="_M/PyObject_DelAttr" data-ref="_M/PyObject_DelAttr">PyObject_DelAttr</dfn>(O,A) PyObject_SetAttr((O),(A),NULL)</u></td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_Cmp" title='PyObject_Cmp' data-ref="PyObject_Cmp">PyObject_Cmp</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="539o1" title='o1' data-type='PyObject *' data-ref="539o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="540o2" title='o2' data-type='PyObject *' data-ref="540o2">o2</dfn>, <em>int</em> *<dfn class="local col1 decl" id="541result" title='result' data-type='int *' data-ref="541result">result</dfn>);</td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td>       <i>/*</i></td></tr>
+<tr><th id="234">234</th><td><i>     Compare the values of o1 and o2 using a routine provided by</i></td></tr>
+<tr><th id="235">235</th><td><i>     o1, if one exists, otherwise with a routine provided by o2.</i></td></tr>
+<tr><th id="236">236</th><td><i>     The result of the comparison is returned in result.  Returns</i></td></tr>
+<tr><th id="237">237</th><td><i>     -1 on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="238">238</th><td><i>     statement: result=cmp(o1,o2).</i></td></tr>
+<tr><th id="239">239</th><td><i></i></td></tr>
+<tr><th id="240">240</th><td><i>       */</i></td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="243">243</th><td><i></i></td></tr>
+<tr><th id="244">244</th><td><i>     int PyObject_Compare(PyObject *o1, PyObject *o2);</i></td></tr>
+<tr><th id="245">245</th><td><i></i></td></tr>
+<tr><th id="246">246</th><td><i>     Compare the values of o1 and o2 using a routine provided by</i></td></tr>
+<tr><th id="247">247</th><td><i>     o1, if one exists, otherwise with a routine provided by o2.</i></td></tr>
+<tr><th id="248">248</th><td><i>     Returns the result of the comparison on success.  On error,</i></td></tr>
+<tr><th id="249">249</th><td><i>     the value returned is undefined. This is equivalent to the</i></td></tr>
+<tr><th id="250">250</th><td><i>     Python expression: cmp(o1,o2).</i></td></tr>
+<tr><th id="251">251</th><td><i></i></td></tr>
+<tr><th id="252">252</th><td><i>       */</i></td></tr>
+<tr><th id="253">253</th><td></td></tr>
+<tr><th id="254">254</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="255">255</th><td><i></i></td></tr>
+<tr><th id="256">256</th><td><i>     PyObject *PyObject_Repr(PyObject *o);</i></td></tr>
+<tr><th id="257">257</th><td><i></i></td></tr>
+<tr><th id="258">258</th><td><i>     Compute the string representation of object, o.  Returns the</i></td></tr>
+<tr><th id="259">259</th><td><i>     string representation on success, NULL on failure.  This is</i></td></tr>
+<tr><th id="260">260</th><td><i>     the equivalent of the Python expression: repr(o).</i></td></tr>
+<tr><th id="261">261</th><td><i></i></td></tr>
+<tr><th id="262">262</th><td><i>     Called by the repr() built-in function and by reverse quotes.</i></td></tr>
+<tr><th id="263">263</th><td><i></i></td></tr>
+<tr><th id="264">264</th><td><i>       */</i></td></tr>
+<tr><th id="265">265</th><td></td></tr>
+<tr><th id="266">266</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="267">267</th><td><i></i></td></tr>
+<tr><th id="268">268</th><td><i>     PyObject *PyObject_Str(PyObject *o);</i></td></tr>
+<tr><th id="269">269</th><td><i></i></td></tr>
+<tr><th id="270">270</th><td><i>     Compute the string representation of object, o.  Returns the</i></td></tr>
+<tr><th id="271">271</th><td><i>     string representation on success, NULL on failure.  This is</i></td></tr>
+<tr><th id="272">272</th><td><i>     the equivalent of the Python expression: str(o).)</i></td></tr>
+<tr><th id="273">273</th><td><i></i></td></tr>
+<tr><th id="274">274</th><td><i>     Called by the str() built-in function and by the print</i></td></tr>
+<tr><th id="275">275</th><td><i>     statement.</i></td></tr>
+<tr><th id="276">276</th><td><i></i></td></tr>
+<tr><th id="277">277</th><td><i>       */</i></td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="280">280</th><td><i></i></td></tr>
+<tr><th id="281">281</th><td><i>     PyObject *PyObject_Unicode(PyObject *o);</i></td></tr>
+<tr><th id="282">282</th><td><i></i></td></tr>
+<tr><th id="283">283</th><td><i>     Compute the unicode representation of object, o.  Returns the</i></td></tr>
+<tr><th id="284">284</th><td><i>     unicode representation on success, NULL on failure.  This is</i></td></tr>
+<tr><th id="285">285</th><td><i>     the equivalent of the Python expression: unistr(o).)</i></td></tr>
+<tr><th id="286">286</th><td><i></i></td></tr>
+<tr><th id="287">287</th><td><i>     Called by the unistr() built-in function.</i></td></tr>
+<tr><th id="288">288</th><td><i></i></td></tr>
+<tr><th id="289">289</th><td><i>       */</i></td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td>       <i>/* Declared elsewhere</i></td></tr>
+<tr><th id="292">292</th><td><i></i></td></tr>
+<tr><th id="293">293</th><td><i>     PyAPI_FUNC(int) PyCallable_Check(PyObject *o);</i></td></tr>
+<tr><th id="294">294</th><td><i></i></td></tr>
+<tr><th id="295">295</th><td><i>     Determine if the object, o, is callable.  Return 1 if the</i></td></tr>
+<tr><th id="296">296</th><td><i>     object is callable and 0 otherwise.</i></td></tr>
+<tr><th id="297">297</th><td><i></i></td></tr>
+<tr><th id="298">298</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="299">299</th><td><i></i></td></tr>
+<tr><th id="300">300</th><td><i>       */</i></td></tr>
+<tr><th id="301">301</th><td></td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Call" title='PyObject_Call' data-ref="PyObject_Call">PyObject_Call</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="542callable_object" title='callable_object' data-type='PyObject *' data-ref="542callable_object">callable_object</dfn>,</td></tr>
+<tr><th id="305">305</th><td>                                         <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="543args" title='args' data-type='PyObject *' data-ref="543args">args</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="544kw" title='kw' data-type='PyObject *' data-ref="544kw">kw</dfn>);</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td>       <i>/*</i></td></tr>
+<tr><th id="308">308</th><td><i>     Call a callable Python object, callable_object, with</i></td></tr>
+<tr><th id="309">309</th><td><i>     arguments and keywords arguments.  The 'args' argument can not be</i></td></tr>
+<tr><th id="310">310</th><td><i>     NULL, but the 'kw' argument can be NULL.</i></td></tr>
+<tr><th id="311">311</th><td><i></i></td></tr>
+<tr><th id="312">312</th><td><i>       */</i></td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_CallObject" title='PyObject_CallObject' data-ref="PyObject_CallObject">PyObject_CallObject</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="545callable_object" title='callable_object' data-type='PyObject *' data-ref="545callable_object">callable_object</dfn>,</td></tr>
+<tr><th id="315">315</th><td>                                               <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="546args" title='args' data-type='PyObject *' data-ref="546args">args</dfn>);</td></tr>
+<tr><th id="316">316</th><td></td></tr>
+<tr><th id="317">317</th><td>       <i>/*</i></td></tr>
+<tr><th id="318">318</th><td><i>     Call a callable Python object, callable_object, with</i></td></tr>
+<tr><th id="319">319</th><td><i>     arguments given by the tuple, args.  If no arguments are</i></td></tr>
+<tr><th id="320">320</th><td><i>     needed, then args may be NULL.  Returns the result of the</i></td></tr>
+<tr><th id="321">321</th><td><i>     call on success, or NULL on failure.  This is the equivalent</i></td></tr>
+<tr><th id="322">322</th><td><i>     of the Python expression: apply(o,args).</i></td></tr>
+<tr><th id="323">323</th><td><i></i></td></tr>
+<tr><th id="324">324</th><td><i>       */</i></td></tr>
+<tr><th id="325">325</th><td></td></tr>
+<tr><th id="326">326</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_CallFunction" title='PyObject_CallFunction' data-ref="PyObject_CallFunction">PyObject_CallFunction</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="547callable_object" title='callable_object' data-type='PyObject *' data-ref="547callable_object">callable_object</dfn>,</td></tr>
+<tr><th id="327">327</th><td>                                                 <em>char</em> *<dfn class="local col8 decl" id="548format" title='format' data-type='char *' data-ref="548format">format</dfn>, ...);</td></tr>
+<tr><th id="328">328</th><td></td></tr>
+<tr><th id="329">329</th><td>       <i>/*</i></td></tr>
+<tr><th id="330">330</th><td><i>     Call a callable Python object, callable_object, with a</i></td></tr>
+<tr><th id="331">331</th><td><i>     variable number of C arguments. The C arguments are described</i></td></tr>
+<tr><th id="332">332</th><td><i>     using a mkvalue-style format string. The format may be NULL,</i></td></tr>
+<tr><th id="333">333</th><td><i>     indicating that no arguments are provided.  Returns the</i></td></tr>
+<tr><th id="334">334</th><td><i>     result of the call on success, or NULL on failure.  This is</i></td></tr>
+<tr><th id="335">335</th><td><i>     the equivalent of the Python expression: apply(o,args).</i></td></tr>
+<tr><th id="336">336</th><td><i></i></td></tr>
+<tr><th id="337">337</th><td><i>       */</i></td></tr>
+<tr><th id="338">338</th><td></td></tr>
+<tr><th id="339">339</th><td></td></tr>
+<tr><th id="340">340</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_CallMethod" title='PyObject_CallMethod' data-ref="PyObject_CallMethod">PyObject_CallMethod</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="549o" title='o' data-type='PyObject *' data-ref="549o">o</dfn>, <em>char</em> *<dfn class="local col0 decl" id="550m" title='m' data-type='char *' data-ref="550m">m</dfn>,</td></tr>
+<tr><th id="341">341</th><td>                                               <em>char</em> *<dfn class="local col1 decl" id="551format" title='format' data-type='char *' data-ref="551format">format</dfn>, ...);</td></tr>
+<tr><th id="342">342</th><td></td></tr>
+<tr><th id="343">343</th><td>       <i>/*</i></td></tr>
+<tr><th id="344">344</th><td><i>     Call the method named m of object o with a variable number of</i></td></tr>
+<tr><th id="345">345</th><td><i>     C arguments.  The C arguments are described by a mkvalue</i></td></tr>
+<tr><th id="346">346</th><td><i>     format string.  The format may be NULL, indicating that no</i></td></tr>
+<tr><th id="347">347</th><td><i>     arguments are provided. Returns the result of the call on</i></td></tr>
+<tr><th id="348">348</th><td><i>     success, or NULL on failure.  This is the equivalent of the</i></td></tr>
+<tr><th id="349">349</th><td><i>     Python expression: o.method(args).</i></td></tr>
+<tr><th id="350">350</th><td><i>       */</i></td></tr>
+<tr><th id="351">351</th><td></td></tr>
+<tr><th id="352">352</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_CallFunction_SizeT" title='_PyObject_CallFunction_SizeT' data-ref="_PyObject_CallFunction_SizeT">_PyObject_CallFunction_SizeT</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="552callable" title='callable' data-type='PyObject *' data-ref="552callable">callable</dfn>,</td></tr>
+<tr><th id="353">353</th><td>                                                         <em>char</em> *<dfn class="local col3 decl" id="553format" title='format' data-type='char *' data-ref="553format">format</dfn>, ...);</td></tr>
+<tr><th id="354">354</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_CallMethod_SizeT" title='_PyObject_CallMethod_SizeT' data-ref="_PyObject_CallMethod_SizeT">_PyObject_CallMethod_SizeT</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="554o" title='o' data-type='PyObject *' data-ref="554o">o</dfn>,</td></tr>
+<tr><th id="355">355</th><td>                                                       <em>char</em> *<dfn class="local col5 decl" id="555name" title='name' data-type='char *' data-ref="555name">name</dfn>,</td></tr>
+<tr><th id="356">356</th><td>                                                       <em>char</em> *<dfn class="local col6 decl" id="556format" title='format' data-type='char *' data-ref="556format">format</dfn>, ...);</td></tr>
+<tr><th id="357">357</th><td></td></tr>
+<tr><th id="358">358</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_CallFunctionObjArgs" title='PyObject_CallFunctionObjArgs' data-ref="PyObject_CallFunctionObjArgs">PyObject_CallFunctionObjArgs</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="557callable" title='callable' data-type='PyObject *' data-ref="557callable">callable</dfn>,</td></tr>
+<tr><th id="359">359</th><td>                                                        ...);</td></tr>
+<tr><th id="360">360</th><td></td></tr>
+<tr><th id="361">361</th><td>       <i>/*</i></td></tr>
+<tr><th id="362">362</th><td><i>     Call a callable Python object, callable_object, with a</i></td></tr>
+<tr><th id="363">363</th><td><i>     variable number of C arguments.  The C arguments are provided</i></td></tr>
+<tr><th id="364">364</th><td><i>     as PyObject * values, terminated by a NULL.  Returns the</i></td></tr>
+<tr><th id="365">365</th><td><i>     result of the call on success, or NULL on failure.  This is</i></td></tr>
+<tr><th id="366">366</th><td><i>     the equivalent of the Python expression: apply(o,args).</i></td></tr>
+<tr><th id="367">367</th><td><i>       */</i></td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td></td></tr>
+<tr><th id="370">370</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_CallMethodObjArgs" title='PyObject_CallMethodObjArgs' data-ref="PyObject_CallMethodObjArgs">PyObject_CallMethodObjArgs</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="558o" title='o' data-type='PyObject *' data-ref="558o">o</dfn>,</td></tr>
+<tr><th id="371">371</th><td>                                                      <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="559m" title='m' data-type='PyObject *' data-ref="559m">m</dfn>, ...);</td></tr>
+<tr><th id="372">372</th><td></td></tr>
+<tr><th id="373">373</th><td>       <i>/*</i></td></tr>
+<tr><th id="374">374</th><td><i>     Call the method named m of object o with a variable number of</i></td></tr>
+<tr><th id="375">375</th><td><i>     C arguments.  The C arguments are provided as PyObject *</i></td></tr>
+<tr><th id="376">376</th><td><i>     values, terminated by NULL.  Returns the result of the call</i></td></tr>
+<tr><th id="377">377</th><td><i>     on success, or NULL on failure.  This is the equivalent of</i></td></tr>
+<tr><th id="378">378</th><td><i>     the Python expression: o.method(args).</i></td></tr>
+<tr><th id="379">379</th><td><i>       */</i></td></tr>
+<tr><th id="380">380</th><td></td></tr>
+<tr><th id="381">381</th><td></td></tr>
+<tr><th id="382">382</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="383">383</th><td><i></i></td></tr>
+<tr><th id="384">384</th><td><i>     long PyObject_Hash(PyObject *o);</i></td></tr>
+<tr><th id="385">385</th><td><i></i></td></tr>
+<tr><th id="386">386</th><td><i>     Compute and return the hash, hash_value, of an object, o.  On</i></td></tr>
+<tr><th id="387">387</th><td><i>     failure, return -1.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="388">388</th><td><i>     expression: hash(o).</i></td></tr>
+<tr><th id="389">389</th><td><i></i></td></tr>
+<tr><th id="390">390</th><td><i>       */</i></td></tr>
+<tr><th id="391">391</th><td></td></tr>
+<tr><th id="392">392</th><td></td></tr>
+<tr><th id="393">393</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="394">394</th><td><i></i></td></tr>
+<tr><th id="395">395</th><td><i>     int PyObject_IsTrue(PyObject *o);</i></td></tr>
+<tr><th id="396">396</th><td><i></i></td></tr>
+<tr><th id="397">397</th><td><i>     Returns 1 if the object, o, is considered to be true, 0 if o is</i></td></tr>
+<tr><th id="398">398</th><td><i>     considered to be false and -1 on failure. This is equivalent to the</i></td></tr>
+<tr><th id="399">399</th><td><i>     Python expression: not not o</i></td></tr>
+<tr><th id="400">400</th><td><i></i></td></tr>
+<tr><th id="401">401</th><td><i>       */</i></td></tr>
+<tr><th id="402">402</th><td></td></tr>
+<tr><th id="403">403</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="404">404</th><td><i></i></td></tr>
+<tr><th id="405">405</th><td><i>     int PyObject_Not(PyObject *o);</i></td></tr>
+<tr><th id="406">406</th><td><i></i></td></tr>
+<tr><th id="407">407</th><td><i>     Returns 0 if the object, o, is considered to be true, 1 if o is</i></td></tr>
+<tr><th id="408">408</th><td><i>     considered to be false and -1 on failure. This is equivalent to the</i></td></tr>
+<tr><th id="409">409</th><td><i>     Python expression: not o</i></td></tr>
+<tr><th id="410">410</th><td><i></i></td></tr>
+<tr><th id="411">411</th><td><i>       */</i></td></tr>
+<tr><th id="412">412</th><td></td></tr>
+<tr><th id="413">413</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Type" title='PyObject_Type' data-ref="PyObject_Type">PyObject_Type</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="560o" title='o' data-type='PyObject *' data-ref="560o">o</dfn>);</td></tr>
+<tr><th id="414">414</th><td></td></tr>
+<tr><th id="415">415</th><td>       <i>/*</i></td></tr>
+<tr><th id="416">416</th><td><i>     On success, returns a type object corresponding to the object</i></td></tr>
+<tr><th id="417">417</th><td><i>     type of object o. On failure, returns NULL.  This is</i></td></tr>
+<tr><th id="418">418</th><td><i>     equivalent to the Python expression: type(o).</i></td></tr>
+<tr><th id="419">419</th><td><i>       */</i></td></tr>
+<tr><th id="420">420</th><td></td></tr>
+<tr><th id="421">421</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PyObject_Size" title='PyObject_Size' data-ref="PyObject_Size">PyObject_Size</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="561o" title='o' data-type='PyObject *' data-ref="561o">o</dfn>);</td></tr>
+<tr><th id="422">422</th><td></td></tr>
+<tr><th id="423">423</th><td>       <i>/*</i></td></tr>
+<tr><th id="424">424</th><td><i>     Return the size of object o.  If the object, o, provides</i></td></tr>
+<tr><th id="425">425</th><td><i>     both sequence and mapping protocols, the sequence size is</i></td></tr>
+<tr><th id="426">426</th><td><i>     returned. On error, -1 is returned.  This is the equivalent</i></td></tr>
+<tr><th id="427">427</th><td><i>     to the Python expression: len(o).</i></td></tr>
+<tr><th id="428">428</th><td><i></i></td></tr>
+<tr><th id="429">429</th><td><i>       */</i></td></tr>
+<tr><th id="430">430</th><td></td></tr>
+<tr><th id="431">431</th><td>       <i>/* For DLL compatibility */</i></td></tr>
+<tr><th id="432">432</th><td><u>#undef <span class="macro" data-ref="_M/PyObject_Length">PyObject_Length</span></u></td></tr>
+<tr><th id="433">433</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PyObject_Length" title='PyObject_Length' data-ref="PyObject_Length">PyObject_Length</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="562o" title='o' data-type='PyObject *' data-ref="562o">o</dfn>);</td></tr>
+<tr><th id="434">434</th><td><u>#define <dfn class="macro" id="_M/PyObject_Length" data-ref="_M/PyObject_Length">PyObject_Length</dfn> PyObject_Size</u></td></tr>
+<tr><th id="435">435</th><td></td></tr>
+<tr><th id="436">436</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="_PyObject_LengthHint" title='_PyObject_LengthHint' data-ref="_PyObject_LengthHint">_PyObject_LengthHint</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="563o" title='o' data-type='PyObject *' data-ref="563o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="437">437</th><td></td></tr>
+<tr><th id="438">438</th><td>       <i>/*</i></td></tr>
+<tr><th id="439">439</th><td><i>     Guess the size of object o using len(o) or o.__length_hint__().</i></td></tr>
+<tr><th id="440">440</th><td><i>     If neither of those return a non-negative value, then return the</i></td></tr>
+<tr><th id="441">441</th><td><i>     default value.  If one of the calls fails, this function returns -1.</i></td></tr>
+<tr><th id="442">442</th><td><i>       */</i></td></tr>
+<tr><th id="443">443</th><td></td></tr>
+<tr><th id="444">444</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_GetItem" title='PyObject_GetItem' data-ref="PyObject_GetItem">PyObject_GetItem</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="564o" title='o' data-type='PyObject *' data-ref="564o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="565key" title='key' data-type='PyObject *' data-ref="565key">key</dfn>);</td></tr>
+<tr><th id="445">445</th><td></td></tr>
+<tr><th id="446">446</th><td>       <i>/*</i></td></tr>
+<tr><th id="447">447</th><td><i>     Return element of o corresponding to the object, key, or NULL</i></td></tr>
+<tr><th id="448">448</th><td><i>     on failure. This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="449">449</th><td><i>     o[key].</i></td></tr>
+<tr><th id="450">450</th><td><i></i></td></tr>
+<tr><th id="451">451</th><td><i>       */</i></td></tr>
+<tr><th id="452">452</th><td></td></tr>
+<tr><th id="453">453</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_SetItem" title='PyObject_SetItem' data-ref="PyObject_SetItem">PyObject_SetItem</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="566o" title='o' data-type='PyObject *' data-ref="566o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="567key" title='key' data-type='PyObject *' data-ref="567key">key</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="568v" title='v' data-type='PyObject *' data-ref="568v">v</dfn>);</td></tr>
+<tr><th id="454">454</th><td></td></tr>
+<tr><th id="455">455</th><td>       <i>/*</i></td></tr>
+<tr><th id="456">456</th><td><i>     Map the object, key, to the value, v.  Returns</i></td></tr>
+<tr><th id="457">457</th><td><i>     -1 on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="458">458</th><td><i>     statement: o[key]=v.</i></td></tr>
+<tr><th id="459">459</th><td><i>       */</i></td></tr>
+<tr><th id="460">460</th><td></td></tr>
+<tr><th id="461">461</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_DelItemString" title='PyObject_DelItemString' data-ref="PyObject_DelItemString">PyObject_DelItemString</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="569o" title='o' data-type='PyObject *' data-ref="569o">o</dfn>, <em>char</em> *<dfn class="local col0 decl" id="570key" title='key' data-type='char *' data-ref="570key">key</dfn>);</td></tr>
+<tr><th id="462">462</th><td></td></tr>
+<tr><th id="463">463</th><td>       <i>/*</i></td></tr>
+<tr><th id="464">464</th><td><i>     Remove the mapping for object, key, from the object *o.</i></td></tr>
+<tr><th id="465">465</th><td><i>     Returns -1 on failure.  This is equivalent to</i></td></tr>
+<tr><th id="466">466</th><td><i>     the Python statement: del o[key].</i></td></tr>
+<tr><th id="467">467</th><td><i>       */</i></td></tr>
+<tr><th id="468">468</th><td></td></tr>
+<tr><th id="469">469</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_DelItem" title='PyObject_DelItem' data-ref="PyObject_DelItem">PyObject_DelItem</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="571o" title='o' data-type='PyObject *' data-ref="571o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="572key" title='key' data-type='PyObject *' data-ref="572key">key</dfn>);</td></tr>
+<tr><th id="470">470</th><td></td></tr>
+<tr><th id="471">471</th><td>       <i>/*</i></td></tr>
+<tr><th id="472">472</th><td><i>     Delete the mapping for key from *o.  Returns -1 on failure.</i></td></tr>
+<tr><th id="473">473</th><td><i>     This is the equivalent of the Python statement: del o[key].</i></td></tr>
+<tr><th id="474">474</th><td><i>       */</i></td></tr>
+<tr><th id="475">475</th><td></td></tr>
+<tr><th id="476">476</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_AsCharBuffer" title='PyObject_AsCharBuffer' data-ref="PyObject_AsCharBuffer">PyObject_AsCharBuffer</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="573obj" title='obj' data-type='PyObject *' data-ref="573obj">obj</dfn>,</td></tr>
+<tr><th id="477">477</th><td>                                          <em>const</em> <em>char</em> **<dfn class="local col4 decl" id="574buffer" title='buffer' data-type='const char **' data-ref="574buffer">buffer</dfn>,</td></tr>
+<tr><th id="478">478</th><td>                                          <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col5 decl" id="575buffer_len" title='buffer_len' data-type='Py_ssize_t *' data-ref="575buffer_len">buffer_len</dfn>);</td></tr>
+<tr><th id="479">479</th><td></td></tr>
+<tr><th id="480">480</th><td>       <i>/*</i></td></tr>
+<tr><th id="481">481</th><td><i>      Takes an arbitrary object which must support the (character,</i></td></tr>
+<tr><th id="482">482</th><td><i>      single segment) buffer interface and returns a pointer to a</i></td></tr>
+<tr><th id="483">483</th><td><i>      read-only memory location useable as character based input</i></td></tr>
+<tr><th id="484">484</th><td><i>      for subsequent processing.</i></td></tr>
+<tr><th id="485">485</th><td><i></i></td></tr>
+<tr><th id="486">486</th><td><i>      0 is returned on success.  buffer and buffer_len are only</i></td></tr>
+<tr><th id="487">487</th><td><i>      set in case no error occurs. Otherwise, -1 is returned and</i></td></tr>
+<tr><th id="488">488</th><td><i>      an exception set.</i></td></tr>
+<tr><th id="489">489</th><td><i></i></td></tr>
+<tr><th id="490">490</th><td><i>       */</i></td></tr>
+<tr><th id="491">491</th><td></td></tr>
+<tr><th id="492">492</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_CheckReadBuffer" title='PyObject_CheckReadBuffer' data-ref="PyObject_CheckReadBuffer">PyObject_CheckReadBuffer</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="576obj" title='obj' data-type='PyObject *' data-ref="576obj">obj</dfn>);</td></tr>
+<tr><th id="493">493</th><td></td></tr>
+<tr><th id="494">494</th><td>      <i>/*</i></td></tr>
+<tr><th id="495">495</th><td><i>      Checks whether an arbitrary object supports the (character,</i></td></tr>
+<tr><th id="496">496</th><td><i>      single segment) buffer interface.  Returns 1 on success, 0</i></td></tr>
+<tr><th id="497">497</th><td><i>      on failure.</i></td></tr>
+<tr><th id="498">498</th><td><i></i></td></tr>
+<tr><th id="499">499</th><td><i>      */</i></td></tr>
+<tr><th id="500">500</th><td></td></tr>
+<tr><th id="501">501</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_AsReadBuffer" title='PyObject_AsReadBuffer' data-ref="PyObject_AsReadBuffer">PyObject_AsReadBuffer</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="577obj" title='obj' data-type='PyObject *' data-ref="577obj">obj</dfn>,</td></tr>
+<tr><th id="502">502</th><td>                                          <em>const</em> <em>void</em> **<dfn class="local col8 decl" id="578buffer" title='buffer' data-type='const void **' data-ref="578buffer">buffer</dfn>,</td></tr>
+<tr><th id="503">503</th><td>                                          <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col9 decl" id="579buffer_len" title='buffer_len' data-type='Py_ssize_t *' data-ref="579buffer_len">buffer_len</dfn>);</td></tr>
+<tr><th id="504">504</th><td></td></tr>
+<tr><th id="505">505</th><td>       <i>/*</i></td></tr>
+<tr><th id="506">506</th><td><i>      Same as PyObject_AsCharBuffer() except that this API expects</i></td></tr>
+<tr><th id="507">507</th><td><i>      (readable, single segment) buffer interface and returns a</i></td></tr>
+<tr><th id="508">508</th><td><i>      pointer to a read-only memory location which can contain</i></td></tr>
+<tr><th id="509">509</th><td><i>      arbitrary data.</i></td></tr>
+<tr><th id="510">510</th><td><i></i></td></tr>
+<tr><th id="511">511</th><td><i>      0 is returned on success.  buffer and buffer_len are only</i></td></tr>
+<tr><th id="512">512</th><td><i>      set in case no error occurs.  Otherwise, -1 is returned and</i></td></tr>
+<tr><th id="513">513</th><td><i>      an exception set.</i></td></tr>
+<tr><th id="514">514</th><td><i></i></td></tr>
+<tr><th id="515">515</th><td><i>       */</i></td></tr>
+<tr><th id="516">516</th><td></td></tr>
+<tr><th id="517">517</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_AsWriteBuffer" title='PyObject_AsWriteBuffer' data-ref="PyObject_AsWriteBuffer">PyObject_AsWriteBuffer</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="580obj" title='obj' data-type='PyObject *' data-ref="580obj">obj</dfn>,</td></tr>
+<tr><th id="518">518</th><td>                                           <em>void</em> **<dfn class="local col1 decl" id="581buffer" title='buffer' data-type='void **' data-ref="581buffer">buffer</dfn>,</td></tr>
+<tr><th id="519">519</th><td>                                           <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col2 decl" id="582buffer_len" title='buffer_len' data-type='Py_ssize_t *' data-ref="582buffer_len">buffer_len</dfn>);</td></tr>
+<tr><th id="520">520</th><td></td></tr>
+<tr><th id="521">521</th><td>       <i>/*</i></td></tr>
+<tr><th id="522">522</th><td><i>      Takes an arbitrary object which must support the (writeable,</i></td></tr>
+<tr><th id="523">523</th><td><i>      single segment) buffer interface and returns a pointer to a</i></td></tr>
+<tr><th id="524">524</th><td><i>      writeable memory location in buffer of size buffer_len.</i></td></tr>
+<tr><th id="525">525</th><td><i></i></td></tr>
+<tr><th id="526">526</th><td><i>      0 is returned on success.  buffer and buffer_len are only</i></td></tr>
+<tr><th id="527">527</th><td><i>      set in case no error occurs. Otherwise, -1 is returned and</i></td></tr>
+<tr><th id="528">528</th><td><i>      an exception set.</i></td></tr>
+<tr><th id="529">529</th><td><i></i></td></tr>
+<tr><th id="530">530</th><td><i>       */</i></td></tr>
+<tr><th id="531">531</th><td></td></tr>
+<tr><th id="532">532</th><td>    <i>/* new buffer API */</i></td></tr>
+<tr><th id="533">533</th><td></td></tr>
+<tr><th id="534">534</th><td><u>#define <dfn class="macro" id="_M/PyObject_CheckBuffer" data-ref="_M/PyObject_CheckBuffer">PyObject_CheckBuffer</dfn>(obj) \</u></td></tr>
+<tr><th id="535">535</th><td><u>    (((obj)-&gt;ob_type-&gt;tp_as_buffer != NULL) &amp;&amp;                          \</u></td></tr>
+<tr><th id="536">536</th><td><u>     (PyType_HasFeature((obj)-&gt;ob_type, Py_TPFLAGS_HAVE_NEWBUFFER)) &amp;&amp; \</u></td></tr>
+<tr><th id="537">537</th><td><u>     ((obj)-&gt;ob_type-&gt;tp_as_buffer-&gt;bf_getbuffer != NULL))</u></td></tr>
+<tr><th id="538">538</th><td></td></tr>
+<tr><th id="539">539</th><td>    <i>/* Return 1 if the getbuffer function is available, otherwise</i></td></tr>
+<tr><th id="540">540</th><td><i>       return 0 */</i></td></tr>
+<tr><th id="541">541</th><td></td></tr>
+<tr><th id="542">542</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_GetBuffer" title='PyObject_GetBuffer' data-ref="PyObject_GetBuffer">PyObject_GetBuffer</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="583obj" title='obj' data-type='PyObject *' data-ref="583obj">obj</dfn>, <a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col4 decl" id="584view" title='view' data-type='Py_buffer *' data-ref="584view">view</dfn>,</td></tr>
+<tr><th id="543">543</th><td>                                        <em>int</em> <dfn class="local col5 decl" id="585flags" title='flags' data-type='int' data-ref="585flags">flags</dfn>);</td></tr>
+<tr><th id="544">544</th><td></td></tr>
+<tr><th id="545">545</th><td>    <i>/* This is a C-API version of the getbuffer function call.  It checks</i></td></tr>
+<tr><th id="546">546</th><td><i>       to make sure object has the required function pointer and issues the</i></td></tr>
+<tr><th id="547">547</th><td><i>       call.  Returns -1 and raises an error on failure and returns 0 on</i></td></tr>
+<tr><th id="548">548</th><td><i>       success</i></td></tr>
+<tr><th id="549">549</th><td><i>    */</i></td></tr>
+<tr><th id="550">550</th><td></td></tr>
+<tr><th id="551">551</th><td></td></tr>
+<tr><th id="552">552</th><td>     <a class="macro" href="pyport.h.html#793" title="void *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em> *) <dfn class="decl" id="PyBuffer_GetPointer" title='PyBuffer_GetPointer' data-ref="PyBuffer_GetPointer">PyBuffer_GetPointer</dfn>(<a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col6 decl" id="586view" title='view' data-type='Py_buffer *' data-ref="586view">view</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col7 decl" id="587indices" title='indices' data-type='Py_ssize_t *' data-ref="587indices">indices</dfn>);</td></tr>
+<tr><th id="553">553</th><td></td></tr>
+<tr><th id="554">554</th><td>    <i>/* Get the memory area pointed to by the indices for the buffer given.</i></td></tr>
+<tr><th id="555">555</th><td><i>       Note that view-&gt;ndim is the assumed size of indices</i></td></tr>
+<tr><th id="556">556</th><td><i>    */</i></td></tr>
+<tr><th id="557">557</th><td></td></tr>
+<tr><th id="558">558</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyBuffer_SizeFromFormat" title='PyBuffer_SizeFromFormat' data-ref="PyBuffer_SizeFromFormat">PyBuffer_SizeFromFormat</dfn>(<em>const</em> <em>char</em> *);</td></tr>
+<tr><th id="559">559</th><td></td></tr>
+<tr><th id="560">560</th><td>    <i>/* Return the implied itemsize of the data-format area from a</i></td></tr>
+<tr><th id="561">561</th><td><i>       struct-style description */</i></td></tr>
+<tr><th id="562">562</th><td></td></tr>
+<tr><th id="563">563</th><td></td></tr>
+<tr><th id="564">564</th><td></td></tr>
+<tr><th id="565">565</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyBuffer_ToContiguous" title='PyBuffer_ToContiguous' data-ref="PyBuffer_ToContiguous">PyBuffer_ToContiguous</dfn>(<em>void</em> *<dfn class="local col8 decl" id="588buf" title='buf' data-type='void *' data-ref="588buf">buf</dfn>, <a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col9 decl" id="589view" title='view' data-type='Py_buffer *' data-ref="589view">view</dfn>,</td></tr>
+<tr><th id="566">566</th><td>                                           <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col0 decl" id="590len" title='len' data-type='Py_ssize_t' data-ref="590len">len</dfn>, <em>char</em> <dfn class="local col1 decl" id="591fort" title='fort' data-type='char' data-ref="591fort">fort</dfn>);</td></tr>
+<tr><th id="567">567</th><td></td></tr>
+<tr><th id="568">568</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyBuffer_FromContiguous" title='PyBuffer_FromContiguous' data-ref="PyBuffer_FromContiguous">PyBuffer_FromContiguous</dfn>(<a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col2 decl" id="592view" title='view' data-type='Py_buffer *' data-ref="592view">view</dfn>, <em>void</em> *<dfn class="local col3 decl" id="593buf" title='buf' data-type='void *' data-ref="593buf">buf</dfn>,</td></tr>
+<tr><th id="569">569</th><td>                                             <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col4 decl" id="594len" title='len' data-type='Py_ssize_t' data-ref="594len">len</dfn>, <em>char</em> <dfn class="local col5 decl" id="595fort" title='fort' data-type='char' data-ref="595fort">fort</dfn>);</td></tr>
+<tr><th id="570">570</th><td></td></tr>
+<tr><th id="571">571</th><td></td></tr>
+<tr><th id="572">572</th><td>    <i>/* Copy len bytes of data from the contiguous chunk of memory</i></td></tr>
+<tr><th id="573">573</th><td><i>       pointed to by buf into the buffer exported by obj.  Return</i></td></tr>
+<tr><th id="574">574</th><td><i>       0 on success and return -1 and raise a PyBuffer_Error on</i></td></tr>
+<tr><th id="575">575</th><td><i>       error (i.e. the object does not have a buffer interface or</i></td></tr>
+<tr><th id="576">576</th><td><i>       it is not working).</i></td></tr>
+<tr><th id="577">577</th><td><i></i></td></tr>
+<tr><th id="578">578</th><td><i>       If fort is 'F' and the object is multi-dimensional,</i></td></tr>
+<tr><th id="579">579</th><td><i>       then the data will be copied into the array in</i></td></tr>
+<tr><th id="580">580</th><td><i>       Fortran-style (first dimension varies the fastest).  If</i></td></tr>
+<tr><th id="581">581</th><td><i>       fort is 'C', then the data will be copied into the array</i></td></tr>
+<tr><th id="582">582</th><td><i>       in C-style (last dimension varies the fastest).  If fort</i></td></tr>
+<tr><th id="583">583</th><td><i>       is 'A', then it does not matter and the copy will be made</i></td></tr>
+<tr><th id="584">584</th><td><i>       in whatever way is more efficient.</i></td></tr>
+<tr><th id="585">585</th><td><i></i></td></tr>
+<tr><th id="586">586</th><td><i>    */</i></td></tr>
+<tr><th id="587">587</th><td></td></tr>
+<tr><th id="588">588</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_CopyData" title='PyObject_CopyData' data-ref="PyObject_CopyData">PyObject_CopyData</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="596dest" title='dest' data-type='PyObject *' data-ref="596dest">dest</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="597src" title='src' data-type='PyObject *' data-ref="597src">src</dfn>);</td></tr>
+<tr><th id="589">589</th><td></td></tr>
+<tr><th id="590">590</th><td>    <i>/* Copy the data from the src buffer to the buffer of destination</i></td></tr>
+<tr><th id="591">591</th><td><i>     */</i></td></tr>
+<tr><th id="592">592</th><td></td></tr>
+<tr><th id="593">593</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyBuffer_IsContiguous" title='PyBuffer_IsContiguous' data-ref="PyBuffer_IsContiguous">PyBuffer_IsContiguous</dfn>(<a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col8 decl" id="598view" title='view' data-type='Py_buffer *' data-ref="598view">view</dfn>, <em>char</em> <dfn class="local col9 decl" id="599fort" title='fort' data-type='char' data-ref="599fort">fort</dfn>);</td></tr>
+<tr><th id="594">594</th><td></td></tr>
+<tr><th id="595">595</th><td></td></tr>
+<tr><th id="596">596</th><td>     <a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyBuffer_FillContiguousStrides" title='PyBuffer_FillContiguousStrides' data-ref="PyBuffer_FillContiguousStrides">PyBuffer_FillContiguousStrides</dfn>(<em>int</em> <dfn class="local col0 decl" id="600ndims" title='ndims' data-type='int' data-ref="600ndims">ndims</dfn>,</td></tr>
+<tr><th id="597">597</th><td>                                                    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col1 decl" id="601shape" title='shape' data-type='Py_ssize_t *' data-ref="601shape">shape</dfn>,</td></tr>
+<tr><th id="598">598</th><td>                                                    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col2 decl" id="602strides" title='strides' data-type='Py_ssize_t *' data-ref="602strides">strides</dfn>,</td></tr>
+<tr><th id="599">599</th><td>                                                    <em>int</em> <dfn class="local col3 decl" id="603itemsize" title='itemsize' data-type='int' data-ref="603itemsize">itemsize</dfn>,</td></tr>
+<tr><th id="600">600</th><td>                                                    <em>char</em> <dfn class="local col4 decl" id="604fort" title='fort' data-type='char' data-ref="604fort">fort</dfn>);</td></tr>
+<tr><th id="601">601</th><td></td></tr>
+<tr><th id="602">602</th><td>    <i>/*  Fill the strides array with byte-strides of a contiguous</i></td></tr>
+<tr><th id="603">603</th><td><i>        (Fortran-style if fort is 'F' or C-style otherwise)</i></td></tr>
+<tr><th id="604">604</th><td><i>        array of the given shape with the given number of bytes</i></td></tr>
+<tr><th id="605">605</th><td><i>        per element.</i></td></tr>
+<tr><th id="606">606</th><td><i>    */</i></td></tr>
+<tr><th id="607">607</th><td></td></tr>
+<tr><th id="608">608</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyBuffer_FillInfo" title='PyBuffer_FillInfo' data-ref="PyBuffer_FillInfo">PyBuffer_FillInfo</dfn>(<a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col5 decl" id="605view" title='view' data-type='Py_buffer *' data-ref="605view">view</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="606o" title='o' data-type='PyObject *' data-ref="606o">o</dfn>, <em>void</em> *<dfn class="local col7 decl" id="607buf" title='buf' data-type='void *' data-ref="607buf">buf</dfn>,</td></tr>
+<tr><th id="609">609</th><td>                                       <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col8 decl" id="608len" title='len' data-type='Py_ssize_t' data-ref="608len">len</dfn>, <em>int</em> <dfn class="local col9 decl" id="609readonly" title='readonly' data-type='int' data-ref="609readonly">readonly</dfn>,</td></tr>
+<tr><th id="610">610</th><td>                                       <em>int</em> <dfn class="local col0 decl" id="610flags" title='flags' data-type='int' data-ref="610flags">flags</dfn>);</td></tr>
+<tr><th id="611">611</th><td></td></tr>
+<tr><th id="612">612</th><td>    <i>/* Fills in a buffer-info structure correctly for an exporter</i></td></tr>
+<tr><th id="613">613</th><td><i>       that can only share a contiguous chunk of memory of</i></td></tr>
+<tr><th id="614">614</th><td><i>       "unsigned bytes" of the given length. Returns 0 on success</i></td></tr>
+<tr><th id="615">615</th><td><i>       and -1 (with raising an error) on error.</i></td></tr>
+<tr><th id="616">616</th><td><i>     */</i></td></tr>
+<tr><th id="617">617</th><td></td></tr>
+<tr><th id="618">618</th><td>     <a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyBuffer_Release" title='PyBuffer_Release' data-ref="PyBuffer_Release">PyBuffer_Release</dfn>(<a class="typedef" href="object.h.html#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *<dfn class="local col1 decl" id="611view" title='view' data-type='Py_buffer *' data-ref="611view">view</dfn>);</td></tr>
+<tr><th id="619">619</th><td></td></tr>
+<tr><th id="620">620</th><td>       <i>/* Releases a Py_buffer obtained from getbuffer ParseTuple's s*.</i></td></tr>
+<tr><th id="621">621</th><td><i>    */</i></td></tr>
+<tr><th id="622">622</th><td></td></tr>
+<tr><th id="623">623</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Format" title='PyObject_Format' data-ref="PyObject_Format">PyObject_Format</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a>* <dfn class="local col2 decl" id="612obj" title='obj' data-type='PyObject *' data-ref="612obj">obj</dfn>,</td></tr>
+<tr><th id="624">624</th><td>                                            <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="613format_spec" title='format_spec' data-type='PyObject *' data-ref="613format_spec">format_spec</dfn>);</td></tr>
+<tr><th id="625">625</th><td>       <i>/*</i></td></tr>
+<tr><th id="626">626</th><td><i>     Takes an arbitrary object and returns the result of</i></td></tr>
+<tr><th id="627">627</th><td><i>     calling obj.__format__(format_spec).</i></td></tr>
+<tr><th id="628">628</th><td><i>       */</i></td></tr>
+<tr><th id="629">629</th><td></td></tr>
+<tr><th id="630">630</th><td><i>/* Iterators */</i></td></tr>
+<tr><th id="631">631</th><td></td></tr>
+<tr><th id="632">632</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_GetIter" title='PyObject_GetIter' data-ref="PyObject_GetIter">PyObject_GetIter</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="633">633</th><td>     <i>/* Takes an object and returns an iterator for it.</i></td></tr>
+<tr><th id="634">634</th><td><i>    This is typically a new iterator but if the argument</i></td></tr>
+<tr><th id="635">635</th><td><i>    is an iterator, this returns itself. */</i></td></tr>
+<tr><th id="636">636</th><td></td></tr>
+<tr><th id="637">637</th><td><u>#define <dfn class="macro" id="_M/PyIter_Check" data-ref="_M/PyIter_Check">PyIter_Check</dfn>(obj) \</u></td></tr>
+<tr><th id="638">638</th><td><u>    (PyType_HasFeature((obj)-&gt;ob_type, Py_TPFLAGS_HAVE_ITER) &amp;&amp; \</u></td></tr>
+<tr><th id="639">639</th><td><u>     (obj)-&gt;ob_type-&gt;tp_iternext != NULL &amp;&amp; \</u></td></tr>
+<tr><th id="640">640</th><td><u>     (obj)-&gt;ob_type-&gt;tp_iternext != &amp;_PyObject_NextNotImplemented)</u></td></tr>
+<tr><th id="641">641</th><td></td></tr>
+<tr><th id="642">642</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyIter_Next" title='PyIter_Next' data-ref="PyIter_Next">PyIter_Next</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="643">643</th><td>     <i>/* Takes an iterator object and calls its tp_iternext slot,</i></td></tr>
+<tr><th id="644">644</th><td><i>    returning the next value.  If the iterator is exhausted,</i></td></tr>
+<tr><th id="645">645</th><td><i>    this returns NULL without setting an exception.</i></td></tr>
+<tr><th id="646">646</th><td><i>    NULL with an exception means an error occurred. */</i></td></tr>
+<tr><th id="647">647</th><td></td></tr>
+<tr><th id="648">648</th><td><i>/*  Number Protocol:*/</i></td></tr>
+<tr><th id="649">649</th><td></td></tr>
+<tr><th id="650">650</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyNumber_Check" title='PyNumber_Check' data-ref="PyNumber_Check">PyNumber_Check</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="614o" title='o' data-type='PyObject *' data-ref="614o">o</dfn>);</td></tr>
+<tr><th id="651">651</th><td></td></tr>
+<tr><th id="652">652</th><td>       <i>/*</i></td></tr>
+<tr><th id="653">653</th><td><i>     Returns 1 if the object, o, provides numeric protocols, and</i></td></tr>
+<tr><th id="654">654</th><td><i>     false otherwise.</i></td></tr>
+<tr><th id="655">655</th><td><i></i></td></tr>
+<tr><th id="656">656</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="657">657</th><td><i></i></td></tr>
+<tr><th id="658">658</th><td><i>       */</i></td></tr>
+<tr><th id="659">659</th><td></td></tr>
+<tr><th id="660">660</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Add" title='PyNumber_Add' data-ref="PyNumber_Add">PyNumber_Add</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="615o1" title='o1' data-type='PyObject *' data-ref="615o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="616o2" title='o2' data-type='PyObject *' data-ref="616o2">o2</dfn>);</td></tr>
+<tr><th id="661">661</th><td></td></tr>
+<tr><th id="662">662</th><td>       <i>/*</i></td></tr>
+<tr><th id="663">663</th><td><i>     Returns the result of adding o1 and o2, or null on failure.</i></td></tr>
+<tr><th id="664">664</th><td><i>     This is the equivalent of the Python expression: o1+o2.</i></td></tr>
+<tr><th id="665">665</th><td><i></i></td></tr>
+<tr><th id="666">666</th><td><i></i></td></tr>
+<tr><th id="667">667</th><td><i>       */</i></td></tr>
+<tr><th id="668">668</th><td></td></tr>
+<tr><th id="669">669</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Subtract" title='PyNumber_Subtract' data-ref="PyNumber_Subtract">PyNumber_Subtract</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="617o1" title='o1' data-type='PyObject *' data-ref="617o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="618o2" title='o2' data-type='PyObject *' data-ref="618o2">o2</dfn>);</td></tr>
+<tr><th id="670">670</th><td></td></tr>
+<tr><th id="671">671</th><td>       <i>/*</i></td></tr>
+<tr><th id="672">672</th><td><i>     Returns the result of subtracting o2 from o1, or null on</i></td></tr>
+<tr><th id="673">673</th><td><i>     failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="674">674</th><td><i>     o1-o2.</i></td></tr>
+<tr><th id="675">675</th><td><i></i></td></tr>
+<tr><th id="676">676</th><td><i>       */</i></td></tr>
+<tr><th id="677">677</th><td></td></tr>
+<tr><th id="678">678</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Multiply" title='PyNumber_Multiply' data-ref="PyNumber_Multiply">PyNumber_Multiply</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="619o1" title='o1' data-type='PyObject *' data-ref="619o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="620o2" title='o2' data-type='PyObject *' data-ref="620o2">o2</dfn>);</td></tr>
+<tr><th id="679">679</th><td></td></tr>
+<tr><th id="680">680</th><td>       <i>/*</i></td></tr>
+<tr><th id="681">681</th><td><i>     Returns the result of multiplying o1 and o2, or null on</i></td></tr>
+<tr><th id="682">682</th><td><i>     failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="683">683</th><td><i>     o1*o2.</i></td></tr>
+<tr><th id="684">684</th><td><i></i></td></tr>
+<tr><th id="685">685</th><td><i></i></td></tr>
+<tr><th id="686">686</th><td><i>       */</i></td></tr>
+<tr><th id="687">687</th><td></td></tr>
+<tr><th id="688">688</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Divide" title='PyNumber_Divide' data-ref="PyNumber_Divide">PyNumber_Divide</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="621o1" title='o1' data-type='PyObject *' data-ref="621o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="622o2" title='o2' data-type='PyObject *' data-ref="622o2">o2</dfn>);</td></tr>
+<tr><th id="689">689</th><td></td></tr>
+<tr><th id="690">690</th><td>       <i>/*</i></td></tr>
+<tr><th id="691">691</th><td><i>     Returns the result of dividing o1 by o2, or null on failure.</i></td></tr>
+<tr><th id="692">692</th><td><i>     This is the equivalent of the Python expression: o1/o2.</i></td></tr>
+<tr><th id="693">693</th><td><i></i></td></tr>
+<tr><th id="694">694</th><td><i></i></td></tr>
+<tr><th id="695">695</th><td><i>       */</i></td></tr>
+<tr><th id="696">696</th><td></td></tr>
+<tr><th id="697">697</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_FloorDivide" title='PyNumber_FloorDivide' data-ref="PyNumber_FloorDivide">PyNumber_FloorDivide</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="623o1" title='o1' data-type='PyObject *' data-ref="623o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="624o2" title='o2' data-type='PyObject *' data-ref="624o2">o2</dfn>);</td></tr>
+<tr><th id="698">698</th><td></td></tr>
+<tr><th id="699">699</th><td>       <i>/*</i></td></tr>
+<tr><th id="700">700</th><td><i>     Returns the result of dividing o1 by o2 giving an integral result,</i></td></tr>
+<tr><th id="701">701</th><td><i>     or null on failure.</i></td></tr>
+<tr><th id="702">702</th><td><i>     This is the equivalent of the Python expression: o1//o2.</i></td></tr>
+<tr><th id="703">703</th><td><i></i></td></tr>
+<tr><th id="704">704</th><td><i></i></td></tr>
+<tr><th id="705">705</th><td><i>       */</i></td></tr>
+<tr><th id="706">706</th><td></td></tr>
+<tr><th id="707">707</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_TrueDivide" title='PyNumber_TrueDivide' data-ref="PyNumber_TrueDivide">PyNumber_TrueDivide</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="625o1" title='o1' data-type='PyObject *' data-ref="625o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="626o2" title='o2' data-type='PyObject *' data-ref="626o2">o2</dfn>);</td></tr>
+<tr><th id="708">708</th><td></td></tr>
+<tr><th id="709">709</th><td>       <i>/*</i></td></tr>
+<tr><th id="710">710</th><td><i>     Returns the result of dividing o1 by o2 giving a float result,</i></td></tr>
+<tr><th id="711">711</th><td><i>     or null on failure.</i></td></tr>
+<tr><th id="712">712</th><td><i>     This is the equivalent of the Python expression: o1/o2.</i></td></tr>
+<tr><th id="713">713</th><td><i></i></td></tr>
+<tr><th id="714">714</th><td><i></i></td></tr>
+<tr><th id="715">715</th><td><i>       */</i></td></tr>
+<tr><th id="716">716</th><td></td></tr>
+<tr><th id="717">717</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Remainder" title='PyNumber_Remainder' data-ref="PyNumber_Remainder">PyNumber_Remainder</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="627o1" title='o1' data-type='PyObject *' data-ref="627o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="628o2" title='o2' data-type='PyObject *' data-ref="628o2">o2</dfn>);</td></tr>
+<tr><th id="718">718</th><td></td></tr>
+<tr><th id="719">719</th><td>       <i>/*</i></td></tr>
+<tr><th id="720">720</th><td><i>     Returns the remainder of dividing o1 by o2, or null on</i></td></tr>
+<tr><th id="721">721</th><td><i>     failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="722">722</th><td><i>     o1%o2.</i></td></tr>
+<tr><th id="723">723</th><td><i></i></td></tr>
+<tr><th id="724">724</th><td><i></i></td></tr>
+<tr><th id="725">725</th><td><i>       */</i></td></tr>
+<tr><th id="726">726</th><td></td></tr>
+<tr><th id="727">727</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Divmod" title='PyNumber_Divmod' data-ref="PyNumber_Divmod">PyNumber_Divmod</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="629o1" title='o1' data-type='PyObject *' data-ref="629o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="630o2" title='o2' data-type='PyObject *' data-ref="630o2">o2</dfn>);</td></tr>
+<tr><th id="728">728</th><td></td></tr>
+<tr><th id="729">729</th><td>       <i>/*</i></td></tr>
+<tr><th id="730">730</th><td><i>     See the built-in function divmod.  Returns NULL on failure.</i></td></tr>
+<tr><th id="731">731</th><td><i>     This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="732">732</th><td><i>     divmod(o1,o2).</i></td></tr>
+<tr><th id="733">733</th><td><i></i></td></tr>
+<tr><th id="734">734</th><td><i></i></td></tr>
+<tr><th id="735">735</th><td><i>       */</i></td></tr>
+<tr><th id="736">736</th><td></td></tr>
+<tr><th id="737">737</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Power" title='PyNumber_Power' data-ref="PyNumber_Power">PyNumber_Power</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="631o1" title='o1' data-type='PyObject *' data-ref="631o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="632o2" title='o2' data-type='PyObject *' data-ref="632o2">o2</dfn>,</td></tr>
+<tr><th id="738">738</th><td>                                          <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="633o3" title='o3' data-type='PyObject *' data-ref="633o3">o3</dfn>);</td></tr>
+<tr><th id="739">739</th><td></td></tr>
+<tr><th id="740">740</th><td>       <i>/*</i></td></tr>
+<tr><th id="741">741</th><td><i>     See the built-in function pow.  Returns NULL on failure.</i></td></tr>
+<tr><th id="742">742</th><td><i>     This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="743">743</th><td><i>     pow(o1,o2,o3), where o3 is optional.</i></td></tr>
+<tr><th id="744">744</th><td><i></i></td></tr>
+<tr><th id="745">745</th><td><i>       */</i></td></tr>
+<tr><th id="746">746</th><td></td></tr>
+<tr><th id="747">747</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Negative" title='PyNumber_Negative' data-ref="PyNumber_Negative">PyNumber_Negative</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="634o" title='o' data-type='PyObject *' data-ref="634o">o</dfn>);</td></tr>
+<tr><th id="748">748</th><td></td></tr>
+<tr><th id="749">749</th><td>       <i>/*</i></td></tr>
+<tr><th id="750">750</th><td><i>     Returns the negation of o on success, or null on failure.</i></td></tr>
+<tr><th id="751">751</th><td><i>     This is the equivalent of the Python expression: -o.</i></td></tr>
+<tr><th id="752">752</th><td><i></i></td></tr>
+<tr><th id="753">753</th><td><i>       */</i></td></tr>
+<tr><th id="754">754</th><td></td></tr>
+<tr><th id="755">755</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Positive" title='PyNumber_Positive' data-ref="PyNumber_Positive">PyNumber_Positive</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="635o" title='o' data-type='PyObject *' data-ref="635o">o</dfn>);</td></tr>
+<tr><th id="756">756</th><td></td></tr>
+<tr><th id="757">757</th><td>       <i>/*</i></td></tr>
+<tr><th id="758">758</th><td><i>     Returns the (what?) of o on success, or NULL on failure.</i></td></tr>
+<tr><th id="759">759</th><td><i>     This is the equivalent of the Python expression: +o.</i></td></tr>
+<tr><th id="760">760</th><td><i></i></td></tr>
+<tr><th id="761">761</th><td><i>       */</i></td></tr>
+<tr><th id="762">762</th><td></td></tr>
+<tr><th id="763">763</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Absolute" title='PyNumber_Absolute' data-ref="PyNumber_Absolute">PyNumber_Absolute</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="636o" title='o' data-type='PyObject *' data-ref="636o">o</dfn>);</td></tr>
+<tr><th id="764">764</th><td></td></tr>
+<tr><th id="765">765</th><td>       <i>/*</i></td></tr>
+<tr><th id="766">766</th><td><i>     Returns the absolute value of o, or null on failure.  This is</i></td></tr>
+<tr><th id="767">767</th><td><i>     the equivalent of the Python expression: abs(o).</i></td></tr>
+<tr><th id="768">768</th><td><i></i></td></tr>
+<tr><th id="769">769</th><td><i>       */</i></td></tr>
+<tr><th id="770">770</th><td></td></tr>
+<tr><th id="771">771</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Invert" title='PyNumber_Invert' data-ref="PyNumber_Invert">PyNumber_Invert</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="637o" title='o' data-type='PyObject *' data-ref="637o">o</dfn>);</td></tr>
+<tr><th id="772">772</th><td></td></tr>
+<tr><th id="773">773</th><td>       <i>/*</i></td></tr>
+<tr><th id="774">774</th><td><i>     Returns the bitwise negation of o on success, or NULL on</i></td></tr>
+<tr><th id="775">775</th><td><i>     failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="776">776</th><td><i>     ~o.</i></td></tr>
+<tr><th id="777">777</th><td><i></i></td></tr>
+<tr><th id="778">778</th><td><i></i></td></tr>
+<tr><th id="779">779</th><td><i>       */</i></td></tr>
+<tr><th id="780">780</th><td></td></tr>
+<tr><th id="781">781</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Lshift" title='PyNumber_Lshift' data-ref="PyNumber_Lshift">PyNumber_Lshift</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="638o1" title='o1' data-type='PyObject *' data-ref="638o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="639o2" title='o2' data-type='PyObject *' data-ref="639o2">o2</dfn>);</td></tr>
+<tr><th id="782">782</th><td></td></tr>
+<tr><th id="783">783</th><td>       <i>/*</i></td></tr>
+<tr><th id="784">784</th><td><i>     Returns the result of left shifting o1 by o2 on success, or</i></td></tr>
+<tr><th id="785">785</th><td><i>     NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="786">786</th><td><i>     expression: o1 &lt;&lt; o2.</i></td></tr>
+<tr><th id="787">787</th><td><i></i></td></tr>
+<tr><th id="788">788</th><td><i></i></td></tr>
+<tr><th id="789">789</th><td><i>       */</i></td></tr>
+<tr><th id="790">790</th><td></td></tr>
+<tr><th id="791">791</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Rshift" title='PyNumber_Rshift' data-ref="PyNumber_Rshift">PyNumber_Rshift</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="640o1" title='o1' data-type='PyObject *' data-ref="640o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="641o2" title='o2' data-type='PyObject *' data-ref="641o2">o2</dfn>);</td></tr>
+<tr><th id="792">792</th><td></td></tr>
+<tr><th id="793">793</th><td>       <i>/*</i></td></tr>
+<tr><th id="794">794</th><td><i>     Returns the result of right shifting o1 by o2 on success, or</i></td></tr>
+<tr><th id="795">795</th><td><i>     NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="796">796</th><td><i>     expression: o1 &gt;&gt; o2.</i></td></tr>
+<tr><th id="797">797</th><td><i></i></td></tr>
+<tr><th id="798">798</th><td><i>       */</i></td></tr>
+<tr><th id="799">799</th><td></td></tr>
+<tr><th id="800">800</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_And" title='PyNumber_And' data-ref="PyNumber_And">PyNumber_And</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="642o1" title='o1' data-type='PyObject *' data-ref="642o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="643o2" title='o2' data-type='PyObject *' data-ref="643o2">o2</dfn>);</td></tr>
+<tr><th id="801">801</th><td></td></tr>
+<tr><th id="802">802</th><td>       <i>/*</i></td></tr>
+<tr><th id="803">803</th><td><i>     Returns the result of bitwise and of o1 and o2 on success, or</i></td></tr>
+<tr><th id="804">804</th><td><i>     NULL on failure. This is the equivalent of the Python</i></td></tr>
+<tr><th id="805">805</th><td><i>     expression: o1&amp;o2.</i></td></tr>
+<tr><th id="806">806</th><td><i></i></td></tr>
+<tr><th id="807">807</th><td><i></i></td></tr>
+<tr><th id="808">808</th><td><i>       */</i></td></tr>
+<tr><th id="809">809</th><td></td></tr>
+<tr><th id="810">810</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Xor" title='PyNumber_Xor' data-ref="PyNumber_Xor">PyNumber_Xor</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="644o1" title='o1' data-type='PyObject *' data-ref="644o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="645o2" title='o2' data-type='PyObject *' data-ref="645o2">o2</dfn>);</td></tr>
+<tr><th id="811">811</th><td></td></tr>
+<tr><th id="812">812</th><td>       <i>/*</i></td></tr>
+<tr><th id="813">813</th><td><i>     Returns the bitwise exclusive or of o1 by o2 on success, or</i></td></tr>
+<tr><th id="814">814</th><td><i>     NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="815">815</th><td><i>     expression: o1^o2.</i></td></tr>
+<tr><th id="816">816</th><td><i></i></td></tr>
+<tr><th id="817">817</th><td><i></i></td></tr>
+<tr><th id="818">818</th><td><i>       */</i></td></tr>
+<tr><th id="819">819</th><td></td></tr>
+<tr><th id="820">820</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Or" title='PyNumber_Or' data-ref="PyNumber_Or">PyNumber_Or</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="646o1" title='o1' data-type='PyObject *' data-ref="646o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="647o2" title='o2' data-type='PyObject *' data-ref="647o2">o2</dfn>);</td></tr>
+<tr><th id="821">821</th><td></td></tr>
+<tr><th id="822">822</th><td>       <i>/*</i></td></tr>
+<tr><th id="823">823</th><td><i>     Returns the result of bitwise or on o1 and o2 on success, or</i></td></tr>
+<tr><th id="824">824</th><td><i>     NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="825">825</th><td><i>     expression: o1|o2.</i></td></tr>
+<tr><th id="826">826</th><td><i></i></td></tr>
+<tr><th id="827">827</th><td><i>       */</i></td></tr>
+<tr><th id="828">828</th><td></td></tr>
+<tr><th id="829">829</th><td>     <i>/* Implemented elsewhere:</i></td></tr>
+<tr><th id="830">830</th><td><i></i></td></tr>
+<tr><th id="831">831</th><td><i>     int PyNumber_Coerce(PyObject **p1, PyObject **p2);</i></td></tr>
+<tr><th id="832">832</th><td><i></i></td></tr>
+<tr><th id="833">833</th><td><i>     This function takes the addresses of two variables of type</i></td></tr>
+<tr><th id="834">834</th><td><i>     PyObject*.</i></td></tr>
+<tr><th id="835">835</th><td><i></i></td></tr>
+<tr><th id="836">836</th><td><i>     If the objects pointed to by *p1 and *p2 have the same type,</i></td></tr>
+<tr><th id="837">837</th><td><i>     increment their reference count and return 0 (success).</i></td></tr>
+<tr><th id="838">838</th><td><i>     If the objects can be converted to a common numeric type,</i></td></tr>
+<tr><th id="839">839</th><td><i>     replace *p1 and *p2 by their converted value (with 'new'</i></td></tr>
+<tr><th id="840">840</th><td><i>     reference counts), and return 0.</i></td></tr>
+<tr><th id="841">841</th><td><i>     If no conversion is possible, or if some other error occurs,</i></td></tr>
+<tr><th id="842">842</th><td><i>     return -1 (failure) and don't increment the reference counts.</i></td></tr>
+<tr><th id="843">843</th><td><i>     The call PyNumber_Coerce(&amp;o1, &amp;o2) is equivalent to the Python</i></td></tr>
+<tr><th id="844">844</th><td><i>     statement o1, o2 = coerce(o1, o2).</i></td></tr>
+<tr><th id="845">845</th><td><i></i></td></tr>
+<tr><th id="846">846</th><td><i>       */</i></td></tr>
+<tr><th id="847">847</th><td></td></tr>
+<tr><th id="848">848</th><td><u>#define <dfn class="macro" id="_M/PyIndex_Check" data-ref="_M/PyIndex_Check">PyIndex_Check</dfn>(obj) \</u></td></tr>
+<tr><th id="849">849</th><td><u>   ((obj)-&gt;ob_type-&gt;tp_as_number != NULL &amp;&amp; \</u></td></tr>
+<tr><th id="850">850</th><td><u>    PyType_HasFeature((obj)-&gt;ob_type, Py_TPFLAGS_HAVE_INDEX) &amp;&amp; \</u></td></tr>
+<tr><th id="851">851</th><td><u>    (obj)-&gt;ob_type-&gt;tp_as_number-&gt;nb_index != NULL)</u></td></tr>
+<tr><th id="852">852</th><td></td></tr>
+<tr><th id="853">853</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Index" title='PyNumber_Index' data-ref="PyNumber_Index">PyNumber_Index</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="648o" title='o' data-type='PyObject *' data-ref="648o">o</dfn>);</td></tr>
+<tr><th id="854">854</th><td></td></tr>
+<tr><th id="855">855</th><td>       <i>/*</i></td></tr>
+<tr><th id="856">856</th><td><i>     Returns the object converted to a Python long or int</i></td></tr>
+<tr><th id="857">857</th><td><i>     or NULL with an error raised on failure.</i></td></tr>
+<tr><th id="858">858</th><td><i>       */</i></td></tr>
+<tr><th id="859">859</th><td></td></tr>
+<tr><th id="860">860</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PyNumber_AsSsize_t" title='PyNumber_AsSsize_t' data-ref="PyNumber_AsSsize_t">PyNumber_AsSsize_t</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="649o" title='o' data-type='PyObject *' data-ref="649o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="650exc" title='exc' data-type='PyObject *' data-ref="650exc">exc</dfn>);</td></tr>
+<tr><th id="861">861</th><td></td></tr>
+<tr><th id="862">862</th><td>       <i>/*</i></td></tr>
+<tr><th id="863">863</th><td><i>     Returns the Integral instance converted to an int. The</i></td></tr>
+<tr><th id="864">864</th><td><i>     instance is expected to be int or long or have an __int__</i></td></tr>
+<tr><th id="865">865</th><td><i>     method. Steals integral's reference. error_format will be</i></td></tr>
+<tr><th id="866">866</th><td><i>     used to create the TypeError if integral isn't actually an</i></td></tr>
+<tr><th id="867">867</th><td><i>     Integral instance. error_format should be a format string</i></td></tr>
+<tr><th id="868">868</th><td><i>     that can accept a char* naming integral's type.</i></td></tr>
+<tr><th id="869">869</th><td><i>       */</i></td></tr>
+<tr><th id="870">870</th><td></td></tr>
+<tr><th id="871">871</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyNumber_ConvertIntegralToInt" title='_PyNumber_ConvertIntegralToInt' data-ref="_PyNumber_ConvertIntegralToInt">_PyNumber_ConvertIntegralToInt</dfn>(</td></tr>
+<tr><th id="872">872</th><td>         <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="651integral" title='integral' data-type='PyObject *' data-ref="651integral">integral</dfn>,</td></tr>
+<tr><th id="873">873</th><td>         <em>const</em> <em>char</em>* <dfn class="local col2 decl" id="652error_format" title='error_format' data-type='const char *' data-ref="652error_format">error_format</dfn>);</td></tr>
+<tr><th id="874">874</th><td></td></tr>
+<tr><th id="875">875</th><td>       <i>/*</i></td></tr>
+<tr><th id="876">876</th><td><i>    Returns the object converted to Py_ssize_t by going through</i></td></tr>
+<tr><th id="877">877</th><td><i>    PyNumber_Index first.  If an overflow error occurs while</i></td></tr>
+<tr><th id="878">878</th><td><i>    converting the int-or-long to Py_ssize_t, then the second argument</i></td></tr>
+<tr><th id="879">879</th><td><i>    is the error-type to return.  If it is NULL, then the overflow error</i></td></tr>
+<tr><th id="880">880</th><td><i>    is cleared and the value is clipped.</i></td></tr>
+<tr><th id="881">881</th><td><i>       */</i></td></tr>
+<tr><th id="882">882</th><td></td></tr>
+<tr><th id="883">883</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Int" title='PyNumber_Int' data-ref="PyNumber_Int">PyNumber_Int</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="653o" title='o' data-type='PyObject *' data-ref="653o">o</dfn>);</td></tr>
+<tr><th id="884">884</th><td></td></tr>
+<tr><th id="885">885</th><td>       <i>/*</i></td></tr>
+<tr><th id="886">886</th><td><i>     Returns the o converted to an integer object on success, or</i></td></tr>
+<tr><th id="887">887</th><td><i>     NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="888">888</th><td><i>     expression: int(o).</i></td></tr>
+<tr><th id="889">889</th><td><i></i></td></tr>
+<tr><th id="890">890</th><td><i>       */</i></td></tr>
+<tr><th id="891">891</th><td></td></tr>
+<tr><th id="892">892</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Long" title='PyNumber_Long' data-ref="PyNumber_Long">PyNumber_Long</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="654o" title='o' data-type='PyObject *' data-ref="654o">o</dfn>);</td></tr>
+<tr><th id="893">893</th><td></td></tr>
+<tr><th id="894">894</th><td>       <i>/*</i></td></tr>
+<tr><th id="895">895</th><td><i>     Returns the o converted to a long integer object on success,</i></td></tr>
+<tr><th id="896">896</th><td><i>     or NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="897">897</th><td><i>     expression: long(o).</i></td></tr>
+<tr><th id="898">898</th><td><i></i></td></tr>
+<tr><th id="899">899</th><td><i>       */</i></td></tr>
+<tr><th id="900">900</th><td></td></tr>
+<tr><th id="901">901</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_Float" title='PyNumber_Float' data-ref="PyNumber_Float">PyNumber_Float</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="655o" title='o' data-type='PyObject *' data-ref="655o">o</dfn>);</td></tr>
+<tr><th id="902">902</th><td></td></tr>
+<tr><th id="903">903</th><td>       <i>/*</i></td></tr>
+<tr><th id="904">904</th><td><i>     Returns the o converted to a float object on success, or NULL</i></td></tr>
+<tr><th id="905">905</th><td><i>     on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="906">906</th><td><i>     float(o).</i></td></tr>
+<tr><th id="907">907</th><td><i>       */</i></td></tr>
+<tr><th id="908">908</th><td></td></tr>
+<tr><th id="909">909</th><td><i>/*  In-place variants of (some of) the above number protocol functions */</i></td></tr>
+<tr><th id="910">910</th><td></td></tr>
+<tr><th id="911">911</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceAdd" title='PyNumber_InPlaceAdd' data-ref="PyNumber_InPlaceAdd">PyNumber_InPlaceAdd</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="656o1" title='o1' data-type='PyObject *' data-ref="656o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="657o2" title='o2' data-type='PyObject *' data-ref="657o2">o2</dfn>);</td></tr>
+<tr><th id="912">912</th><td></td></tr>
+<tr><th id="913">913</th><td>       <i>/*</i></td></tr>
+<tr><th id="914">914</th><td><i>     Returns the result of adding o2 to o1, possibly in-place, or null</i></td></tr>
+<tr><th id="915">915</th><td><i>     on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="916">916</th><td><i>     o1 += o2.</i></td></tr>
+<tr><th id="917">917</th><td><i></i></td></tr>
+<tr><th id="918">918</th><td><i>       */</i></td></tr>
+<tr><th id="919">919</th><td></td></tr>
+<tr><th id="920">920</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceSubtract" title='PyNumber_InPlaceSubtract' data-ref="PyNumber_InPlaceSubtract">PyNumber_InPlaceSubtract</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="658o1" title='o1' data-type='PyObject *' data-ref="658o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="659o2" title='o2' data-type='PyObject *' data-ref="659o2">o2</dfn>);</td></tr>
+<tr><th id="921">921</th><td></td></tr>
+<tr><th id="922">922</th><td>       <i>/*</i></td></tr>
+<tr><th id="923">923</th><td><i>     Returns the result of subtracting o2 from o1, possibly in-place or</i></td></tr>
+<tr><th id="924">924</th><td><i>     null on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="925">925</th><td><i>     o1 -= o2.</i></td></tr>
+<tr><th id="926">926</th><td><i></i></td></tr>
+<tr><th id="927">927</th><td><i>       */</i></td></tr>
+<tr><th id="928">928</th><td></td></tr>
+<tr><th id="929">929</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceMultiply" title='PyNumber_InPlaceMultiply' data-ref="PyNumber_InPlaceMultiply">PyNumber_InPlaceMultiply</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="660o1" title='o1' data-type='PyObject *' data-ref="660o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="661o2" title='o2' data-type='PyObject *' data-ref="661o2">o2</dfn>);</td></tr>
+<tr><th id="930">930</th><td></td></tr>
+<tr><th id="931">931</th><td>       <i>/*</i></td></tr>
+<tr><th id="932">932</th><td><i>     Returns the result of multiplying o1 by o2, possibly in-place, or</i></td></tr>
+<tr><th id="933">933</th><td><i>     null on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="934">934</th><td><i>     o1 *= o2.</i></td></tr>
+<tr><th id="935">935</th><td><i></i></td></tr>
+<tr><th id="936">936</th><td><i>       */</i></td></tr>
+<tr><th id="937">937</th><td></td></tr>
+<tr><th id="938">938</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceDivide" title='PyNumber_InPlaceDivide' data-ref="PyNumber_InPlaceDivide">PyNumber_InPlaceDivide</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="662o1" title='o1' data-type='PyObject *' data-ref="662o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="663o2" title='o2' data-type='PyObject *' data-ref="663o2">o2</dfn>);</td></tr>
+<tr><th id="939">939</th><td></td></tr>
+<tr><th id="940">940</th><td>       <i>/*</i></td></tr>
+<tr><th id="941">941</th><td><i>     Returns the result of dividing o1 by o2, possibly in-place, or null</i></td></tr>
+<tr><th id="942">942</th><td><i>     on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="943">943</th><td><i>     o1 /= o2.</i></td></tr>
+<tr><th id="944">944</th><td><i></i></td></tr>
+<tr><th id="945">945</th><td><i>       */</i></td></tr>
+<tr><th id="946">946</th><td></td></tr>
+<tr><th id="947">947</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceFloorDivide" title='PyNumber_InPlaceFloorDivide' data-ref="PyNumber_InPlaceFloorDivide">PyNumber_InPlaceFloorDivide</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="664o1" title='o1' data-type='PyObject *' data-ref="664o1">o1</dfn>,</td></tr>
+<tr><th id="948">948</th><td>                                                       <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="665o2" title='o2' data-type='PyObject *' data-ref="665o2">o2</dfn>);</td></tr>
+<tr><th id="949">949</th><td></td></tr>
+<tr><th id="950">950</th><td>       <i>/*</i></td></tr>
+<tr><th id="951">951</th><td><i>     Returns the result of dividing o1 by o2 giving an integral result,</i></td></tr>
+<tr><th id="952">952</th><td><i>     possibly in-place, or null on failure.</i></td></tr>
+<tr><th id="953">953</th><td><i>     This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="954">954</th><td><i>     o1 /= o2.</i></td></tr>
+<tr><th id="955">955</th><td><i></i></td></tr>
+<tr><th id="956">956</th><td><i>       */</i></td></tr>
+<tr><th id="957">957</th><td></td></tr>
+<tr><th id="958">958</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceTrueDivide" title='PyNumber_InPlaceTrueDivide' data-ref="PyNumber_InPlaceTrueDivide">PyNumber_InPlaceTrueDivide</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="666o1" title='o1' data-type='PyObject *' data-ref="666o1">o1</dfn>,</td></tr>
+<tr><th id="959">959</th><td>                                                      <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="667o2" title='o2' data-type='PyObject *' data-ref="667o2">o2</dfn>);</td></tr>
+<tr><th id="960">960</th><td></td></tr>
+<tr><th id="961">961</th><td>       <i>/*</i></td></tr>
+<tr><th id="962">962</th><td><i>     Returns the result of dividing o1 by o2 giving a float result,</i></td></tr>
+<tr><th id="963">963</th><td><i>     possibly in-place, or null on failure.</i></td></tr>
+<tr><th id="964">964</th><td><i>     This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="965">965</th><td><i>     o1 /= o2.</i></td></tr>
+<tr><th id="966">966</th><td><i></i></td></tr>
+<tr><th id="967">967</th><td><i>       */</i></td></tr>
+<tr><th id="968">968</th><td></td></tr>
+<tr><th id="969">969</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceRemainder" title='PyNumber_InPlaceRemainder' data-ref="PyNumber_InPlaceRemainder">PyNumber_InPlaceRemainder</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="668o1" title='o1' data-type='PyObject *' data-ref="668o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="669o2" title='o2' data-type='PyObject *' data-ref="669o2">o2</dfn>);</td></tr>
+<tr><th id="970">970</th><td></td></tr>
+<tr><th id="971">971</th><td>       <i>/*</i></td></tr>
+<tr><th id="972">972</th><td><i>     Returns the remainder of dividing o1 by o2, possibly in-place, or</i></td></tr>
+<tr><th id="973">973</th><td><i>     null on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="974">974</th><td><i>     o1 %= o2.</i></td></tr>
+<tr><th id="975">975</th><td><i></i></td></tr>
+<tr><th id="976">976</th><td><i>       */</i></td></tr>
+<tr><th id="977">977</th><td></td></tr>
+<tr><th id="978">978</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlacePower" title='PyNumber_InPlacePower' data-ref="PyNumber_InPlacePower">PyNumber_InPlacePower</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="670o1" title='o1' data-type='PyObject *' data-ref="670o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="671o2" title='o2' data-type='PyObject *' data-ref="671o2">o2</dfn>,</td></tr>
+<tr><th id="979">979</th><td>                                                 <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="672o3" title='o3' data-type='PyObject *' data-ref="672o3">o3</dfn>);</td></tr>
+<tr><th id="980">980</th><td></td></tr>
+<tr><th id="981">981</th><td>       <i>/*</i></td></tr>
+<tr><th id="982">982</th><td><i>     Returns the result of raising o1 to the power of o2, possibly</i></td></tr>
+<tr><th id="983">983</th><td><i>     in-place, or null on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="984">984</th><td><i>     expression: o1 **= o2, or pow(o1, o2, o3) if o3 is present.</i></td></tr>
+<tr><th id="985">985</th><td><i></i></td></tr>
+<tr><th id="986">986</th><td><i>       */</i></td></tr>
+<tr><th id="987">987</th><td></td></tr>
+<tr><th id="988">988</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceLshift" title='PyNumber_InPlaceLshift' data-ref="PyNumber_InPlaceLshift">PyNumber_InPlaceLshift</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="673o1" title='o1' data-type='PyObject *' data-ref="673o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="674o2" title='o2' data-type='PyObject *' data-ref="674o2">o2</dfn>);</td></tr>
+<tr><th id="989">989</th><td></td></tr>
+<tr><th id="990">990</th><td>       <i>/*</i></td></tr>
+<tr><th id="991">991</th><td><i>     Returns the result of left shifting o1 by o2, possibly in-place, or</i></td></tr>
+<tr><th id="992">992</th><td><i>     null on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="993">993</th><td><i>     o1 &lt;&lt;= o2.</i></td></tr>
+<tr><th id="994">994</th><td><i></i></td></tr>
+<tr><th id="995">995</th><td><i>       */</i></td></tr>
+<tr><th id="996">996</th><td></td></tr>
+<tr><th id="997">997</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceRshift" title='PyNumber_InPlaceRshift' data-ref="PyNumber_InPlaceRshift">PyNumber_InPlaceRshift</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="675o1" title='o1' data-type='PyObject *' data-ref="675o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="676o2" title='o2' data-type='PyObject *' data-ref="676o2">o2</dfn>);</td></tr>
+<tr><th id="998">998</th><td></td></tr>
+<tr><th id="999">999</th><td>       <i>/*</i></td></tr>
+<tr><th id="1000">1000</th><td><i>     Returns the result of right shifting o1 by o2, possibly in-place or</i></td></tr>
+<tr><th id="1001">1001</th><td><i>     null on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="1002">1002</th><td><i>     o1 &gt;&gt;= o2.</i></td></tr>
+<tr><th id="1003">1003</th><td><i></i></td></tr>
+<tr><th id="1004">1004</th><td><i>       */</i></td></tr>
+<tr><th id="1005">1005</th><td></td></tr>
+<tr><th id="1006">1006</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceAnd" title='PyNumber_InPlaceAnd' data-ref="PyNumber_InPlaceAnd">PyNumber_InPlaceAnd</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="677o1" title='o1' data-type='PyObject *' data-ref="677o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="678o2" title='o2' data-type='PyObject *' data-ref="678o2">o2</dfn>);</td></tr>
+<tr><th id="1007">1007</th><td></td></tr>
+<tr><th id="1008">1008</th><td>       <i>/*</i></td></tr>
+<tr><th id="1009">1009</th><td><i>     Returns the result of bitwise and of o1 and o2, possibly in-place,</i></td></tr>
+<tr><th id="1010">1010</th><td><i>     or null on failure. This is the equivalent of the Python</i></td></tr>
+<tr><th id="1011">1011</th><td><i>     expression: o1 &amp;= o2.</i></td></tr>
+<tr><th id="1012">1012</th><td><i></i></td></tr>
+<tr><th id="1013">1013</th><td><i>       */</i></td></tr>
+<tr><th id="1014">1014</th><td></td></tr>
+<tr><th id="1015">1015</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceXor" title='PyNumber_InPlaceXor' data-ref="PyNumber_InPlaceXor">PyNumber_InPlaceXor</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="679o1" title='o1' data-type='PyObject *' data-ref="679o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="680o2" title='o2' data-type='PyObject *' data-ref="680o2">o2</dfn>);</td></tr>
+<tr><th id="1016">1016</th><td></td></tr>
+<tr><th id="1017">1017</th><td>       <i>/*</i></td></tr>
+<tr><th id="1018">1018</th><td><i>     Returns the bitwise exclusive or of o1 by o2, possibly in-place, or</i></td></tr>
+<tr><th id="1019">1019</th><td><i>     null on failure.  This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="1020">1020</th><td><i>     o1 ^= o2.</i></td></tr>
+<tr><th id="1021">1021</th><td><i></i></td></tr>
+<tr><th id="1022">1022</th><td><i>       */</i></td></tr>
+<tr><th id="1023">1023</th><td></td></tr>
+<tr><th id="1024">1024</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_InPlaceOr" title='PyNumber_InPlaceOr' data-ref="PyNumber_InPlaceOr">PyNumber_InPlaceOr</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="681o1" title='o1' data-type='PyObject *' data-ref="681o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="682o2" title='o2' data-type='PyObject *' data-ref="682o2">o2</dfn>);</td></tr>
+<tr><th id="1025">1025</th><td></td></tr>
+<tr><th id="1026">1026</th><td>       <i>/*</i></td></tr>
+<tr><th id="1027">1027</th><td><i>     Returns the result of bitwise or of o1 and o2, possibly in-place,</i></td></tr>
+<tr><th id="1028">1028</th><td><i>     or null on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="1029">1029</th><td><i>     expression: o1 |= o2.</i></td></tr>
+<tr><th id="1030">1030</th><td><i></i></td></tr>
+<tr><th id="1031">1031</th><td><i>       */</i></td></tr>
+<tr><th id="1032">1032</th><td></td></tr>
+<tr><th id="1033">1033</th><td></td></tr>
+<tr><th id="1034">1034</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyNumber_ToBase" title='PyNumber_ToBase' data-ref="PyNumber_ToBase">PyNumber_ToBase</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="683n" title='n' data-type='PyObject *' data-ref="683n">n</dfn>, <em>int</em> <dfn class="local col4 decl" id="684base" title='base' data-type='int' data-ref="684base">base</dfn>);</td></tr>
+<tr><th id="1035">1035</th><td></td></tr>
+<tr><th id="1036">1036</th><td>       <i>/*</i></td></tr>
+<tr><th id="1037">1037</th><td><i>     Returns the integer n converted to a string with a base, with a base</i></td></tr>
+<tr><th id="1038">1038</th><td><i>     marker of 0b, 0o or 0x prefixed if applicable.</i></td></tr>
+<tr><th id="1039">1039</th><td><i>     If n is not an int object, it is converted with PyNumber_Index first.</i></td></tr>
+<tr><th id="1040">1040</th><td><i>       */</i></td></tr>
+<tr><th id="1041">1041</th><td></td></tr>
+<tr><th id="1042">1042</th><td></td></tr>
+<tr><th id="1043">1043</th><td><i>/*  Sequence protocol:*/</i></td></tr>
+<tr><th id="1044">1044</th><td></td></tr>
+<tr><th id="1045">1045</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_Check" title='PySequence_Check' data-ref="PySequence_Check">PySequence_Check</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="685o" title='o' data-type='PyObject *' data-ref="685o">o</dfn>);</td></tr>
+<tr><th id="1046">1046</th><td></td></tr>
+<tr><th id="1047">1047</th><td>       <i>/*</i></td></tr>
+<tr><th id="1048">1048</th><td><i>     Return 1 if the object provides sequence protocol, and zero</i></td></tr>
+<tr><th id="1049">1049</th><td><i>     otherwise.</i></td></tr>
+<tr><th id="1050">1050</th><td><i></i></td></tr>
+<tr><th id="1051">1051</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="1052">1052</th><td><i></i></td></tr>
+<tr><th id="1053">1053</th><td><i>       */</i></td></tr>
+<tr><th id="1054">1054</th><td></td></tr>
+<tr><th id="1055">1055</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PySequence_Size" title='PySequence_Size' data-ref="PySequence_Size">PySequence_Size</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="686o" title='o' data-type='PyObject *' data-ref="686o">o</dfn>);</td></tr>
+<tr><th id="1056">1056</th><td></td></tr>
+<tr><th id="1057">1057</th><td>       <i>/*</i></td></tr>
+<tr><th id="1058">1058</th><td><i>     Return the size of sequence object o, or -1 on failure.</i></td></tr>
+<tr><th id="1059">1059</th><td><i></i></td></tr>
+<tr><th id="1060">1060</th><td><i>       */</i></td></tr>
+<tr><th id="1061">1061</th><td></td></tr>
+<tr><th id="1062">1062</th><td>       <i>/* For DLL compatibility */</i></td></tr>
+<tr><th id="1063">1063</th><td><u>#undef <span class="macro" data-ref="_M/PySequence_Length">PySequence_Length</span></u></td></tr>
+<tr><th id="1064">1064</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PySequence_Length" title='PySequence_Length' data-ref="PySequence_Length">PySequence_Length</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="687o" title='o' data-type='PyObject *' data-ref="687o">o</dfn>);</td></tr>
+<tr><th id="1065">1065</th><td><u>#define <dfn class="macro" id="_M/PySequence_Length" data-ref="_M/PySequence_Length">PySequence_Length</dfn> PySequence_Size</u></td></tr>
+<tr><th id="1066">1066</th><td></td></tr>
+<tr><th id="1067">1067</th><td></td></tr>
+<tr><th id="1068">1068</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_Concat" title='PySequence_Concat' data-ref="PySequence_Concat">PySequence_Concat</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="688o1" title='o1' data-type='PyObject *' data-ref="688o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="689o2" title='o2' data-type='PyObject *' data-ref="689o2">o2</dfn>);</td></tr>
+<tr><th id="1069">1069</th><td></td></tr>
+<tr><th id="1070">1070</th><td>       <i>/*</i></td></tr>
+<tr><th id="1071">1071</th><td><i>     Return the concatenation of o1 and o2 on success, and NULL on</i></td></tr>
+<tr><th id="1072">1072</th><td><i>     failure.   This is the equivalent of the Python</i></td></tr>
+<tr><th id="1073">1073</th><td><i>     expression: o1+o2.</i></td></tr>
+<tr><th id="1074">1074</th><td><i></i></td></tr>
+<tr><th id="1075">1075</th><td><i>       */</i></td></tr>
+<tr><th id="1076">1076</th><td></td></tr>
+<tr><th id="1077">1077</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_Repeat" title='PySequence_Repeat' data-ref="PySequence_Repeat">PySequence_Repeat</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="690o" title='o' data-type='PyObject *' data-ref="690o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col1 decl" id="691count" title='count' data-type='Py_ssize_t' data-ref="691count">count</dfn>);</td></tr>
+<tr><th id="1078">1078</th><td></td></tr>
+<tr><th id="1079">1079</th><td>       <i>/*</i></td></tr>
+<tr><th id="1080">1080</th><td><i>     Return the result of repeating sequence object o count times,</i></td></tr>
+<tr><th id="1081">1081</th><td><i>     or NULL on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="1082">1082</th><td><i>     expression: o1*count.</i></td></tr>
+<tr><th id="1083">1083</th><td><i></i></td></tr>
+<tr><th id="1084">1084</th><td><i>       */</i></td></tr>
+<tr><th id="1085">1085</th><td></td></tr>
+<tr><th id="1086">1086</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_GetItem" title='PySequence_GetItem' data-ref="PySequence_GetItem">PySequence_GetItem</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="692o" title='o' data-type='PyObject *' data-ref="692o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col3 decl" id="693i" title='i' data-type='Py_ssize_t' data-ref="693i">i</dfn>);</td></tr>
+<tr><th id="1087">1087</th><td></td></tr>
+<tr><th id="1088">1088</th><td>       <i>/*</i></td></tr>
+<tr><th id="1089">1089</th><td><i>     Return the ith element of o, or NULL on failure. This is the</i></td></tr>
+<tr><th id="1090">1090</th><td><i>     equivalent of the Python expression: o[i].</i></td></tr>
+<tr><th id="1091">1091</th><td><i>       */</i></td></tr>
+<tr><th id="1092">1092</th><td></td></tr>
+<tr><th id="1093">1093</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_GetSlice" title='PySequence_GetSlice' data-ref="PySequence_GetSlice">PySequence_GetSlice</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="694o" title='o' data-type='PyObject *' data-ref="694o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col5 decl" id="695i1" title='i1' data-type='Py_ssize_t' data-ref="695i1">i1</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col6 decl" id="696i2" title='i2' data-type='Py_ssize_t' data-ref="696i2">i2</dfn>);</td></tr>
+<tr><th id="1094">1094</th><td></td></tr>
+<tr><th id="1095">1095</th><td>       <i>/*</i></td></tr>
+<tr><th id="1096">1096</th><td><i>     Return the slice of sequence object o between i1 and i2, or</i></td></tr>
+<tr><th id="1097">1097</th><td><i>     NULL on failure. This is the equivalent of the Python</i></td></tr>
+<tr><th id="1098">1098</th><td><i>     expression: o[i1:i2].</i></td></tr>
+<tr><th id="1099">1099</th><td><i></i></td></tr>
+<tr><th id="1100">1100</th><td><i>       */</i></td></tr>
+<tr><th id="1101">1101</th><td></td></tr>
+<tr><th id="1102">1102</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_SetItem" title='PySequence_SetItem' data-ref="PySequence_SetItem">PySequence_SetItem</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="697o" title='o' data-type='PyObject *' data-ref="697o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col8 decl" id="698i" title='i' data-type='Py_ssize_t' data-ref="698i">i</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="699v" title='v' data-type='PyObject *' data-ref="699v">v</dfn>);</td></tr>
+<tr><th id="1103">1103</th><td></td></tr>
+<tr><th id="1104">1104</th><td>       <i>/*</i></td></tr>
+<tr><th id="1105">1105</th><td><i>     Assign object v to the ith element of o.  Returns</i></td></tr>
+<tr><th id="1106">1106</th><td><i>     -1 on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="1107">1107</th><td><i>     statement: o[i]=v.</i></td></tr>
+<tr><th id="1108">1108</th><td><i></i></td></tr>
+<tr><th id="1109">1109</th><td><i>       */</i></td></tr>
+<tr><th id="1110">1110</th><td></td></tr>
+<tr><th id="1111">1111</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_DelItem" title='PySequence_DelItem' data-ref="PySequence_DelItem">PySequence_DelItem</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="700o" title='o' data-type='PyObject *' data-ref="700o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col1 decl" id="701i" title='i' data-type='Py_ssize_t' data-ref="701i">i</dfn>);</td></tr>
+<tr><th id="1112">1112</th><td></td></tr>
+<tr><th id="1113">1113</th><td>       <i>/*</i></td></tr>
+<tr><th id="1114">1114</th><td><i>     Delete the ith element of object v.  Returns</i></td></tr>
+<tr><th id="1115">1115</th><td><i>     -1 on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="1116">1116</th><td><i>     statement: del o[i].</i></td></tr>
+<tr><th id="1117">1117</th><td><i>       */</i></td></tr>
+<tr><th id="1118">1118</th><td></td></tr>
+<tr><th id="1119">1119</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_SetSlice" title='PySequence_SetSlice' data-ref="PySequence_SetSlice">PySequence_SetSlice</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="702o" title='o' data-type='PyObject *' data-ref="702o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col3 decl" id="703i1" title='i1' data-type='Py_ssize_t' data-ref="703i1">i1</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col4 decl" id="704i2" title='i2' data-type='Py_ssize_t' data-ref="704i2">i2</dfn>,</td></tr>
+<tr><th id="1120">1120</th><td>                                        <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="705v" title='v' data-type='PyObject *' data-ref="705v">v</dfn>);</td></tr>
+<tr><th id="1121">1121</th><td></td></tr>
+<tr><th id="1122">1122</th><td>       <i>/*</i></td></tr>
+<tr><th id="1123">1123</th><td><i>     Assign the sequence object, v, to the slice in sequence</i></td></tr>
+<tr><th id="1124">1124</th><td><i>     object, o, from i1 to i2.  Returns -1 on failure. This is the</i></td></tr>
+<tr><th id="1125">1125</th><td><i>     equivalent of the Python statement: o[i1:i2]=v.</i></td></tr>
+<tr><th id="1126">1126</th><td><i>       */</i></td></tr>
+<tr><th id="1127">1127</th><td></td></tr>
+<tr><th id="1128">1128</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_DelSlice" title='PySequence_DelSlice' data-ref="PySequence_DelSlice">PySequence_DelSlice</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="706o" title='o' data-type='PyObject *' data-ref="706o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col7 decl" id="707i1" title='i1' data-type='Py_ssize_t' data-ref="707i1">i1</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col8 decl" id="708i2" title='i2' data-type='Py_ssize_t' data-ref="708i2">i2</dfn>);</td></tr>
+<tr><th id="1129">1129</th><td></td></tr>
+<tr><th id="1130">1130</th><td>       <i>/*</i></td></tr>
+<tr><th id="1131">1131</th><td><i>     Delete the slice in sequence object, o, from i1 to i2.</i></td></tr>
+<tr><th id="1132">1132</th><td><i>     Returns -1 on failure. This is the equivalent of the Python</i></td></tr>
+<tr><th id="1133">1133</th><td><i>     statement: del o[i1:i2].</i></td></tr>
+<tr><th id="1134">1134</th><td><i>       */</i></td></tr>
+<tr><th id="1135">1135</th><td></td></tr>
+<tr><th id="1136">1136</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_Tuple" title='PySequence_Tuple' data-ref="PySequence_Tuple">PySequence_Tuple</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="709o" title='o' data-type='PyObject *' data-ref="709o">o</dfn>);</td></tr>
+<tr><th id="1137">1137</th><td></td></tr>
+<tr><th id="1138">1138</th><td>       <i>/*</i></td></tr>
+<tr><th id="1139">1139</th><td><i>     Returns the sequence, o, as a tuple on success, and NULL on failure.</i></td></tr>
+<tr><th id="1140">1140</th><td><i>     This is equivalent to the Python expression: tuple(o)</i></td></tr>
+<tr><th id="1141">1141</th><td><i>       */</i></td></tr>
+<tr><th id="1142">1142</th><td></td></tr>
+<tr><th id="1143">1143</th><td></td></tr>
+<tr><th id="1144">1144</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_List" title='PySequence_List' data-ref="PySequence_List">PySequence_List</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="710o" title='o' data-type='PyObject *' data-ref="710o">o</dfn>);</td></tr>
+<tr><th id="1145">1145</th><td>       <i>/*</i></td></tr>
+<tr><th id="1146">1146</th><td><i>     Returns the sequence, o, as a list on success, and NULL on failure.</i></td></tr>
+<tr><th id="1147">1147</th><td><i>     This is equivalent to the Python expression: list(o)</i></td></tr>
+<tr><th id="1148">1148</th><td><i>       */</i></td></tr>
+<tr><th id="1149">1149</th><td></td></tr>
+<tr><th id="1150">1150</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_Fast" title='PySequence_Fast' data-ref="PySequence_Fast">PySequence_Fast</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="711o" title='o' data-type='PyObject *' data-ref="711o">o</dfn>, <em>const</em> <em>char</em>* <dfn class="local col2 decl" id="712m" title='m' data-type='const char *' data-ref="712m">m</dfn>);</td></tr>
+<tr><th id="1151">1151</th><td>       <i>/*</i></td></tr>
+<tr><th id="1152">1152</th><td><i>     Returns the sequence, o, as a tuple, unless it's already a</i></td></tr>
+<tr><th id="1153">1153</th><td><i>     tuple or list.  Use PySequence_Fast_GET_ITEM to access the</i></td></tr>
+<tr><th id="1154">1154</th><td><i>     members of this list, and PySequence_Fast_GET_SIZE to get its length.</i></td></tr>
+<tr><th id="1155">1155</th><td><i></i></td></tr>
+<tr><th id="1156">1156</th><td><i>     Returns NULL on failure.  If the object does not support iteration,</i></td></tr>
+<tr><th id="1157">1157</th><td><i>     raises a TypeError exception with m as the message text.</i></td></tr>
+<tr><th id="1158">1158</th><td><i>       */</i></td></tr>
+<tr><th id="1159">1159</th><td></td></tr>
+<tr><th id="1160">1160</th><td><u>#define <dfn class="macro" id="_M/PySequence_Fast_GET_SIZE" data-ref="_M/PySequence_Fast_GET_SIZE">PySequence_Fast_GET_SIZE</dfn>(o) \</u></td></tr>
+<tr><th id="1161">1161</th><td><u>    (PyList_Check(o) ? PyList_GET_SIZE(o) : PyTuple_GET_SIZE(o))</u></td></tr>
+<tr><th id="1162">1162</th><td>       <i>/*</i></td></tr>
+<tr><th id="1163">1163</th><td><i>     Return the size of o, assuming that o was returned by</i></td></tr>
+<tr><th id="1164">1164</th><td><i>     PySequence_Fast and is not NULL.</i></td></tr>
+<tr><th id="1165">1165</th><td><i>       */</i></td></tr>
+<tr><th id="1166">1166</th><td></td></tr>
+<tr><th id="1167">1167</th><td><u>#define <dfn class="macro" id="_M/PySequence_Fast_GET_ITEM" data-ref="_M/PySequence_Fast_GET_ITEM">PySequence_Fast_GET_ITEM</dfn>(o, i)\</u></td></tr>
+<tr><th id="1168">1168</th><td><u>     (PyList_Check(o) ? PyList_GET_ITEM(o, i) : PyTuple_GET_ITEM(o, i))</u></td></tr>
+<tr><th id="1169">1169</th><td>       <i>/*</i></td></tr>
+<tr><th id="1170">1170</th><td><i>     Return the ith element of o, assuming that o was returned by</i></td></tr>
+<tr><th id="1171">1171</th><td><i>     PySequence_Fast, and that i is within bounds.</i></td></tr>
+<tr><th id="1172">1172</th><td><i>       */</i></td></tr>
+<tr><th id="1173">1173</th><td></td></tr>
+<tr><th id="1174">1174</th><td><u>#define <dfn class="macro" id="_M/PySequence_ITEM" data-ref="_M/PySequence_ITEM">PySequence_ITEM</dfn>(o, i)\</u></td></tr>
+<tr><th id="1175">1175</th><td><u>    ( Py_TYPE(o)-&gt;tp_as_sequence-&gt;sq_item(o, i) )</u></td></tr>
+<tr><th id="1176">1176</th><td>       <i>/* Assume tp_as_sequence and sq_item exist and that i does not</i></td></tr>
+<tr><th id="1177">1177</th><td><i>      need to be corrected for a negative index</i></td></tr>
+<tr><th id="1178">1178</th><td><i>       */</i></td></tr>
+<tr><th id="1179">1179</th><td></td></tr>
+<tr><th id="1180">1180</th><td><u>#define <dfn class="macro" id="_M/PySequence_Fast_ITEMS" data-ref="_M/PySequence_Fast_ITEMS">PySequence_Fast_ITEMS</dfn>(sf) \</u></td></tr>
+<tr><th id="1181">1181</th><td><u>    (PyList_Check(sf) ? ((PyListObject *)(sf))-&gt;ob_item \</u></td></tr>
+<tr><th id="1182">1182</th><td><u>                      : ((PyTupleObject *)(sf))-&gt;ob_item)</u></td></tr>
+<tr><th id="1183">1183</th><td>    <i>/* Return a pointer to the underlying item array for</i></td></tr>
+<tr><th id="1184">1184</th><td><i>       an object retured by PySequence_Fast */</i></td></tr>
+<tr><th id="1185">1185</th><td></td></tr>
+<tr><th id="1186">1186</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PySequence_Count" title='PySequence_Count' data-ref="PySequence_Count">PySequence_Count</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="713o" title='o' data-type='PyObject *' data-ref="713o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="714value" title='value' data-type='PyObject *' data-ref="714value">value</dfn>);</td></tr>
+<tr><th id="1187">1187</th><td></td></tr>
+<tr><th id="1188">1188</th><td>       <i>/*</i></td></tr>
+<tr><th id="1189">1189</th><td><i>     Return the number of occurrences on value on o, that is,</i></td></tr>
+<tr><th id="1190">1190</th><td><i>     return the number of keys for which o[key]==value.  On</i></td></tr>
+<tr><th id="1191">1191</th><td><i>     failure, return -1.  This is equivalent to the Python</i></td></tr>
+<tr><th id="1192">1192</th><td><i>     expression: o.count(value).</i></td></tr>
+<tr><th id="1193">1193</th><td><i>       */</i></td></tr>
+<tr><th id="1194">1194</th><td></td></tr>
+<tr><th id="1195">1195</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_Contains" title='PySequence_Contains' data-ref="PySequence_Contains">PySequence_Contains</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="715seq" title='seq' data-type='PyObject *' data-ref="715seq">seq</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="716ob" title='ob' data-type='PyObject *' data-ref="716ob">ob</dfn>);</td></tr>
+<tr><th id="1196">1196</th><td>       <i>/*</i></td></tr>
+<tr><th id="1197">1197</th><td><i>     Return -1 if error; 1 if ob in seq; 0 if ob not in seq.</i></td></tr>
+<tr><th id="1198">1198</th><td><i>     Use __contains__ if possible, else _PySequence_IterSearch().</i></td></tr>
+<tr><th id="1199">1199</th><td><i>       */</i></td></tr>
+<tr><th id="1200">1200</th><td></td></tr>
+<tr><th id="1201">1201</th><td><u>#define <dfn class="macro" id="_M/PY_ITERSEARCH_COUNT" data-ref="_M/PY_ITERSEARCH_COUNT">PY_ITERSEARCH_COUNT</dfn>    1</u></td></tr>
+<tr><th id="1202">1202</th><td><u>#define <dfn class="macro" id="_M/PY_ITERSEARCH_INDEX" data-ref="_M/PY_ITERSEARCH_INDEX">PY_ITERSEARCH_INDEX</dfn>    2</u></td></tr>
+<tr><th id="1203">1203</th><td><u>#define <dfn class="macro" id="_M/PY_ITERSEARCH_CONTAINS" data-ref="_M/PY_ITERSEARCH_CONTAINS">PY_ITERSEARCH_CONTAINS</dfn> 3</u></td></tr>
+<tr><th id="1204">1204</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="_PySequence_IterSearch" title='_PySequence_IterSearch' data-ref="_PySequence_IterSearch">_PySequence_IterSearch</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="717seq" title='seq' data-type='PyObject *' data-ref="717seq">seq</dfn>,</td></tr>
+<tr><th id="1205">1205</th><td>                                        <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="718obj" title='obj' data-type='PyObject *' data-ref="718obj">obj</dfn>, <em>int</em> <dfn class="local col9 decl" id="719operation" title='operation' data-type='int' data-ref="719operation">operation</dfn>);</td></tr>
+<tr><th id="1206">1206</th><td>    <i>/*</i></td></tr>
+<tr><th id="1207">1207</th><td><i>      Iterate over seq.  Result depends on the operation:</i></td></tr>
+<tr><th id="1208">1208</th><td><i>      PY_ITERSEARCH_COUNT:  return # of times obj appears in seq; -1 if</i></td></tr>
+<tr><th id="1209">1209</th><td><i>        error.</i></td></tr>
+<tr><th id="1210">1210</th><td><i>      PY_ITERSEARCH_INDEX:  return 0-based index of first occurrence of</i></td></tr>
+<tr><th id="1211">1211</th><td><i>        obj in seq; set ValueError and return -1 if none found;</i></td></tr>
+<tr><th id="1212">1212</th><td><i>        also return -1 on error.</i></td></tr>
+<tr><th id="1213">1213</th><td><i>      PY_ITERSEARCH_CONTAINS:  return 1 if obj in seq, else 0; -1 on</i></td></tr>
+<tr><th id="1214">1214</th><td><i>        error.</i></td></tr>
+<tr><th id="1215">1215</th><td><i>    */</i></td></tr>
+<tr><th id="1216">1216</th><td></td></tr>
+<tr><th id="1217">1217</th><td><i>/* For DLL-level backwards compatibility */</i></td></tr>
+<tr><th id="1218">1218</th><td><u>#undef <span class="macro" data-ref="_M/PySequence_In">PySequence_In</span></u></td></tr>
+<tr><th id="1219">1219</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PySequence_In" title='PySequence_In' data-ref="PySequence_In">PySequence_In</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="720o" title='o' data-type='PyObject *' data-ref="720o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="721value" title='value' data-type='PyObject *' data-ref="721value">value</dfn>);</td></tr>
+<tr><th id="1220">1220</th><td></td></tr>
+<tr><th id="1221">1221</th><td><i>/* For source-level backwards compatibility */</i></td></tr>
+<tr><th id="1222">1222</th><td><u>#define <dfn class="macro" id="_M/PySequence_In" data-ref="_M/PySequence_In">PySequence_In</dfn> PySequence_Contains</u></td></tr>
+<tr><th id="1223">1223</th><td></td></tr>
+<tr><th id="1224">1224</th><td>       <i>/*</i></td></tr>
+<tr><th id="1225">1225</th><td><i>     Determine if o contains value.  If an item in o is equal to</i></td></tr>
+<tr><th id="1226">1226</th><td><i>     X, return 1, otherwise return 0.  On error, return -1.  This</i></td></tr>
+<tr><th id="1227">1227</th><td><i>     is equivalent to the Python expression: value in o.</i></td></tr>
+<tr><th id="1228">1228</th><td><i>       */</i></td></tr>
+<tr><th id="1229">1229</th><td></td></tr>
+<tr><th id="1230">1230</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PySequence_Index" title='PySequence_Index' data-ref="PySequence_Index">PySequence_Index</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="722o" title='o' data-type='PyObject *' data-ref="722o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="723value" title='value' data-type='PyObject *' data-ref="723value">value</dfn>);</td></tr>
+<tr><th id="1231">1231</th><td></td></tr>
+<tr><th id="1232">1232</th><td>       <i>/*</i></td></tr>
+<tr><th id="1233">1233</th><td><i>     Return the first index for which o[i]=value.  On error,</i></td></tr>
+<tr><th id="1234">1234</th><td><i>     return -1.    This is equivalent to the Python</i></td></tr>
+<tr><th id="1235">1235</th><td><i>     expression: o.index(value).</i></td></tr>
+<tr><th id="1236">1236</th><td><i>       */</i></td></tr>
+<tr><th id="1237">1237</th><td></td></tr>
+<tr><th id="1238">1238</th><td><i>/* In-place versions of some of the above Sequence functions. */</i></td></tr>
+<tr><th id="1239">1239</th><td></td></tr>
+<tr><th id="1240">1240</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_InPlaceConcat" title='PySequence_InPlaceConcat' data-ref="PySequence_InPlaceConcat">PySequence_InPlaceConcat</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="724o1" title='o1' data-type='PyObject *' data-ref="724o1">o1</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="725o2" title='o2' data-type='PyObject *' data-ref="725o2">o2</dfn>);</td></tr>
+<tr><th id="1241">1241</th><td></td></tr>
+<tr><th id="1242">1242</th><td>       <i>/*</i></td></tr>
+<tr><th id="1243">1243</th><td><i>     Append o2 to o1, in-place when possible. Return the resulting</i></td></tr>
+<tr><th id="1244">1244</th><td><i>     object, which could be o1, or NULL on failure.  This is the</i></td></tr>
+<tr><th id="1245">1245</th><td><i>     equivalent of the Python expression: o1 += o2.</i></td></tr>
+<tr><th id="1246">1246</th><td><i></i></td></tr>
+<tr><th id="1247">1247</th><td><i>       */</i></td></tr>
+<tr><th id="1248">1248</th><td></td></tr>
+<tr><th id="1249">1249</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PySequence_InPlaceRepeat" title='PySequence_InPlaceRepeat' data-ref="PySequence_InPlaceRepeat">PySequence_InPlaceRepeat</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="726o" title='o' data-type='PyObject *' data-ref="726o">o</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="local col7 decl" id="727count" title='count' data-type='Py_ssize_t' data-ref="727count">count</dfn>);</td></tr>
+<tr><th id="1250">1250</th><td></td></tr>
+<tr><th id="1251">1251</th><td>       <i>/*</i></td></tr>
+<tr><th id="1252">1252</th><td><i>     Repeat o1 by count, in-place when possible. Return the resulting</i></td></tr>
+<tr><th id="1253">1253</th><td><i>     object, which could be o1, or NULL on failure.  This is the</i></td></tr>
+<tr><th id="1254">1254</th><td><i>     equivalent of the Python expression: o1 *= count.</i></td></tr>
+<tr><th id="1255">1255</th><td><i></i></td></tr>
+<tr><th id="1256">1256</th><td><i>       */</i></td></tr>
+<tr><th id="1257">1257</th><td></td></tr>
+<tr><th id="1258">1258</th><td><i>/*  Mapping protocol:*/</i></td></tr>
+<tr><th id="1259">1259</th><td></td></tr>
+<tr><th id="1260">1260</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyMapping_Check" title='PyMapping_Check' data-ref="PyMapping_Check">PyMapping_Check</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col8 decl" id="728o" title='o' data-type='PyObject *' data-ref="728o">o</dfn>);</td></tr>
+<tr><th id="1261">1261</th><td></td></tr>
+<tr><th id="1262">1262</th><td>       <i>/*</i></td></tr>
+<tr><th id="1263">1263</th><td><i>     Return 1 if the object provides mapping protocol, and zero</i></td></tr>
+<tr><th id="1264">1264</th><td><i>     otherwise.</i></td></tr>
+<tr><th id="1265">1265</th><td><i></i></td></tr>
+<tr><th id="1266">1266</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="1267">1267</th><td><i>       */</i></td></tr>
+<tr><th id="1268">1268</th><td></td></tr>
+<tr><th id="1269">1269</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PyMapping_Size" title='PyMapping_Size' data-ref="PyMapping_Size">PyMapping_Size</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="729o" title='o' data-type='PyObject *' data-ref="729o">o</dfn>);</td></tr>
+<tr><th id="1270">1270</th><td></td></tr>
+<tr><th id="1271">1271</th><td>       <i>/*</i></td></tr>
+<tr><th id="1272">1272</th><td><i>     Returns the number of keys in object o on success, and -1 on</i></td></tr>
+<tr><th id="1273">1273</th><td><i>     failure.  For objects that do not provide sequence protocol,</i></td></tr>
+<tr><th id="1274">1274</th><td><i>     this is equivalent to the Python expression: len(o).</i></td></tr>
+<tr><th id="1275">1275</th><td><i>       */</i></td></tr>
+<tr><th id="1276">1276</th><td></td></tr>
+<tr><th id="1277">1277</th><td>       <i>/* For DLL compatibility */</i></td></tr>
+<tr><th id="1278">1278</th><td><u>#undef <span class="macro" data-ref="_M/PyMapping_Length">PyMapping_Length</span></u></td></tr>
+<tr><th id="1279">1279</th><td>     <a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PyMapping_Length" title='PyMapping_Length' data-ref="PyMapping_Length">PyMapping_Length</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="730o" title='o' data-type='PyObject *' data-ref="730o">o</dfn>);</td></tr>
+<tr><th id="1280">1280</th><td><u>#define <dfn class="macro" id="_M/PyMapping_Length" data-ref="_M/PyMapping_Length">PyMapping_Length</dfn> PyMapping_Size</u></td></tr>
+<tr><th id="1281">1281</th><td></td></tr>
+<tr><th id="1282">1282</th><td></td></tr>
+<tr><th id="1283">1283</th><td>     <i>/* implemented as a macro:</i></td></tr>
+<tr><th id="1284">1284</th><td><i></i></td></tr>
+<tr><th id="1285">1285</th><td><i>     int PyMapping_DelItemString(PyObject *o, char *key);</i></td></tr>
+<tr><th id="1286">1286</th><td><i></i></td></tr>
+<tr><th id="1287">1287</th><td><i>     Remove the mapping for object, key, from the object *o.</i></td></tr>
+<tr><th id="1288">1288</th><td><i>     Returns -1 on failure.  This is equivalent to</i></td></tr>
+<tr><th id="1289">1289</th><td><i>     the Python statement: del o[key].</i></td></tr>
+<tr><th id="1290">1290</th><td><i>       */</i></td></tr>
+<tr><th id="1291">1291</th><td><u>#define <dfn class="macro" id="_M/PyMapping_DelItemString" data-ref="_M/PyMapping_DelItemString">PyMapping_DelItemString</dfn>(O,K) PyObject_DelItemString((O),(K))</u></td></tr>
+<tr><th id="1292">1292</th><td></td></tr>
+<tr><th id="1293">1293</th><td>     <i>/* implemented as a macro:</i></td></tr>
+<tr><th id="1294">1294</th><td><i></i></td></tr>
+<tr><th id="1295">1295</th><td><i>     int PyMapping_DelItem(PyObject *o, PyObject *key);</i></td></tr>
+<tr><th id="1296">1296</th><td><i></i></td></tr>
+<tr><th id="1297">1297</th><td><i>     Remove the mapping for object, key, from the object *o.</i></td></tr>
+<tr><th id="1298">1298</th><td><i>     Returns -1 on failure.  This is equivalent to</i></td></tr>
+<tr><th id="1299">1299</th><td><i>     the Python statement: del o[key].</i></td></tr>
+<tr><th id="1300">1300</th><td><i>       */</i></td></tr>
+<tr><th id="1301">1301</th><td><u>#define <dfn class="macro" id="_M/PyMapping_DelItem" data-ref="_M/PyMapping_DelItem">PyMapping_DelItem</dfn>(O,K) PyObject_DelItem((O),(K))</u></td></tr>
+<tr><th id="1302">1302</th><td></td></tr>
+<tr><th id="1303">1303</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyMapping_HasKeyString" title='PyMapping_HasKeyString' data-ref="PyMapping_HasKeyString">PyMapping_HasKeyString</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="731o" title='o' data-type='PyObject *' data-ref="731o">o</dfn>, <em>char</em> *<dfn class="local col2 decl" id="732key" title='key' data-type='char *' data-ref="732key">key</dfn>);</td></tr>
+<tr><th id="1304">1304</th><td></td></tr>
+<tr><th id="1305">1305</th><td>       <i>/*</i></td></tr>
+<tr><th id="1306">1306</th><td><i>     On success, return 1 if the mapping object has the key, key,</i></td></tr>
+<tr><th id="1307">1307</th><td><i>     and 0 otherwise.  This is equivalent to the Python expression:</i></td></tr>
+<tr><th id="1308">1308</th><td><i>     o.has_key(key).</i></td></tr>
+<tr><th id="1309">1309</th><td><i></i></td></tr>
+<tr><th id="1310">1310</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="1311">1311</th><td><i>       */</i></td></tr>
+<tr><th id="1312">1312</th><td></td></tr>
+<tr><th id="1313">1313</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyMapping_HasKey" title='PyMapping_HasKey' data-ref="PyMapping_HasKey">PyMapping_HasKey</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="733o" title='o' data-type='PyObject *' data-ref="733o">o</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="734key" title='key' data-type='PyObject *' data-ref="734key">key</dfn>);</td></tr>
+<tr><th id="1314">1314</th><td></td></tr>
+<tr><th id="1315">1315</th><td>       <i>/*</i></td></tr>
+<tr><th id="1316">1316</th><td><i>     Return 1 if the mapping object has the key, key,</i></td></tr>
+<tr><th id="1317">1317</th><td><i>     and 0 otherwise.  This is equivalent to the Python expression:</i></td></tr>
+<tr><th id="1318">1318</th><td><i>     o.has_key(key).</i></td></tr>
+<tr><th id="1319">1319</th><td><i></i></td></tr>
+<tr><th id="1320">1320</th><td><i>     This function always succeeds.</i></td></tr>
+<tr><th id="1321">1321</th><td><i></i></td></tr>
+<tr><th id="1322">1322</th><td><i>       */</i></td></tr>
+<tr><th id="1323">1323</th><td></td></tr>
+<tr><th id="1324">1324</th><td>     <i>/* Implemented as macro:</i></td></tr>
+<tr><th id="1325">1325</th><td><i></i></td></tr>
+<tr><th id="1326">1326</th><td><i>     PyObject *PyMapping_Keys(PyObject *o);</i></td></tr>
+<tr><th id="1327">1327</th><td><i></i></td></tr>
+<tr><th id="1328">1328</th><td><i>     On success, return a list of the keys in object o.  On</i></td></tr>
+<tr><th id="1329">1329</th><td><i>     failure, return NULL. This is equivalent to the Python</i></td></tr>
+<tr><th id="1330">1330</th><td><i>     expression: o.keys().</i></td></tr>
+<tr><th id="1331">1331</th><td><i>       */</i></td></tr>
+<tr><th id="1332">1332</th><td><u>#define <dfn class="macro" id="_M/PyMapping_Keys" data-ref="_M/PyMapping_Keys">PyMapping_Keys</dfn>(O) PyObject_CallMethod(O,"keys",NULL)</u></td></tr>
+<tr><th id="1333">1333</th><td></td></tr>
+<tr><th id="1334">1334</th><td>     <i>/* Implemented as macro:</i></td></tr>
+<tr><th id="1335">1335</th><td><i></i></td></tr>
+<tr><th id="1336">1336</th><td><i>     PyObject *PyMapping_Values(PyObject *o);</i></td></tr>
+<tr><th id="1337">1337</th><td><i></i></td></tr>
+<tr><th id="1338">1338</th><td><i>     On success, return a list of the values in object o.  On</i></td></tr>
+<tr><th id="1339">1339</th><td><i>     failure, return NULL. This is equivalent to the Python</i></td></tr>
+<tr><th id="1340">1340</th><td><i>     expression: o.values().</i></td></tr>
+<tr><th id="1341">1341</th><td><i>       */</i></td></tr>
+<tr><th id="1342">1342</th><td><u>#define <dfn class="macro" id="_M/PyMapping_Values" data-ref="_M/PyMapping_Values">PyMapping_Values</dfn>(O) PyObject_CallMethod(O,"values",NULL)</u></td></tr>
+<tr><th id="1343">1343</th><td></td></tr>
+<tr><th id="1344">1344</th><td>     <i>/* Implemented as macro:</i></td></tr>
+<tr><th id="1345">1345</th><td><i></i></td></tr>
+<tr><th id="1346">1346</th><td><i>     PyObject *PyMapping_Items(PyObject *o);</i></td></tr>
+<tr><th id="1347">1347</th><td><i></i></td></tr>
+<tr><th id="1348">1348</th><td><i>     On success, return a list of the items in object o, where</i></td></tr>
+<tr><th id="1349">1349</th><td><i>     each item is a tuple containing a key-value pair.  On</i></td></tr>
+<tr><th id="1350">1350</th><td><i>     failure, return NULL. This is equivalent to the Python</i></td></tr>
+<tr><th id="1351">1351</th><td><i>     expression: o.items().</i></td></tr>
+<tr><th id="1352">1352</th><td><i></i></td></tr>
+<tr><th id="1353">1353</th><td><i>       */</i></td></tr>
+<tr><th id="1354">1354</th><td><u>#define <dfn class="macro" id="_M/PyMapping_Items" data-ref="_M/PyMapping_Items">PyMapping_Items</dfn>(O) PyObject_CallMethod(O,"items",NULL)</u></td></tr>
+<tr><th id="1355">1355</th><td></td></tr>
+<tr><th id="1356">1356</th><td>     <a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyMapping_GetItemString" title='PyMapping_GetItemString' data-ref="PyMapping_GetItemString">PyMapping_GetItemString</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="735o" title='o' data-type='PyObject *' data-ref="735o">o</dfn>, <em>char</em> *<dfn class="local col6 decl" id="736key" title='key' data-type='char *' data-ref="736key">key</dfn>);</td></tr>
+<tr><th id="1357">1357</th><td></td></tr>
+<tr><th id="1358">1358</th><td>       <i>/*</i></td></tr>
+<tr><th id="1359">1359</th><td><i>     Return element of o corresponding to the object, key, or NULL</i></td></tr>
+<tr><th id="1360">1360</th><td><i>     on failure. This is the equivalent of the Python expression:</i></td></tr>
+<tr><th id="1361">1361</th><td><i>     o[key].</i></td></tr>
+<tr><th id="1362">1362</th><td><i>       */</i></td></tr>
+<tr><th id="1363">1363</th><td></td></tr>
+<tr><th id="1364">1364</th><td>     <a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyMapping_SetItemString" title='PyMapping_SetItemString' data-ref="PyMapping_SetItemString">PyMapping_SetItemString</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="737o" title='o' data-type='PyObject *' data-ref="737o">o</dfn>, <em>char</em> *<dfn class="local col8 decl" id="738key" title='key' data-type='char *' data-ref="738key">key</dfn>,</td></tr>
+<tr><th id="1365">1365</th><td>                                            <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col9 decl" id="739value" title='value' data-type='PyObject *' data-ref="739value">value</dfn>);</td></tr>
+<tr><th id="1366">1366</th><td></td></tr>
+<tr><th id="1367">1367</th><td>       <i>/*</i></td></tr>
+<tr><th id="1368">1368</th><td><i>     Map the object, key, to the value, v.  Returns</i></td></tr>
+<tr><th id="1369">1369</th><td><i>     -1 on failure.  This is the equivalent of the Python</i></td></tr>
+<tr><th id="1370">1370</th><td><i>     statement: o[key]=v.</i></td></tr>
+<tr><th id="1371">1371</th><td><i>      */</i></td></tr>
+<tr><th id="1372">1372</th><td></td></tr>
+<tr><th id="1373">1373</th><td></td></tr>
+<tr><th id="1374">1374</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_IsInstance" title='PyObject_IsInstance' data-ref="PyObject_IsInstance">PyObject_IsInstance</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col0 decl" id="740object" title='object' data-type='PyObject *' data-ref="740object">object</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col1 decl" id="741typeorclass" title='typeorclass' data-type='PyObject *' data-ref="741typeorclass">typeorclass</dfn>);</td></tr>
+<tr><th id="1375">1375</th><td>      <i>/* isinstance(object, typeorclass) */</i></td></tr>
+<tr><th id="1376">1376</th><td></td></tr>
+<tr><th id="1377">1377</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_IsSubclass" title='PyObject_IsSubclass' data-ref="PyObject_IsSubclass">PyObject_IsSubclass</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col2 decl" id="742object" title='object' data-type='PyObject *' data-ref="742object">object</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col3 decl" id="743typeorclass" title='typeorclass' data-type='PyObject *' data-ref="743typeorclass">typeorclass</dfn>);</td></tr>
+<tr><th id="1378">1378</th><td>      <i>/* issubclass(object, typeorclass) */</i></td></tr>
+<tr><th id="1379">1379</th><td></td></tr>
+<tr><th id="1380">1380</th><td></td></tr>
+<tr><th id="1381">1381</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="_PyObject_RealIsInstance" title='_PyObject_RealIsInstance' data-ref="_PyObject_RealIsInstance">_PyObject_RealIsInstance</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col4 decl" id="744inst" title='inst' data-type='PyObject *' data-ref="744inst">inst</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col5 decl" id="745cls" title='cls' data-type='PyObject *' data-ref="745cls">cls</dfn>);</td></tr>
+<tr><th id="1382">1382</th><td></td></tr>
+<tr><th id="1383">1383</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="_PyObject_RealIsSubclass" title='_PyObject_RealIsSubclass' data-ref="_PyObject_RealIsSubclass">_PyObject_RealIsSubclass</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col6 decl" id="746derived" title='derived' data-type='PyObject *' data-ref="746derived">derived</dfn>, <a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="local col7 decl" id="747cls" title='cls' data-type='PyObject *' data-ref="747cls">cls</dfn>);</td></tr>
+<tr><th id="1384">1384</th><td></td></tr>
+<tr><th id="1385">1385</th><td></td></tr>
+<tr><th id="1386">1386</th><td><i>/* For internal use by buffer API functions */</i></td></tr>
+<tr><th id="1387">1387</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_Py_add_one_to_index_F" title='_Py_add_one_to_index_F' data-ref="_Py_add_one_to_index_F">_Py_add_one_to_index_F</dfn>(<em>int</em> <dfn class="local col8 decl" id="748nd" title='nd' data-type='int' data-ref="748nd">nd</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col9 decl" id="749index" title='index' data-type='Py_ssize_t *' data-ref="749index">index</dfn>,</td></tr>
+<tr><th id="1388">1388</th><td>                                        <em>const</em> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col0 decl" id="750shape" title='shape' data-type='const Py_ssize_t *' data-ref="750shape">shape</dfn>);</td></tr>
+<tr><th id="1389">1389</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_Py_add_one_to_index_C" title='_Py_add_one_to_index_C' data-ref="_Py_add_one_to_index_C">_Py_add_one_to_index_C</dfn>(<em>int</em> <dfn class="local col1 decl" id="751nd" title='nd' data-type='int' data-ref="751nd">nd</dfn>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col2 decl" id="752index" title='index' data-type='Py_ssize_t *' data-ref="752index">index</dfn>,</td></tr>
+<tr><th id="1390">1390</th><td>                                        <em>const</em> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="local col3 decl" id="753shape" title='shape' data-type='const Py_ssize_t *' data-ref="753shape">shape</dfn>);</td></tr>
+<tr><th id="1391">1391</th><td></td></tr>
+<tr><th id="1392">1392</th><td></td></tr>
+<tr><th id="1393">1393</th><td><u>#<span data-ppcond="1393">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="1394">1394</th><td>}</td></tr>
+<tr><th id="1395">1395</th><td><u>#<span data-ppcond="1393">endif</span></u></td></tr>
+<tr><th id="1396">1396</th><td><u>#<span data-ppcond="1">endif</span> /* Py_ABSTRACTOBJECT_H */</u></td></tr>
+<tr><th id="1397">1397</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../opencv/modules/python/src2/cv2.cpp.html'>opencv/modules/python/src2/cv2.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

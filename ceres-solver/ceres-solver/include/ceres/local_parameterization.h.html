@@ -1,0 +1,342 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>local_parameterization.h source code [ceres-solver/include/ceres/local_parameterization.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::EigenQuaternionParameterization,ceres::HomogeneousVectorParameterization,ceres::IdentityParameterization,ceres::LocalParameterization,ceres::ProductParameterization,ceres::QuaternionParameterization,ceres::SubsetParameterization "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/include/ceres/local_parameterization.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>include</a>/<a href='./'>ceres</a>/<a href='local_parameterization.h.html'>local_parameterization.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td><i>//         sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="32">ifndef</span> <span class="macro" data-ref="_M/CERES_PUBLIC_LOCAL_PARAMETERIZATION_H_">CERES_PUBLIC_LOCAL_PARAMETERIZATION_H_</span></u></td></tr>
+<tr><th id="33">33</th><td><u>#define <dfn class="macro" id="_M/CERES_PUBLIC_LOCAL_PARAMETERIZATION_H_" data-ref="_M/CERES_PUBLIC_LOCAL_PARAMETERIZATION_H_">CERES_PUBLIC_LOCAL_PARAMETERIZATION_H_</dfn></u></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="internal/scoped_ptr.h.html">"ceres/internal/scoped_ptr.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="internal/disable_warnings.h.html">"ceres/internal/disable_warnings.h"</a></u></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><i>// Purpose: Sometimes parameter blocks x can overparameterize a problem</i></td></tr>
+<tr><th id="43">43</th><td><i>//</i></td></tr>
+<tr><th id="44">44</th><td><i>//   min f(x)</i></td></tr>
+<tr><th id="45">45</th><td><i>//    x</i></td></tr>
+<tr><th id="46">46</th><td><i>//</i></td></tr>
+<tr><th id="47">47</th><td><i>// In that case it is desirable to choose a parameterization for the</i></td></tr>
+<tr><th id="48">48</th><td><i>// block itself to remove the null directions of the cost. More</i></td></tr>
+<tr><th id="49">49</th><td><i>// generally, if x lies on a manifold of a smaller dimension than the</i></td></tr>
+<tr><th id="50">50</th><td><i>// ambient space that it is embedded in, then it is numerically and</i></td></tr>
+<tr><th id="51">51</th><td><i>// computationally more effective to optimize it using a</i></td></tr>
+<tr><th id="52">52</th><td><i>// parameterization that lives in the tangent space of that manifold</i></td></tr>
+<tr><th id="53">53</th><td><i>// at each point.</i></td></tr>
+<tr><th id="54">54</th><td><i>//</i></td></tr>
+<tr><th id="55">55</th><td><i>// For example, a sphere in three dimensions is a 2 dimensional</i></td></tr>
+<tr><th id="56">56</th><td><i>// manifold, embedded in a three dimensional space. At each point on</i></td></tr>
+<tr><th id="57">57</th><td><i>// the sphere, the plane tangent to it defines a two dimensional</i></td></tr>
+<tr><th id="58">58</th><td><i>// tangent space. For a cost function defined on this sphere, given a</i></td></tr>
+<tr><th id="59">59</th><td><i>// point x, moving in the direction normal to the sphere at that point</i></td></tr>
+<tr><th id="60">60</th><td><i>// is not useful. Thus a better way to do a local optimization is to</i></td></tr>
+<tr><th id="61">61</th><td><i>// optimize over two dimensional vector delta in the tangent space at</i></td></tr>
+<tr><th id="62">62</th><td><i>// that point and then "move" to the point x + delta, where the move</i></td></tr>
+<tr><th id="63">63</th><td><i>// operation involves projecting back onto the sphere. Doing so</i></td></tr>
+<tr><th id="64">64</th><td><i>// removes a redundent dimension from the optimization, making it</i></td></tr>
+<tr><th id="65">65</th><td><i>// numerically more robust and efficient.</i></td></tr>
+<tr><th id="66">66</th><td><i>//</i></td></tr>
+<tr><th id="67">67</th><td><i>// More generally we can define a function</i></td></tr>
+<tr><th id="68">68</th><td><i>//</i></td></tr>
+<tr><th id="69">69</th><td><i>//   x_plus_delta = Plus(x, delta),</i></td></tr>
+<tr><th id="70">70</th><td><i>//</i></td></tr>
+<tr><th id="71">71</th><td><i>// where x_plus_delta has the same size as x, and delta is of size</i></td></tr>
+<tr><th id="72">72</th><td><i>// less than or equal to x. The function Plus, generalizes the</i></td></tr>
+<tr><th id="73">73</th><td><i>// definition of vector addition. Thus it satisfies the identify</i></td></tr>
+<tr><th id="74">74</th><td><i>//</i></td></tr>
+<tr><th id="75">75</th><td><i>//   Plus(x, 0) = x, for all x.</i></td></tr>
+<tr><th id="76">76</th><td><i>//</i></td></tr>
+<tr><th id="77">77</th><td><i>// A trivial version of Plus is when delta is of the same size as x</i></td></tr>
+<tr><th id="78">78</th><td><i>// and</i></td></tr>
+<tr><th id="79">79</th><td><i>//</i></td></tr>
+<tr><th id="80">80</th><td><i>//   Plus(x, delta) = x + delta</i></td></tr>
+<tr><th id="81">81</th><td><i>//</i></td></tr>
+<tr><th id="82">82</th><td><i>// A more interesting case if x is two dimensional vector, and the</i></td></tr>
+<tr><th id="83">83</th><td><i>// user wishes to hold the first coordinate constant. Then, delta is a</i></td></tr>
+<tr><th id="84">84</th><td><i>// scalar and Plus is defined as</i></td></tr>
+<tr><th id="85">85</th><td><i>//</i></td></tr>
+<tr><th id="86">86</th><td><i>//   Plus(x, delta) = x + [0] * delta</i></td></tr>
+<tr><th id="87">87</th><td><i>//                        [1]</i></td></tr>
+<tr><th id="88">88</th><td><i>//</i></td></tr>
+<tr><th id="89">89</th><td><i>// An example that occurs commonly in Structure from Motion problems</i></td></tr>
+<tr><th id="90">90</th><td><i>// is when camera rotations are parameterized using Quaternion. There,</i></td></tr>
+<tr><th id="91">91</th><td><i>// it is useful only make updates orthogonal to that 4-vector defining</i></td></tr>
+<tr><th id="92">92</th><td><i>// the quaternion. One way to do this is to let delta be a 3</i></td></tr>
+<tr><th id="93">93</th><td><i>// dimensional vector and define Plus to be</i></td></tr>
+<tr><th id="94">94</th><td><i>//</i></td></tr>
+<tr><th id="95">95</th><td><i>//   Plus(x, delta) = [cos(|delta|), sin(|delta|) delta / |delta|] * x</i></td></tr>
+<tr><th id="96">96</th><td><i>//</i></td></tr>
+<tr><th id="97">97</th><td><i>// The multiplication between the two 4-vectors on the RHS is the</i></td></tr>
+<tr><th id="98">98</th><td><i>// standard quaternion product.</i></td></tr>
+<tr><th id="99">99</th><td><i>//</i></td></tr>
+<tr><th id="100">100</th><td><i>// Given g and a point x, optimizing f can now be restated as</i></td></tr>
+<tr><th id="101">101</th><td><i>//</i></td></tr>
+<tr><th id="102">102</th><td><i>//     min  f(Plus(x, delta))</i></td></tr>
+<tr><th id="103">103</th><td><i>//    delta</i></td></tr>
+<tr><th id="104">104</th><td><i>//</i></td></tr>
+<tr><th id="105">105</th><td><i>// Given a solution delta to this problem, the optimal value is then</i></td></tr>
+<tr><th id="106">106</th><td><i>// given by</i></td></tr>
+<tr><th id="107">107</th><td><i>//</i></td></tr>
+<tr><th id="108">108</th><td><i>//   x* = Plus(x, delta)</i></td></tr>
+<tr><th id="109">109</th><td><i>//</i></td></tr>
+<tr><th id="110">110</th><td><i>// The class LocalParameterization defines the function Plus and its</i></td></tr>
+<tr><th id="111">111</th><td><i>// Jacobian which is needed to compute the Jacobian of f w.r.t delta.</i></td></tr>
+<tr><th id="112">112</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</dfn> {</td></tr>
+<tr><th id="113">113</th><td> <b>public</b>:</td></tr>
+<tr><th id="114">114</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres21LocalParameterizationD1Ev" title='ceres::LocalParameterization::~LocalParameterization' data-ref="_ZN5ceres21LocalParameterizationD1Ev">~</dfn>LocalParameterization();</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <i>// Generalization of the addition operation,</i></td></tr>
+<tr><th id="117">117</th><td><i>  //</i></td></tr>
+<tr><th id="118">118</th><td><i>  //   x_plus_delta = Plus(x, delta)</i></td></tr>
+<tr><th id="119">119</th><td><i>  //</i></td></tr>
+<tr><th id="120">120</th><td><i>  // with the condition that Plus(x, 0) = x.</i></td></tr>
+<tr><th id="121">121</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres21LocalParameterization4PlusEPKdS2_Pd" title='ceres::LocalParameterization::Plus' data-ref="_ZNK5ceres21LocalParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col6 decl" id="556x" title='x' data-type='const double *' data-ref="556x">x</dfn>,</td></tr>
+<tr><th id="122">122</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col7 decl" id="557delta" title='delta' data-type='const double *' data-ref="557delta">delta</dfn>,</td></tr>
+<tr><th id="123">123</th><td>                    <em>double</em>* <dfn class="local col8 decl" id="558x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="558x_plus_delta">x_plus_delta</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>  <i>// The jacobian of Plus(x, delta) w.r.t delta at delta = 0.</i></td></tr>
+<tr><th id="126">126</th><td><i>  //</i></td></tr>
+<tr><th id="127">127</th><td><i>  // jacobian is a row-major GlobalSize() x LocalSize() matrix.</i></td></tr>
+<tr><th id="128">128</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres21LocalParameterization15ComputeJacobianEPKdPd" title='ceres::LocalParameterization::ComputeJacobian' data-ref="_ZNK5ceres21LocalParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col9 decl" id="559x" title='x' data-type='const double *' data-ref="559x">x</dfn>, <em>double</em>* <dfn class="local col0 decl" id="560jacobian" title='jacobian' data-type='double *' data-ref="560jacobian">jacobian</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>  <i>// local_matrix = global_matrix * jacobian</i></td></tr>
+<tr><th id="131">131</th><td><i>  //</i></td></tr>
+<tr><th id="132">132</th><td><i>  // global_matrix is a num_rows x GlobalSize  row major matrix.</i></td></tr>
+<tr><th id="133">133</th><td><i>  // local_matrix is a num_rows x LocalSize row major matrix.</i></td></tr>
+<tr><th id="134">134</th><td><i>  // jacobian(x) is the matrix returned by ComputeJacobian at x.</i></td></tr>
+<tr><th id="135">135</th><td><i>  //</i></td></tr>
+<tr><th id="136">136</th><td><i>  // This is only used by GradientProblem. For most normal uses, it is</i></td></tr>
+<tr><th id="137">137</th><td><i>  // okay to use the default implementation.</i></td></tr>
+<tr><th id="138">138</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres21LocalParameterization18MultiplyByJacobianEPKdiS2_Pd" title='ceres::LocalParameterization::MultiplyByJacobian' data-ref="_ZNK5ceres21LocalParameterization18MultiplyByJacobianEPKdiS2_Pd">MultiplyByJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col1 decl" id="561x" title='x' data-type='const double *' data-ref="561x">x</dfn>,</td></tr>
+<tr><th id="139">139</th><td>                                  <em>const</em> <em>int</em> <dfn class="local col2 decl" id="562num_rows" title='num_rows' data-type='const int' data-ref="562num_rows">num_rows</dfn>,</td></tr>
+<tr><th id="140">140</th><td>                                  <em>const</em> <em>double</em>* <dfn class="local col3 decl" id="563global_matrix" title='global_matrix' data-type='const double *' data-ref="563global_matrix">global_matrix</dfn>,</td></tr>
+<tr><th id="141">141</th><td>                                  <em>double</em>* <dfn class="local col4 decl" id="564local_matrix" title='local_matrix' data-type='double *' data-ref="564local_matrix">local_matrix</dfn>) <em>const</em>;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <i>// Size of x.</i></td></tr>
+<tr><th id="144">144</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres21LocalParameterization10GlobalSizeEv" title='ceres::LocalParameterization::GlobalSize' data-ref="_ZNK5ceres21LocalParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>  <i>// Size of delta.</i></td></tr>
+<tr><th id="147">147</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres21LocalParameterization9LocalSizeEv" title='ceres::LocalParameterization::LocalSize' data-ref="_ZNK5ceres21LocalParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="148">148</th><td>};</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><i>// Some basic parameterizations</i></td></tr>
+<tr><th id="151">151</th><td><i></i></td></tr>
+<tr><th id="152">152</th><td><i>// Identity Parameterization: Plus(x, delta) = x + delta</i></td></tr>
+<tr><th id="153">153</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::IdentityParameterization" title='ceres::IdentityParameterization' data-ref="ceres::IdentityParameterization">IdentityParameterization</dfn> : <b>public</b> <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a> {</td></tr>
+<tr><th id="154">154</th><td> <b>public</b>:</td></tr>
+<tr><th id="155">155</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres24IdentityParameterizationC1Ei" title='ceres::IdentityParameterization::IdentityParameterization' data-ref="_ZN5ceres24IdentityParameterizationC1Ei">IdentityParameterization</dfn>(<em>int</em> <dfn class="local col5 decl" id="565size" title='size' data-type='int' data-ref="565size">size</dfn>);</td></tr>
+<tr><th id="156">156</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres24IdentityParameterizationD1Ev" title='ceres::IdentityParameterization::~IdentityParameterization' data-ref="_ZN5ceres24IdentityParameterizationD1Ev">~</dfn>IdentityParameterization() {}</td></tr>
+<tr><th id="157">157</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres24IdentityParameterization4PlusEPKdS2_Pd" title='ceres::IdentityParameterization::Plus' data-ref="_ZNK5ceres24IdentityParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col6 decl" id="566x" title='x' data-type='const double *' data-ref="566x">x</dfn>,</td></tr>
+<tr><th id="158">158</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col7 decl" id="567delta" title='delta' data-type='const double *' data-ref="567delta">delta</dfn>,</td></tr>
+<tr><th id="159">159</th><td>                    <em>double</em>* <dfn class="local col8 decl" id="568x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="568x_plus_delta">x_plus_delta</dfn>) <em>const</em>;</td></tr>
+<tr><th id="160">160</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres24IdentityParameterization15ComputeJacobianEPKdPd" title='ceres::IdentityParameterization::ComputeJacobian' data-ref="_ZNK5ceres24IdentityParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col9 decl" id="569x" title='x' data-type='const double *' data-ref="569x">x</dfn>,</td></tr>
+<tr><th id="161">161</th><td>                               <em>double</em>* <dfn class="local col0 decl" id="570jacobian" title='jacobian' data-type='double *' data-ref="570jacobian">jacobian</dfn>) <em>const</em>;</td></tr>
+<tr><th id="162">162</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres24IdentityParameterization18MultiplyByJacobianEPKdiS2_Pd" title='ceres::IdentityParameterization::MultiplyByJacobian' data-ref="_ZNK5ceres24IdentityParameterization18MultiplyByJacobianEPKdiS2_Pd">MultiplyByJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col1 decl" id="571x" title='x' data-type='const double *' data-ref="571x">x</dfn>,</td></tr>
+<tr><th id="163">163</th><td>                                  <em>const</em> <em>int</em> <dfn class="local col2 decl" id="572num_cols" title='num_cols' data-type='const int' data-ref="572num_cols">num_cols</dfn>,</td></tr>
+<tr><th id="164">164</th><td>                                  <em>const</em> <em>double</em>* <dfn class="local col3 decl" id="573global_matrix" title='global_matrix' data-type='const double *' data-ref="573global_matrix">global_matrix</dfn>,</td></tr>
+<tr><th id="165">165</th><td>                                  <em>double</em>* <dfn class="local col4 decl" id="574local_matrix" title='local_matrix' data-type='double *' data-ref="574local_matrix">local_matrix</dfn>) <em>const</em>;</td></tr>
+<tr><th id="166">166</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres24IdentityParameterization10GlobalSizeEv" title='ceres::IdentityParameterization::GlobalSize' data-ref="_ZNK5ceres24IdentityParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::IdentityParameterization::size_" title='ceres::IdentityParameterization::size_' data-ref="ceres::IdentityParameterization::size_">size_</a>; }</td></tr>
+<tr><th id="167">167</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres24IdentityParameterization9LocalSizeEv" title='ceres::IdentityParameterization::LocalSize' data-ref="_ZNK5ceres24IdentityParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::IdentityParameterization::size_" title='ceres::IdentityParameterization::size_' data-ref="ceres::IdentityParameterization::size_">size_</a>; }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td> <b>private</b>:</td></tr>
+<tr><th id="170">170</th><td>  <em>const</em> <em>int</em> <dfn class="decl" id="ceres::IdentityParameterization::size_" title='ceres::IdentityParameterization::size_' data-ref="ceres::IdentityParameterization::size_">size_</dfn>;</td></tr>
+<tr><th id="171">171</th><td>};</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td><i>// Hold a subset of the parameters inside a parameter block constant.</i></td></tr>
+<tr><th id="174">174</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::SubsetParameterization" title='ceres::SubsetParameterization' data-ref="ceres::SubsetParameterization">SubsetParameterization</dfn> : <b>public</b> <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a> {</td></tr>
+<tr><th id="175">175</th><td> <b>public</b>:</td></tr>
+<tr><th id="176">176</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres22SubsetParameterizationC1EiRKSt6vectorIiSaIiEE" title='ceres::SubsetParameterization::SubsetParameterization' data-ref="_ZN5ceres22SubsetParameterizationC1EiRKSt6vectorIiSaIiEE">SubsetParameterization</dfn>(<em>int</em> <dfn class="local col5 decl" id="575size" title='size' data-type='int' data-ref="575size">size</dfn>,</td></tr>
+<tr><th id="177">177</th><td>                                  <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt;&amp; <dfn class="local col6 decl" id="576constant_parameters" title='constant_parameters' data-type='const std::vector&lt;int&gt; &amp;' data-ref="576constant_parameters">constant_parameters</dfn>);</td></tr>
+<tr><th id="178">178</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres22SubsetParameterizationD1Ev" title='ceres::SubsetParameterization::~SubsetParameterization' data-ref="_ZN5ceres22SubsetParameterizationD1Ev">~</dfn>SubsetParameterization() {}</td></tr>
+<tr><th id="179">179</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres22SubsetParameterization4PlusEPKdS2_Pd" title='ceres::SubsetParameterization::Plus' data-ref="_ZNK5ceres22SubsetParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col7 decl" id="577x" title='x' data-type='const double *' data-ref="577x">x</dfn>,</td></tr>
+<tr><th id="180">180</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col8 decl" id="578delta" title='delta' data-type='const double *' data-ref="578delta">delta</dfn>,</td></tr>
+<tr><th id="181">181</th><td>                    <em>double</em>* <dfn class="local col9 decl" id="579x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="579x_plus_delta">x_plus_delta</dfn>) <em>const</em>;</td></tr>
+<tr><th id="182">182</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres22SubsetParameterization15ComputeJacobianEPKdPd" title='ceres::SubsetParameterization::ComputeJacobian' data-ref="_ZNK5ceres22SubsetParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col0 decl" id="580x" title='x' data-type='const double *' data-ref="580x">x</dfn>,</td></tr>
+<tr><th id="183">183</th><td>                               <em>double</em>* <dfn class="local col1 decl" id="581jacobian" title='jacobian' data-type='double *' data-ref="581jacobian">jacobian</dfn>) <em>const</em>;</td></tr>
+<tr><th id="184">184</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres22SubsetParameterization18MultiplyByJacobianEPKdiS2_Pd" title='ceres::SubsetParameterization::MultiplyByJacobian' data-ref="_ZNK5ceres22SubsetParameterization18MultiplyByJacobianEPKdiS2_Pd">MultiplyByJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col2 decl" id="582x" title='x' data-type='const double *' data-ref="582x">x</dfn>,</td></tr>
+<tr><th id="185">185</th><td>                                  <em>const</em> <em>int</em> <dfn class="local col3 decl" id="583num_cols" title='num_cols' data-type='const int' data-ref="583num_cols">num_cols</dfn>,</td></tr>
+<tr><th id="186">186</th><td>                                  <em>const</em> <em>double</em>* <dfn class="local col4 decl" id="584global_matrix" title='global_matrix' data-type='const double *' data-ref="584global_matrix">global_matrix</dfn>,</td></tr>
+<tr><th id="187">187</th><td>                                  <em>double</em>* <dfn class="local col5 decl" id="585local_matrix" title='local_matrix' data-type='double *' data-ref="585local_matrix">local_matrix</dfn>) <em>const</em>;</td></tr>
+<tr><th id="188">188</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres22SubsetParameterization10GlobalSizeEv" title='ceres::SubsetParameterization::GlobalSize' data-ref="_ZNK5ceres22SubsetParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> {</td></tr>
+<tr><th id="189">189</th><td>    <b>return</b> <b>static_cast</b>&lt;<em>int</em>&gt;(<a class="member" href="#ceres::SubsetParameterization::constancy_mask_" title='ceres::SubsetParameterization::constancy_mask_' data-ref="ceres::SubsetParameterization::constancy_mask_">constancy_mask_</a>.<a class="ref" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNKSt6vector4sizeEv" title='std::vector::size' data-ref="_ZNKSt6vector4sizeEv">size</a>());</td></tr>
+<tr><th id="190">190</th><td>  }</td></tr>
+<tr><th id="191">191</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres22SubsetParameterization9LocalSizeEv" title='ceres::SubsetParameterization::LocalSize' data-ref="_ZNK5ceres22SubsetParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::SubsetParameterization::local_size_" title='ceres::SubsetParameterization::local_size_' data-ref="ceres::SubsetParameterization::local_size_">local_size_</a>; }</td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td> <b>private</b>:</td></tr>
+<tr><th id="194">194</th><td>  <em>const</em> <em>int</em> <dfn class="decl" id="ceres::SubsetParameterization::local_size_" title='ceres::SubsetParameterization::local_size_' data-ref="ceres::SubsetParameterization::local_size_">local_size_</dfn>;</td></tr>
+<tr><th id="195">195</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>char</em>&gt; <dfn class="decl" id="ceres::SubsetParameterization::constancy_mask_" title='ceres::SubsetParameterization::constancy_mask_' data-ref="ceres::SubsetParameterization::constancy_mask_">constancy_mask_</dfn>;</td></tr>
+<tr><th id="196">196</th><td>};</td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td><i>// Plus(x, delta) = [cos(|delta|), sin(|delta|) delta / |delta|] * x</i></td></tr>
+<tr><th id="199">199</th><td><i>// with * being the quaternion multiplication operator. Here we assume</i></td></tr>
+<tr><th id="200">200</th><td><i>// that the first element of the quaternion vector is the real (cos</i></td></tr>
+<tr><th id="201">201</th><td><i>// theta) part.</i></td></tr>
+<tr><th id="202">202</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::QuaternionParameterization" title='ceres::QuaternionParameterization' data-ref="ceres::QuaternionParameterization">QuaternionParameterization</dfn> : <b>public</b> <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a> {</td></tr>
+<tr><th id="203">203</th><td> <b>public</b>:</td></tr>
+<tr><th id="204">204</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres26QuaternionParameterizationD1Ev" title='ceres::QuaternionParameterization::~QuaternionParameterization' data-ref="_ZN5ceres26QuaternionParameterizationD1Ev">~</dfn>QuaternionParameterization() {}</td></tr>
+<tr><th id="205">205</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres26QuaternionParameterization4PlusEPKdS2_Pd" title='ceres::QuaternionParameterization::Plus' data-ref="_ZNK5ceres26QuaternionParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col6 decl" id="586x" title='x' data-type='const double *' data-ref="586x">x</dfn>,</td></tr>
+<tr><th id="206">206</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col7 decl" id="587delta" title='delta' data-type='const double *' data-ref="587delta">delta</dfn>,</td></tr>
+<tr><th id="207">207</th><td>                    <em>double</em>* <dfn class="local col8 decl" id="588x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="588x_plus_delta">x_plus_delta</dfn>) <em>const</em>;</td></tr>
+<tr><th id="208">208</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres26QuaternionParameterization15ComputeJacobianEPKdPd" title='ceres::QuaternionParameterization::ComputeJacobian' data-ref="_ZNK5ceres26QuaternionParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col9 decl" id="589x" title='x' data-type='const double *' data-ref="589x">x</dfn>,</td></tr>
+<tr><th id="209">209</th><td>                               <em>double</em>* <dfn class="local col0 decl" id="590jacobian" title='jacobian' data-type='double *' data-ref="590jacobian">jacobian</dfn>) <em>const</em>;</td></tr>
+<tr><th id="210">210</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres26QuaternionParameterization10GlobalSizeEv" title='ceres::QuaternionParameterization::GlobalSize' data-ref="_ZNK5ceres26QuaternionParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> { <b>return</b> <var>4</var>; }</td></tr>
+<tr><th id="211">211</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres26QuaternionParameterization9LocalSizeEv" title='ceres::QuaternionParameterization::LocalSize' data-ref="_ZNK5ceres26QuaternionParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> { <b>return</b> <var>3</var>; }</td></tr>
+<tr><th id="212">212</th><td>};</td></tr>
+<tr><th id="213">213</th><td></td></tr>
+<tr><th id="214">214</th><td><i>// Implements the quaternion local parameterization for Eigen's representation</i></td></tr>
+<tr><th id="215">215</th><td><i>// of the quaternion. Eigen uses a different internal memory layout for the</i></td></tr>
+<tr><th id="216">216</th><td><i>// elements of the quaternion than what is commonly used. Specifically, Eigen</i></td></tr>
+<tr><th id="217">217</th><td><i>// stores the elements in memory as [x, y, z, w] where the real part is last</i></td></tr>
+<tr><th id="218">218</th><td><i>// whereas it is typically stored first. Note, when creating an Eigen quaternion</i></td></tr>
+<tr><th id="219">219</th><td><i>// through the constructor the elements are accepted in w, x, y, z order. Since</i></td></tr>
+<tr><th id="220">220</th><td><i>// Ceres operates on parameter blocks which are raw double pointers this</i></td></tr>
+<tr><th id="221">221</th><td><i>// difference is important and requires a different parameterization.</i></td></tr>
+<tr><th id="222">222</th><td><i>//</i></td></tr>
+<tr><th id="223">223</th><td><i>// Plus(x, delta) = [sin(|delta|) delta / |delta|, cos(|delta|)] * x</i></td></tr>
+<tr><th id="224">224</th><td><i>// with * being the quaternion multiplication operator.</i></td></tr>
+<tr><th id="225">225</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::EigenQuaternionParameterization" title='ceres::EigenQuaternionParameterization' data-ref="ceres::EigenQuaternionParameterization">EigenQuaternionParameterization</dfn></td></tr>
+<tr><th id="226">226</th><td>    : <b>public</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a> {</td></tr>
+<tr><th id="227">227</th><td> <b>public</b>:</td></tr>
+<tr><th id="228">228</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres31EigenQuaternionParameterizationD1Ev" title='ceres::EigenQuaternionParameterization::~EigenQuaternionParameterization' data-ref="_ZN5ceres31EigenQuaternionParameterizationD1Ev">~</dfn>EigenQuaternionParameterization() {}</td></tr>
+<tr><th id="229">229</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres31EigenQuaternionParameterization4PlusEPKdS2_Pd" title='ceres::EigenQuaternionParameterization::Plus' data-ref="_ZNK5ceres31EigenQuaternionParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col1 decl" id="591x" title='x' data-type='const double *' data-ref="591x">x</dfn>,</td></tr>
+<tr><th id="230">230</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col2 decl" id="592delta" title='delta' data-type='const double *' data-ref="592delta">delta</dfn>,</td></tr>
+<tr><th id="231">231</th><td>                    <em>double</em>* <dfn class="local col3 decl" id="593x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="593x_plus_delta">x_plus_delta</dfn>) <em>const</em>;</td></tr>
+<tr><th id="232">232</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres31EigenQuaternionParameterization15ComputeJacobianEPKdPd" title='ceres::EigenQuaternionParameterization::ComputeJacobian' data-ref="_ZNK5ceres31EigenQuaternionParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col4 decl" id="594x" title='x' data-type='const double *' data-ref="594x">x</dfn>, <em>double</em>* <dfn class="local col5 decl" id="595jacobian" title='jacobian' data-type='double *' data-ref="595jacobian">jacobian</dfn>) <em>const</em>;</td></tr>
+<tr><th id="233">233</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres31EigenQuaternionParameterization10GlobalSizeEv" title='ceres::EigenQuaternionParameterization::GlobalSize' data-ref="_ZNK5ceres31EigenQuaternionParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> { <b>return</b> <var>4</var>; }</td></tr>
+<tr><th id="234">234</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres31EigenQuaternionParameterization9LocalSizeEv" title='ceres::EigenQuaternionParameterization::LocalSize' data-ref="_ZNK5ceres31EigenQuaternionParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> { <b>return</b> <var>3</var>; }</td></tr>
+<tr><th id="235">235</th><td>};</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+<tr><th id="237">237</th><td><i>// This provides a parameterization for homogeneous vectors which are commonly</i></td></tr>
+<tr><th id="238">238</th><td><i>// used in Structure for Motion problems.  One example where they are used is</i></td></tr>
+<tr><th id="239">239</th><td><i>// in representing points whose triangulation is ill-conditioned. Here</i></td></tr>
+<tr><th id="240">240</th><td><i>// it is advantageous to use an over-parameterization since homogeneous vectors</i></td></tr>
+<tr><th id="241">241</th><td><i>// can represent points at infinity.</i></td></tr>
+<tr><th id="242">242</th><td><i>//</i></td></tr>
+<tr><th id="243">243</th><td><i>// The plus operator is defined as</i></td></tr>
+<tr><th id="244">244</th><td><i>// Plus(x, delta) =</i></td></tr>
+<tr><th id="245">245</th><td><i>//    [sin(0.5 * |delta|) * delta / |delta|, cos(0.5 * |delta|)] * x</i></td></tr>
+<tr><th id="246">246</th><td><i>// with * defined as an operator which applies the update orthogonal to x to</i></td></tr>
+<tr><th id="247">247</th><td><i>// remain on the sphere. We assume that the last element of x is the scalar</i></td></tr>
+<tr><th id="248">248</th><td><i>// component. The size of the homogeneous vector is required to be greater than</i></td></tr>
+<tr><th id="249">249</th><td><i>// 1.</i></td></tr>
+<tr><th id="250">250</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::HomogeneousVectorParameterization" title='ceres::HomogeneousVectorParameterization' data-ref="ceres::HomogeneousVectorParameterization">HomogeneousVectorParameterization</dfn> :</td></tr>
+<tr><th id="251">251</th><td>      <b>public</b> <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a> {</td></tr>
+<tr><th id="252">252</th><td> <b>public</b>:</td></tr>
+<tr><th id="253">253</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres33HomogeneousVectorParameterizationC1Ei" title='ceres::HomogeneousVectorParameterization::HomogeneousVectorParameterization' data-ref="_ZN5ceres33HomogeneousVectorParameterizationC1Ei">HomogeneousVectorParameterization</dfn>(<em>int</em> <dfn class="local col6 decl" id="596size" title='size' data-type='int' data-ref="596size">size</dfn>);</td></tr>
+<tr><th id="254">254</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres33HomogeneousVectorParameterizationD1Ev" title='ceres::HomogeneousVectorParameterization::~HomogeneousVectorParameterization' data-ref="_ZN5ceres33HomogeneousVectorParameterizationD1Ev">~</dfn>HomogeneousVectorParameterization() {}</td></tr>
+<tr><th id="255">255</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres33HomogeneousVectorParameterization4PlusEPKdS2_Pd" title='ceres::HomogeneousVectorParameterization::Plus' data-ref="_ZNK5ceres33HomogeneousVectorParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col7 decl" id="597x" title='x' data-type='const double *' data-ref="597x">x</dfn>,</td></tr>
+<tr><th id="256">256</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col8 decl" id="598delta" title='delta' data-type='const double *' data-ref="598delta">delta</dfn>,</td></tr>
+<tr><th id="257">257</th><td>                    <em>double</em>* <dfn class="local col9 decl" id="599x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="599x_plus_delta">x_plus_delta</dfn>) <em>const</em>;</td></tr>
+<tr><th id="258">258</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres33HomogeneousVectorParameterization15ComputeJacobianEPKdPd" title='ceres::HomogeneousVectorParameterization::ComputeJacobian' data-ref="_ZNK5ceres33HomogeneousVectorParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col0 decl" id="600x" title='x' data-type='const double *' data-ref="600x">x</dfn>,</td></tr>
+<tr><th id="259">259</th><td>                               <em>double</em>* <dfn class="local col1 decl" id="601jacobian" title='jacobian' data-type='double *' data-ref="601jacobian">jacobian</dfn>) <em>const</em>;</td></tr>
+<tr><th id="260">260</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres33HomogeneousVectorParameterization10GlobalSizeEv" title='ceres::HomogeneousVectorParameterization::GlobalSize' data-ref="_ZNK5ceres33HomogeneousVectorParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::HomogeneousVectorParameterization::size_" title='ceres::HomogeneousVectorParameterization::size_' data-ref="ceres::HomogeneousVectorParameterization::size_">size_</a>; }</td></tr>
+<tr><th id="261">261</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres33HomogeneousVectorParameterization9LocalSizeEv" title='ceres::HomogeneousVectorParameterization::LocalSize' data-ref="_ZNK5ceres33HomogeneousVectorParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::HomogeneousVectorParameterization::size_" title='ceres::HomogeneousVectorParameterization::size_' data-ref="ceres::HomogeneousVectorParameterization::size_">size_</a> - <var>1</var>; }</td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td> <b>private</b>:</td></tr>
+<tr><th id="264">264</th><td>  <em>const</em> <em>int</em> <dfn class="decl" id="ceres::HomogeneousVectorParameterization::size_" title='ceres::HomogeneousVectorParameterization::size_' data-ref="ceres::HomogeneousVectorParameterization::size_">size_</dfn>;</td></tr>
+<tr><th id="265">265</th><td>};</td></tr>
+<tr><th id="266">266</th><td></td></tr>
+<tr><th id="267">267</th><td><i>// Construct a local parameterization by taking the Cartesian product</i></td></tr>
+<tr><th id="268">268</th><td><i>// of a number of other local parameterizations. This is useful, when</i></td></tr>
+<tr><th id="269">269</th><td><i>// a parameter block is the cartesian product of two or more</i></td></tr>
+<tr><th id="270">270</th><td><i>// manifolds. For example the parameters of a camera consist of a</i></td></tr>
+<tr><th id="271">271</th><td><i>// rotation and a translation, i.e., SO(3) x R^3.</i></td></tr>
+<tr><th id="272">272</th><td><i>//</i></td></tr>
+<tr><th id="273">273</th><td><i>// Currently this class supports taking the cartesian product of up to</i></td></tr>
+<tr><th id="274">274</th><td><i>// four local parameterizations.</i></td></tr>
+<tr><th id="275">275</th><td><i>//</i></td></tr>
+<tr><th id="276">276</th><td><i>// Example usage:</i></td></tr>
+<tr><th id="277">277</th><td><i>//</i></td></tr>
+<tr><th id="278">278</th><td><i>// ProductParameterization product_param(new QuaterionionParameterization(),</i></td></tr>
+<tr><th id="279">279</th><td><i>//                                       new IdentityParameterization(3));</i></td></tr>
+<tr><th id="280">280</th><td><i>//</i></td></tr>
+<tr><th id="281">281</th><td><i>// is the local parameterization for a rigid transformation, where the</i></td></tr>
+<tr><th id="282">282</th><td><i>// rotation is represented using a quaternion.</i></td></tr>
+<tr><th id="283">283</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::ProductParameterization" title='ceres::ProductParameterization' data-ref="ceres::ProductParameterization">ProductParameterization</dfn> : <b>public</b> <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a> {</td></tr>
+<tr><th id="284">284</th><td> <b>public</b>:</td></tr>
+<tr><th id="285">285</th><td>  <i>//</i></td></tr>
+<tr><th id="286">286</th><td><i>  // NOTE: All the constructors take ownership of the input local</i></td></tr>
+<tr><th id="287">287</th><td><i>  // parameterizations.</i></td></tr>
+<tr><th id="288">288</th><td><i>  //</i></td></tr>
+<tr><th id="289">289</th><td>  <dfn class="decl" id="_ZN5ceres23ProductParameterizationC1EPNS_21LocalParameterizationES2_" title='ceres::ProductParameterization::ProductParameterization' data-ref="_ZN5ceres23ProductParameterizationC1EPNS_21LocalParameterizationES2_">ProductParameterization</dfn>(<a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col2 decl" id="602local_param1" title='local_param1' data-type='ceres::LocalParameterization *' data-ref="602local_param1">local_param1</dfn>,</td></tr>
+<tr><th id="290">290</th><td>                          <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col3 decl" id="603local_param2" title='local_param2' data-type='ceres::LocalParameterization *' data-ref="603local_param2">local_param2</dfn>);</td></tr>
+<tr><th id="291">291</th><td></td></tr>
+<tr><th id="292">292</th><td>  <dfn class="decl" id="_ZN5ceres23ProductParameterizationC1EPNS_21LocalParameterizationES2_S2_" title='ceres::ProductParameterization::ProductParameterization' data-ref="_ZN5ceres23ProductParameterizationC1EPNS_21LocalParameterizationES2_S2_">ProductParameterization</dfn>(<a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col4 decl" id="604local_param1" title='local_param1' data-type='ceres::LocalParameterization *' data-ref="604local_param1">local_param1</dfn>,</td></tr>
+<tr><th id="293">293</th><td>                          <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col5 decl" id="605local_param2" title='local_param2' data-type='ceres::LocalParameterization *' data-ref="605local_param2">local_param2</dfn>,</td></tr>
+<tr><th id="294">294</th><td>                          <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col6 decl" id="606local_param3" title='local_param3' data-type='ceres::LocalParameterization *' data-ref="606local_param3">local_param3</dfn>);</td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td>  <dfn class="decl" id="_ZN5ceres23ProductParameterizationC1EPNS_21LocalParameterizationES2_S2_S2_" title='ceres::ProductParameterization::ProductParameterization' data-ref="_ZN5ceres23ProductParameterizationC1EPNS_21LocalParameterizationES2_S2_S2_">ProductParameterization</dfn>(<a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col7 decl" id="607local_param1" title='local_param1' data-type='ceres::LocalParameterization *' data-ref="607local_param1">local_param1</dfn>,</td></tr>
+<tr><th id="297">297</th><td>                          <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col8 decl" id="608local_param2" title='local_param2' data-type='ceres::LocalParameterization *' data-ref="608local_param2">local_param2</dfn>,</td></tr>
+<tr><th id="298">298</th><td>                          <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col9 decl" id="609local_param3" title='local_param3' data-type='ceres::LocalParameterization *' data-ref="609local_param3">local_param3</dfn>,</td></tr>
+<tr><th id="299">299</th><td>                          <a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>* <dfn class="local col0 decl" id="610local_param4" title='local_param4' data-type='ceres::LocalParameterization *' data-ref="610local_param4">local_param4</dfn>);</td></tr>
+<tr><th id="300">300</th><td></td></tr>
+<tr><th id="301">301</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres23ProductParameterizationD1Ev" title='ceres::ProductParameterization::~ProductParameterization' data-ref="_ZN5ceres23ProductParameterizationD1Ev">~</dfn>ProductParameterization();</td></tr>
+<tr><th id="302">302</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres23ProductParameterization4PlusEPKdS2_Pd" title='ceres::ProductParameterization::Plus' data-ref="_ZNK5ceres23ProductParameterization4PlusEPKdS2_Pd">Plus</dfn>(<em>const</em> <em>double</em>* <dfn class="local col1 decl" id="611x" title='x' data-type='const double *' data-ref="611x">x</dfn>,</td></tr>
+<tr><th id="303">303</th><td>                    <em>const</em> <em>double</em>* <dfn class="local col2 decl" id="612delta" title='delta' data-type='const double *' data-ref="612delta">delta</dfn>,</td></tr>
+<tr><th id="304">304</th><td>                    <em>double</em>* <dfn class="local col3 decl" id="613x_plus_delta" title='x_plus_delta' data-type='double *' data-ref="613x_plus_delta">x_plus_delta</dfn>) <em>const</em>;</td></tr>
+<tr><th id="305">305</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZNK5ceres23ProductParameterization15ComputeJacobianEPKdPd" title='ceres::ProductParameterization::ComputeJacobian' data-ref="_ZNK5ceres23ProductParameterization15ComputeJacobianEPKdPd">ComputeJacobian</dfn>(<em>const</em> <em>double</em>* <dfn class="local col4 decl" id="614x" title='x' data-type='const double *' data-ref="614x">x</dfn>,</td></tr>
+<tr><th id="306">306</th><td>                               <em>double</em>* <dfn class="local col5 decl" id="615jacobian" title='jacobian' data-type='double *' data-ref="615jacobian">jacobian</dfn>) <em>const</em>;</td></tr>
+<tr><th id="307">307</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres23ProductParameterization10GlobalSizeEv" title='ceres::ProductParameterization::GlobalSize' data-ref="_ZNK5ceres23ProductParameterization10GlobalSizeEv">GlobalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::ProductParameterization::global_size_" title='ceres::ProductParameterization::global_size_' data-ref="ceres::ProductParameterization::global_size_">global_size_</a>; }</td></tr>
+<tr><th id="308">308</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres23ProductParameterization9LocalSizeEv" title='ceres::ProductParameterization::LocalSize' data-ref="_ZNK5ceres23ProductParameterization9LocalSizeEv">LocalSize</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::ProductParameterization::local_size_" title='ceres::ProductParameterization::local_size_' data-ref="ceres::ProductParameterization::local_size_">local_size_</a>; }</td></tr>
+<tr><th id="309">309</th><td></td></tr>
+<tr><th id="310">310</th><td> <b>private</b>:</td></tr>
+<tr><th id="311">311</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres23ProductParameterization4InitEv" title='ceres::ProductParameterization::Init' data-ref="_ZN5ceres23ProductParameterization4InitEv">Init</dfn>();</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="#ceres::LocalParameterization" title='ceres::LocalParameterization' data-ref="ceres::LocalParameterization">LocalParameterization</a>*&gt; <dfn class="decl" id="ceres::ProductParameterization::local_params_" title='ceres::ProductParameterization::local_params_' data-ref="ceres::ProductParameterization::local_params_">local_params_</dfn>;</td></tr>
+<tr><th id="314">314</th><td>  <em>int</em> <dfn class="decl" id="ceres::ProductParameterization::local_size_" title='ceres::ProductParameterization::local_size_' data-ref="ceres::ProductParameterization::local_size_">local_size_</dfn>;</td></tr>
+<tr><th id="315">315</th><td>  <em>int</em> <dfn class="decl" id="ceres::ProductParameterization::global_size_" title='ceres::ProductParameterization::global_size_' data-ref="ceres::ProductParameterization::global_size_">global_size_</dfn>;</td></tr>
+<tr><th id="316">316</th><td>  <em>int</em> <dfn class="decl" id="ceres::ProductParameterization::buffer_size_" title='ceres::ProductParameterization::buffer_size_' data-ref="ceres::ProductParameterization::buffer_size_">buffer_size_</dfn>;</td></tr>
+<tr><th id="317">317</th><td>};</td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="320">320</th><td></td></tr>
+<tr><th id="321">321</th><td><u>#include <a href="internal/reenable_warnings.h.html">"ceres/internal/reenable_warnings.h"</a></u></td></tr>
+<tr><th id="322">322</th><td></td></tr>
+<tr><th id="323">323</th><td><u>#<span data-ppcond="32">endif</span>  // CERES_PUBLIC_LOCAL_PARAMETERIZATION_H_</u></td></tr>
+<tr><th id="324">324</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/bundle_adjuster.cc.html'>ceres-solver/examples/bundle_adjuster.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

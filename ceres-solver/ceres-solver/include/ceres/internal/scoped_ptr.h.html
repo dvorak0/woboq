@@ -1,0 +1,329 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>scoped_ptr.h source code [ceres-solver/include/ceres/internal/scoped_ptr.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::ScopedPtrMallocFree,ceres::internal::scoped_array,ceres::internal::scoped_ptr "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/include/ceres/internal/scoped_ptr.h'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>ceres-solver</a>/<a href='../..'>include</a>/<a href='..'>ceres</a>/<a href='./'>internal</a>/<a href='scoped_ptr.h.html'>scoped_ptr.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: jorg@google.com (Jorg Brown)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// This is an implementation designed to match the anticipated future TR2</i></td></tr>
+<tr><th id="32">32</th><td><i>// implementation of the scoped_ptr class, and its closely-related brethren,</i></td></tr>
+<tr><th id="33">33</th><td><i>// scoped_array, scoped_ptr_malloc, and make_scoped_ptr.</i></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><u>#<span data-ppcond="35">ifndef</span> <span class="macro" data-ref="_M/CERES_PUBLIC_INTERNAL_SCOPED_PTR_H_">CERES_PUBLIC_INTERNAL_SCOPED_PTR_H_</span></u></td></tr>
+<tr><th id="36">36</th><td><u>#define <dfn class="macro" id="_M/CERES_PUBLIC_INTERNAL_SCOPED_PTR_H_" data-ref="_M/CERES_PUBLIC_INTERNAL_SCOPED_PTR_H_">CERES_PUBLIC_INTERNAL_SCOPED_PTR_H_</dfn></u></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../../../../include/assert.h.html">&lt;assert.h&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../../../include/stdlib.h.html">&lt;stdlib.h&gt;</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../../../../include/c++/4.8/cstddef.html">&lt;cstddef&gt;</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="../../../../include/c++/4.8/algorithm.html">&lt;algorithm&gt;</a></u></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="44">44</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><b>template</b> &lt;<b>class</b> C&gt; <b>class</b> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>;</td></tr>
+<tr><th id="47">47</th><td><b>template</b> &lt;<b>class</b> C, <b>class</b> Free&gt; <b>class</b> <dfn class="type" id="ceres::internal::scoped_ptr_malloc" title='ceres::internal::scoped_ptr_malloc' data-ref="ceres::internal::scoped_ptr_malloc">scoped_ptr_malloc</dfn>;</td></tr>
+<tr><th id="48">48</th><td><b>template</b> &lt;<b>class</b> C&gt; <b>class</b> <a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>;</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="51">51</th><td><a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt; <a class="decl" href="#_ZN5ceres8internal15make_scoped_ptrEPT_" title='ceres::internal::make_scoped_ptr' data-ref="_ZN5ceres8internal15make_scoped_ptrEPT_">make_scoped_ptr</a>(C *);</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td><i>// A scoped_ptr&lt;T&gt; is like a T*, except that the destructor of</i></td></tr>
+<tr><th id="54">54</th><td><i>// scoped_ptr&lt;T&gt; automatically deletes the pointer it holds (if</i></td></tr>
+<tr><th id="55">55</th><td><i>// any). That is, scoped_ptr&lt;T&gt; owns the T object that it points</i></td></tr>
+<tr><th id="56">56</th><td><i>// to. Like a T*, a scoped_ptr&lt;T&gt; may hold either NULL or a pointer to</i></td></tr>
+<tr><th id="57">57</th><td><i>// a T object. Also like T*, scoped_ptr&lt;T&gt; is thread-compatible, and</i></td></tr>
+<tr><th id="58">58</th><td><i>// once you dereference it, you get the threadsafety guarantees of T.</i></td></tr>
+<tr><th id="59">59</th><td><i>//</i></td></tr>
+<tr><th id="60">60</th><td><i>// The size of a scoped_ptr is small: sizeof(scoped_ptr&lt;C&gt;) == sizeof(C*)</i></td></tr>
+<tr><th id="61">61</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="62">62</th><td><b>class</b> <dfn class="type def" id="ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</dfn> {</td></tr>
+<tr><th id="63">63</th><td> <b>public</b>:</td></tr>
+<tr><th id="64">64</th><td>  <i>// The element type</i></td></tr>
+<tr><th id="65">65</th><td>  <b>typedef</b> C <dfn class="typedef" id="ceres::internal::scoped_ptr::element_type" title='ceres::internal::scoped_ptr::element_type' data-type='C' data-ref="ceres::internal::scoped_ptr::element_type">element_type</dfn>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>  <i>// Constructor.  Defaults to intializing with NULL.</i></td></tr>
+<tr><th id="68">68</th><td><i>  // There is no way to create an uninitialized scoped_ptr.</i></td></tr>
+<tr><th id="69">69</th><td><i>  // The input parameter must be allocated with new.</i></td></tr>
+<tr><th id="70">70</th><td>  <b>explicit</b> <dfn class="decl def" id="_ZN5ceres8internal10scoped_ptrC1EPT_" title='ceres::internal::scoped_ptr::scoped_ptr&lt;C&gt;' data-ref="_ZN5ceres8internal10scoped_ptrC1EPT_">scoped_ptr</dfn>(C* <dfn class="local col0 decl" id="500p" title='p' data-type='C *' data-ref="500p">p</dfn> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) : <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>(<a class="local col0 ref" href="#500p" title='p' data-ref="500p">p</a>) { }</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i>// Destructor.  If there is a C object, delete it.</i></td></tr>
+<tr><th id="73">73</th><td><i>  // We don't need to test ptr_ == NULL because C++ does that for us.</i></td></tr>
+<tr><th id="74">74</th><td>  <dfn class="decl def" id="_ZN5ceres8internal10scoped_ptrD1Ev" title='ceres::internal::scoped_ptr::~scoped_ptr&lt;C&gt;' data-ref="_ZN5ceres8internal10scoped_ptrD1Ev">~</dfn>scoped_ptr() {</td></tr>
+<tr><th id="75">75</th><td>    <b>enum</b> { <dfn class="local col1 enum" id="501type_must_be_complete" title='type_must_be_complete' data-type='0' data-ref="501type_must_be_complete">type_must_be_complete</dfn> = <b>sizeof</b>(C) };</td></tr>
+<tr><th id="76">76</th><td>    <b>delete</b> <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>;</td></tr>
+<tr><th id="77">77</th><td>  }</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>  <i>// Reset.  Deletes the current owned object, if any.</i></td></tr>
+<tr><th id="80">80</th><td><i>  // Then takes ownership of a new object, if given.</i></td></tr>
+<tr><th id="81">81</th><td><i>  // this-&gt;reset(this-&gt;get()) works.</i></td></tr>
+<tr><th id="82">82</th><td>  <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal10scoped_ptr5resetEPT_" title='ceres::internal::scoped_ptr::reset' data-ref="_ZN5ceres8internal10scoped_ptr5resetEPT_">reset</dfn>(C* <dfn class="local col2 decl" id="502p" title='p' data-type='C *' data-ref="502p">p</dfn> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="83">83</th><td>    <b>if</b> (<a class="local col2 ref" href="#502p" title='p' data-ref="502p">p</a> != <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>) {</td></tr>
+<tr><th id="84">84</th><td>      <b>enum</b> { <dfn class="local col3 enum" id="503type_must_be_complete" title='type_must_be_complete' data-type='0' data-ref="503type_must_be_complete">type_must_be_complete</dfn> = <b>sizeof</b>(C) };</td></tr>
+<tr><th id="85">85</th><td>      <b>delete</b> <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>;</td></tr>
+<tr><th id="86">86</th><td>      <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a> = <a class="local col2 ref" href="#502p" title='p' data-ref="502p">p</a>;</td></tr>
+<tr><th id="87">87</th><td>    }</td></tr>
+<tr><th id="88">88</th><td>  }</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>  <i>// Accessors to get the owned object.</i></td></tr>
+<tr><th id="91">91</th><td><i>  // operator* and operator-&gt; will assert() if there is no current object.</i></td></tr>
+<tr><th id="92">92</th><td>  C&amp; <dfn class="decl def" id="_ZNK5ceres8internal10scoped_ptrdeEv" title='ceres::internal::scoped_ptr::operator*' data-ref="_ZNK5ceres8internal10scoped_ptrdeEv"><b>operator</b>*</dfn>() <em>const</em> {</td></tr>
+<tr><th id="93">93</th><td>    <a class="macro" href="../../../../include/assert.h.html#50" title="(static_cast&lt;void&gt; (0))" data-ref="_M/assert">assert</a>(ptr_ != NULL);</td></tr>
+<tr><th id="94">94</th><td>    <b>return</b> *<a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>;</td></tr>
+<tr><th id="95">95</th><td>  }</td></tr>
+<tr><th id="96">96</th><td>  C* <dfn class="decl def" id="_ZNK5ceres8internal10scoped_ptrptEv" title='ceres::internal::scoped_ptr::operator-&gt;' data-ref="_ZNK5ceres8internal10scoped_ptrptEv"><b>operator</b>-&gt;</dfn>() <em>const</em>  {</td></tr>
+<tr><th id="97">97</th><td>    <a class="macro" href="../../../../include/assert.h.html#50" title="(static_cast&lt;void&gt; (0))" data-ref="_M/assert">assert</a>(ptr_ != NULL);</td></tr>
+<tr><th id="98">98</th><td>    <b>return</b> <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>;</td></tr>
+<tr><th id="99">99</th><td>  }</td></tr>
+<tr><th id="100">100</th><td>  C* <dfn class="decl def" id="_ZNK5ceres8internal10scoped_ptr3getEv" title='ceres::internal::scoped_ptr::get' data-ref="_ZNK5ceres8internal10scoped_ptr3getEv">get</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>; }</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>  <i>// Comparison operators.</i></td></tr>
+<tr><th id="103">103</th><td><i>  // These return whether a scoped_ptr and a raw pointer refer to</i></td></tr>
+<tr><th id="104">104</th><td><i>  // the same object, not just to two different but equal objects.</i></td></tr>
+<tr><th id="105">105</th><td>  <em>bool</em> <dfn class="decl def" id="_ZNK5ceres8internal10scoped_ptreqEPKT_" title='ceres::internal::scoped_ptr::operator==' data-ref="_ZNK5ceres8internal10scoped_ptreqEPKT_"><b>operator</b>==</dfn>(<em>const</em> C* <dfn class="local col4 decl" id="504p" title='p' data-type='const C *' data-ref="504p">p</dfn>) <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a> == <a class="local col4 ref" href="#504p" title='p' data-ref="504p">p</a>; }</td></tr>
+<tr><th id="106">106</th><td>  <em>bool</em> <dfn class="decl def" id="_ZNK5ceres8internal10scoped_ptrneEPKT_" title='ceres::internal::scoped_ptr::operator!=' data-ref="_ZNK5ceres8internal10scoped_ptrneEPKT_"><b>operator</b>!=</dfn>(<em>const</em> C* <dfn class="local col5 decl" id="505p" title='p' data-type='const C *' data-ref="505p">p</dfn>) <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a> != <a class="local col5 ref" href="#505p" title='p' data-ref="505p">p</a>; }</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td>  <i>// Swap two scoped pointers.</i></td></tr>
+<tr><th id="109">109</th><td>  <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal10scoped_ptr4swapERNS0_10scoped_ptrIT_EE" title='ceres::internal::scoped_ptr::swap' data-ref="_ZN5ceres8internal10scoped_ptr4swapERNS0_10scoped_ptrIT_EE">swap</dfn>(scoped_ptr&amp; <dfn class="local col6 decl" id="506p2" title='p2' data-type='scoped_ptr&lt;C&gt; &amp;' data-ref="506p2">p2</dfn>) {</td></tr>
+<tr><th id="110">110</th><td>    C* <dfn class="local col7 decl" id="507tmp" title='tmp' data-type='C *' data-ref="507tmp">tmp</dfn> = <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>;</td></tr>
+<tr><th id="111">111</th><td>    <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a> = <a class="local col6 ref" href="#506p2" title='p2' data-ref="506p2">p2</a>.ptr_;</td></tr>
+<tr><th id="112">112</th><td>    <a class="local col6 ref" href="#506p2" title='p2' data-ref="506p2">p2</a>.ptr_ = <a class="local col7 ref" href="#507tmp" title='tmp' data-ref="507tmp">tmp</a>;</td></tr>
+<tr><th id="113">113</th><td>  }</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>  <i>// Release a pointer.</i></td></tr>
+<tr><th id="116">116</th><td><i>  // The return value is the current pointer held by this object.</i></td></tr>
+<tr><th id="117">117</th><td><i>  // If this object holds a NULL pointer, the return value is NULL.</i></td></tr>
+<tr><th id="118">118</th><td><i>  // After this operation, this object will hold a NULL pointer,</i></td></tr>
+<tr><th id="119">119</th><td><i>  // and will not own the object any more.</i></td></tr>
+<tr><th id="120">120</th><td>  C* <dfn class="decl def" id="_ZN5ceres8internal10scoped_ptr7releaseEv" title='ceres::internal::scoped_ptr::release' data-ref="_ZN5ceres8internal10scoped_ptr7releaseEv">release</dfn>() {</td></tr>
+<tr><th id="121">121</th><td>    C* <dfn class="local col8 decl" id="508retVal" title='retVal' data-type='C *' data-ref="508retVal">retVal</dfn> = <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a>;</td></tr>
+<tr><th id="122">122</th><td>    <a class="member" href="#ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</a> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="123">123</th><td>    <b>return</b> <a class="local col8 ref" href="#508retVal" title='retVal' data-ref="508retVal">retVal</a>;</td></tr>
+<tr><th id="124">124</th><td>  }</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td> <b>private</b>:</td></tr>
+<tr><th id="127">127</th><td>  C* <dfn class="decl" id="ceres::internal::scoped_ptr::ptr_" title='ceres::internal::scoped_ptr::ptr_' data-ref="ceres::internal::scoped_ptr::ptr_">ptr_</dfn>;</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>  <i>// google3 friend class that can access copy ctor (although if it actually</i></td></tr>
+<tr><th id="130">130</th><td><i>  // calls a copy ctor, there will be a problem) see below</i></td></tr>
+<tr><th id="131">131</th><td>  <b>friend</b> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt; <dfn class="decl" id="_ZN5ceres8internal15make_scoped_ptrEPT_" title='ceres::internal::make_scoped_ptr' data-ref="_ZN5ceres8internal15make_scoped_ptrEPT_">make_scoped_ptr</dfn>&lt;C&gt;(C *<dfn class="local col9 decl" id="509p" title='p' data-type='C *' data-ref="509p">p</dfn>);</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td>  <i>// Forbid comparison of scoped_ptr types.  If C2 != C, it totally doesn't</i></td></tr>
+<tr><th id="134">134</th><td><i>  // make sense, and if C2 == C, it still doesn't make sense because you should</i></td></tr>
+<tr><th id="135">135</th><td><i>  // never have the same object owned by two different scoped_ptrs.</i></td></tr>
+<tr><th id="136">136</th><td>  <b>template</b> &lt;<b>class</b> C2&gt; <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal10scoped_ptreqERKNS0_10scoped_ptrIT_EE" title='ceres::internal::scoped_ptr::operator==' data-ref="_ZNK5ceres8internal10scoped_ptreqERKNS0_10scoped_ptrIT_EE"><b>operator</b>==</dfn>(<a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C2&gt; <em>const</em>&amp; <dfn class="local col0 decl" id="510p2" title='p2' data-type='const scoped_ptr&lt;C2&gt; &amp;' data-ref="510p2">p2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="137">137</th><td>  <b>template</b> &lt;<b>class</b> C2&gt; <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal10scoped_ptrneERKNS0_10scoped_ptrIT_EE" title='ceres::internal::scoped_ptr::operator!=' data-ref="_ZNK5ceres8internal10scoped_ptrneERKNS0_10scoped_ptrIT_EE"><b>operator</b>!=</dfn>(<a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C2&gt; <em>const</em>&amp; <dfn class="local col1 decl" id="511p2" title='p2' data-type='const scoped_ptr&lt;C2&gt; &amp;' data-ref="511p2">p2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>  <i>// Disallow evil constructors</i></td></tr>
+<tr><th id="140">140</th><td>  <dfn class="decl" id="_ZN5ceres8internal10scoped_ptrC1ERKNS0_10scoped_ptrIT_EE" title='ceres::internal::scoped_ptr::scoped_ptr&lt;C&gt;' data-ref="_ZN5ceres8internal10scoped_ptrC1ERKNS0_10scoped_ptrIT_EE">scoped_ptr</dfn>(<em>const</em> scoped_ptr&amp;);</td></tr>
+<tr><th id="141">141</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal10scoped_ptraSERKNS0_10scoped_ptrIT_EE" title='ceres::internal::scoped_ptr::operator=' data-ref="_ZN5ceres8internal10scoped_ptraSERKNS0_10scoped_ptrIT_EE"><b>operator</b>=</dfn>(<em>const</em> scoped_ptr&amp;);</td></tr>
+<tr><th id="142">142</th><td>};</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><i>// Free functions</i></td></tr>
+<tr><th id="145">145</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="146">146</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal4swapERNS0_10scoped_ptrIT_EES4_" title='ceres::internal::swap' data-ref="_ZN5ceres8internal4swapERNS0_10scoped_ptrIT_EES4_">swap</dfn>(<a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt;&amp; <dfn class="local col2 decl" id="512p1" title='p1' data-type='scoped_ptr&lt;C&gt; &amp;' data-ref="512p1">p1</dfn>, <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt;&amp; <dfn class="local col3 decl" id="513p2" title='p2' data-type='scoped_ptr&lt;C&gt; &amp;' data-ref="513p2">p2</dfn>) {</td></tr>
+<tr><th id="147">147</th><td>  <a class="local col2 ref" href="#512p1" title='p1' data-ref="512p1">p1</a>.swap(<a class="local col3 ref" href="#513p2" title='p2' data-ref="513p2">p2</a>);</td></tr>
+<tr><th id="148">148</th><td>}</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="151">151</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internaleqEPKT_RKNS0_10scoped_ptrIS1_EE" title='ceres::internal::operator==' data-ref="_ZN5ceres8internaleqEPKT_RKNS0_10scoped_ptrIS1_EE"><b>operator</b>==</dfn>(<em>const</em> C* <dfn class="local col4 decl" id="514p1" title='p1' data-type='const C *' data-ref="514p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt;&amp; <dfn class="local col5 decl" id="515p2" title='p2' data-type='const scoped_ptr&lt;C&gt; &amp;' data-ref="515p2">p2</dfn>) {</td></tr>
+<tr><th id="152">152</th><td>  <b>return</b> <a class="local col4 ref" href="#514p1" title='p1' data-ref="514p1">p1</a> == <a class="local col5 ref" href="#515p2" title='p2' data-ref="515p2">p2</a>.get();</td></tr>
+<tr><th id="153">153</th><td>}</td></tr>
+<tr><th id="154">154</th><td></td></tr>
+<tr><th id="155">155</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="156">156</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internaleqEPKT_RKNS0_10scoped_ptrIS2_EE" title='ceres::internal::operator==' data-ref="_ZN5ceres8internaleqEPKT_RKNS0_10scoped_ptrIS2_EE"><b>operator</b>==</dfn>(<em>const</em> C* <dfn class="local col6 decl" id="516p1" title='p1' data-type='const C *' data-ref="516p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;<em>const</em> C&gt;&amp; <dfn class="local col7 decl" id="517p2" title='p2' data-type='const scoped_ptr&lt;const C&gt; &amp;' data-ref="517p2">p2</dfn>) {</td></tr>
+<tr><th id="157">157</th><td>  <b>return</b> <a class="local col6 ref" href="#516p1" title='p1' data-ref="516p1">p1</a> == <a class="local col7 ref" href="#517p2" title='p2' data-ref="517p2">p2</a>.get();</td></tr>
+<tr><th id="158">158</th><td>}</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="161">161</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internalneEPKT_RKNS0_10scoped_ptrIS1_EE" title='ceres::internal::operator!=' data-ref="_ZN5ceres8internalneEPKT_RKNS0_10scoped_ptrIS1_EE"><b>operator</b>!=</dfn>(<em>const</em> C* <dfn class="local col8 decl" id="518p1" title='p1' data-type='const C *' data-ref="518p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt;&amp; <dfn class="local col9 decl" id="519p2" title='p2' data-type='const scoped_ptr&lt;C&gt; &amp;' data-ref="519p2">p2</dfn>) {</td></tr>
+<tr><th id="162">162</th><td>  <b>return</b> <a class="local col8 ref" href="#518p1" title='p1' data-ref="518p1">p1</a> != <a class="local col9 ref" href="#519p2" title='p2' data-ref="519p2">p2</a>.get();</td></tr>
+<tr><th id="163">163</th><td>}</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="166">166</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internalneEPKT_RKNS0_10scoped_ptrIS2_EE" title='ceres::internal::operator!=' data-ref="_ZN5ceres8internalneEPKT_RKNS0_10scoped_ptrIS2_EE"><b>operator</b>!=</dfn>(<em>const</em> C* <dfn class="local col0 decl" id="520p1" title='p1' data-type='const C *' data-ref="520p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;<em>const</em> C&gt;&amp; <dfn class="local col1 decl" id="521p2" title='p2' data-type='const scoped_ptr&lt;const C&gt; &amp;' data-ref="521p2">p2</dfn>) {</td></tr>
+<tr><th id="167">167</th><td>  <b>return</b> <a class="local col0 ref" href="#520p1" title='p1' data-ref="520p1">p1</a> != <a class="local col1 ref" href="#521p2" title='p2' data-ref="521p2">p2</a>.get();</td></tr>
+<tr><th id="168">168</th><td>}</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="171">171</th><td><a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt; <dfn class="decl def" id="_ZN5ceres8internal15make_scoped_ptrEPT_" title='ceres::internal::make_scoped_ptr' data-ref="_ZN5ceres8internal15make_scoped_ptrEPT_">make_scoped_ptr</dfn>(C *<dfn class="local col2 decl" id="522p" title='p' data-type='C *' data-ref="522p">p</dfn>) {</td></tr>
+<tr><th id="172">172</th><td>  <i>// This does nothing but to return a scoped_ptr of the type that the passed</i></td></tr>
+<tr><th id="173">173</th><td><i>  // pointer is of.  (This eliminates the need to specify the name of T when</i></td></tr>
+<tr><th id="174">174</th><td><i>  // making a scoped_ptr that is used anonymously/temporarily.)  From an</i></td></tr>
+<tr><th id="175">175</th><td><i>  // access control point of view, we construct an unnamed scoped_ptr here</i></td></tr>
+<tr><th id="176">176</th><td><i>  // which we return and thus copy-construct.  Hence, we need to have access</i></td></tr>
+<tr><th id="177">177</th><td><i>  // to scoped_ptr::scoped_ptr(scoped_ptr const &amp;).  However, it is guaranteed</i></td></tr>
+<tr><th id="178">178</th><td><i>  // that we never actually call the copy constructor, which is a good thing</i></td></tr>
+<tr><th id="179">179</th><td><i>  // as we would call the temporary's object destructor (and thus delete p)</i></td></tr>
+<tr><th id="180">180</th><td><i>  // if we actually did copy some object, here.</i></td></tr>
+<tr><th id="181">181</th><td>  <b>return</b> <a class="type" href="#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;C&gt;(<a class="local col2 ref" href="#522p" title='p' data-ref="522p">p</a>);</td></tr>
+<tr><th id="182">182</th><td>}</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td><i>// scoped_array&lt;C&gt; is like scoped_ptr&lt;C&gt;, except that the caller must allocate</i></td></tr>
+<tr><th id="185">185</th><td><i>// with new [] and the destructor deletes objects with delete [].</i></td></tr>
+<tr><th id="186">186</th><td><i>//</i></td></tr>
+<tr><th id="187">187</th><td><i>// As with scoped_ptr&lt;C&gt;, a scoped_array&lt;C&gt; either points to an object</i></td></tr>
+<tr><th id="188">188</th><td><i>// or is NULL.  A scoped_array&lt;C&gt; owns the object that it points to.</i></td></tr>
+<tr><th id="189">189</th><td><i>// scoped_array&lt;T&gt; is thread-compatible, and once you index into it,</i></td></tr>
+<tr><th id="190">190</th><td><i>// the returned objects have only the threadsafety guarantees of T.</i></td></tr>
+<tr><th id="191">191</th><td><i>//</i></td></tr>
+<tr><th id="192">192</th><td><i>// Size: sizeof(scoped_array&lt;C&gt;) == sizeof(C*)</i></td></tr>
+<tr><th id="193">193</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="194">194</th><td><b>class</b> <dfn class="type def" id="ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</dfn> {</td></tr>
+<tr><th id="195">195</th><td> <b>public</b>:</td></tr>
+<tr><th id="196">196</th><td>  <i>// The element type</i></td></tr>
+<tr><th id="197">197</th><td>  <b>typedef</b> C <dfn class="typedef" id="ceres::internal::scoped_array::element_type" title='ceres::internal::scoped_array::element_type' data-type='C' data-ref="ceres::internal::scoped_array::element_type">element_type</dfn>;</td></tr>
+<tr><th id="198">198</th><td></td></tr>
+<tr><th id="199">199</th><td>  <i>// Constructor.  Defaults to intializing with NULL.</i></td></tr>
+<tr><th id="200">200</th><td><i>  // There is no way to create an uninitialized scoped_array.</i></td></tr>
+<tr><th id="201">201</th><td><i>  // The input parameter must be allocated with new [].</i></td></tr>
+<tr><th id="202">202</th><td>  <b>explicit</b> <dfn class="decl def" id="_ZN5ceres8internal12scoped_arrayC1EPT_" title='ceres::internal::scoped_array::scoped_array&lt;C&gt;' data-ref="_ZN5ceres8internal12scoped_arrayC1EPT_">scoped_array</dfn>(C* <dfn class="local col3 decl" id="523p" title='p' data-type='C *' data-ref="523p">p</dfn> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) : <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>(<a class="local col3 ref" href="#523p" title='p' data-ref="523p">p</a>) { }</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>  <i>// Destructor.  If there is a C object, delete it.</i></td></tr>
+<tr><th id="205">205</th><td><i>  // We don't need to test ptr_ == NULL because C++ does that for us.</i></td></tr>
+<tr><th id="206">206</th><td>  <dfn class="decl def" id="_ZN5ceres8internal12scoped_arrayD1Ev" title='ceres::internal::scoped_array::~scoped_array&lt;C&gt;' data-ref="_ZN5ceres8internal12scoped_arrayD1Ev">~</dfn>scoped_array() {</td></tr>
+<tr><th id="207">207</th><td>    <b>enum</b> { <dfn class="local col4 enum" id="524type_must_be_complete" title='type_must_be_complete' data-type='0' data-ref="524type_must_be_complete">type_must_be_complete</dfn> = <b>sizeof</b>(C) };</td></tr>
+<tr><th id="208">208</th><td>    <b>delete</b>[] <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>;</td></tr>
+<tr><th id="209">209</th><td>  }</td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td>  <i>// Reset. Deletes the current owned object, if any.</i></td></tr>
+<tr><th id="212">212</th><td><i>  // Then takes ownership of a new object, if given.</i></td></tr>
+<tr><th id="213">213</th><td><i>  // this-&gt;reset(this-&gt;get()) works.</i></td></tr>
+<tr><th id="214">214</th><td>  <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal12scoped_array5resetEPT_" title='ceres::internal::scoped_array::reset' data-ref="_ZN5ceres8internal12scoped_array5resetEPT_">reset</dfn>(C* <dfn class="local col5 decl" id="525p" title='p' data-type='C *' data-ref="525p">p</dfn> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="215">215</th><td>    <b>if</b> (<a class="local col5 ref" href="#525p" title='p' data-ref="525p">p</a> != <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>) {</td></tr>
+<tr><th id="216">216</th><td>      <b>enum</b> { <dfn class="local col6 enum" id="526type_must_be_complete" title='type_must_be_complete' data-type='0' data-ref="526type_must_be_complete">type_must_be_complete</dfn> = <b>sizeof</b>(C) };</td></tr>
+<tr><th id="217">217</th><td>      <b>delete</b>[] <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>;</td></tr>
+<tr><th id="218">218</th><td>      <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a> = <a class="local col5 ref" href="#525p" title='p' data-ref="525p">p</a>;</td></tr>
+<tr><th id="219">219</th><td>    }</td></tr>
+<tr><th id="220">220</th><td>  }</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>  <i>// Get one element of the current object.</i></td></tr>
+<tr><th id="223">223</th><td><i>  // Will assert() if there is no current object, or index i is negative.</i></td></tr>
+<tr><th id="224">224</th><td>  C&amp; <dfn class="decl def" id="_ZNK5ceres8internal12scoped_arrayixEl" title='ceres::internal::scoped_array::operator[]' data-ref="_ZNK5ceres8internal12scoped_arrayixEl"><b>operator</b>[]</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a> <dfn class="local col7 decl" id="527i" title='i' data-type='std::ptrdiff_t' data-ref="527i">i</dfn>) <em>const</em> {</td></tr>
+<tr><th id="225">225</th><td>    <a class="macro" href="../../../../include/assert.h.html#50" title="(static_cast&lt;void&gt; (0))" data-ref="_M/assert">assert</a>(i &gt;= <var>0</var>);</td></tr>
+<tr><th id="226">226</th><td>    <a class="macro" href="../../../../include/assert.h.html#50" title="(static_cast&lt;void&gt; (0))" data-ref="_M/assert">assert</a>(array_ != NULL);</td></tr>
+<tr><th id="227">227</th><td>    <b>return</b> <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>[<a class="local col7 ref" href="#527i" title='i' data-ref="527i">i</a>];</td></tr>
+<tr><th id="228">228</th><td>  }</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>  <i>// Get a pointer to the zeroth element of the current object.</i></td></tr>
+<tr><th id="231">231</th><td><i>  // If there is no current object, return NULL.</i></td></tr>
+<tr><th id="232">232</th><td>  C* <dfn class="decl def" id="_ZNK5ceres8internal12scoped_array3getEv" title='ceres::internal::scoped_array::get' data-ref="_ZNK5ceres8internal12scoped_array3getEv">get</dfn>() <em>const</em> {</td></tr>
+<tr><th id="233">233</th><td>    <b>return</b> <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>;</td></tr>
+<tr><th id="234">234</th><td>  }</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>  <i>// Comparison operators.</i></td></tr>
+<tr><th id="237">237</th><td><i>  // These return whether a scoped_array and a raw pointer refer to</i></td></tr>
+<tr><th id="238">238</th><td><i>  // the same array, not just to two different but equal arrays.</i></td></tr>
+<tr><th id="239">239</th><td>  <em>bool</em> <dfn class="decl def" id="_ZNK5ceres8internal12scoped_arrayeqEPKT_" title='ceres::internal::scoped_array::operator==' data-ref="_ZNK5ceres8internal12scoped_arrayeqEPKT_"><b>operator</b>==</dfn>(<em>const</em> C* <dfn class="local col8 decl" id="528p" title='p' data-type='const C *' data-ref="528p">p</dfn>) <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a> == <a class="local col8 ref" href="#528p" title='p' data-ref="528p">p</a>; }</td></tr>
+<tr><th id="240">240</th><td>  <em>bool</em> <dfn class="decl def" id="_ZNK5ceres8internal12scoped_arrayneEPKT_" title='ceres::internal::scoped_array::operator!=' data-ref="_ZNK5ceres8internal12scoped_arrayneEPKT_"><b>operator</b>!=</dfn>(<em>const</em> C* <dfn class="local col9 decl" id="529p" title='p' data-type='const C *' data-ref="529p">p</dfn>) <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a> != <a class="local col9 ref" href="#529p" title='p' data-ref="529p">p</a>; }</td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td>  <i>// Swap two scoped arrays.</i></td></tr>
+<tr><th id="243">243</th><td>  <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal12scoped_array4swapERNS0_12scoped_arrayIT_EE" title='ceres::internal::scoped_array::swap' data-ref="_ZN5ceres8internal12scoped_array4swapERNS0_12scoped_arrayIT_EE">swap</dfn>(scoped_array&amp; <dfn class="local col0 decl" id="530p2" title='p2' data-type='scoped_array&lt;C&gt; &amp;' data-ref="530p2">p2</dfn>) {</td></tr>
+<tr><th id="244">244</th><td>    C* <dfn class="local col1 decl" id="531tmp" title='tmp' data-type='C *' data-ref="531tmp">tmp</dfn> = <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>;</td></tr>
+<tr><th id="245">245</th><td>    <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a> = <a class="local col0 ref" href="#530p2" title='p2' data-ref="530p2">p2</a>.array_;</td></tr>
+<tr><th id="246">246</th><td>    <a class="local col0 ref" href="#530p2" title='p2' data-ref="530p2">p2</a>.array_ = <a class="local col1 ref" href="#531tmp" title='tmp' data-ref="531tmp">tmp</a>;</td></tr>
+<tr><th id="247">247</th><td>  }</td></tr>
+<tr><th id="248">248</th><td></td></tr>
+<tr><th id="249">249</th><td>  <i>// Release an array.</i></td></tr>
+<tr><th id="250">250</th><td><i>  // The return value is the current pointer held by this object.</i></td></tr>
+<tr><th id="251">251</th><td><i>  // If this object holds a NULL pointer, the return value is NULL.</i></td></tr>
+<tr><th id="252">252</th><td><i>  // After this operation, this object will hold a NULL pointer,</i></td></tr>
+<tr><th id="253">253</th><td><i>  // and will not own the object any more.</i></td></tr>
+<tr><th id="254">254</th><td>  C* <dfn class="decl def" id="_ZN5ceres8internal12scoped_array7releaseEv" title='ceres::internal::scoped_array::release' data-ref="_ZN5ceres8internal12scoped_array7releaseEv">release</dfn>() {</td></tr>
+<tr><th id="255">255</th><td>    C* <dfn class="local col2 decl" id="532retVal" title='retVal' data-type='C *' data-ref="532retVal">retVal</dfn> = <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a>;</td></tr>
+<tr><th id="256">256</th><td>    <a class="member" href="#ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</a> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="257">257</th><td>    <b>return</b> <a class="local col2 ref" href="#532retVal" title='retVal' data-ref="532retVal">retVal</a>;</td></tr>
+<tr><th id="258">258</th><td>  }</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td> <b>private</b>:</td></tr>
+<tr><th id="261">261</th><td>  C* <dfn class="decl" id="ceres::internal::scoped_array::array_" title='ceres::internal::scoped_array::array_' data-ref="ceres::internal::scoped_array::array_">array_</dfn>;</td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td>  <i>// Forbid comparison of different scoped_array types.</i></td></tr>
+<tr><th id="264">264</th><td>  <b>template</b> &lt;<b>class</b> C2&gt; <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal12scoped_arrayeqERKNS0_12scoped_arrayIT_EE" title='ceres::internal::scoped_array::operator==' data-ref="_ZNK5ceres8internal12scoped_arrayeqERKNS0_12scoped_arrayIT_EE"><b>operator</b>==</dfn>(<a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;C2&gt; <em>const</em>&amp; <dfn class="local col3 decl" id="533p2" title='p2' data-type='const scoped_array&lt;C2&gt; &amp;' data-ref="533p2">p2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="265">265</th><td>  <b>template</b> &lt;<b>class</b> C2&gt; <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal12scoped_arrayneERKNS0_12scoped_arrayIT_EE" title='ceres::internal::scoped_array::operator!=' data-ref="_ZNK5ceres8internal12scoped_arrayneERKNS0_12scoped_arrayIT_EE"><b>operator</b>!=</dfn>(<a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;C2&gt; <em>const</em>&amp; <dfn class="local col4 decl" id="534p2" title='p2' data-type='const scoped_array&lt;C2&gt; &amp;' data-ref="534p2">p2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="266">266</th><td></td></tr>
+<tr><th id="267">267</th><td>  <i>// Disallow evil constructors</i></td></tr>
+<tr><th id="268">268</th><td>  <dfn class="decl" id="_ZN5ceres8internal12scoped_arrayC1ERKNS0_12scoped_arrayIT_EE" title='ceres::internal::scoped_array::scoped_array&lt;C&gt;' data-ref="_ZN5ceres8internal12scoped_arrayC1ERKNS0_12scoped_arrayIT_EE">scoped_array</dfn>(<em>const</em> scoped_array&amp;);</td></tr>
+<tr><th id="269">269</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal12scoped_arrayaSERKNS0_12scoped_arrayIT_EE" title='ceres::internal::scoped_array::operator=' data-ref="_ZN5ceres8internal12scoped_arrayaSERKNS0_12scoped_arrayIT_EE"><b>operator</b>=</dfn>(<em>const</em> scoped_array&amp;);</td></tr>
+<tr><th id="270">270</th><td>};</td></tr>
+<tr><th id="271">271</th><td></td></tr>
+<tr><th id="272">272</th><td><i>// Free functions</i></td></tr>
+<tr><th id="273">273</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="274">274</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal4swapERNS0_12scoped_arrayIT_EES4_" title='ceres::internal::swap' data-ref="_ZN5ceres8internal4swapERNS0_12scoped_arrayIT_EES4_">swap</dfn>(<a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;C&gt;&amp; <dfn class="local col5 decl" id="535p1" title='p1' data-type='scoped_array&lt;C&gt; &amp;' data-ref="535p1">p1</dfn>, <a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;C&gt;&amp; <dfn class="local col6 decl" id="536p2" title='p2' data-type='scoped_array&lt;C&gt; &amp;' data-ref="536p2">p2</dfn>) {</td></tr>
+<tr><th id="275">275</th><td>  <a class="local col5 ref" href="#535p1" title='p1' data-ref="535p1">p1</a>.swap(<a class="local col6 ref" href="#536p2" title='p2' data-ref="536p2">p2</a>);</td></tr>
+<tr><th id="276">276</th><td>}</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="279">279</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internaleqEPKT_RKNS0_12scoped_arrayIS1_EE" title='ceres::internal::operator==' data-ref="_ZN5ceres8internaleqEPKT_RKNS0_12scoped_arrayIS1_EE"><b>operator</b>==</dfn>(<em>const</em> C* <dfn class="local col7 decl" id="537p1" title='p1' data-type='const C *' data-ref="537p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;C&gt;&amp; <dfn class="local col8 decl" id="538p2" title='p2' data-type='const scoped_array&lt;C&gt; &amp;' data-ref="538p2">p2</dfn>) {</td></tr>
+<tr><th id="280">280</th><td>  <b>return</b> <a class="local col7 ref" href="#537p1" title='p1' data-ref="537p1">p1</a> == <a class="local col8 ref" href="#538p2" title='p2' data-ref="538p2">p2</a>.get();</td></tr>
+<tr><th id="281">281</th><td>}</td></tr>
+<tr><th id="282">282</th><td></td></tr>
+<tr><th id="283">283</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="284">284</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internaleqEPKT_RKNS0_12scoped_arrayIS2_EE" title='ceres::internal::operator==' data-ref="_ZN5ceres8internaleqEPKT_RKNS0_12scoped_arrayIS2_EE"><b>operator</b>==</dfn>(<em>const</em> C* <dfn class="local col9 decl" id="539p1" title='p1' data-type='const C *' data-ref="539p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;<em>const</em> C&gt;&amp; <dfn class="local col0 decl" id="540p2" title='p2' data-type='const scoped_array&lt;const C&gt; &amp;' data-ref="540p2">p2</dfn>) {</td></tr>
+<tr><th id="285">285</th><td>  <b>return</b> <a class="local col9 ref" href="#539p1" title='p1' data-ref="539p1">p1</a> == <a class="local col0 ref" href="#540p2" title='p2' data-ref="540p2">p2</a>.get();</td></tr>
+<tr><th id="286">286</th><td>}</td></tr>
+<tr><th id="287">287</th><td></td></tr>
+<tr><th id="288">288</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="289">289</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internalneEPKT_RKNS0_12scoped_arrayIS1_EE" title='ceres::internal::operator!=' data-ref="_ZN5ceres8internalneEPKT_RKNS0_12scoped_arrayIS1_EE"><b>operator</b>!=</dfn>(<em>const</em> C* <dfn class="local col1 decl" id="541p1" title='p1' data-type='const C *' data-ref="541p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;C&gt;&amp; <dfn class="local col2 decl" id="542p2" title='p2' data-type='const scoped_array&lt;C&gt; &amp;' data-ref="542p2">p2</dfn>) {</td></tr>
+<tr><th id="290">290</th><td>  <b>return</b> <a class="local col1 ref" href="#541p1" title='p1' data-ref="541p1">p1</a> != <a class="local col2 ref" href="#542p2" title='p2' data-ref="542p2">p2</a>.get();</td></tr>
+<tr><th id="291">291</th><td>}</td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td><b>template</b> &lt;<b>class</b> C&gt;</td></tr>
+<tr><th id="294">294</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5ceres8internalneEPKT_RKNS0_12scoped_arrayIS2_EE" title='ceres::internal::operator!=' data-ref="_ZN5ceres8internalneEPKT_RKNS0_12scoped_arrayIS2_EE"><b>operator</b>!=</dfn>(<em>const</em> C* <dfn class="local col3 decl" id="543p1" title='p1' data-type='const C *' data-ref="543p1">p1</dfn>, <em>const</em> <a class="type" href="#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;<em>const</em> C&gt;&amp; <dfn class="local col4 decl" id="544p2" title='p2' data-type='const scoped_array&lt;const C&gt; &amp;' data-ref="544p2">p2</dfn>) {</td></tr>
+<tr><th id="295">295</th><td>  <b>return</b> <a class="local col3 ref" href="#543p1" title='p1' data-ref="543p1">p1</a> != <a class="local col4 ref" href="#544p2" title='p2' data-ref="544p2">p2</a>.get();</td></tr>
+<tr><th id="296">296</th><td>}</td></tr>
+<tr><th id="297">297</th><td></td></tr>
+<tr><th id="298">298</th><td><i>// This class wraps the c library function free() in a class that can be</i></td></tr>
+<tr><th id="299">299</th><td><i>// passed as a template argument to scoped_ptr_malloc below.</i></td></tr>
+<tr><th id="300">300</th><td><b>class</b> <dfn class="type def" id="ceres::internal::ScopedPtrMallocFree" title='ceres::internal::ScopedPtrMallocFree' data-ref="ceres::internal::ScopedPtrMallocFree">ScopedPtrMallocFree</dfn> {</td></tr>
+<tr><th id="301">301</th><td> <b>public</b>:</td></tr>
+<tr><th id="302">302</th><td>  <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZNK5ceres8internal19ScopedPtrMallocFreeclEPv" title='ceres::internal::ScopedPtrMallocFree::operator()' data-ref="_ZNK5ceres8internal19ScopedPtrMallocFreeclEPv"><b>operator</b>()</dfn>(<em>void</em>* <dfn class="local col5 decl" id="545x" title='x' data-type='void *' data-ref="545x">x</dfn>) <em>const</em> {</td></tr>
+<tr><th id="303">303</th><td>    <a class="ref" href="../../../../include/stdlib.h.html#free" title='free' data-ref="free">free</a>(<a class="local col5 ref" href="#545x" title='x' data-ref="545x">x</a>);</td></tr>
+<tr><th id="304">304</th><td>  }</td></tr>
+<tr><th id="305">305</th><td>};</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="308">308</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="309">309</th><td></td></tr>
+<tr><th id="310">310</th><td><u>#<span data-ppcond="35">endif</span>  // CERES_PUBLIC_INTERNAL_SCOPED_PTR_H_</u></td></tr>
+<tr><th id="311">311</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../examples/bundle_adjuster.cc.html'>ceres-solver/examples/bundle_adjuster.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

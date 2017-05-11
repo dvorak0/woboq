@@ -1,0 +1,203 @@
+<def f='opencv/modules/core/include/opencv2/core/core.hpp' l='3449' ll='3700'/>
+<ovr f='opencv/modules/core/include/opencv2/core/core.hpp' l='3801' c='cv::SparseMat_'/>
+<size>16</size>
+<doc f='opencv/modules/core/include/opencv2/core/core.hpp' l='3364'>/*!
+ Sparse matrix class.
+
+ The class represents multi-dimensional sparse numerical arrays. Such a sparse array can store elements
+ of any type that cv::Mat is able to store. &quot;Sparse&quot; means that only non-zero elements
+ are stored (though, as a result of some operations on a sparse matrix, some of its stored elements
+ can actually become 0. It&apos;s user responsibility to detect such elements and delete them using cv::SparseMat::erase().
+ The non-zero elements are stored in a hash table that grows when it&apos;s filled enough,
+ so that the search time remains O(1) in average. Elements can be accessed using the following methods:
+
+ &lt;ol&gt;
+ &lt;li&gt;Query operations: cv::SparseMat::ptr() and the higher-level cv::SparseMat::ref(),
+      cv::SparseMat::value() and cv::SparseMat::find, for example:
+ \code
+ const int dims = 5;
+ int size[] = {10, 10, 10, 10, 10};
+ SparseMat sparse_mat(dims, size, CV_32F);
+ for(int i = 0; i &lt; 1000; i++)
+ {
+     int idx[dims];
+     for(int k = 0; k &lt; dims; k++)
+        idx[k] = rand()%sparse_mat.size(k);
+     sparse_mat.ref&lt;float&gt;(idx) += 1.f;
+ }
+ \endcode
+
+ &lt;li&gt;Sparse matrix iterators. Like cv::Mat iterators and unlike cv::Mat iterators, the sparse matrix iterators are STL-style,
+ that is, the iteration is done as following:
+ \code
+ // prints elements of a sparse floating-point matrix and the sum of elements.
+ SparseMatConstIterator_&lt;float&gt;
+        it = sparse_mat.begin&lt;float&gt;(),
+        it_end = sparse_mat.end&lt;float&gt;();
+ double s = 0;
+ int dims = sparse_mat.dims();
+ for(; it != it_end; ++it)
+ {
+     // print element indices and the element value
+     const Node* n = it.node();
+     printf(&quot;(&quot;)
+     for(int i = 0; i &lt; dims; i++)
+        printf(&quot;%3d%c&quot;, n-&gt;idx[i], i &lt; dims-1 ? &apos;,&apos; : &apos;)&apos;);
+     printf(&quot;: %f\n&quot;, *it);
+     s += *it;
+ }
+ printf(&quot;Element sum is %g\n&quot;, s);
+ \endcode
+ If you run this loop, you will notice that elements are enumerated
+ in no any logical order (lexicographical etc.),
+ they come in the same order as they stored in the hash table, i.e. semi-randomly.
+
+ You may collect pointers to the nodes and sort them to get the proper ordering.
+ Note, however, that pointers to the nodes may become invalid when you add more
+ elements to the matrix; this is because of possible buffer reallocation.
+
+ &lt;li&gt;A combination of the above 2 methods when you need to process 2 or more sparse
+ matrices simultaneously, e.g. this is how you can compute unnormalized
+ cross-correlation of the 2 floating-point sparse matrices:
+ \code
+ double crossCorr(const SparseMat&amp; a, const SparseMat&amp; b)
+ {
+     const SparseMat *_a = &amp;a, *_b = &amp;b;
+     // if b contains less elements than a,
+     // it&apos;s faster to iterate through b
+     if(_a-&gt;nzcount() &gt; _b-&gt;nzcount())
+        std::swap(_a, _b);
+     SparseMatConstIterator_&lt;float&gt; it = _a-&gt;begin&lt;float&gt;(),
+                                    it_end = _a-&gt;end&lt;float&gt;();
+     double ccorr = 0;
+     for(; it != it_end; ++it)
+     {
+         // take the next element from the first matrix
+         float avalue = *it;
+         const Node* anode = it.node();
+         // and try to find element with the same index in the second matrix.
+         // since the hash value depends only on the element index,
+         // we reuse hashvalue stored in the node
+         float bvalue = _b-&gt;value&lt;float&gt;(anode-&gt;idx,&amp;anode-&gt;hashval);
+         ccorr += avalue*bvalue;
+     }
+     return ccorr;
+ }
+ \endcode
+ &lt;/ol&gt;
+*/</doc>
+<fun r='_ZN2cv9SparseMatC1Ev'/>
+<fun r='_ZN2cv9SparseMatC1EiPKii'/>
+<fun r='_ZN2cv9SparseMatC1ERKS0_'/>
+<fun r='_ZN2cv9SparseMatC1ERKNS_3MatE'/>
+<fun r='_ZN2cv9SparseMatC1EPK11CvSparseMat'/>
+<fun r='_ZN2cv9SparseMatD1Ev'/>
+<fun r='_ZN2cv9SparseMataSERKS0_'/>
+<fun r='_ZN2cv9SparseMataSERKNS_3MatE'/>
+<fun r='_ZNK2cv9SparseMat5cloneEv'/>
+<fun r='_ZNK2cv9SparseMat6copyToERS0_'/>
+<fun r='_ZNK2cv9SparseMat6copyToERNS_3MatE'/>
+<fun r='_ZNK2cv9SparseMat9convertToERS0_id'/>
+<fun r='_ZNK2cv9SparseMat9convertToERNS_3MatEidd'/>
+<fun r='_ZNK2cv9SparseMat8assignToERS0_i'/>
+<fun r='_ZN2cv9SparseMat6createEiPKii'/>
+<fun r='_ZN2cv9SparseMat5clearEv'/>
+<fun r='_ZN2cv9SparseMat6addrefEv'/>
+<fun r='_ZN2cv9SparseMat7releaseEv'/>
+<fun r='_ZNK2cv9SparseMatcvP11CvSparseMatEv'/>
+<fun r='_ZNK2cv9SparseMat8elemSizeEv'/>
+<fun r='_ZNK2cv9SparseMat9elemSize1Ev'/>
+<fun r='_ZNK2cv9SparseMat4typeEv'/>
+<fun r='_ZNK2cv9SparseMat5depthEv'/>
+<fun r='_ZNK2cv9SparseMat8channelsEv'/>
+<fun r='_ZNK2cv9SparseMat4sizeEv'/>
+<fun r='_ZNK2cv9SparseMat4sizeEi'/>
+<fun r='_ZNK2cv9SparseMat4dimsEv'/>
+<fun r='_ZNK2cv9SparseMat7nzcountEv'/>
+<fun r='_ZNK2cv9SparseMat4hashEi'/>
+<fun r='_ZNK2cv9SparseMat4hashEii'/>
+<fun r='_ZNK2cv9SparseMat4hashEiii'/>
+<fun r='_ZNK2cv9SparseMat4hashEPKi'/>
+<fun r='_ZN2cv9SparseMat3ptrEibPm'/>
+<fun r='_ZN2cv9SparseMat3ptrEiibPm'/>
+<fun r='_ZN2cv9SparseMat3ptrEiiibPm'/>
+<fun r='_ZN2cv9SparseMat3ptrEPKibPm'/>
+<fun r='_ZN2cv9SparseMat3refEiPm'/>
+<fun r='_ZN2cv9SparseMat3refEiiPm'/>
+<fun r='_ZN2cv9SparseMat3refEiiiPm'/>
+<fun r='_ZN2cv9SparseMat3refEPKiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEiiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEiiiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEPKiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEiiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEiiiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEPKiPm'/>
+<fun r='_ZN2cv9SparseMat5eraseEiiPm'/>
+<fun r='_ZN2cv9SparseMat5eraseEiiiPm'/>
+<fun r='_ZN2cv9SparseMat5eraseEPKiPm'/>
+<fun r='_ZN2cv9SparseMat5beginEv'/>
+<fun r='_ZN2cv9SparseMat5beginEv'/>
+<fun r='_ZNK2cv9SparseMat5beginEv'/>
+<fun r='_ZNK2cv9SparseMat5beginEv'/>
+<fun r='_ZN2cv9SparseMat3endEv'/>
+<fun r='_ZNK2cv9SparseMat3endEv'/>
+<fun r='_ZN2cv9SparseMat3endEv'/>
+<fun r='_ZNK2cv9SparseMat3endEv'/>
+<fun r='_ZN2cv9SparseMat5valueEPNS0_4NodeE'/>
+<fun r='_ZNK2cv9SparseMat5valueEPKNS0_4NodeE'/>
+<fun r='_ZN2cv9SparseMat4nodeEm'/>
+<fun r='_ZNK2cv9SparseMat4nodeEm'/>
+<fun r='_ZN2cv9SparseMat7newNodeEPKim'/>
+<fun r='_ZN2cv9SparseMat10removeNodeEmmm'/>
+<fun r='_ZN2cv9SparseMat13resizeHashTabEm'/>
+<mbr r='cv::SparseMat::flags' o='0' t='int'/>
+<mbr r='cv::SparseMat::hdr' o='64' t='cv::SparseMat::Hdr *'/>
+<fun r='_ZN2cv9SparseMatC1Ev'/>
+<fun r='_ZN2cv9SparseMatC1EiPKii'/>
+<fun r='_ZN2cv9SparseMatC1ERKS0_'/>
+<fun r='_ZN2cv9SparseMatD1Ev'/>
+<fun r='_ZN2cv9SparseMataSERKS0_'/>
+<fun r='_ZN2cv9SparseMataSERKNS_3MatE'/>
+<fun r='_ZNK2cv9SparseMat5cloneEv'/>
+<fun r='_ZNK2cv9SparseMat8assignToERS0_i'/>
+<fun r='_ZN2cv9SparseMat6addrefEv'/>
+<fun r='_ZN2cv9SparseMat7releaseEv'/>
+<fun r='_ZNK2cv9SparseMat8elemSizeEv'/>
+<fun r='_ZNK2cv9SparseMat9elemSize1Ev'/>
+<fun r='_ZNK2cv9SparseMat4typeEv'/>
+<fun r='_ZNK2cv9SparseMat5depthEv'/>
+<fun r='_ZNK2cv9SparseMat8channelsEv'/>
+<fun r='_ZNK2cv9SparseMat4sizeEv'/>
+<fun r='_ZNK2cv9SparseMat4sizeEi'/>
+<fun r='_ZNK2cv9SparseMat4dimsEv'/>
+<fun r='_ZNK2cv9SparseMat7nzcountEv'/>
+<fun r='_ZNK2cv9SparseMat4hashEi'/>
+<fun r='_ZNK2cv9SparseMat4hashEii'/>
+<fun r='_ZNK2cv9SparseMat4hashEiii'/>
+<fun r='_ZNK2cv9SparseMat4hashEPKi'/>
+<fun r='_ZN2cv9SparseMat3refEiPm'/>
+<fun r='_ZN2cv9SparseMat3refEiiPm'/>
+<fun r='_ZN2cv9SparseMat3refEiiiPm'/>
+<fun r='_ZN2cv9SparseMat3refEPKiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEiiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEiiiPm'/>
+<fun r='_ZNK2cv9SparseMat5valueEPKiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEiiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEiiiPm'/>
+<fun r='_ZNK2cv9SparseMat4findEPKiPm'/>
+<fun r='_ZN2cv9SparseMat5valueEPNS0_4NodeE'/>
+<fun r='_ZNK2cv9SparseMat5valueEPKNS0_4NodeE'/>
+<fun r='_ZN2cv9SparseMat4nodeEm'/>
+<fun r='_ZNK2cv9SparseMat4nodeEm'/>
+<fun r='_ZN2cv9SparseMat5beginEv'/>
+<fun r='_ZNK2cv9SparseMat5beginEv'/>
+<fun r='_ZN2cv9SparseMat3endEv'/>
+<fun r='_ZNK2cv9SparseMat3endEv'/>
+<fun r='_ZN2cv9SparseMat5beginEv'/>
+<fun r='_ZNK2cv9SparseMat5beginEv'/>
+<fun r='_ZN2cv9SparseMat3endEv'/>
+<fun r='_ZNK2cv9SparseMat3endEv'/>

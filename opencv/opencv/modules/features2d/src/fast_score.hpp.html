@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>fast_score.hpp source code [opencv/modules/features2d/src/fast_score.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="cv::FastFeatureDetector2 "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/features2d/src/fast_score.hpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>features2d</a>/<a href='./'>src</a>/<a href='fast_score.hpp.html'>fast_score.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* This is FAST corner detector, contributed to OpenCV by the author, Edward Rosten.</i></td></tr>
+<tr><th id="2">2</th><td><i>   Below is the original copyright and the references */</i></td></tr>
+<tr><th id="3">3</th><td></td></tr>
+<tr><th id="4">4</th><td><i>/*</i></td></tr>
+<tr><th id="5">5</th><td><i>Copyright (c) 2006, 2008 Edward Rosten</i></td></tr>
+<tr><th id="6">6</th><td><i>All rights reserved.</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i>Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="9">9</th><td><i>modification, are permitted provided that the following conditions</i></td></tr>
+<tr><th id="10">10</th><td><i>are met:</i></td></tr>
+<tr><th id="11">11</th><td><i></i></td></tr>
+<tr><th id="12">12</th><td><i>    *Redistributions of source code must retain the above copyright</i></td></tr>
+<tr><th id="13">13</th><td><i>     notice, this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="14">14</th><td><i></i></td></tr>
+<tr><th id="15">15</th><td><i>    *Redistributions in binary form must reproduce the above copyright</i></td></tr>
+<tr><th id="16">16</th><td><i>     notice, this list of conditions and the following disclaimer in the</i></td></tr>
+<tr><th id="17">17</th><td><i>     documentation and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="18">18</th><td><i></i></td></tr>
+<tr><th id="19">19</th><td><i>    *Neither the name of the University of Cambridge nor the names of</i></td></tr>
+<tr><th id="20">20</th><td><i>     its contributors may be used to endorse or promote products derived</i></td></tr>
+<tr><th id="21">21</th><td><i>     from this software without specific prior written permission.</i></td></tr>
+<tr><th id="22">22</th><td><i></i></td></tr>
+<tr><th id="23">23</th><td><i>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</i></td></tr>
+<tr><th id="24">24</th><td><i>"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</i></td></tr>
+<tr><th id="25">25</th><td><i>LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR</i></td></tr>
+<tr><th id="26">26</th><td><i>A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR</i></td></tr>
+<tr><th id="27">27</th><td><i>CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,</i></td></tr>
+<tr><th id="28">28</th><td><i>EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,</i></td></tr>
+<tr><th id="29">29</th><td><i>PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR</i></td></tr>
+<tr><th id="30">30</th><td><i>PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF</i></td></tr>
+<tr><th id="31">31</th><td><i>LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING</i></td></tr>
+<tr><th id="32">32</th><td><i>NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS</i></td></tr>
+<tr><th id="33">33</th><td><i>SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="34">34</th><td><i>*/</i></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><i>/*</i></td></tr>
+<tr><th id="37">37</th><td><i>The references are:</i></td></tr>
+<tr><th id="38">38</th><td><i> * Machine learning for high-speed corner detection,</i></td></tr>
+<tr><th id="39">39</th><td><i>   E. Rosten and T. Drummond, ECCV 2006</i></td></tr>
+<tr><th id="40">40</th><td><i> * Faster and better: A machine learning approach to corner detection</i></td></tr>
+<tr><th id="41">41</th><td><i>   E. Rosten, R. Porter and T. Drummond, PAMI, 2009</i></td></tr>
+<tr><th id="42">42</th><td><i>*/</i></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><u>#<span data-ppcond="44">ifndef</span> <span class="macro" data-ref="_M/__OPENCV_FEATURES_2D_FAST_HPP__">__OPENCV_FEATURES_2D_FAST_HPP__</span></u></td></tr>
+<tr><th id="45">45</th><td><u>#define <dfn class="macro" id="_M/__OPENCV_FEATURES_2D_FAST_HPP__" data-ref="_M/__OPENCV_FEATURES_2D_FAST_HPP__">__OPENCV_FEATURES_2D_FAST_HPP__</dfn></u></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><u>#<span data-ppcond="47">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="52">52</th><td>{</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><em>void</em> <dfn class="decl" id="_ZN2cv11makeOffsetsEPiii" title='cv::makeOffsets' data-ref="_ZN2cv11makeOffsetsEPiii">makeOffsets</dfn>(<em>int</em> <dfn class="local col1 decl" id="1pixel" title='pixel' data-type='int *' data-ref="1pixel">pixel</dfn>[<var>25</var>], <em>int</em> <dfn class="local col2 decl" id="2row_stride" title='row_stride' data-type='int' data-ref="2row_stride">row_stride</dfn>, <em>int</em> <dfn class="local col3 decl" id="3patternSize" title='patternSize' data-type='int' data-ref="3patternSize">patternSize</dfn>);</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><b>template</b>&lt;<em>int</em> patternSize&gt;</td></tr>
+<tr><th id="57">57</th><td><em>int</em> <dfn class="decl" id="_ZN2cv11cornerScoreEPKhPKii" title='cv::cornerScore' data-ref="_ZN2cv11cornerScoreEPKhPKii">cornerScore</dfn>(<em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>* <dfn class="local col4 decl" id="4ptr" title='ptr' data-type='const uchar *' data-ref="4ptr">ptr</dfn>, <em>const</em> <em>int</em> <dfn class="local col5 decl" id="5pixel" title='pixel' data-type='const int *' data-ref="5pixel">pixel</dfn>[], <em>int</em> <dfn class="local col6 decl" id="6threshold" title='threshold' data-type='int' data-ref="6threshold">threshold</dfn>);</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><b>class</b> <dfn class="type def" id="cv::FastFeatureDetector2" title='cv::FastFeatureDetector2' data-ref="cv::FastFeatureDetector2">FastFeatureDetector2</dfn> : <b>public</b> <a class="type" href="../include/opencv2/features2d/features2d.hpp.html#cv::FastFeatureDetector" title='cv::FastFeatureDetector' data-ref="cv::FastFeatureDetector">FastFeatureDetector</a></td></tr>
+<tr><th id="60">60</th><td>{</td></tr>
+<tr><th id="61">61</th><td><b>public</b>:</td></tr>
+<tr><th id="62">62</th><td>    <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#196" title="" data-ref="_M/CV_WRAP">CV_WRAP</a> <dfn class="decl" id="_ZN2cv20FastFeatureDetector2C1Eib" title='cv::FastFeatureDetector2::FastFeatureDetector2' data-ref="_ZN2cv20FastFeatureDetector2C1Eib">FastFeatureDetector2</dfn>( <em>int</em> <dfn class="local col7 decl" id="7threshold" title='threshold' data-type='int' data-ref="7threshold">threshold</dfn>=<var>10</var>, <em>bool</em> <dfn class="local col8 decl" id="8nonmaxSuppression" title='nonmaxSuppression' data-type='bool' data-ref="8nonmaxSuppression">nonmaxSuppression</dfn>=<b>true</b>);</td></tr>
+<tr><th id="63">63</th><td>    <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#196" title="" data-ref="_M/CV_WRAP">CV_WRAP</a> <dfn class="decl" id="_ZN2cv20FastFeatureDetector2C1Eibi" title='cv::FastFeatureDetector2::FastFeatureDetector2' data-ref="_ZN2cv20FastFeatureDetector2C1Eibi">FastFeatureDetector2</dfn>( <em>int</em> <dfn class="local col9 decl" id="9threshold" title='threshold' data-type='int' data-ref="9threshold">threshold</dfn>, <em>bool</em> <dfn class="local col0 decl" id="10nonmaxSuppression" title='nonmaxSuppression' data-type='bool' data-ref="10nonmaxSuppression">nonmaxSuppression</dfn>, <em>int</em> <dfn class="local col1 decl" id="11type" title='type' data-type='int' data-ref="11type">type</dfn>);</td></tr>
+<tr><th id="64">64</th><td>    <a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::AlgorithmInfo" title='cv::AlgorithmInfo' data-ref="cv::AlgorithmInfo">AlgorithmInfo</a>* <dfn class="virtual decl" id="_ZNK2cv20FastFeatureDetector24infoEv" title='cv::FastFeatureDetector2::info' data-ref="_ZNK2cv20FastFeatureDetector24infoEv">info</dfn>() <em>const</em>;</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td><b>protected</b>:</td></tr>
+<tr><th id="67">67</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK2cv20FastFeatureDetector210detectImplERKNS_3MatERSt6vectorINS_8KeyPointESaIS5_EES3_" title='cv::FastFeatureDetector2::detectImpl' data-ref="_ZNK2cv20FastFeatureDetector210detectImplERKNS_3MatERSt6vectorINS_8KeyPointESaIS5_EES3_">detectImpl</dfn>( <em>const</em> <a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a>&amp; <dfn class="local col2 decl" id="12image" title='image' data-type='const cv::Mat &amp;' data-ref="12image">image</dfn>, <a class="type" href="../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="../include/opencv2/features2d/features2d.hpp.html#cv::KeyPoint" title='cv::KeyPoint' data-ref="cv::KeyPoint">KeyPoint</a>&gt;&amp; <dfn class="local col3 decl" id="13keypoints" title='keypoints' data-type='vector&lt;cv::KeyPoint&gt; &amp;' data-ref="13keypoints">keypoints</dfn>, <em>const</em> <a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a>&amp; <dfn class="local col4 decl" id="14mask" title='mask' data-type='const cv::Mat &amp;' data-ref="14mask">mask</dfn>=<a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a><a class="ref" href="../../core/include/opencv2/core/core.hpp.html#_ZN2cv3MatC1Ev" title='cv::Mat::Mat' data-ref="_ZN2cv3MatC1Ev">(</a>) ) <em>const</em>;</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>    <em>short</em> <dfn class="decl" id="cv::FastFeatureDetector2::type" title='cv::FastFeatureDetector2::type' data-ref="cv::FastFeatureDetector2::type">type</dfn>;</td></tr>
+<tr><th id="70">70</th><td>};</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>}</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><u>#<span data-ppcond="47">endif</span></u></td></tr>
+<tr><th id="75">75</th><td><u>#<span data-ppcond="44">endif</span></u></td></tr>
+<tr><th id="76">76</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='brisk.cpp.html'>opencv/modules/features2d/src/brisk.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>StaticAssert.h source code [include/eigen3/Eigen/src/Core/util/StaticAssert.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::internal::static_assertion "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/eigen3/Eigen/src/Core/util/StaticAssert.h'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data';</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>include</a>/<a href='../../../..'>eigen3</a>/<a href='../../..'>Eigen</a>/<a href='../..'>src</a>/<a href='..'>Core</a>/<a href='./'>util</a>/<a href='StaticAssert.h.html'>StaticAssert.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2008 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2008 Benoit Jacob &lt;jacob.benoit.1@gmail.com&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>//</i></td></tr>
+<tr><th id="7">7</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="8">8</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="9">9</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifndef</span> <span class="macro" data-ref="_M/EIGEN_STATIC_ASSERT_H">EIGEN_STATIC_ASSERT_H</span></u></td></tr>
+<tr><th id="12">12</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_H" data-ref="_M/EIGEN_STATIC_ASSERT_H">EIGEN_STATIC_ASSERT_H</dfn></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><i>/* Some notes on Eigen's static assertion mechanism:</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> *  - in EIGEN_STATIC_ASSERT(CONDITION,MSG) the parameter CONDITION must be a compile time boolean</i></td></tr>
+<tr><th id="17">17</th><td><i> *    expression, and MSG an enum listed in struct internal::static_assertion&lt;true&gt;</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> *  - define EIGEN_NO_STATIC_ASSERT to disable them (and save compilation time)</i></td></tr>
+<tr><th id="20">20</th><td><i> *    in that case, the static assertion is converted to the following runtime assert:</i></td></tr>
+<tr><th id="21">21</th><td><i> *      eigen_assert(CONDITION &amp;&amp; "MSG")</i></td></tr>
+<tr><th id="22">22</th><td><i> *</i></td></tr>
+<tr><th id="23">23</th><td><i> *  - currently EIGEN_STATIC_ASSERT can only be used in function scope</i></td></tr>
+<tr><th id="24">24</th><td><i> *</i></td></tr>
+<tr><th id="25">25</th><td><i> */</i></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#<span data-ppcond="27">ifndef</span> <span class="macro" data-ref="_M/EIGEN_NO_STATIC_ASSERT">EIGEN_NO_STATIC_ASSERT</span></u></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td>  <u>#<span data-ppcond="29">if</span> defined(<span class="macro" data-ref="_M/__GXX_EXPERIMENTAL_CXX0X__">__GXX_EXPERIMENTAL_CXX0X__</span>) || (defined(<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>) &amp;&amp; (_MSC_VER &gt;= 1600))</u></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td>    <i>// if native static_assert is enabled, let's use it</i></td></tr>
+<tr><th id="32">32</th><td>    <u>#define EIGEN_STATIC_ASSERT(X,MSG) static_assert(X,#MSG);</u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td>  <u>#<span data-ppcond="29">else</span> // not CXX0X</u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td>    <b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td>    <b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td>    <b>template</b>&lt;<em>bool</em> condition&gt;</td></tr>
+<tr><th id="41">41</th><td>    <b>struct</b> <dfn class="type def" id="Eigen::internal::static_assertion" title='Eigen::internal::static_assertion' data-ref="Eigen::internal::static_assertion">static_assertion</dfn> {};</td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td>    <b>template</b>&lt;&gt;</td></tr>
+<tr><th id="44">44</th><td>    <b>struct</b> <dfn class="type def" id="Eigen::internal::static_assertion" title='Eigen::internal::static_assertion' data-ref="Eigen::internal::static_assertion"><a class="type" href="#Eigen::internal::static_assertion" title='Eigen::internal::static_assertion' data-ref="Eigen::internal::static_assertion">static_assertion</a></dfn>&lt;<b>true</b>&gt;</td></tr>
+<tr><th id="45">45</th><td>    {</td></tr>
+<tr><th id="46">46</th><td>      <b>enum</b> {</td></tr>
+<tr><th id="47">47</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_TRIED_CALLING_A_VECTOR_METHOD_ON_A_MATRIX" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_TRIED_CALLING_A_VECTOR_METHOD_ON_A_MATRIX' data-ref="Eigen::internal::static_assertion{true}::::YOU_TRIED_CALLING_A_VECTOR_METHOD_ON_A_MATRIX">YOU_TRIED_CALLING_A_VECTOR_METHOD_ON_A_MATRIX</dfn>,</td></tr>
+<tr><th id="48">48</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_MIXED_VECTORS_OF_DIFFERENT_SIZES" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_MIXED_VECTORS_OF_DIFFERENT_SIZES' data-ref="Eigen::internal::static_assertion{true}::::YOU_MIXED_VECTORS_OF_DIFFERENT_SIZES">YOU_MIXED_VECTORS_OF_DIFFERENT_SIZES</dfn>,</td></tr>
+<tr><th id="49">49</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES' data-ref="Eigen::internal::static_assertion{true}::::YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES">YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES</dfn>,</td></tr>
+<tr><th id="50">50</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_VECTORS_OF_A_SPECIFIC_SIZE" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_VECTORS_OF_A_SPECIFIC_SIZE' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_VECTORS_OF_A_SPECIFIC_SIZE">THIS_METHOD_IS_ONLY_FOR_VECTORS_OF_A_SPECIFIC_SIZE</dfn>,</td></tr>
+<tr><th id="51">51</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_MATRICES_OF_A_SPECIFIC_SIZE" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_MATRICES_OF_A_SPECIFIC_SIZE' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_MATRICES_OF_A_SPECIFIC_SIZE">THIS_METHOD_IS_ONLY_FOR_MATRICES_OF_A_SPECIFIC_SIZE</dfn>,</td></tr>
+<tr><th id="52">52</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_OBJECTS_OF_A_SPECIFIC_SIZE" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_OBJECTS_OF_A_SPECIFIC_SIZE' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_OBJECTS_OF_A_SPECIFIC_SIZE">THIS_METHOD_IS_ONLY_FOR_OBJECTS_OF_A_SPECIFIC_SIZE</dfn>,</td></tr>
+<tr><th id="53">53</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_MADE_A_PROGRAMMING_MISTAKE" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_MADE_A_PROGRAMMING_MISTAKE' data-ref="Eigen::internal::static_assertion{true}::::YOU_MADE_A_PROGRAMMING_MISTAKE">YOU_MADE_A_PROGRAMMING_MISTAKE</dfn>,</td></tr>
+<tr><th id="54">54</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::EIGEN_INTERNAL_ERROR_PLEASE_FILE_A_BUG_REPORT" title='Eigen::internal::static_assertion&lt;true&gt;::::EIGEN_INTERNAL_ERROR_PLEASE_FILE_A_BUG_REPORT' data-ref="Eigen::internal::static_assertion{true}::::EIGEN_INTERNAL_ERROR_PLEASE_FILE_A_BUG_REPORT">EIGEN_INTERNAL_ERROR_PLEASE_FILE_A_BUG_REPORT</dfn>,</td></tr>
+<tr><th id="55">55</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::EIGEN_INTERNAL_COMPILATION_ERROR_OR_YOU_MADE_A_PROGRAMMING_MISTAKE" title='Eigen::internal::static_assertion&lt;true&gt;::::EIGEN_INTERNAL_COMPILATION_ERROR_OR_YOU_MADE_A_PROGRAMMING_MISTAKE' data-ref="Eigen::internal::static_assertion{true}::::EIGEN_INTERNAL_COMPILATION_ERROR_OR_YOU_MADE_A_PROGRAMMING_MISTAKE">EIGEN_INTERNAL_COMPILATION_ERROR_OR_YOU_MADE_A_PROGRAMMING_MISTAKE</dfn>,</td></tr>
+<tr><th id="56">56</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_CALLED_A_FIXED_SIZE_METHOD_ON_A_DYNAMIC_SIZE_MATRIX_OR_VECTOR" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_CALLED_A_FIXED_SIZE_METHOD_ON_A_DYNAMIC_SIZE_MATRIX_OR_VECTOR' data-ref="Eigen::internal::static_assertion{true}::::YOU_CALLED_A_FIXED_SIZE_METHOD_ON_A_DYNAMIC_SIZE_MATRIX_OR_VECTOR">YOU_CALLED_A_FIXED_SIZE_METHOD_ON_A_DYNAMIC_SIZE_MATRIX_OR_VECTOR</dfn>,</td></tr>
+<tr><th id="57">57</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_CALLED_A_DYNAMIC_SIZE_METHOD_ON_A_FIXED_SIZE_MATRIX_OR_VECTOR" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_CALLED_A_DYNAMIC_SIZE_METHOD_ON_A_FIXED_SIZE_MATRIX_OR_VECTOR' data-ref="Eigen::internal::static_assertion{true}::::YOU_CALLED_A_DYNAMIC_SIZE_METHOD_ON_A_FIXED_SIZE_MATRIX_OR_VECTOR">YOU_CALLED_A_DYNAMIC_SIZE_METHOD_ON_A_FIXED_SIZE_MATRIX_OR_VECTOR</dfn>,</td></tr>
+<tr><th id="58">58</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::UNALIGNED_LOAD_AND_STORE_OPERATIONS_UNIMPLEMENTED_ON_ALTIVEC" title='Eigen::internal::static_assertion&lt;true&gt;::::UNALIGNED_LOAD_AND_STORE_OPERATIONS_UNIMPLEMENTED_ON_ALTIVEC' data-ref="Eigen::internal::static_assertion{true}::::UNALIGNED_LOAD_AND_STORE_OPERATIONS_UNIMPLEMENTED_ON_ALTIVEC">UNALIGNED_LOAD_AND_STORE_OPERATIONS_UNIMPLEMENTED_ON_ALTIVEC</dfn>,</td></tr>
+<tr><th id="59">59</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_FUNCTION_IS_NOT_FOR_INTEGER_NUMERIC_TYPES" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_FUNCTION_IS_NOT_FOR_INTEGER_NUMERIC_TYPES' data-ref="Eigen::internal::static_assertion{true}::::THIS_FUNCTION_IS_NOT_FOR_INTEGER_NUMERIC_TYPES">THIS_FUNCTION_IS_NOT_FOR_INTEGER_NUMERIC_TYPES</dfn>,</td></tr>
+<tr><th id="60">60</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED" title='Eigen::internal::static_assertion&lt;true&gt;::::FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED' data-ref="Eigen::internal::static_assertion{true}::::FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED">FLOATING_POINT_ARGUMENT_PASSED__INTEGER_WAS_EXPECTED</dfn>,</td></tr>
+<tr><th id="61">61</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::NUMERIC_TYPE_MUST_BE_REAL" title='Eigen::internal::static_assertion&lt;true&gt;::::NUMERIC_TYPE_MUST_BE_REAL' data-ref="Eigen::internal::static_assertion{true}::::NUMERIC_TYPE_MUST_BE_REAL">NUMERIC_TYPE_MUST_BE_REAL</dfn>,</td></tr>
+<tr><th id="62">62</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::COEFFICIENT_WRITE_ACCESS_TO_SELFADJOINT_NOT_SUPPORTED" title='Eigen::internal::static_assertion&lt;true&gt;::::COEFFICIENT_WRITE_ACCESS_TO_SELFADJOINT_NOT_SUPPORTED' data-ref="Eigen::internal::static_assertion{true}::::COEFFICIENT_WRITE_ACCESS_TO_SELFADJOINT_NOT_SUPPORTED">COEFFICIENT_WRITE_ACCESS_TO_SELFADJOINT_NOT_SUPPORTED</dfn>,</td></tr>
+<tr><th id="63">63</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::WRITING_TO_TRIANGULAR_PART_WITH_UNIT_DIAGONAL_IS_NOT_SUPPORTED" title='Eigen::internal::static_assertion&lt;true&gt;::::WRITING_TO_TRIANGULAR_PART_WITH_UNIT_DIAGONAL_IS_NOT_SUPPORTED' data-ref="Eigen::internal::static_assertion{true}::::WRITING_TO_TRIANGULAR_PART_WITH_UNIT_DIAGONAL_IS_NOT_SUPPORTED">WRITING_TO_TRIANGULAR_PART_WITH_UNIT_DIAGONAL_IS_NOT_SUPPORTED</dfn>,</td></tr>
+<tr><th id="64">64</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_FIXED_SIZE" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_FIXED_SIZE' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_FIXED_SIZE">THIS_METHOD_IS_ONLY_FOR_FIXED_SIZE</dfn>,</td></tr>
+<tr><th id="65">65</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::INVALID_MATRIX_PRODUCT" title='Eigen::internal::static_assertion&lt;true&gt;::::INVALID_MATRIX_PRODUCT' data-ref="Eigen::internal::static_assertion{true}::::INVALID_MATRIX_PRODUCT">INVALID_MATRIX_PRODUCT</dfn>,</td></tr>
+<tr><th id="66">66</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::INVALID_VECTOR_VECTOR_PRODUCT__IF_YOU_WANTED_A_DOT_OR_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTIONS" title='Eigen::internal::static_assertion&lt;true&gt;::::INVALID_VECTOR_VECTOR_PRODUCT__IF_YOU_WANTED_A_DOT_OR_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTIONS' data-ref="Eigen::internal::static_assertion{true}::::INVALID_VECTOR_VECTOR_PRODUCT__IF_YOU_WANTED_A_DOT_OR_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTIONS">INVALID_VECTOR_VECTOR_PRODUCT__IF_YOU_WANTED_A_DOT_OR_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTIONS</dfn>,</td></tr>
+<tr><th id="67">67</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::INVALID_MATRIX_PRODUCT__IF_YOU_WANTED_A_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTION" title='Eigen::internal::static_assertion&lt;true&gt;::::INVALID_MATRIX_PRODUCT__IF_YOU_WANTED_A_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTION' data-ref="Eigen::internal::static_assertion{true}::::INVALID_MATRIX_PRODUCT__IF_YOU_WANTED_A_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTION">INVALID_MATRIX_PRODUCT__IF_YOU_WANTED_A_COEFF_WISE_PRODUCT_YOU_MUST_USE_THE_EXPLICIT_FUNCTION</dfn>,</td></tr>
+<tr><th id="68">68</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY' data-ref="Eigen::internal::static_assertion{true}::::YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY">YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY</dfn>,</td></tr>
+<tr><th id="69">69</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_COLUMN_MAJOR_MATRICES" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_COLUMN_MAJOR_MATRICES' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_COLUMN_MAJOR_MATRICES">THIS_METHOD_IS_ONLY_FOR_COLUMN_MAJOR_MATRICES</dfn>,</td></tr>
+<tr><th id="70">70</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_ROW_MAJOR_MATRICES" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_ROW_MAJOR_MATRICES' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_ROW_MAJOR_MATRICES">THIS_METHOD_IS_ONLY_FOR_ROW_MAJOR_MATRICES</dfn>,</td></tr>
+<tr><th id="71">71</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::INVALID_MATRIX_TEMPLATE_PARAMETERS" title='Eigen::internal::static_assertion&lt;true&gt;::::INVALID_MATRIX_TEMPLATE_PARAMETERS' data-ref="Eigen::internal::static_assertion{true}::::INVALID_MATRIX_TEMPLATE_PARAMETERS">INVALID_MATRIX_TEMPLATE_PARAMETERS</dfn>,</td></tr>
+<tr><th id="72">72</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::INVALID_MATRIXBASE_TEMPLATE_PARAMETERS" title='Eigen::internal::static_assertion&lt;true&gt;::::INVALID_MATRIXBASE_TEMPLATE_PARAMETERS' data-ref="Eigen::internal::static_assertion{true}::::INVALID_MATRIXBASE_TEMPLATE_PARAMETERS">INVALID_MATRIXBASE_TEMPLATE_PARAMETERS</dfn>,</td></tr>
+<tr><th id="73">73</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::BOTH_MATRICES_MUST_HAVE_THE_SAME_STORAGE_ORDER" title='Eigen::internal::static_assertion&lt;true&gt;::::BOTH_MATRICES_MUST_HAVE_THE_SAME_STORAGE_ORDER' data-ref="Eigen::internal::static_assertion{true}::::BOTH_MATRICES_MUST_HAVE_THE_SAME_STORAGE_ORDER">BOTH_MATRICES_MUST_HAVE_THE_SAME_STORAGE_ORDER</dfn>,</td></tr>
+<tr><th id="74">74</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_DIAGONAL_MATRIX" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_DIAGONAL_MATRIX' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_DIAGONAL_MATRIX">THIS_METHOD_IS_ONLY_FOR_DIAGONAL_MATRIX</dfn>,</td></tr>
+<tr><th id="75">75</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THE_MATRIX_OR_EXPRESSION_THAT_YOU_PASSED_DOES_NOT_HAVE_THE_EXPECTED_TYPE" title='Eigen::internal::static_assertion&lt;true&gt;::::THE_MATRIX_OR_EXPRESSION_THAT_YOU_PASSED_DOES_NOT_HAVE_THE_EXPECTED_TYPE' data-ref="Eigen::internal::static_assertion{true}::::THE_MATRIX_OR_EXPRESSION_THAT_YOU_PASSED_DOES_NOT_HAVE_THE_EXPECTED_TYPE">THE_MATRIX_OR_EXPRESSION_THAT_YOU_PASSED_DOES_NOT_HAVE_THE_EXPECTED_TYPE</dfn>,</td></tr>
+<tr><th id="76">76</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_WITH_DIRECT_MEMORY_ACCESS_SUCH_AS_MAP_OR_PLAIN_MATRICES" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_WITH_DIRECT_MEMORY_ACCESS_SUCH_AS_MAP_OR_PLAIN_MATRICES' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_WITH_DIRECT_MEMORY_ACCESS_SUCH_AS_MAP_OR_PLAIN_MATRICES">THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_WITH_DIRECT_MEMORY_ACCESS_SUCH_AS_MAP_OR_PLAIN_MATRICES</dfn>,</td></tr>
+<tr><th id="77">77</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_ALREADY_SPECIFIED_THIS_STRIDE" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_ALREADY_SPECIFIED_THIS_STRIDE' data-ref="Eigen::internal::static_assertion{true}::::YOU_ALREADY_SPECIFIED_THIS_STRIDE">YOU_ALREADY_SPECIFIED_THIS_STRIDE</dfn>,</td></tr>
+<tr><th id="78">78</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::INVALID_STORAGE_ORDER_FOR_THIS_VECTOR_EXPRESSION" title='Eigen::internal::static_assertion&lt;true&gt;::::INVALID_STORAGE_ORDER_FOR_THIS_VECTOR_EXPRESSION' data-ref="Eigen::internal::static_assertion{true}::::INVALID_STORAGE_ORDER_FOR_THIS_VECTOR_EXPRESSION">INVALID_STORAGE_ORDER_FOR_THIS_VECTOR_EXPRESSION</dfn>,</td></tr>
+<tr><th id="79">79</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THE_BRACKET_OPERATOR_IS_ONLY_FOR_VECTORS__USE_THE_PARENTHESIS_OPERATOR_INSTEAD" title='Eigen::internal::static_assertion&lt;true&gt;::::THE_BRACKET_OPERATOR_IS_ONLY_FOR_VECTORS__USE_THE_PARENTHESIS_OPERATOR_INSTEAD' data-ref="Eigen::internal::static_assertion{true}::::THE_BRACKET_OPERATOR_IS_ONLY_FOR_VECTORS__USE_THE_PARENTHESIS_OPERATOR_INSTEAD">THE_BRACKET_OPERATOR_IS_ONLY_FOR_VECTORS__USE_THE_PARENTHESIS_OPERATOR_INSTEAD</dfn>,</td></tr>
+<tr><th id="80">80</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::PACKET_ACCESS_REQUIRES_TO_HAVE_INNER_STRIDE_FIXED_TO_1" title='Eigen::internal::static_assertion&lt;true&gt;::::PACKET_ACCESS_REQUIRES_TO_HAVE_INNER_STRIDE_FIXED_TO_1' data-ref="Eigen::internal::static_assertion{true}::::PACKET_ACCESS_REQUIRES_TO_HAVE_INNER_STRIDE_FIXED_TO_1">PACKET_ACCESS_REQUIRES_TO_HAVE_INNER_STRIDE_FIXED_TO_1</dfn>,</td></tr>
+<tr><th id="81">81</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_SPECIFIC_TRANSFORMATIONS" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_SPECIFIC_TRANSFORMATIONS' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_SPECIFIC_TRANSFORMATIONS">THIS_METHOD_IS_ONLY_FOR_SPECIFIC_TRANSFORMATIONS</dfn>,</td></tr>
+<tr><th id="82">82</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_CANNOT_MIX_ARRAYS_AND_MATRICES" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_CANNOT_MIX_ARRAYS_AND_MATRICES' data-ref="Eigen::internal::static_assertion{true}::::YOU_CANNOT_MIX_ARRAYS_AND_MATRICES">YOU_CANNOT_MIX_ARRAYS_AND_MATRICES</dfn>,</td></tr>
+<tr><th id="83">83</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_PERFORMED_AN_INVALID_TRANSFORMATION_CONVERSION" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_PERFORMED_AN_INVALID_TRANSFORMATION_CONVERSION' data-ref="Eigen::internal::static_assertion{true}::::YOU_PERFORMED_AN_INVALID_TRANSFORMATION_CONVERSION">YOU_PERFORMED_AN_INVALID_TRANSFORMATION_CONVERSION</dfn>,</td></tr>
+<tr><th id="84">84</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_EXPRESSION_IS_NOT_A_LVALUE__IT_IS_READ_ONLY" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_EXPRESSION_IS_NOT_A_LVALUE__IT_IS_READ_ONLY' data-ref="Eigen::internal::static_assertion{true}::::THIS_EXPRESSION_IS_NOT_A_LVALUE__IT_IS_READ_ONLY">THIS_EXPRESSION_IS_NOT_A_LVALUE__IT_IS_READ_ONLY</dfn>,</td></tr>
+<tr><th id="85">85</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_ARE_TRYING_TO_USE_AN_INDEX_BASED_ACCESSOR_ON_AN_EXPRESSION_THAT_DOES_NOT_SUPPORT_THAT" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_ARE_TRYING_TO_USE_AN_INDEX_BASED_ACCESSOR_ON_AN_EXPRESSION_THAT_DOES_NOT_SUPPORT_THAT' data-ref="Eigen::internal::static_assertion{true}::::YOU_ARE_TRYING_TO_USE_AN_INDEX_BASED_ACCESSOR_ON_AN_EXPRESSION_THAT_DOES_NOT_SUPPORT_THAT">YOU_ARE_TRYING_TO_USE_AN_INDEX_BASED_ACCESSOR_ON_AN_EXPRESSION_THAT_DOES_NOT_SUPPORT_THAT</dfn>,</td></tr>
+<tr><th id="86">86</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_1x1_EXPRESSIONS" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_1x1_EXPRESSIONS' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_1x1_EXPRESSIONS">THIS_METHOD_IS_ONLY_FOR_1x1_EXPRESSIONS</dfn>,</td></tr>
+<tr><th id="87">87</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_OF_BOOL" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_OF_BOOL' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_OF_BOOL">THIS_METHOD_IS_ONLY_FOR_EXPRESSIONS_OF_BOOL</dfn>,</td></tr>
+<tr><th id="88">88</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_ARRAYS_NOT_MATRICES" title='Eigen::internal::static_assertion&lt;true&gt;::::THIS_METHOD_IS_ONLY_FOR_ARRAYS_NOT_MATRICES' data-ref="Eigen::internal::static_assertion{true}::::THIS_METHOD_IS_ONLY_FOR_ARRAYS_NOT_MATRICES">THIS_METHOD_IS_ONLY_FOR_ARRAYS_NOT_MATRICES</dfn>,</td></tr>
+<tr><th id="89">89</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED' data-ref="Eigen::internal::static_assertion{true}::::YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED">YOU_PASSED_A_ROW_VECTOR_BUT_A_COLUMN_VECTOR_WAS_EXPECTED</dfn>,</td></tr>
+<tr><th id="90">90</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED" title='Eigen::internal::static_assertion&lt;true&gt;::::YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED' data-ref="Eigen::internal::static_assertion{true}::::YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED">YOU_PASSED_A_COLUMN_VECTOR_BUT_A_ROW_VECTOR_WAS_EXPECTED</dfn>,</td></tr>
+<tr><th id="91">91</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE" title='Eigen::internal::static_assertion&lt;true&gt;::::THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE' data-ref="Eigen::internal::static_assertion{true}::::THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE">THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE</dfn>,</td></tr>
+<tr><th id="92">92</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::THE_STORAGE_ORDER_OF_BOTH_SIDES_MUST_MATCH" title='Eigen::internal::static_assertion&lt;true&gt;::::THE_STORAGE_ORDER_OF_BOTH_SIDES_MUST_MATCH' data-ref="Eigen::internal::static_assertion{true}::::THE_STORAGE_ORDER_OF_BOTH_SIDES_MUST_MATCH">THE_STORAGE_ORDER_OF_BOTH_SIDES_MUST_MATCH</dfn>,</td></tr>
+<tr><th id="93">93</th><td>        <dfn class="enum" id="Eigen::internal::static_assertion{true}::::OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG" title='Eigen::internal::static_assertion&lt;true&gt;::::OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG' data-ref="Eigen::internal::static_assertion{true}::::OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG">OBJECT_ALLOCATED_ON_STACK_IS_TOO_BIG</dfn></td></tr>
+<tr><th id="94">94</th><td>      };</td></tr>
+<tr><th id="95">95</th><td>    };</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    } <i>// end namespace internal</i></td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>    } <i>// end namespace Eigen</i></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td>    <i>// Specialized implementation for MSVC to avoid "conditional</i></td></tr>
+<tr><th id="102">102</th><td><i>    // expression is constant" warnings.  This implementation doesn't</i></td></tr>
+<tr><th id="103">103</th><td><i>    // appear to work under GCC, hence the multiple implementations.</i></td></tr>
+<tr><th id="104">104</th><td>    <u>#<span data-ppcond="104">ifdef</span> <span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span></u></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>      <u>#define EIGEN_STATIC_ASSERT(CONDITION,MSG) \</u></td></tr>
+<tr><th id="107">107</th><td><u>        {Eigen::internal::static_assertion&lt;bool(CONDITION)&gt;::MSG;}</u></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>    <u>#<span data-ppcond="104">else</span></u></td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>      <u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT" data-ref="_M/EIGEN_STATIC_ASSERT">EIGEN_STATIC_ASSERT</dfn>(CONDITION,MSG) \</u></td></tr>
+<tr><th id="112">112</th><td><u>        if (Eigen::internal::static_assertion&lt;bool(CONDITION)&gt;::MSG) {}</u></td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>    <u>#<span data-ppcond="104">endif</span></u></td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <u>#<span data-ppcond="29">endif</span> // not CXX0X</u></td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td><u>#<span data-ppcond="27">else</span> // EIGEN_NO_STATIC_ASSERT</u></td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>  <u>#define EIGEN_STATIC_ASSERT(CONDITION,MSG) eigen_assert((CONDITION) &amp;&amp; #MSG);</u></td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td><u>#<span data-ppcond="27">endif</span> // EIGEN_NO_STATIC_ASSERT</u></td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td><i>// static assertion failing if the type \a TYPE is not a vector type</i></td></tr>
+<tr><th id="126">126</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_VECTOR_ONLY" data-ref="_M/EIGEN_STATIC_ASSERT_VECTOR_ONLY">EIGEN_STATIC_ASSERT_VECTOR_ONLY</dfn>(TYPE) \</u></td></tr>
+<tr><th id="127">127</th><td><u>  EIGEN_STATIC_ASSERT(TYPE::IsVectorAtCompileTime, \</u></td></tr>
+<tr><th id="128">128</th><td><u>                      YOU_TRIED_CALLING_A_VECTOR_METHOD_ON_A_MATRIX)</u></td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td><i>// static assertion failing if the type \a TYPE is not fixed-size</i></td></tr>
+<tr><th id="131">131</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_FIXED_SIZE" data-ref="_M/EIGEN_STATIC_ASSERT_FIXED_SIZE">EIGEN_STATIC_ASSERT_FIXED_SIZE</dfn>(TYPE) \</u></td></tr>
+<tr><th id="132">132</th><td><u>  EIGEN_STATIC_ASSERT(TYPE::SizeAtCompileTime!=Eigen::Dynamic, \</u></td></tr>
+<tr><th id="133">133</th><td><u>                      YOU_CALLED_A_FIXED_SIZE_METHOD_ON_A_DYNAMIC_SIZE_MATRIX_OR_VECTOR)</u></td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td><i>// static assertion failing if the type \a TYPE is not dynamic-size</i></td></tr>
+<tr><th id="136">136</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_DYNAMIC_SIZE" data-ref="_M/EIGEN_STATIC_ASSERT_DYNAMIC_SIZE">EIGEN_STATIC_ASSERT_DYNAMIC_SIZE</dfn>(TYPE) \</u></td></tr>
+<tr><th id="137">137</th><td><u>  EIGEN_STATIC_ASSERT(TYPE::SizeAtCompileTime==Eigen::Dynamic, \</u></td></tr>
+<tr><th id="138">138</th><td><u>                      YOU_CALLED_A_DYNAMIC_SIZE_METHOD_ON_A_FIXED_SIZE_MATRIX_OR_VECTOR)</u></td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td><i>// static assertion failing if the type \a TYPE is not a vector type of the given size</i></td></tr>
+<tr><th id="141">141</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE" data-ref="_M/EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE">EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE</dfn>(TYPE, SIZE) \</u></td></tr>
+<tr><th id="142">142</th><td><u>  EIGEN_STATIC_ASSERT(TYPE::IsVectorAtCompileTime &amp;&amp; TYPE::SizeAtCompileTime==SIZE, \</u></td></tr>
+<tr><th id="143">143</th><td><u>                      THIS_METHOD_IS_ONLY_FOR_VECTORS_OF_A_SPECIFIC_SIZE)</u></td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td><i>// static assertion failing if the type \a TYPE is not a vector type of the given size</i></td></tr>
+<tr><th id="146">146</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE" data-ref="_M/EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE">EIGEN_STATIC_ASSERT_MATRIX_SPECIFIC_SIZE</dfn>(TYPE, ROWS, COLS) \</u></td></tr>
+<tr><th id="147">147</th><td><u>  EIGEN_STATIC_ASSERT(TYPE::RowsAtCompileTime==ROWS &amp;&amp; TYPE::ColsAtCompileTime==COLS, \</u></td></tr>
+<tr><th id="148">148</th><td><u>                      THIS_METHOD_IS_ONLY_FOR_MATRICES_OF_A_SPECIFIC_SIZE)</u></td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><i>// static assertion failing if the two vector expression types are not compatible (same fixed-size or dynamic size)</i></td></tr>
+<tr><th id="151">151</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_SAME_VECTOR_SIZE" data-ref="_M/EIGEN_STATIC_ASSERT_SAME_VECTOR_SIZE">EIGEN_STATIC_ASSERT_SAME_VECTOR_SIZE</dfn>(TYPE0,TYPE1) \</u></td></tr>
+<tr><th id="152">152</th><td><u>  EIGEN_STATIC_ASSERT( \</u></td></tr>
+<tr><th id="153">153</th><td><u>      (int(TYPE0::SizeAtCompileTime)==Eigen::Dynamic \</u></td></tr>
+<tr><th id="154">154</th><td><u>    || int(TYPE1::SizeAtCompileTime)==Eigen::Dynamic \</u></td></tr>
+<tr><th id="155">155</th><td><u>    || int(TYPE0::SizeAtCompileTime)==int(TYPE1::SizeAtCompileTime)),\</u></td></tr>
+<tr><th id="156">156</th><td><u>    YOU_MIXED_VECTORS_OF_DIFFERENT_SIZES)</u></td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td><u>#define <dfn class="macro" id="_M/EIGEN_PREDICATE_SAME_MATRIX_SIZE" data-ref="_M/EIGEN_PREDICATE_SAME_MATRIX_SIZE">EIGEN_PREDICATE_SAME_MATRIX_SIZE</dfn>(TYPE0,TYPE1) \</u></td></tr>
+<tr><th id="159">159</th><td><u>     ( \</u></td></tr>
+<tr><th id="160">160</th><td><u>        (int(TYPE0::SizeAtCompileTime)==0 &amp;&amp; int(TYPE1::SizeAtCompileTime)==0) \</u></td></tr>
+<tr><th id="161">161</th><td><u>    || (\</u></td></tr>
+<tr><th id="162">162</th><td><u>          (int(TYPE0::RowsAtCompileTime)==Eigen::Dynamic \</u></td></tr>
+<tr><th id="163">163</th><td><u>        || int(TYPE1::RowsAtCompileTime)==Eigen::Dynamic \</u></td></tr>
+<tr><th id="164">164</th><td><u>        || int(TYPE0::RowsAtCompileTime)==int(TYPE1::RowsAtCompileTime)) \</u></td></tr>
+<tr><th id="165">165</th><td><u>      &amp;&amp;  (int(TYPE0::ColsAtCompileTime)==Eigen::Dynamic \</u></td></tr>
+<tr><th id="166">166</th><td><u>        || int(TYPE1::ColsAtCompileTime)==Eigen::Dynamic \</u></td></tr>
+<tr><th id="167">167</th><td><u>        || int(TYPE0::ColsAtCompileTime)==int(TYPE1::ColsAtCompileTime))\</u></td></tr>
+<tr><th id="168">168</th><td><u>       ) \</u></td></tr>
+<tr><th id="169">169</th><td><u>     )</u></td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td><u>#<span data-ppcond="171">ifdef</span> <span class="macro" data-ref="_M/EIGEN2_SUPPORT">EIGEN2_SUPPORT</span></u></td></tr>
+<tr><th id="172">172</th><td>  <u>#define EIGEN_STATIC_ASSERT_NON_INTEGER(TYPE) \</u></td></tr>
+<tr><th id="173">173</th><td><u>    eigen_assert(!NumTraits&lt;Scalar&gt;::IsInteger);</u></td></tr>
+<tr><th id="174">174</th><td><u>#<span data-ppcond="171">else</span></u></td></tr>
+<tr><th id="175">175</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_NON_INTEGER" data-ref="_M/EIGEN_STATIC_ASSERT_NON_INTEGER">EIGEN_STATIC_ASSERT_NON_INTEGER</dfn>(TYPE) \</u></td></tr>
+<tr><th id="176">176</th><td><u>    EIGEN_STATIC_ASSERT(!NumTraits&lt;TYPE&gt;::IsInteger, THIS_FUNCTION_IS_NOT_FOR_INTEGER_NUMERIC_TYPES)</u></td></tr>
+<tr><th id="177">177</th><td><u>#<span data-ppcond="171">endif</span></u></td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td></td></tr>
+<tr><th id="180">180</th><td><i>// static assertion failing if it is guaranteed at compile-time that the two matrix expression types have different sizes</i></td></tr>
+<tr><th id="181">181</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE" data-ref="_M/EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE">EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE</dfn>(TYPE0,TYPE1) \</u></td></tr>
+<tr><th id="182">182</th><td><u>  EIGEN_STATIC_ASSERT( \</u></td></tr>
+<tr><th id="183">183</th><td><u>     EIGEN_PREDICATE_SAME_MATRIX_SIZE(TYPE0,TYPE1),\</u></td></tr>
+<tr><th id="184">184</th><td><u>    YOU_MIXED_MATRICES_OF_DIFFERENT_SIZES)</u></td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_SIZE_1x1" data-ref="_M/EIGEN_STATIC_ASSERT_SIZE_1x1">EIGEN_STATIC_ASSERT_SIZE_1x1</dfn>(TYPE) \</u></td></tr>
+<tr><th id="187">187</th><td><u>      EIGEN_STATIC_ASSERT((TYPE::RowsAtCompileTime == 1 || TYPE::RowsAtCompileTime == Dynamic) &amp;&amp; \</u></td></tr>
+<tr><th id="188">188</th><td><u>                          (TYPE::ColsAtCompileTime == 1 || TYPE::ColsAtCompileTime == Dynamic), \</u></td></tr>
+<tr><th id="189">189</th><td><u>                          THIS_METHOD_IS_ONLY_FOR_1x1_EXPRESSIONS)</u></td></tr>
+<tr><th id="190">190</th><td></td></tr>
+<tr><th id="191">191</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_LVALUE" data-ref="_M/EIGEN_STATIC_ASSERT_LVALUE">EIGEN_STATIC_ASSERT_LVALUE</dfn>(Derived) \</u></td></tr>
+<tr><th id="192">192</th><td><u>      EIGEN_STATIC_ASSERT(internal::is_lvalue&lt;Derived&gt;::value, \</u></td></tr>
+<tr><th id="193">193</th><td><u>                          THIS_EXPRESSION_IS_NOT_A_LVALUE__IT_IS_READ_ONLY)</u></td></tr>
+<tr><th id="194">194</th><td></td></tr>
+<tr><th id="195">195</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_ARRAYXPR" data-ref="_M/EIGEN_STATIC_ASSERT_ARRAYXPR">EIGEN_STATIC_ASSERT_ARRAYXPR</dfn>(Derived) \</u></td></tr>
+<tr><th id="196">196</th><td><u>      EIGEN_STATIC_ASSERT((internal::is_same&lt;typename internal::traits&lt;Derived&gt;::XprKind, ArrayXpr&gt;::value), \</u></td></tr>
+<tr><th id="197">197</th><td><u>                          THIS_METHOD_IS_ONLY_FOR_ARRAYS_NOT_MATRICES)</u></td></tr>
+<tr><th id="198">198</th><td></td></tr>
+<tr><th id="199">199</th><td><u>#define <dfn class="macro" id="_M/EIGEN_STATIC_ASSERT_SAME_XPR_KIND" data-ref="_M/EIGEN_STATIC_ASSERT_SAME_XPR_KIND">EIGEN_STATIC_ASSERT_SAME_XPR_KIND</dfn>(Derived1, Derived2) \</u></td></tr>
+<tr><th id="200">200</th><td><u>      EIGEN_STATIC_ASSERT((internal::is_same&lt;typename internal::traits&lt;Derived1&gt;::XprKind, \</u></td></tr>
+<tr><th id="201">201</th><td><u>                                             typename internal::traits&lt;Derived2&gt;::XprKind \</u></td></tr>
+<tr><th id="202">202</th><td><u>                                            &gt;::value), \</u></td></tr>
+<tr><th id="203">203</th><td><u>                          YOU_CANNOT_MIX_ARRAYS_AND_MATRICES)</u></td></tr>
+<tr><th id="204">204</th><td></td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td><u>#<span data-ppcond="11">endif</span> // EIGEN_STATIC_ASSERT_H</u></td></tr>
+<tr><th id="207">207</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../opencv/modules/calib3d/src/calibinit.cpp.html'>opencv/modules/calib3d/src/calibinit.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

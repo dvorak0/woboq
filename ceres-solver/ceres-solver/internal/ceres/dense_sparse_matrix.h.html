@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>dense_sparse_matrix.h source code [ceres-solver/internal/ceres/dense_sparse_matrix.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::DenseSparseMatrix "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/dense_sparse_matrix.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='dense_sparse_matrix.h.html'>dense_sparse_matrix.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// A dense matrix implemented under the SparseMatrix interface.</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_DENSE_SPARSE_MATRIX_H_">CERES_INTERNAL_DENSE_SPARSE_MATRIX_H_</span></u></td></tr>
+<tr><th id="34">34</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_DENSE_SPARSE_MATRIX_H_" data-ref="_M/CERES_INTERNAL_DENSE_SPARSE_MATRIX_H_">CERES_INTERNAL_DENSE_SPARSE_MATRIX_H_</dfn></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="sparse_matrix.h.html">"ceres/sparse_matrix.h"</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../include/ceres/internal/eigen.h.html">"ceres/internal/eigen.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../../include/ceres/internal/macros.h.html">"ceres/internal/macros.h"</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../include/ceres/internal/scoped_ptr.h.html">"ceres/internal/scoped_ptr.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../../include/ceres/types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="43">43</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><b>class</b> <a class="type" href="triplet_sparse_matrix.h.html#ceres::internal::TripletSparseMatrix" title='ceres::internal::TripletSparseMatrix' data-ref="ceres::internal::TripletSparseMatrix" id="ceres::internal::TripletSparseMatrix">TripletSparseMatrix</a>;</td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><b>class</b> <dfn class="type def" id="ceres::internal::DenseSparseMatrix" title='ceres::internal::DenseSparseMatrix' data-ref="ceres::internal::DenseSparseMatrix">DenseSparseMatrix</dfn> : <b>public</b> <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a> {</td></tr>
+<tr><th id="48">48</th><td> <b>public</b>:</td></tr>
+<tr><th id="49">49</th><td>  <i>// Build a matrix with the same content as the TripletSparseMatrix</i></td></tr>
+<tr><th id="50">50</th><td><i>  // m. This assumes that m does not have any repeated entries.</i></td></tr>
+<tr><th id="51">51</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrixC1ERKNS0_19TripletSparseMatrixE" title='ceres::internal::DenseSparseMatrix::DenseSparseMatrix' data-ref="_ZN5ceres8internal17DenseSparseMatrixC1ERKNS0_19TripletSparseMatrixE">DenseSparseMatrix</dfn>(<em>const</em> <a class="type" href="triplet_sparse_matrix.h.html#ceres::internal::TripletSparseMatrix" title='ceres::internal::TripletSparseMatrix' data-ref="ceres::internal::TripletSparseMatrix">TripletSparseMatrix</a>&amp; <dfn class="local col1 decl" id="1m" title='m' data-type='const ceres::internal::TripletSparseMatrix &amp;' data-ref="1m">m</dfn>);</td></tr>
+<tr><th id="52">52</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrixC1ERKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEE" title='ceres::internal::DenseSparseMatrix::DenseSparseMatrix' data-ref="_ZN5ceres8internal17DenseSparseMatrixC1ERKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEE">DenseSparseMatrix</dfn>(<em>const</em> <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::ColMajorMatrix" title='ceres::ColMajorMatrix' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor&gt;' data-ref="ceres::ColMajorMatrix">ColMajorMatrix</a>&amp; <dfn class="local col2 decl" id="2m" title='m' data-type='const ColMajorMatrix &amp;' data-ref="2m">m</dfn>);</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td>  <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrixC1Eii" title='ceres::internal::DenseSparseMatrix::DenseSparseMatrix' data-ref="_ZN5ceres8internal17DenseSparseMatrixC1Eii">DenseSparseMatrix</dfn>(<em>int</em> <dfn class="local col3 decl" id="3num_rows" title='num_rows' data-type='int' data-ref="3num_rows">num_rows</dfn>, <em>int</em> <dfn class="local col4 decl" id="4num_cols" title='num_cols' data-type='int' data-ref="4num_cols">num_cols</dfn>);</td></tr>
+<tr><th id="55">55</th><td>  <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrixC1Eiib" title='ceres::internal::DenseSparseMatrix::DenseSparseMatrix' data-ref="_ZN5ceres8internal17DenseSparseMatrixC1Eiib">DenseSparseMatrix</dfn>(<em>int</em> <dfn class="local col5 decl" id="5num_rows" title='num_rows' data-type='int' data-ref="5num_rows">num_rows</dfn>, <em>int</em> <dfn class="local col6 decl" id="6num_cols" title='num_cols' data-type='int' data-ref="6num_cols">num_cols</dfn>, <em>bool</em> <dfn class="local col7 decl" id="7reserve_diagonal" title='reserve_diagonal' data-type='bool' data-ref="7reserve_diagonal">reserve_diagonal</dfn>);</td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres8internal17DenseSparseMatrixD1Ev" title='ceres::internal::DenseSparseMatrix::~DenseSparseMatrix' data-ref="_ZN5ceres8internal17DenseSparseMatrixD1Ev">~</dfn>DenseSparseMatrix() {}</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td>  <i>// SparseMatrix interface.</i></td></tr>
+<tr><th id="60">60</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal17DenseSparseMatrix7SetZeroEv" title='ceres::internal::DenseSparseMatrix::SetZero' data-ref="_ZN5ceres8internal17DenseSparseMatrix7SetZeroEv">SetZero</dfn>();</td></tr>
+<tr><th id="61">61</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix13RightMultiplyEPKdPd" title='ceres::internal::DenseSparseMatrix::RightMultiply' data-ref="_ZNK5ceres8internal17DenseSparseMatrix13RightMultiplyEPKdPd">RightMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col8 decl" id="8x" title='x' data-type='const double *' data-ref="8x">x</dfn>, <em>double</em>* <dfn class="local col9 decl" id="9y" title='y' data-type='double *' data-ref="9y">y</dfn>) <em>const</em>;</td></tr>
+<tr><th id="62">62</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix12LeftMultiplyEPKdPd" title='ceres::internal::DenseSparseMatrix::LeftMultiply' data-ref="_ZNK5ceres8internal17DenseSparseMatrix12LeftMultiplyEPKdPd">LeftMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col0 decl" id="10x" title='x' data-type='const double *' data-ref="10x">x</dfn>, <em>double</em>* <dfn class="local col1 decl" id="11y" title='y' data-type='double *' data-ref="11y">y</dfn>) <em>const</em>;</td></tr>
+<tr><th id="63">63</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix17SquaredColumnNormEPd" title='ceres::internal::DenseSparseMatrix::SquaredColumnNorm' data-ref="_ZNK5ceres8internal17DenseSparseMatrix17SquaredColumnNormEPd">SquaredColumnNorm</dfn>(<em>double</em>* <dfn class="local col2 decl" id="12x" title='x' data-type='double *' data-ref="12x">x</dfn>) <em>const</em>;</td></tr>
+<tr><th id="64">64</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal17DenseSparseMatrix12ScaleColumnsEPKd" title='ceres::internal::DenseSparseMatrix::ScaleColumns' data-ref="_ZN5ceres8internal17DenseSparseMatrix12ScaleColumnsEPKd">ScaleColumns</dfn>(<em>const</em> <em>double</em>* <dfn class="local col3 decl" id="13scale" title='scale' data-type='const double *' data-ref="13scale">scale</dfn>);</td></tr>
+<tr><th id="65">65</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix13ToDenseMatrixEPN5Eigen6MatrixIdLin1ELin1ELi1ELin1ELin1EEE" title='ceres::internal::DenseSparseMatrix::ToDenseMatrix' data-ref="_ZNK5ceres8internal17DenseSparseMatrix13ToDenseMatrixEPN5Eigen6MatrixIdLin1ELin1ELi1ELin1ELin1EEE">ToDenseMatrix</dfn>(<a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Matrix" title='ceres::Matrix' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor&gt;' data-ref="ceres::Matrix">Matrix</a>* <dfn class="local col4 decl" id="14dense_matrix" title='dense_matrix' data-type='Matrix *' data-ref="14dense_matrix">dense_matrix</dfn>) <em>const</em>;</td></tr>
+<tr><th id="66">66</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix10ToTextFileEP8_IO_FILE" title='ceres::internal::DenseSparseMatrix::ToTextFile' data-ref="_ZNK5ceres8internal17DenseSparseMatrix10ToTextFileEP8_IO_FILE">ToTextFile</dfn>(<a class="typedef" href="../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>* <dfn class="local col5 decl" id="15file" title='file' data-type='FILE *' data-ref="15file">file</dfn>) <em>const</em>;</td></tr>
+<tr><th id="67">67</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix8num_rowsEv" title='ceres::internal::DenseSparseMatrix::num_rows' data-ref="_ZNK5ceres8internal17DenseSparseMatrix8num_rowsEv">num_rows</dfn>() <em>const</em>;</td></tr>
+<tr><th id="68">68</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix8num_colsEv" title='ceres::internal::DenseSparseMatrix::num_cols' data-ref="_ZNK5ceres8internal17DenseSparseMatrix8num_colsEv">num_cols</dfn>() <em>const</em>;</td></tr>
+<tr><th id="69">69</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal17DenseSparseMatrix12num_nonzerosEv" title='ceres::internal::DenseSparseMatrix::num_nonzeros' data-ref="_ZNK5ceres8internal17DenseSparseMatrix12num_nonzerosEv">num_nonzeros</dfn>() <em>const</em>;</td></tr>
+<tr><th id="70">70</th><td>  <b>virtual</b> <em>const</em> <em>double</em>* <dfn class="virtual decl def" id="_ZNK5ceres8internal17DenseSparseMatrix6valuesEv" title='ceres::internal::DenseSparseMatrix::values' data-ref="_ZNK5ceres8internal17DenseSparseMatrix6valuesEv">values</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::DenseSparseMatrix::m_" title='ceres::internal::DenseSparseMatrix::m_' data-ref="ceres::internal::DenseSparseMatrix::m_">m_</a>.<a class="ref" href="../../../include/eigen3/Eigen/src/Core/PlainObjectBase.h.html#_ZNK5Eigen15PlainObjectBase4dataEv" title='Eigen::PlainObjectBase::data' data-ref="_ZNK5Eigen15PlainObjectBase4dataEv">data</a>(); }</td></tr>
+<tr><th id="71">71</th><td>  <b>virtual</b> <em>double</em>* <dfn class="virtual decl def" id="_ZN5ceres8internal17DenseSparseMatrix14mutable_valuesEv" title='ceres::internal::DenseSparseMatrix::mutable_values' data-ref="_ZN5ceres8internal17DenseSparseMatrix14mutable_valuesEv">mutable_values</dfn>() { <b>return</b> <a class="member" href="#ceres::internal::DenseSparseMatrix::m_" title='ceres::internal::DenseSparseMatrix::m_' data-ref="ceres::internal::DenseSparseMatrix::m_">m_</a>.<a class="ref" href="../../../include/eigen3/Eigen/src/Core/PlainObjectBase.h.html#_ZN5Eigen15PlainObjectBase4dataEv" title='Eigen::PlainObjectBase::data' data-ref="_ZN5Eigen15PlainObjectBase4dataEv">data</a>(); }</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::ConstColMajorMatrixRef" title='ceres::ConstColMajorMatrixRef' data-type='Eigen::Map&lt;const ColMajorMatrix, 0, Eigen::Stride&lt;Eigen::Dynamic, 1&gt; &gt;' data-ref="ceres::ConstColMajorMatrixRef">ConstColMajorMatrixRef</a> <dfn class="decl" id="_ZNK5ceres8internal17DenseSparseMatrix6matrixEv" title='ceres::internal::DenseSparseMatrix::matrix' data-ref="_ZNK5ceres8internal17DenseSparseMatrix6matrixEv">matrix</dfn>() <em>const</em>;</td></tr>
+<tr><th id="74">74</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::ColMajorMatrixRef" title='ceres::ColMajorMatrixRef' data-type='Eigen::Map&lt;ColMajorMatrix, 0, Eigen::Stride&lt;Eigen::Dynamic, 1&gt; &gt;' data-ref="ceres::ColMajorMatrixRef">ColMajorMatrixRef</a> <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrix14mutable_matrixEv" title='ceres::internal::DenseSparseMatrix::mutable_matrix' data-ref="_ZN5ceres8internal17DenseSparseMatrix14mutable_matrixEv">mutable_matrix</dfn>();</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>  <i>// Only one diagonal can be appended at a time. The diagonal is appended to</i></td></tr>
+<tr><th id="77">77</th><td><i>  // as a new set of rows, e.g.</i></td></tr>
+<tr><th id="78">78</th><td><i>  //</i></td></tr>
+<tr><th id="79">79</th><td><i>  // Original matrix:</i></td></tr>
+<tr><th id="80">80</th><td><i>  //</i></td></tr>
+<tr><th id="81">81</th><td><i>  //   x x x</i></td></tr>
+<tr><th id="82">82</th><td><i>  //   x x x</i></td></tr>
+<tr><th id="83">83</th><td><i>  //   x x x</i></td></tr>
+<tr><th id="84">84</th><td><i>  //</i></td></tr>
+<tr><th id="85">85</th><td><i>  // After append diagonal (1, 2, 3):</i></td></tr>
+<tr><th id="86">86</th><td><i>  //</i></td></tr>
+<tr><th id="87">87</th><td><i>  //   x x x</i></td></tr>
+<tr><th id="88">88</th><td><i>  //   x x x</i></td></tr>
+<tr><th id="89">89</th><td><i>  //   x x x</i></td></tr>
+<tr><th id="90">90</th><td><i>  //   1 0 0</i></td></tr>
+<tr><th id="91">91</th><td><i>  //   0 2 0</i></td></tr>
+<tr><th id="92">92</th><td><i>  //   0 0 3</i></td></tr>
+<tr><th id="93">93</th><td><i>  //</i></td></tr>
+<tr><th id="94">94</th><td><i>  // Calling RemoveDiagonal removes the block. It is a fatal error to append a</i></td></tr>
+<tr><th id="95">95</th><td><i>  // diagonal to a matrix that already has an appended diagonal, and it is also</i></td></tr>
+<tr><th id="96">96</th><td><i>  // a fatal error to remove a diagonal from a matrix that has none.</i></td></tr>
+<tr><th id="97">97</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrix14AppendDiagonalEPd" title='ceres::internal::DenseSparseMatrix::AppendDiagonal' data-ref="_ZN5ceres8internal17DenseSparseMatrix14AppendDiagonalEPd">AppendDiagonal</dfn>(<em>double</em> *<dfn class="local col6 decl" id="16d" title='d' data-type='double *' data-ref="16d">d</dfn>);</td></tr>
+<tr><th id="98">98</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal17DenseSparseMatrix14RemoveDiagonalEv" title='ceres::internal::DenseSparseMatrix::RemoveDiagonal' data-ref="_ZN5ceres8internal17DenseSparseMatrix14RemoveDiagonalEv">RemoveDiagonal</dfn>();</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td> <b>private</b>:</td></tr>
+<tr><th id="101">101</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::ColMajorMatrix" title='ceres::ColMajorMatrix' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor&gt;' data-ref="ceres::ColMajorMatrix">ColMajorMatrix</a> <dfn class="decl" id="ceres::internal::DenseSparseMatrix::m_" title='ceres::internal::DenseSparseMatrix::m_' data-ref="ceres::internal::DenseSparseMatrix::m_">m_</dfn>;</td></tr>
+<tr><th id="102">102</th><td>  <em>bool</em> <dfn class="decl" id="ceres::internal::DenseSparseMatrix::has_diagonal_appended_" title='ceres::internal::DenseSparseMatrix::has_diagonal_appended_' data-ref="ceres::internal::DenseSparseMatrix::has_diagonal_appended_">has_diagonal_appended_</dfn>;</td></tr>
+<tr><th id="103">103</th><td>  <em>bool</em> <dfn class="decl" id="ceres::internal::DenseSparseMatrix::has_diagonal_reserved_" title='ceres::internal::DenseSparseMatrix::has_diagonal_reserved_' data-ref="ceres::internal::DenseSparseMatrix::has_diagonal_reserved_">has_diagonal_reserved_</dfn>;</td></tr>
+<tr><th id="104">104</th><td>};</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="107">107</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td><u>#<span data-ppcond="33">endif</span>  // CERES_INTERNAL_DENSE_SPARSE_MATRIX_H_</u></td></tr>
+<tr><th id="110">110</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='cgnr_solver.cc.html'>ceres-solver/internal/ceres/cgnr_solver.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

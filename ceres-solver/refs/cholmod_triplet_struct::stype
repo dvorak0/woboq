@@ -1,0 +1,48 @@
+<dec f='include/suitesparse/cholmod_core.h' l='2046' type='int'/>
+<offset>512</offset>
+<doc f='include/suitesparse/cholmod_core.h' l='2046'>/* Describes what parts of the matrix are considered:
+			 *
+	* 0:  matrix is &quot;unsymmetric&quot;: use both upper and lower triangular parts
+	*     (the matrix may actually be symmetric in pattern and value, but
+	*     both parts are explicitly stored and used).  May be square or
+	*     rectangular.
+	* &gt;0: matrix is square and symmetric.  Entries in the lower triangular
+	*     part are transposed and added to the upper triangular part when
+	*     the matrix is converted to cholmod_sparse form.
+	* &lt;0: matrix is square and symmetric.  Entries in the upper triangular
+	*     part are transposed and added to the lower triangular part when
+	*     the matrix is converted to cholmod_sparse form.
+	*
+	* Note that stype&gt;0 and stype&lt;0 are different for cholmod_sparse and
+	* cholmod_triplet.  The reason is simple.  You can permute a symmetric
+	* triplet matrix by simply replacing a row and column index with their
+	* new row and column indices, via an inverse permutation.  Suppose
+	* P = L-&gt;Perm is your permutation, and Pinv is an array of size n.
+	* Suppose a symmetric matrix A is represent by a triplet matrix T, with
+	* entries only in the upper triangular part.  Then the following code:
+	*
+	*	Ti = T-&gt;i ;
+	*	Tj = T-&gt;j ;
+	*	for (k = 0 ; k &lt; n  ; k++) Pinv [P [k]] = k ;
+	*	for (k = 0 ; k &lt; nz ; k++) Ti [k] = Pinv [Ti [k]] ;
+	*	for (k = 0 ; k &lt; nz ; k++) Tj [k] = Pinv [Tj [k]] ;
+	*
+	* creates the triplet form of C=P*A*P&apos;.  However, if T initially
+	* contains just the upper triangular entries (T-&gt;stype = 1), after
+	* permutation it has entries in both the upper and lower triangular
+	* parts.  These entries should be transposed when constructing the
+	* cholmod_sparse form of A, which is what cholmod_triplet_to_sparse
+	* does.  Thus:
+	*
+	*	C = cholmod_triplet_to_sparse (T, 0, &amp;Common) ;
+	*
+	* will return the matrix C = P*A*P&apos;.
+	*
+	* Since the triplet matrix T is so simple to generate, it&apos;s quite easy
+	* to remove entries that you do not want, prior to converting T to the
+	* cholmod_sparse form.  So if you include these entries in T, CHOLMOD
+	* assumes that there must be a reason (such as the one above).  Thus,
+	* no entry in a triplet matrix is ever ignored.
+	*/</doc>
+<use f='ceres-solver/internal/ceres/suitesparse.cc' l='68' u='w' c='_ZN5ceres8internal11SuiteSparse18CreateSparseMatrixEPNS0_19TripletSparseMatrixE'/>
+<use f='ceres-solver/internal/ceres/suitesparse.cc' l='90' u='w' c='_ZN5ceres8internal11SuiteSparse27CreateSparseMatrixTransposeEPNS0_19TripletSparseMatrixE'/>

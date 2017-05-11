@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>trust_region_strategy.h source code [ceres-solver/internal/ceres/trust_region_strategy.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::TrustRegionStrategy "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/trust_region_strategy.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='trust_region_strategy.h.html'>trust_region_strategy.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_TRUST_REGION_STRATEGY_H_">CERES_INTERNAL_TRUST_REGION_STRATEGY_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_TRUST_REGION_STRATEGY_H_" data-ref="_M/CERES_INTERNAL_TRUST_REGION_STRATEGY_H_">CERES_INTERNAL_TRUST_REGION_STRATEGY_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../include/ceres/internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="linear_solver.h.html">"ceres/linear_solver.h"</a></u></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="39">39</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>class</b> <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver" id="ceres::internal::LinearSolver">LinearSolver</a>;</td></tr>
+<tr><th id="42">42</th><td><b>class</b> <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix" id="ceres::internal::SparseMatrix">SparseMatrix</a>;</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i>// Interface for classes implementing various trust region strategies</i></td></tr>
+<tr><th id="45">45</th><td><i>// for nonlinear least squares problems.</i></td></tr>
+<tr><th id="46">46</th><td><i>//</i></td></tr>
+<tr><th id="47">47</th><td><i>// The object is expected to maintain and update a trust region</i></td></tr>
+<tr><th id="48">48</th><td><i>// radius, which it then uses to solve for the trust region step using</i></td></tr>
+<tr><th id="49">49</th><td><i>// the jacobian matrix and residual vector.</i></td></tr>
+<tr><th id="50">50</th><td><i>//</i></td></tr>
+<tr><th id="51">51</th><td><i>// Here the term trust region radius is used loosely, as the strategy</i></td></tr>
+<tr><th id="52">52</th><td><i>// is free to treat it as guidance and violate it as need be. e.g.,</i></td></tr>
+<tr><th id="53">53</th><td><i>// the LevenbergMarquardtStrategy uses the inverse of the trust region</i></td></tr>
+<tr><th id="54">54</th><td><i>// radius to scale the damping term, which controls the step size, but</i></td></tr>
+<tr><th id="55">55</th><td><i>// does not set a hard limit on its size.</i></td></tr>
+<tr><th id="56">56</th><td><b>class</b> <dfn class="type def" id="ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</dfn> {</td></tr>
+<tr><th id="57">57</th><td> <b>public</b>:</td></tr>
+<tr><th id="58">58</th><td>  <b>struct</b> <dfn class="type def" id="ceres::internal::TrustRegionStrategy::Options" title='ceres::internal::TrustRegionStrategy::Options' data-ref="ceres::internal::TrustRegionStrategy::Options">Options</dfn> {</td></tr>
+<tr><th id="59">59</th><td>    <dfn class="decl def" id="_ZN5ceres8internal19TrustRegionStrategy7OptionsC1Ev" title='ceres::internal::TrustRegionStrategy::Options::Options' data-ref="_ZN5ceres8internal19TrustRegionStrategy7OptionsC1Ev">Options</dfn>()</td></tr>
+<tr><th id="60">60</th><td>        : <a class="member" href="#ceres::internal::TrustRegionStrategy::Options::trust_region_strategy_type" title='ceres::internal::TrustRegionStrategy::Options::trust_region_strategy_type' data-ref="ceres::internal::TrustRegionStrategy::Options::trust_region_strategy_type">trust_region_strategy_type</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::TrustRegionStrategyType::LEVENBERG_MARQUARDT" title='ceres::TrustRegionStrategyType::LEVENBERG_MARQUARDT' data-ref="ceres::TrustRegionStrategyType::LEVENBERG_MARQUARDT">LEVENBERG_MARQUARDT</a>),</td></tr>
+<tr><th id="61">61</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Options::initial_radius" title='ceres::internal::TrustRegionStrategy::Options::initial_radius' data-ref="ceres::internal::TrustRegionStrategy::Options::initial_radius">initial_radius</a>(<var>1e4</var>),</td></tr>
+<tr><th id="62">62</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Options::max_radius" title='ceres::internal::TrustRegionStrategy::Options::max_radius' data-ref="ceres::internal::TrustRegionStrategy::Options::max_radius">max_radius</a>(<var>1e32</var>),</td></tr>
+<tr><th id="63">63</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Options::min_lm_diagonal" title='ceres::internal::TrustRegionStrategy::Options::min_lm_diagonal' data-ref="ceres::internal::TrustRegionStrategy::Options::min_lm_diagonal">min_lm_diagonal</a>(<var>1e-6</var>),</td></tr>
+<tr><th id="64">64</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Options::max_lm_diagonal" title='ceres::internal::TrustRegionStrategy::Options::max_lm_diagonal' data-ref="ceres::internal::TrustRegionStrategy::Options::max_lm_diagonal">max_lm_diagonal</a>(<var>1e32</var>),</td></tr>
+<tr><th id="65">65</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Options::dogleg_type" title='ceres::internal::TrustRegionStrategy::Options::dogleg_type' data-ref="ceres::internal::TrustRegionStrategy::Options::dogleg_type">dogleg_type</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::DoglegType::TRADITIONAL_DOGLEG" title='ceres::DoglegType::TRADITIONAL_DOGLEG' data-ref="ceres::DoglegType::TRADITIONAL_DOGLEG">TRADITIONAL_DOGLEG</a>) {</td></tr>
+<tr><th id="66">66</th><td>    }</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td>    <a class="type" href="../../include/ceres/types.h.html#ceres::TrustRegionStrategyType" title='ceres::TrustRegionStrategyType' data-ref="ceres::TrustRegionStrategyType">TrustRegionStrategyType</a> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::trust_region_strategy_type" title='ceres::internal::TrustRegionStrategy::Options::trust_region_strategy_type' data-ref="ceres::internal::TrustRegionStrategy::Options::trust_region_strategy_type">trust_region_strategy_type</dfn>;</td></tr>
+<tr><th id="69">69</th><td>    <i>// Linear solver used for actually solving the trust region step.</i></td></tr>
+<tr><th id="70">70</th><td>    <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>* <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::linear_solver" title='ceres::internal::TrustRegionStrategy::Options::linear_solver' data-ref="ceres::internal::TrustRegionStrategy::Options::linear_solver">linear_solver</dfn>;</td></tr>
+<tr><th id="71">71</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::initial_radius" title='ceres::internal::TrustRegionStrategy::Options::initial_radius' data-ref="ceres::internal::TrustRegionStrategy::Options::initial_radius">initial_radius</dfn>;</td></tr>
+<tr><th id="72">72</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::max_radius" title='ceres::internal::TrustRegionStrategy::Options::max_radius' data-ref="ceres::internal::TrustRegionStrategy::Options::max_radius">max_radius</dfn>;</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>    <i>// Minimum and maximum values of the diagonal damping matrix used</i></td></tr>
+<tr><th id="75">75</th><td><i>    // by LevenbergMarquardtStrategy. The DoglegStrategy also uses</i></td></tr>
+<tr><th id="76">76</th><td><i>    // these bounds to construct a regularizing diagonal to ensure</i></td></tr>
+<tr><th id="77">77</th><td><i>    // that the Gauss-Newton step computation is of full rank.</i></td></tr>
+<tr><th id="78">78</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::min_lm_diagonal" title='ceres::internal::TrustRegionStrategy::Options::min_lm_diagonal' data-ref="ceres::internal::TrustRegionStrategy::Options::min_lm_diagonal">min_lm_diagonal</dfn>;</td></tr>
+<tr><th id="79">79</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::max_lm_diagonal" title='ceres::internal::TrustRegionStrategy::Options::max_lm_diagonal' data-ref="ceres::internal::TrustRegionStrategy::Options::max_lm_diagonal">max_lm_diagonal</dfn>;</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>    <i>// Further specify which dogleg method to use</i></td></tr>
+<tr><th id="82">82</th><td>    <a class="type" href="../../include/ceres/types.h.html#ceres::DoglegType" title='ceres::DoglegType' data-ref="ceres::DoglegType">DoglegType</a> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Options::dogleg_type" title='ceres::internal::TrustRegionStrategy::Options::dogleg_type' data-ref="ceres::internal::TrustRegionStrategy::Options::dogleg_type">dogleg_type</dfn>;</td></tr>
+<tr><th id="83">83</th><td>  };</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>  <i>// Per solve options.</i></td></tr>
+<tr><th id="86">86</th><td>  <b>struct</b> <dfn class="type def" id="ceres::internal::TrustRegionStrategy::PerSolveOptions" title='ceres::internal::TrustRegionStrategy::PerSolveOptions' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions">PerSolveOptions</dfn> {</td></tr>
+<tr><th id="87">87</th><td>    <dfn class="decl def" id="_ZN5ceres8internal19TrustRegionStrategy15PerSolveOptionsC1Ev" title='ceres::internal::TrustRegionStrategy::PerSolveOptions::PerSolveOptions' data-ref="_ZN5ceres8internal19TrustRegionStrategy15PerSolveOptionsC1Ev">PerSolveOptions</dfn>()</td></tr>
+<tr><th id="88">88</th><td>        : <a class="member" href="#ceres::internal::TrustRegionStrategy::PerSolveOptions::eta" title='ceres::internal::TrustRegionStrategy::PerSolveOptions::eta' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions::eta">eta</a>(<var>0</var>),</td></tr>
+<tr><th id="89">89</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_format_type" title='ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_format_type' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_format_type">dump_format_type</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::DumpFormatType::TEXTFILE" title='ceres::DumpFormatType::TEXTFILE' data-ref="ceres::DumpFormatType::TEXTFILE">TEXTFILE</a>) {</td></tr>
+<tr><th id="90">90</th><td>    }</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <i>// Forcing sequence for inexact solves.</i></td></tr>
+<tr><th id="93">93</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::PerSolveOptions::eta" title='ceres::internal::TrustRegionStrategy::PerSolveOptions::eta' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions::eta">eta</dfn>;</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>    <a class="type" href="../../include/ceres/types.h.html#ceres::DumpFormatType" title='ceres::DumpFormatType' data-ref="ceres::DumpFormatType">DumpFormatType</a> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_format_type" title='ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_format_type' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_format_type">dump_format_type</dfn>;</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    <i>// If non-empty and dump_format_type is not CONSOLE, the trust</i></td></tr>
+<tr><th id="98">98</th><td><i>    // regions strategy will write the linear system to file(s) with</i></td></tr>
+<tr><th id="99">99</th><td><i>    // name starting with dump_filename_base.  If dump_format_type is</i></td></tr>
+<tr><th id="100">100</th><td><i>    // CONSOLE then dump_filename_base will be ignored and the linear</i></td></tr>
+<tr><th id="101">101</th><td><i>    // system will be written to the standard error.</i></td></tr>
+<tr><th id="102">102</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_filename_base" title='ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_filename_base' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions::dump_filename_base">dump_filename_base</dfn>;</td></tr>
+<tr><th id="103">103</th><td>  };</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>  <b>struct</b> <dfn class="type def" id="ceres::internal::TrustRegionStrategy::Summary" title='ceres::internal::TrustRegionStrategy::Summary' data-ref="ceres::internal::TrustRegionStrategy::Summary">Summary</dfn> {</td></tr>
+<tr><th id="106">106</th><td>    <dfn class="decl def" id="_ZN5ceres8internal19TrustRegionStrategy7SummaryC1Ev" title='ceres::internal::TrustRegionStrategy::Summary::Summary' data-ref="_ZN5ceres8internal19TrustRegionStrategy7SummaryC1Ev">Summary</dfn>()</td></tr>
+<tr><th id="107">107</th><td>        : <a class="member" href="#ceres::internal::TrustRegionStrategy::Summary::residual_norm" title='ceres::internal::TrustRegionStrategy::Summary::residual_norm' data-ref="ceres::internal::TrustRegionStrategy::Summary::residual_norm">residual_norm</a>(<var>0.0</var>),</td></tr>
+<tr><th id="108">108</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Summary::num_iterations" title='ceres::internal::TrustRegionStrategy::Summary::num_iterations' data-ref="ceres::internal::TrustRegionStrategy::Summary::num_iterations">num_iterations</a>(-<var>1</var>),</td></tr>
+<tr><th id="109">109</th><td>          <a class="member" href="#ceres::internal::TrustRegionStrategy::Summary::termination_type" title='ceres::internal::TrustRegionStrategy::Summary::termination_type' data-ref="ceres::internal::TrustRegionStrategy::Summary::termination_type">termination_type</a>(<a class="enum" href="linear_solver.h.html#ceres::internal::LinearSolverTerminationType::LINEAR_SOLVER_FAILURE" title='ceres::internal::LinearSolverTerminationType::LINEAR_SOLVER_FAILURE' data-ref="ceres::internal::LinearSolverTerminationType::LINEAR_SOLVER_FAILURE">LINEAR_SOLVER_FAILURE</a>) {</td></tr>
+<tr><th id="110">110</th><td>    }</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>    <i>// If the trust region problem is,</i></td></tr>
+<tr><th id="113">113</th><td><i>    //</i></td></tr>
+<tr><th id="114">114</th><td><i>    //   1/2 x'Ax + b'x + c,</i></td></tr>
+<tr><th id="115">115</th><td><i>    //</i></td></tr>
+<tr><th id="116">116</th><td><i>    // then</i></td></tr>
+<tr><th id="117">117</th><td><i>    //</i></td></tr>
+<tr><th id="118">118</th><td><i>    //   residual_norm = |Ax -b|</i></td></tr>
+<tr><th id="119">119</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Summary::residual_norm" title='ceres::internal::TrustRegionStrategy::Summary::residual_norm' data-ref="ceres::internal::TrustRegionStrategy::Summary::residual_norm">residual_norm</dfn>;</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td>    <i>// Number of iterations used by the linear solver. If a linear</i></td></tr>
+<tr><th id="122">122</th><td><i>    // solver was not called (e.g., DogLegStrategy after an</i></td></tr>
+<tr><th id="123">123</th><td><i>    // unsuccessful step), then this would be zero.</i></td></tr>
+<tr><th id="124">124</th><td>    <em>int</em> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Summary::num_iterations" title='ceres::internal::TrustRegionStrategy::Summary::num_iterations' data-ref="ceres::internal::TrustRegionStrategy::Summary::num_iterations">num_iterations</dfn>;</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>    <i>// Status of the linear solver used to solve the Newton system.</i></td></tr>
+<tr><th id="127">127</th><td>    <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolverTerminationType" title='ceres::internal::LinearSolverTerminationType' data-ref="ceres::internal::LinearSolverTerminationType">LinearSolverTerminationType</a> <dfn class="decl" id="ceres::internal::TrustRegionStrategy::Summary::termination_type" title='ceres::internal::TrustRegionStrategy::Summary::termination_type' data-ref="ceres::internal::TrustRegionStrategy::Summary::termination_type">termination_type</dfn>;</td></tr>
+<tr><th id="128">128</th><td>  };</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres8internal19TrustRegionStrategyD1Ev" title='ceres::internal::TrustRegionStrategy::~TrustRegionStrategy' data-ref="_ZN5ceres8internal19TrustRegionStrategyD1Ev">~</dfn>TrustRegionStrategy();</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>  <i>// Use the current radius to solve for the trust region step.</i></td></tr>
+<tr><th id="133">133</th><td>  <b>virtual</b> <a class="type" href="#ceres::internal::TrustRegionStrategy::Summary" title='ceres::internal::TrustRegionStrategy::Summary' data-ref="ceres::internal::TrustRegionStrategy::Summary">Summary</a> <dfn class="virtual decl" id="_ZN5ceres8internal19TrustRegionStrategy11ComputeStepERKNS1_15PerSolveOptionsEPNS0_12SparseMatrixEPKdPd" title='ceres::internal::TrustRegionStrategy::ComputeStep' data-ref="_ZN5ceres8internal19TrustRegionStrategy11ComputeStepERKNS1_15PerSolveOptionsEPNS0_12SparseMatrixEPKdPd">ComputeStep</dfn>(<em>const</em> <a class="type" href="#ceres::internal::TrustRegionStrategy::PerSolveOptions" title='ceres::internal::TrustRegionStrategy::PerSolveOptions' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions">PerSolveOptions</a>&amp; <dfn class="local col6 decl" id="166per_solve_options" title='per_solve_options' data-type='const ceres::internal::TrustRegionStrategy::PerSolveOptions &amp;' data-ref="166per_solve_options">per_solve_options</dfn>,</td></tr>
+<tr><th id="134">134</th><td>                              <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>* <dfn class="local col7 decl" id="167jacobian" title='jacobian' data-type='ceres::internal::SparseMatrix *' data-ref="167jacobian">jacobian</dfn>,</td></tr>
+<tr><th id="135">135</th><td>                              <em>const</em> <em>double</em>* <dfn class="local col8 decl" id="168residuals" title='residuals' data-type='const double *' data-ref="168residuals">residuals</dfn>,</td></tr>
+<tr><th id="136">136</th><td>                              <em>double</em>* <dfn class="local col9 decl" id="169step" title='step' data-type='double *' data-ref="169step">step</dfn>) = <var>0</var>;</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>  <i>// Inform the strategy that the current step has been accepted, and</i></td></tr>
+<tr><th id="139">139</th><td><i>  // that the ratio of the decrease in the non-linear objective to the</i></td></tr>
+<tr><th id="140">140</th><td><i>  // decrease in the trust region model is step_quality.</i></td></tr>
+<tr><th id="141">141</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal19TrustRegionStrategy12StepAcceptedEd" title='ceres::internal::TrustRegionStrategy::StepAccepted' data-ref="_ZN5ceres8internal19TrustRegionStrategy12StepAcceptedEd">StepAccepted</dfn>(<em>double</em> <dfn class="local col0 decl" id="170step_quality" title='step_quality' data-type='double' data-ref="170step_quality">step_quality</dfn>) = <var>0</var>;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <i>// Inform the strategy that the current step has been rejected, and</i></td></tr>
+<tr><th id="144">144</th><td><i>  // that the ratio of the decrease in the non-linear objective to the</i></td></tr>
+<tr><th id="145">145</th><td><i>  // decrease in the trust region model is step_quality.</i></td></tr>
+<tr><th id="146">146</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal19TrustRegionStrategy12StepRejectedEd" title='ceres::internal::TrustRegionStrategy::StepRejected' data-ref="_ZN5ceres8internal19TrustRegionStrategy12StepRejectedEd">StepRejected</dfn>(<em>double</em> <dfn class="local col1 decl" id="171step_quality" title='step_quality' data-type='double' data-ref="171step_quality">step_quality</dfn>) = <var>0</var>;</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>  <i>// Inform the strategy that the current step has been rejected</i></td></tr>
+<tr><th id="149">149</th><td><i>  // because it was found to be numerically invalid.</i></td></tr>
+<tr><th id="150">150</th><td><i>  // StepRejected/StepAccepted will not be called for this step, and</i></td></tr>
+<tr><th id="151">151</th><td><i>  // the strategy is free to do what it wants with this information.</i></td></tr>
+<tr><th id="152">152</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal19TrustRegionStrategy13StepIsInvalidEv" title='ceres::internal::TrustRegionStrategy::StepIsInvalid' data-ref="_ZN5ceres8internal19TrustRegionStrategy13StepIsInvalidEv">StepIsInvalid</dfn>() = <var>0</var>;</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>  <i>// Current trust region radius.</i></td></tr>
+<tr><th id="155">155</th><td>  <b>virtual</b> <em>double</em> <dfn class="virtual decl" id="_ZNK5ceres8internal19TrustRegionStrategy6RadiusEv" title='ceres::internal::TrustRegionStrategy::Radius' data-ref="_ZNK5ceres8internal19TrustRegionStrategy6RadiusEv">Radius</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="156">156</th><td></td></tr>
+<tr><th id="157">157</th><td>  <i>// Factory.</i></td></tr>
+<tr><th id="158">158</th><td>  <em>static</em> <a class="type" href="#ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</a>* <dfn class="decl" id="_ZN5ceres8internal19TrustRegionStrategy6CreateERKNS1_7OptionsE" title='ceres::internal::TrustRegionStrategy::Create' data-ref="_ZN5ceres8internal19TrustRegionStrategy6CreateERKNS1_7OptionsE">Create</dfn>(<em>const</em> <a class="type" href="#ceres::internal::TrustRegionStrategy::Options" title='ceres::internal::TrustRegionStrategy::Options' data-ref="ceres::internal::TrustRegionStrategy::Options">Options</a>&amp; <dfn class="local col2 decl" id="172options" title='options' data-type='const ceres::internal::TrustRegionStrategy::Options &amp;' data-ref="172options">options</dfn>);</td></tr>
+<tr><th id="159">159</th><td>};</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="162">162</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_INTERNAL_TRUST_REGION_STRATEGY_H_</u></td></tr>
+<tr><th id="165">165</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='coordinate_descent_minimizer.cc.html'>ceres-solver/internal/ceres/coordinate_descent_minimizer.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

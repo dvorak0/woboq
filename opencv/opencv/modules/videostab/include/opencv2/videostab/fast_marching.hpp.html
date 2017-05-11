@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>fast_marching.hpp source code [opencv/modules/videostab/include/opencv2/videostab/fast_marching.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="cv::videostab::FastMarchingMethod "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/videostab/include/opencv2/videostab/fast_marching.hpp'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data';</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>opencv</a>/<a href='../../../..'>modules</a>/<a href='../../..'>videostab</a>/<a href='../..'>include</a>/<a href='..'>opencv2</a>/<a href='./'>videostab</a>/<a href='fast_marching.hpp.html'>fast_marching.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#<span data-ppcond="43">ifndef</span> <span class="macro" data-ref="_M/__OPENCV_VIDEOSTAB_FAST_MARCHING_HPP__">__OPENCV_VIDEOSTAB_FAST_MARCHING_HPP__</span></u></td></tr>
+<tr><th id="44">44</th><td><u>#define <dfn class="macro" id="_M/__OPENCV_VIDEOSTAB_FAST_MARCHING_HPP__" data-ref="_M/__OPENCV_VIDEOSTAB_FAST_MARCHING_HPP__">__OPENCV_VIDEOSTAB_FAST_MARCHING_HPP__</dfn></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><u>#include <a href="../../../../../../include/c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="47">47</th><td><u>#include <a href="../../../../../../include/c++/4.8/queue.html">&lt;queue&gt;</a></u></td></tr>
+<tr><th id="48">48</th><td><u>#include <a href="../../../../../../include/c++/4.8/algorithm.html">&lt;algorithm&gt;</a></u></td></tr>
+<tr><th id="49">49</th><td><u>#include <a href="../../../../core/include/opencv2/core/core.hpp.html">"opencv2/core/core.hpp"</a></u></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="52">52</th><td>{</td></tr>
+<tr><th id="53">53</th><td><b>namespace</b> <span class="namespace">videostab</span></td></tr>
+<tr><th id="54">54</th><td>{</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><i>// See <a href="http://iwi.eldoc.ub.rug.nl/FILES/root/2004/JGraphToolsTelea/2004JGraphToolsTelea.pdf">http://iwi.eldoc.ub.rug.nl/FILES/root/2004/JGraphToolsTelea/2004JGraphToolsTelea.pdf</a></i></td></tr>
+<tr><th id="57">57</th><td><b>class</b> <a class="macro" href="../../../../core/include/opencv2/core/types_c.h.html#159" title="" data-ref="_M/CV_EXPORTS">CV_EXPORTS</a> <dfn class="type def" id="cv::videostab::FastMarchingMethod" title='cv::videostab::FastMarchingMethod' data-ref="cv::videostab::FastMarchingMethod">FastMarchingMethod</dfn></td></tr>
+<tr><th id="58">58</th><td>{</td></tr>
+<tr><th id="59">59</th><td><b>public</b>:</td></tr>
+<tr><th id="60">60</th><td>    <dfn class="decl def" id="_ZN2cv9videostab18FastMarchingMethodC1Ev" title='cv::videostab::FastMarchingMethod::FastMarchingMethod' data-ref="_ZN2cv9videostab18FastMarchingMethodC1Ev">FastMarchingMethod</dfn>() : <a class="member" href="#cv::videostab::FastMarchingMethod::inf_" title='cv::videostab::FastMarchingMethod::inf_' data-ref="cv::videostab::FastMarchingMethod::inf_">inf_</a>(<var>1e6f</var>) {}</td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>    <b>template</b> &lt;<b>typename</b> Inpaint&gt;</td></tr>
+<tr><th id="63">63</th><td>    Inpaint <a class="decl" href="fast_marching_inl.hpp.html#_ZN2cv9videostab18FastMarchingMethod3runERKNS_3MatET_" title='cv::videostab::FastMarchingMethod::run' data-ref="_ZN2cv9videostab18FastMarchingMethod3runERKNS_3MatET_" id="_ZN2cv9videostab18FastMarchingMethod3runERKNS_3MatET_">run</a>(<em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> &amp;<dfn class="local col1 decl" id="1mask" title='mask' data-type='const cv::Mat &amp;' data-ref="1mask">mask</dfn>, Inpaint <dfn class="local col2 decl" id="2inpaint" title='inpaint' data-type='Inpaint' data-ref="2inpaint">inpaint</dfn>);</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td>    <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> <dfn class="decl def" id="_ZNK2cv9videostab18FastMarchingMethod11distanceMapEv" title='cv::videostab::FastMarchingMethod::distanceMap' data-ref="_ZNK2cv9videostab18FastMarchingMethod11distanceMapEv">distanceMap</dfn>() <em>const</em> { <b>return</b> <a class="ref fake" href="../../../../core/include/opencv2/core/core.hpp.html#_ZN2cv3MatC1ERKS0_" title='cv::Mat::Mat' data-ref="_ZN2cv3MatC1ERKS0_"></a><a class="member" href="#cv::videostab::FastMarchingMethod::dist_" title='cv::videostab::FastMarchingMethod::dist_' data-ref="cv::videostab::FastMarchingMethod::dist_">dist_</a>; }</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td><b>private</b>:</td></tr>
+<tr><th id="68">68</th><td>    <b>enum</b> { <dfn class="enum" id="cv::videostab::FastMarchingMethod::::INSIDE" title='cv::videostab::FastMarchingMethod::::INSIDE' data-ref="cv::videostab::FastMarchingMethod::::INSIDE">INSIDE</dfn> = <var>0</var>, <dfn class="enum" id="cv::videostab::FastMarchingMethod::::BAND" title='cv::videostab::FastMarchingMethod::::BAND' data-ref="cv::videostab::FastMarchingMethod::::BAND">BAND</dfn> = <var>1</var>, <dfn class="enum" id="cv::videostab::FastMarchingMethod::::KNOWN" title='cv::videostab::FastMarchingMethod::::KNOWN' data-ref="cv::videostab::FastMarchingMethod::::KNOWN">KNOWN</dfn> = <var>255</var> };</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>    <b>struct</b> <dfn class="type def" id="cv::videostab::FastMarchingMethod::DXY" title='cv::videostab::FastMarchingMethod::DXY' data-ref="cv::videostab::FastMarchingMethod::DXY">DXY</dfn></td></tr>
+<tr><th id="71">71</th><td>    {</td></tr>
+<tr><th id="72">72</th><td>        <em>float</em> <dfn class="decl" id="cv::videostab::FastMarchingMethod::DXY::dist" title='cv::videostab::FastMarchingMethod::DXY::dist' data-ref="cv::videostab::FastMarchingMethod::DXY::dist">dist</dfn>;</td></tr>
+<tr><th id="73">73</th><td>        <em>int</em> <dfn class="decl" id="cv::videostab::FastMarchingMethod::DXY::x" title='cv::videostab::FastMarchingMethod::DXY::x' data-ref="cv::videostab::FastMarchingMethod::DXY::x">x</dfn>, <dfn class="decl" id="cv::videostab::FastMarchingMethod::DXY::y" title='cv::videostab::FastMarchingMethod::DXY::y' data-ref="cv::videostab::FastMarchingMethod::DXY::y">y</dfn>;</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>        <dfn class="decl def" id="_ZN2cv9videostab18FastMarchingMethod3DXYC1Ev" title='cv::videostab::FastMarchingMethod::DXY::DXY' data-ref="_ZN2cv9videostab18FastMarchingMethod3DXYC1Ev">DXY</dfn>() : <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::dist" title='cv::videostab::FastMarchingMethod::DXY::dist' data-ref="cv::videostab::FastMarchingMethod::DXY::dist">dist</a>(<var>0</var>), <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::x" title='cv::videostab::FastMarchingMethod::DXY::x' data-ref="cv::videostab::FastMarchingMethod::DXY::x">x</a>(<var>0</var>), <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::y" title='cv::videostab::FastMarchingMethod::DXY::y' data-ref="cv::videostab::FastMarchingMethod::DXY::y">y</a>(<var>0</var>) {}</td></tr>
+<tr><th id="76">76</th><td>        <dfn class="decl def" id="_ZN2cv9videostab18FastMarchingMethod3DXYC1Efii" title='cv::videostab::FastMarchingMethod::DXY::DXY' data-ref="_ZN2cv9videostab18FastMarchingMethod3DXYC1Efii">DXY</dfn>(<em>float</em> <dfn class="local col3 decl" id="3_dist" title='_dist' data-type='float' data-ref="3_dist">_dist</dfn>, <em>int</em> <dfn class="local col4 decl" id="4_x" title='_x' data-type='int' data-ref="4_x">_x</dfn>, <em>int</em> <dfn class="local col5 decl" id="5_y" title='_y' data-type='int' data-ref="5_y">_y</dfn>) : <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::dist" title='cv::videostab::FastMarchingMethod::DXY::dist' data-ref="cv::videostab::FastMarchingMethod::DXY::dist">dist</a>(<a class="local col3 ref" href="#3_dist" title='_dist' data-ref="3_dist">_dist</a>), <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::x" title='cv::videostab::FastMarchingMethod::DXY::x' data-ref="cv::videostab::FastMarchingMethod::DXY::x">x</a>(<a class="local col4 ref" href="#4_x" title='_x' data-ref="4_x">_x</a>), <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::y" title='cv::videostab::FastMarchingMethod::DXY::y' data-ref="cv::videostab::FastMarchingMethod::DXY::y">y</a>(<a class="local col5 ref" href="#5_y" title='_y' data-ref="5_y">_y</a>) {}</td></tr>
+<tr><th id="77">77</th><td>        <em>bool</em> <dfn class="decl def" id="_ZNK2cv9videostab18FastMarchingMethod3DXYltERKS2_" title='cv::videostab::FastMarchingMethod::DXY::operator&lt;' data-ref="_ZNK2cv9videostab18FastMarchingMethod3DXYltERKS2_"><b>operator</b> &lt;</dfn>(<em>const</em> <a class="type" href="#cv::videostab::FastMarchingMethod::DXY" title='cv::videostab::FastMarchingMethod::DXY' data-ref="cv::videostab::FastMarchingMethod::DXY">DXY</a> &amp;<dfn class="local col6 decl" id="6dxy" title='dxy' data-type='const cv::videostab::FastMarchingMethod::DXY &amp;' data-ref="6dxy">dxy</dfn>) <em>const</em> { <b>return</b> <a class="member" href="#cv::videostab::FastMarchingMethod::DXY::dist" title='cv::videostab::FastMarchingMethod::DXY::dist' data-ref="cv::videostab::FastMarchingMethod::DXY::dist">dist</a> &lt; <a class="local col6 ref" href="#6dxy" title='dxy' data-ref="6dxy">dxy</a>.<a class="member" href="#cv::videostab::FastMarchingMethod::DXY::dist" title='cv::videostab::FastMarchingMethod::DXY::dist' data-ref="cv::videostab::FastMarchingMethod::DXY::dist">dist</a>; }</td></tr>
+<tr><th id="78">78</th><td>    };</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>    <em>float</em> <a class="decl" href="../../../src/fast_marching.cpp.html#_ZNK2cv9videostab18FastMarchingMethod5solveEiiii" title='cv::videostab::FastMarchingMethod::solve' data-ref="_ZNK2cv9videostab18FastMarchingMethod5solveEiiii" id="_ZNK2cv9videostab18FastMarchingMethod5solveEiiii">solve</a>(<em>int</em> <dfn class="local col7 decl" id="7x1" title='x1' data-type='int' data-ref="7x1">x1</dfn>, <em>int</em> <dfn class="local col8 decl" id="8y1" title='y1' data-type='int' data-ref="8y1">y1</dfn>, <em>int</em> <dfn class="local col9 decl" id="9x2" title='x2' data-type='int' data-ref="9x2">x2</dfn>, <em>int</em> <dfn class="local col0 decl" id="10y2" title='y2' data-type='int' data-ref="10y2">y2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="81">81</th><td>    <em>int</em>&amp; <dfn class="decl def" id="_ZN2cv9videostab18FastMarchingMethod7indexOfERKNS1_3DXYE" title='cv::videostab::FastMarchingMethod::indexOf' data-ref="_ZN2cv9videostab18FastMarchingMethod7indexOfERKNS1_3DXYE">indexOf</dfn>(<em>const</em> <a class="type" href="#cv::videostab::FastMarchingMethod::DXY" title='cv::videostab::FastMarchingMethod::DXY' data-ref="cv::videostab::FastMarchingMethod::DXY">DXY</a> &amp;<dfn class="local col1 decl" id="11dxy" title='dxy' data-type='const cv::videostab::FastMarchingMethod::DXY &amp;' data-ref="11dxy">dxy</dfn>) { <b>return</b> <a class="member" href="#cv::videostab::FastMarchingMethod::index_" title='cv::videostab::FastMarchingMethod::index_' data-ref="cv::videostab::FastMarchingMethod::index_">index_</a><a class="ref" href="../../../../core/include/opencv2/core/core.hpp.html#_ZN2cv4Mat_clEii" title='cv::Mat_::operator()' data-ref="_ZN2cv4Mat_clEii">(<a class="local col1 ref" href="#11dxy" title='dxy' data-ref="11dxy">dxy</a>.<a class="ref" href="#cv::videostab::FastMarchingMethod::DXY::y" title='cv::videostab::FastMarchingMethod::DXY::y' data-ref="cv::videostab::FastMarchingMethod::DXY::y">y</a>, <a class="local col1 ref" href="#11dxy" title='dxy' data-ref="11dxy">dxy</a>.<a class="ref" href="#cv::videostab::FastMarchingMethod::DXY::x" title='cv::videostab::FastMarchingMethod::DXY::x' data-ref="cv::videostab::FastMarchingMethod::DXY::x">x</a>)</a>; }</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>    <em>void</em> <a class="decl" href="../../../src/fast_marching.cpp.html#_ZN2cv9videostab18FastMarchingMethod6heapUpEi" title='cv::videostab::FastMarchingMethod::heapUp' data-ref="_ZN2cv9videostab18FastMarchingMethod6heapUpEi" id="_ZN2cv9videostab18FastMarchingMethod6heapUpEi">heapUp</a>(<em>int</em> <dfn class="local col2 decl" id="12idx" title='idx' data-type='int' data-ref="12idx">idx</dfn>);</td></tr>
+<tr><th id="84">84</th><td>    <em>void</em> <a class="decl" href="../../../src/fast_marching.cpp.html#_ZN2cv9videostab18FastMarchingMethod8heapDownEi" title='cv::videostab::FastMarchingMethod::heapDown' data-ref="_ZN2cv9videostab18FastMarchingMethod8heapDownEi" id="_ZN2cv9videostab18FastMarchingMethod8heapDownEi">heapDown</a>(<em>int</em> <dfn class="local col3 decl" id="13idx" title='idx' data-type='int' data-ref="13idx">idx</dfn>);</td></tr>
+<tr><th id="85">85</th><td>    <em>void</em> <a class="decl" href="../../../src/fast_marching.cpp.html#_ZN2cv9videostab18FastMarchingMethod7heapAddERKNS1_3DXYE" title='cv::videostab::FastMarchingMethod::heapAdd' data-ref="_ZN2cv9videostab18FastMarchingMethod7heapAddERKNS1_3DXYE" id="_ZN2cv9videostab18FastMarchingMethod7heapAddERKNS1_3DXYE">heapAdd</a>(<em>const</em> <a class="type" href="#cv::videostab::FastMarchingMethod::DXY" title='cv::videostab::FastMarchingMethod::DXY' data-ref="cv::videostab::FastMarchingMethod::DXY">DXY</a> &amp;<dfn class="local col4 decl" id="14dxy" title='dxy' data-type='const cv::videostab::FastMarchingMethod::DXY &amp;' data-ref="14dxy">dxy</dfn>);</td></tr>
+<tr><th id="86">86</th><td>    <em>void</em> <a class="decl" href="../../../src/fast_marching.cpp.html#_ZN2cv9videostab18FastMarchingMethod13heapRemoveMinEv" title='cv::videostab::FastMarchingMethod::heapRemoveMin' data-ref="_ZN2cv9videostab18FastMarchingMethod13heapRemoveMinEv" id="_ZN2cv9videostab18FastMarchingMethod13heapRemoveMinEv">heapRemoveMin</a>();</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td>    <em>float</em> <dfn class="decl" id="cv::videostab::FastMarchingMethod::inf_" title='cv::videostab::FastMarchingMethod::inf_' data-ref="cv::videostab::FastMarchingMethod::inf_">inf_</dfn>;</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>    <span class="namespace">cv::</span><a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat_" title='cv::Mat_' data-ref="cv::Mat_">Mat_</a>&lt;<a class="typedef" href="../../../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>&gt; <dfn class="decl" id="cv::videostab::FastMarchingMethod::flag_" title='cv::videostab::FastMarchingMethod::flag_' data-ref="cv::videostab::FastMarchingMethod::flag_">flag_</dfn>; <i>// flag map</i></td></tr>
+<tr><th id="91">91</th><td>    <span class="namespace">cv::</span><a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat_" title='cv::Mat_' data-ref="cv::Mat_">Mat_</a>&lt;<em>float</em>&gt; <dfn class="decl" id="cv::videostab::FastMarchingMethod::dist_" title='cv::videostab::FastMarchingMethod::dist_' data-ref="cv::videostab::FastMarchingMethod::dist_">dist_</dfn>; <i>// distance map</i></td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>    <span class="namespace">cv::</span><a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat_" title='cv::Mat_' data-ref="cv::Mat_">Mat_</a>&lt;<em>int</em>&gt; <dfn class="decl" id="cv::videostab::FastMarchingMethod::index_" title='cv::videostab::FastMarchingMethod::index_' data-ref="cv::videostab::FastMarchingMethod::index_">index_</dfn>; <i>// index of point in the narrow band</i></td></tr>
+<tr><th id="94">94</th><td>    <span class="namespace">std::</span><a class="type" href="../../../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="#cv::videostab::FastMarchingMethod::DXY" title='cv::videostab::FastMarchingMethod::DXY' data-ref="cv::videostab::FastMarchingMethod::DXY">DXY</a>&gt; <dfn class="decl" id="cv::videostab::FastMarchingMethod::narrowBand_" title='cv::videostab::FastMarchingMethod::narrowBand_' data-ref="cv::videostab::FastMarchingMethod::narrowBand_">narrowBand_</dfn>; <i>// narrow band heap</i></td></tr>
+<tr><th id="95">95</th><td>    <em>int</em> <dfn class="decl" id="cv::videostab::FastMarchingMethod::size_" title='cv::videostab::FastMarchingMethod::size_' data-ref="cv::videostab::FastMarchingMethod::size_">size_</dfn>; <i>// narrow band size</i></td></tr>
+<tr><th id="96">96</th><td>};</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>} <i>// namespace videostab</i></td></tr>
+<tr><th id="99">99</th><td>} <i>// namespace cv</i></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><u>#include <a href="fast_marching_inl.hpp.html">"fast_marching_inl.hpp"</a></u></td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td><u>#<span data-ppcond="43">endif</span></u></td></tr>
+<tr><th id="104">104</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../src/fast_marching.cpp.html'>opencv/modules/videostab/src/fast_marching.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

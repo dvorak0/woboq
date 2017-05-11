@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>sparse_matrix.h source code [ceres-solver/internal/ceres/sparse_matrix.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::SparseMatrix "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/sparse_matrix.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='sparse_matrix.h.html'>sparse_matrix.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// Interface definition for sparse matrices.</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_SPARSE_MATRIX_H_">CERES_INTERNAL_SPARSE_MATRIX_H_</span></u></td></tr>
+<tr><th id="34">34</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_SPARSE_MATRIX_H_" data-ref="_M/CERES_INTERNAL_SPARSE_MATRIX_H_">CERES_INTERNAL_SPARSE_MATRIX_H_</dfn></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../include/c++/4.8/cstdio.html">&lt;cstdio&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="linear_operator.h.html">"ceres/linear_operator.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../../include/ceres/internal/eigen.h.html">"ceres/internal/eigen.h"</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../include/ceres/types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i>// This class defines the interface for storing and manipulating</i></td></tr>
+<tr><th id="45">45</th><td><i>// sparse matrices. The key property that differentiates different</i></td></tr>
+<tr><th id="46">46</th><td><i>// sparse matrices is how they are organized in memory and how the</i></td></tr>
+<tr><th id="47">47</th><td><i>// information about the sparsity structure of the matrix is</i></td></tr>
+<tr><th id="48">48</th><td><i>// stored. This has significant implications for linear solvers</i></td></tr>
+<tr><th id="49">49</th><td><i>// operating on these matrices.</i></td></tr>
+<tr><th id="50">50</th><td><i>//</i></td></tr>
+<tr><th id="51">51</th><td><i>// To deal with the different kinds of layouts, we will assume that a</i></td></tr>
+<tr><th id="52">52</th><td><i>// sparse matrix will have a two part representation. A values array</i></td></tr>
+<tr><th id="53">53</th><td><i>// that will be used to store the entries of the sparse matrix and</i></td></tr>
+<tr><th id="54">54</th><td><i>// some sort of a layout object that tells the user the sparsity</i></td></tr>
+<tr><th id="55">55</th><td><i>// structure and layout of the values array. For example in case of</i></td></tr>
+<tr><th id="56">56</th><td><i>// the TripletSparseMatrix, this information is carried in the rows</i></td></tr>
+<tr><th id="57">57</th><td><i>// and cols arrays and for the BlockSparseMatrix, this information is</i></td></tr>
+<tr><th id="58">58</th><td><i>// carried in the CompressedRowBlockStructure object.</i></td></tr>
+<tr><th id="59">59</th><td><i>//</i></td></tr>
+<tr><th id="60">60</th><td><i>// This interface deliberately does not contain any information about</i></td></tr>
+<tr><th id="61">61</th><td><i>// the structure of the sparse matrix as that seems to be highly</i></td></tr>
+<tr><th id="62">62</th><td><i>// matrix type dependent and we are at this stage unable to come up</i></td></tr>
+<tr><th id="63">63</th><td><i>// with an efficient high level interface that spans multiple sparse</i></td></tr>
+<tr><th id="64">64</th><td><i>// matrix types.</i></td></tr>
+<tr><th id="65">65</th><td><b>class</b> <dfn class="type def" id="ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</dfn> : <b>public</b> <a class="type" href="linear_operator.h.html#ceres::internal::LinearOperator" title='ceres::internal::LinearOperator' data-ref="ceres::internal::LinearOperator">LinearOperator</a> {</td></tr>
+<tr><th id="66">66</th><td> <b>public</b>:</td></tr>
+<tr><th id="67">67</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres8internal12SparseMatrixD1Ev" title='ceres::internal::SparseMatrix::~SparseMatrix' data-ref="_ZN5ceres8internal12SparseMatrixD1Ev">~</dfn>SparseMatrix();</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>  <i>// y += Ax;</i></td></tr>
+<tr><th id="70">70</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix13RightMultiplyEPKdPd" title='ceres::internal::SparseMatrix::RightMultiply' data-ref="_ZNK5ceres8internal12SparseMatrix13RightMultiplyEPKdPd">RightMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col4 decl" id="24x" title='x' data-type='const double *' data-ref="24x">x</dfn>, <em>double</em>* <dfn class="local col5 decl" id="25y" title='y' data-type='double *' data-ref="25y">y</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="71">71</th><td>  <i>// y += A'x;</i></td></tr>
+<tr><th id="72">72</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix12LeftMultiplyEPKdPd" title='ceres::internal::SparseMatrix::LeftMultiply' data-ref="_ZNK5ceres8internal12SparseMatrix12LeftMultiplyEPKdPd">LeftMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col6 decl" id="26x" title='x' data-type='const double *' data-ref="26x">x</dfn>, <em>double</em>* <dfn class="local col7 decl" id="27y" title='y' data-type='double *' data-ref="27y">y</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>  <i>// In MATLAB notation sum(A.*A, 1)</i></td></tr>
+<tr><th id="75">75</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix17SquaredColumnNormEPd" title='ceres::internal::SparseMatrix::SquaredColumnNorm' data-ref="_ZNK5ceres8internal12SparseMatrix17SquaredColumnNormEPd">SquaredColumnNorm</dfn>(<em>double</em>* <dfn class="local col8 decl" id="28x" title='x' data-type='double *' data-ref="28x">x</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="76">76</th><td>  <i>// A = A * diag(scale)</i></td></tr>
+<tr><th id="77">77</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal12SparseMatrix12ScaleColumnsEPKd" title='ceres::internal::SparseMatrix::ScaleColumns' data-ref="_ZN5ceres8internal12SparseMatrix12ScaleColumnsEPKd">ScaleColumns</dfn>(<em>const</em> <em>double</em>* <dfn class="local col9 decl" id="29scale" title='scale' data-type='const double *' data-ref="29scale">scale</dfn>) = <var>0</var>;</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>  <i>// A = 0. A-&gt;num_nonzeros() == 0 is true after this call. The</i></td></tr>
+<tr><th id="80">80</th><td><i>  // sparsity pattern is preserved.</i></td></tr>
+<tr><th id="81">81</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal12SparseMatrix7SetZeroEv" title='ceres::internal::SparseMatrix::SetZero' data-ref="_ZN5ceres8internal12SparseMatrix7SetZeroEv">SetZero</dfn>() = <var>0</var>;</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>  <i>// Resize and populate dense_matrix with a dense version of the</i></td></tr>
+<tr><th id="84">84</th><td><i>  // sparse matrix.</i></td></tr>
+<tr><th id="85">85</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix13ToDenseMatrixEPN5Eigen6MatrixIdLin1ELin1ELi1ELin1ELin1EEE" title='ceres::internal::SparseMatrix::ToDenseMatrix' data-ref="_ZNK5ceres8internal12SparseMatrix13ToDenseMatrixEPN5Eigen6MatrixIdLin1ELin1ELi1ELin1ELin1EEE">ToDenseMatrix</dfn>(<a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Matrix" title='ceres::Matrix' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor&gt;' data-ref="ceres::Matrix">Matrix</a>* <dfn class="local col0 decl" id="30dense_matrix" title='dense_matrix' data-type='Matrix *' data-ref="30dense_matrix">dense_matrix</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>  <i>// Write out the matrix as a sequence of (i,j,s) triplets. This</i></td></tr>
+<tr><th id="88">88</th><td><i>  // format is useful for loading the matrix into MATLAB/octave as a</i></td></tr>
+<tr><th id="89">89</th><td><i>  // sparse matrix.</i></td></tr>
+<tr><th id="90">90</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix10ToTextFileEP8_IO_FILE" title='ceres::internal::SparseMatrix::ToTextFile' data-ref="_ZNK5ceres8internal12SparseMatrix10ToTextFileEP8_IO_FILE">ToTextFile</dfn>(<a class="typedef" href="../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>* <dfn class="local col1 decl" id="31file" title='file' data-type='FILE *' data-ref="31file">file</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>  <i>// Accessors for the values array that stores the entries of the</i></td></tr>
+<tr><th id="93">93</th><td><i>  // sparse matrix. The exact interpreptation of the values of this</i></td></tr>
+<tr><th id="94">94</th><td><i>  // array depends on the particular kind of SparseMatrix being</i></td></tr>
+<tr><th id="95">95</th><td><i>  // accessed.</i></td></tr>
+<tr><th id="96">96</th><td>  <b>virtual</b> <em>double</em>* <dfn class="virtual decl" id="_ZN5ceres8internal12SparseMatrix14mutable_valuesEv" title='ceres::internal::SparseMatrix::mutable_values' data-ref="_ZN5ceres8internal12SparseMatrix14mutable_valuesEv">mutable_values</dfn>() = <var>0</var>;</td></tr>
+<tr><th id="97">97</th><td>  <b>virtual</b> <em>const</em> <em>double</em>* <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix6valuesEv" title='ceres::internal::SparseMatrix::values' data-ref="_ZNK5ceres8internal12SparseMatrix6valuesEv">values</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix8num_rowsEv" title='ceres::internal::SparseMatrix::num_rows' data-ref="_ZNK5ceres8internal12SparseMatrix8num_rowsEv">num_rows</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="100">100</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix8num_colsEv" title='ceres::internal::SparseMatrix::num_cols' data-ref="_ZNK5ceres8internal12SparseMatrix8num_colsEv">num_cols</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="101">101</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal12SparseMatrix12num_nonzerosEv" title='ceres::internal::SparseMatrix::num_nonzeros' data-ref="_ZNK5ceres8internal12SparseMatrix12num_nonzerosEv">num_nonzeros</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="102">102</th><td>};</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="105">105</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td><u>#<span data-ppcond="33">endif</span>  // CERES_INTERNAL_SPARSE_MATRIX_H_</u></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='block_evaluate_preparer.cc.html'>ceres-solver/internal/ceres/block_evaluate_preparer.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

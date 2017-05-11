@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>blobtrackpostproclinear.cpp source code [opencv/modules/legacy/src/blobtrackpostproclinear.cpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="CvBlobTrackPostProcTimeAver "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/legacy/src/blobtrackpostproclinear.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>legacy</a>/<a href='./'>src</a>/<a href='blobtrackpostproclinear.cpp.html'>blobtrackpostproclinear.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                        Intel License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//</i></td></tr>
+<tr><th id="12">12</th><td><i>// Copyright (C) 2000, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="13">13</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="14">14</th><td><i>//</i></td></tr>
+<tr><th id="15">15</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="16">16</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="17">17</th><td><i>//</i></td></tr>
+<tr><th id="18">18</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="19">19</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="20">20</th><td><i>//</i></td></tr>
+<tr><th id="21">21</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="22">22</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="23">23</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="24">24</th><td><i>//</i></td></tr>
+<tr><th id="25">25</th><td><i>//   * The name of Intel Corporation may not be used to endorse or promote products</i></td></tr>
+<tr><th id="26">26</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="27">27</th><td><i>//</i></td></tr>
+<tr><th id="28">28</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="29">29</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="30">30</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="31">31</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="32">32</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="33">33</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="34">34</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="35">35</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="36">36</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="37">37</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="38">38</th><td><i>//</i></td></tr>
+<tr><th id="39">39</th><td><i>//M*/</i></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><i>/*======================= TIME AVERAGING FILTER =========================*/</i></td></tr>
+<tr><th id="44">44</th><td><u>#define <dfn class="macro" id="_M/TIME_WND" data-ref="_M/TIME_WND">TIME_WND</dfn> 5</u></td></tr>
+<tr><th id="45">45</th><td><b>class</b> <dfn class="type def" id="CvBlobTrackPostProcTimeAver" title='CvBlobTrackPostProcTimeAver' data-ref="CvBlobTrackPostProcTimeAver">CvBlobTrackPostProcTimeAver</dfn>:<b>public</b> <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProcOne" title='CvBlobTrackPostProcOne' data-ref="CvBlobTrackPostProcOne">CvBlobTrackPostProcOne</a></td></tr>
+<tr><th id="46">46</th><td>{</td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><b>protected</b>:</td></tr>
+<tr><th id="49">49</th><td>    <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob" title='CvBlob' data-ref="CvBlob">CvBlob</a>      <dfn class="tu decl" id="CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-type='CvBlob' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</dfn>;</td></tr>
+<tr><th id="50">50</th><td>    <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob" title='CvBlob' data-ref="CvBlob">CvBlob</a>      <dfn class="tu decl" id="CvBlobTrackPostProcTimeAver::m_pBlobs" title='CvBlobTrackPostProcTimeAver::m_pBlobs' data-type='CvBlob [5]' data-ref="CvBlobTrackPostProcTimeAver::m_pBlobs">m_pBlobs</dfn>[<a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>];</td></tr>
+<tr><th id="51">51</th><td>    <em>float</em>       <dfn class="tu decl" id="CvBlobTrackPostProcTimeAver::m_Weights" title='CvBlobTrackPostProcTimeAver::m_Weights' data-type='float [5]' data-ref="CvBlobTrackPostProcTimeAver::m_Weights">m_Weights</dfn>[<a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>];</td></tr>
+<tr><th id="52">52</th><td>    <em>int</em>         <dfn class="tu decl" id="CvBlobTrackPostProcTimeAver::m_Frame" title='CvBlobTrackPostProcTimeAver::m_Frame' data-type='int' data-ref="CvBlobTrackPostProcTimeAver::m_Frame">m_Frame</dfn>;</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><b>public</b>:</td></tr>
+<tr><th id="55">55</th><td>    <dfn class="tu decl def" id="_ZN27CvBlobTrackPostProcTimeAverC1Ei" title='CvBlobTrackPostProcTimeAver::CvBlobTrackPostProcTimeAver' data-type='void CvBlobTrackPostProcTimeAver::CvBlobTrackPostProcTimeAver(int KernelType = 0)' data-ref="_ZN27CvBlobTrackPostProcTimeAverC1Ei">CvBlobTrackPostProcTimeAver</dfn>( <em>int</em> <dfn class="local col1 decl" id="1KernelType" title='KernelType' data-type='int' data-ref="1KernelType">KernelType</dfn> = <var>0</var>)</td></tr>
+<tr><th id="56">56</th><td>    {</td></tr>
+<tr><th id="57">57</th><td>        <em>int</em> <dfn class="local col2 decl" id="2i" title='i' data-type='int' data-ref="2i">i</dfn>;</td></tr>
+<tr><th id="58">58</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Frame" title='CvBlobTrackPostProcTimeAver::m_Frame' data-use='w' data-ref="CvBlobTrackPostProcTimeAver::m_Frame">m_Frame</a> = <var>0</var>;</td></tr>
+<tr><th id="59">59</th><td>        <b>for</b>(<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>=<var>0</var>;<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>&lt;<a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>;++<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>)</td></tr>
+<tr><th id="60">60</th><td>        {</td></tr>
+<tr><th id="61">61</th><td>            <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Weights" title='CvBlobTrackPostProcTimeAver::m_Weights' data-use='w' data-ref="CvBlobTrackPostProcTimeAver::m_Weights">m_Weights</a>[<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>] = <var>1</var>;</td></tr>
+<tr><th id="62">62</th><td>            <b>if</b>(<a class="local col1 ref" href="#1KernelType" title='KernelType' data-ref="1KernelType">KernelType</a> == <var>1</var>)</td></tr>
+<tr><th id="63">63</th><td>            {</td></tr>
+<tr><th id="64">64</th><td>                <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Weights" title='CvBlobTrackPostProcTimeAver::m_Weights' data-use='w' data-ref="CvBlobTrackPostProcTimeAver::m_Weights">m_Weights</a>[<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>] = (<em>float</em>)<a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#100" title='exp' data-ref="exp">exp</a>((-<var>2.3</var>*<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>)/(<a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>-<var>1</var>)); <i>/* last weight is 0.1 of first weight */</i></td></tr>
+<tr><th id="65">65</th><td>            }</td></tr>
+<tr><th id="66">66</th><td>        }</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td>        <a class="member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN10CvVSModule13SetModuleNameEPKc" title='CvVSModule::SetModuleName' data-ref="_ZN10CvVSModule13SetModuleNameEPKc">SetModuleName</a>(<q>"TimeAver"</q>);</td></tr>
+<tr><th id="69">69</th><td>    };</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td>   <dfn class="virtual decl def" id="_ZN27CvBlobTrackPostProcTimeAverD1Ev" title='CvBlobTrackPostProcTimeAver::~CvBlobTrackPostProcTimeAver' data-ref="_ZN27CvBlobTrackPostProcTimeAverD1Ev">~</dfn>CvBlobTrackPostProcTimeAver(){};</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>    <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob" title='CvBlob' data-ref="CvBlob">CvBlob</a>* <dfn class="virtual decl def" id="_ZN27CvBlobTrackPostProcTimeAver7ProcessEP6CvBlob" title='CvBlobTrackPostProcTimeAver::Process' data-ref="_ZN27CvBlobTrackPostProcTimeAver7ProcessEP6CvBlob">Process</dfn>(<a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob" title='CvBlob' data-ref="CvBlob">CvBlob</a>* <dfn class="local col3 decl" id="3pBlob" title='pBlob' data-type='CvBlob *' data-ref="3pBlob">pBlob</dfn>)</td></tr>
+<tr><th id="74">74</th><td>    {</td></tr>
+<tr><th id="75">75</th><td>        <em>float</em>   <dfn class="local col4 decl" id="4WSum" title='WSum' data-type='float' data-ref="4WSum">WSum</dfn> = <var>0</var>;</td></tr>
+<tr><th id="76">76</th><td>        <em>int</em>     <dfn class="local col5 decl" id="5i" title='i' data-type='int' data-ref="5i">i</dfn>;</td></tr>
+<tr><th id="77">77</th><td>        <em>int</em> <dfn class="local col6 decl" id="6idx" title='idx' data-type='int' data-ref="6idx">idx</dfn> = <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Frame" title='CvBlobTrackPostProcTimeAver::m_Frame' data-use='r' data-ref="CvBlobTrackPostProcTimeAver::m_Frame">m_Frame</a> % <a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>;</td></tr>
+<tr><th id="78">78</th><td>        <em>int</em> <dfn class="local col7 decl" id="7size" title='size' data-type='int' data-ref="7size">size</dfn> = <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#296" title="(((m_Frame+1)) &gt; (5) ? (5) : ((m_Frame+1)))" data-ref="_M/MIN">MIN</a>((<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Frame" title='CvBlobTrackPostProcTimeAver::m_Frame' data-use='r' data-ref="CvBlobTrackPostProcTimeAver::m_Frame">m_Frame</a>+<var>1</var>), <a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>);</td></tr>
+<tr><th id="79">79</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_pBlobs" title='CvBlobTrackPostProcTimeAver::m_pBlobs' data-use='w' data-ref="CvBlobTrackPostProcTimeAver::m_pBlobs">m_pBlobs</a>[<a class="local col6 ref" href="#6idx" title='idx' data-ref="6idx">idx</a>] <a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#153" title='CvBlob::operator=' data-ref="_ZN6CvBlobaSERKS_">=</a> <a class="local col3 ref" href="#3pBlob" title='pBlob' data-ref="3pBlob">pBlob</a>[<var>0</var>];</td></tr>
+<tr><th id="80">80</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::x" title='CvBlob::x' data-ref="CvBlob::x">x</a> = <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::y" title='CvBlob::y' data-ref="CvBlob::y">y</a> = <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::w" title='CvBlob::w' data-ref="CvBlob::w">w</a> = <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::h" title='CvBlob::h' data-ref="CvBlob::h">h</a> = <var>0</var>;</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>        <b>for</b>(<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>=<var>0</var>; <a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>&lt;<a class="local col7 ref" href="#7size" title='size' data-ref="7size">size</a>; ++<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>)</td></tr>
+<tr><th id="83">83</th><td>        {</td></tr>
+<tr><th id="84">84</th><td>            <em>float</em>   <dfn class="local col8 decl" id="8W" title='W' data-type='float' data-ref="8W">W</dfn> = <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Weights" title='CvBlobTrackPostProcTimeAver::m_Weights' data-use='r' data-ref="CvBlobTrackPostProcTimeAver::m_Weights">m_Weights</a>[<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>];</td></tr>
+<tr><th id="85">85</th><td>            <em>int</em>     <dfn class="local col9 decl" id="9index" title='index' data-type='int' data-ref="9index">index</dfn>  = (<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Frame" title='CvBlobTrackPostProcTimeAver::m_Frame' data-use='r' data-ref="CvBlobTrackPostProcTimeAver::m_Frame">m_Frame</a> - <a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a> + <a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>) % <a class="macro" href="#44" title="5" data-ref="_M/TIME_WND">TIME_WND</a>;</td></tr>
+<tr><th id="86">86</th><td>            <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::x" title='CvBlob::x' data-ref="CvBlob::x">x</a> += <a class="local col8 ref" href="#8W" title='W' data-ref="8W">W</a>*<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_pBlobs" title='CvBlobTrackPostProcTimeAver::m_pBlobs' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_pBlobs">m_pBlobs</a>[<a class="local col9 ref" href="#9index" title='index' data-ref="9index">index</a>].<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::x" title='CvBlob::x' data-ref="CvBlob::x">x</a>;</td></tr>
+<tr><th id="87">87</th><td>            <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::y" title='CvBlob::y' data-ref="CvBlob::y">y</a> += <a class="local col8 ref" href="#8W" title='W' data-ref="8W">W</a>*<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_pBlobs" title='CvBlobTrackPostProcTimeAver::m_pBlobs' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_pBlobs">m_pBlobs</a>[<a class="local col9 ref" href="#9index" title='index' data-ref="9index">index</a>].<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::y" title='CvBlob::y' data-ref="CvBlob::y">y</a>;</td></tr>
+<tr><th id="88">88</th><td>            <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::w" title='CvBlob::w' data-ref="CvBlob::w">w</a> += <a class="local col8 ref" href="#8W" title='W' data-ref="8W">W</a>*<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_pBlobs" title='CvBlobTrackPostProcTimeAver::m_pBlobs' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_pBlobs">m_pBlobs</a>[<a class="local col9 ref" href="#9index" title='index' data-ref="9index">index</a>].<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::w" title='CvBlob::w' data-ref="CvBlob::w">w</a>;</td></tr>
+<tr><th id="89">89</th><td>            <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::h" title='CvBlob::h' data-ref="CvBlob::h">h</a> += <a class="local col8 ref" href="#8W" title='W' data-ref="8W">W</a>*<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_pBlobs" title='CvBlobTrackPostProcTimeAver::m_pBlobs' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_pBlobs">m_pBlobs</a>[<a class="local col9 ref" href="#9index" title='index' data-ref="9index">index</a>].<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::h" title='CvBlob::h' data-ref="CvBlob::h">h</a>;</td></tr>
+<tr><th id="90">90</th><td>            <a class="local col4 ref" href="#4WSum" title='WSum' data-ref="4WSum">WSum</a> += <a class="local col8 ref" href="#8W" title='W' data-ref="8W">W</a>;</td></tr>
+<tr><th id="91">91</th><td>        }</td></tr>
+<tr><th id="92">92</th><td>        <a class="macro" href="../../../../include/assert.h.html#50" title="(static_cast&lt;void&gt; (0))" data-ref="_M/assert">assert</a>(WSum&gt;<var>0</var>);</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::x" title='CvBlob::x' data-ref="CvBlob::x">x</a> /= <a class="local col4 ref" href="#4WSum" title='WSum' data-ref="4WSum">WSum</a>;</td></tr>
+<tr><th id="95">95</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::y" title='CvBlob::y' data-ref="CvBlob::y">y</a> /= <a class="local col4 ref" href="#4WSum" title='WSum' data-ref="4WSum">WSum</a>;</td></tr>
+<tr><th id="96">96</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::w" title='CvBlob::w' data-ref="CvBlob::w">w</a> /= <a class="local col4 ref" href="#4WSum" title='WSum' data-ref="4WSum">WSum</a>;</td></tr>
+<tr><th id="97">97</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='m' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>.<a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob::h" title='CvBlob::h' data-ref="CvBlob::h">h</a> /= <a class="local col4 ref" href="#4WSum" title='WSum' data-ref="4WSum">WSum</a>;</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>        <a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Frame" title='CvBlobTrackPostProcTimeAver::m_Frame' data-use='w' data-ref="CvBlobTrackPostProcTimeAver::m_Frame">m_Frame</a>++;</td></tr>
+<tr><th id="100">100</th><td>        <b>return</b> &amp;<a class="tu member" href="#CvBlobTrackPostProcTimeAver::m_Blob" title='CvBlobTrackPostProcTimeAver::m_Blob' data-use='a' data-ref="CvBlobTrackPostProcTimeAver::m_Blob">m_Blob</a>;</td></tr>
+<tr><th id="101">101</th><td>    };</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <em>void</em> <dfn class="virtual decl def" id="_ZN27CvBlobTrackPostProcTimeAver7ReleaseEv" title='CvBlobTrackPostProcTimeAver::Release' data-ref="_ZN27CvBlobTrackPostProcTimeAver7ReleaseEv">Release</dfn>()</td></tr>
+<tr><th id="104">104</th><td>    {</td></tr>
+<tr><th id="105">105</th><td>        <b>delete</b> <b>this</b>;</td></tr>
+<tr><th id="106">106</th><td>    }</td></tr>
+<tr><th id="107">107</th><td>};  <i>/* class CvBlobTrackPostProcTimeAver */</i></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td><em>static</em> <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProcOne" title='CvBlobTrackPostProcOne' data-ref="CvBlobTrackPostProcOne">CvBlobTrackPostProcOne</a>* <dfn class="tu decl def" id="_ZL46cvCreateModuleBlobTrackPostProcTimeAverRectOnev" title='cvCreateModuleBlobTrackPostProcTimeAverRectOne' data-type='CvBlobTrackPostProcOne * cvCreateModuleBlobTrackPostProcTimeAverRectOne()' data-ref="_ZL46cvCreateModuleBlobTrackPostProcTimeAverRectOnev">cvCreateModuleBlobTrackPostProcTimeAverRectOne</dfn>()</td></tr>
+<tr><th id="110">110</th><td>{</td></tr>
+<tr><th id="111">111</th><td>    <b>return</b> (<a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProcOne" title='CvBlobTrackPostProcOne' data-ref="CvBlobTrackPostProcOne">CvBlobTrackPostProcOne</a>*) <b>new</b> <a class="type" href="#CvBlobTrackPostProcTimeAver" title='CvBlobTrackPostProcTimeAver' data-ref="CvBlobTrackPostProcTimeAver">CvBlobTrackPostProcTimeAver</a><a class="tu ref" href="#_ZN27CvBlobTrackPostProcTimeAverC1Ei" title='CvBlobTrackPostProcTimeAver::CvBlobTrackPostProcTimeAver' data-use='c' data-ref="_ZN27CvBlobTrackPostProcTimeAverC1Ei">(</a><var>0</var>);</td></tr>
+<tr><th id="112">112</th><td>}</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><em>static</em> <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProcOne" title='CvBlobTrackPostProcOne' data-ref="CvBlobTrackPostProcOne">CvBlobTrackPostProcOne</a>* <dfn class="tu decl def" id="_ZL45cvCreateModuleBlobTrackPostProcTimeAverExpOnev" title='cvCreateModuleBlobTrackPostProcTimeAverExpOne' data-type='CvBlobTrackPostProcOne * cvCreateModuleBlobTrackPostProcTimeAverExpOne()' data-ref="_ZL45cvCreateModuleBlobTrackPostProcTimeAverExpOnev">cvCreateModuleBlobTrackPostProcTimeAverExpOne</dfn>()</td></tr>
+<tr><th id="115">115</th><td>{</td></tr>
+<tr><th id="116">116</th><td>    <b>return</b> (<a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProcOne" title='CvBlobTrackPostProcOne' data-ref="CvBlobTrackPostProcOne">CvBlobTrackPostProcOne</a>*) <b>new</b> <a class="type" href="#CvBlobTrackPostProcTimeAver" title='CvBlobTrackPostProcTimeAver' data-ref="CvBlobTrackPostProcTimeAver">CvBlobTrackPostProcTimeAver</a><a class="tu ref" href="#_ZN27CvBlobTrackPostProcTimeAverC1Ei" title='CvBlobTrackPostProcTimeAver::CvBlobTrackPostProcTimeAver' data-use='c' data-ref="_ZN27CvBlobTrackPostProcTimeAverC1Ei">(</a><var>1</var>);</td></tr>
+<tr><th id="117">117</th><td>}</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td><a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProc" title='CvBlobTrackPostProc' data-ref="CvBlobTrackPostProc">CvBlobTrackPostProc</a>* <dfn class="decl def" id="_Z43cvCreateModuleBlobTrackPostProcTimeAverRectv" title='cvCreateModuleBlobTrackPostProcTimeAverRect' data-ref="_Z43cvCreateModuleBlobTrackPostProcTimeAverRectv">cvCreateModuleBlobTrackPostProcTimeAverRect</dfn>()</td></tr>
+<tr><th id="120">120</th><td>{</td></tr>
+<tr><th id="121">121</th><td>    <b>return</b> <a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#_Z29cvCreateBlobTrackPostProcListPFP22CvBlobTrackPostProcOnevE" title='cvCreateBlobTrackPostProcList' data-ref="_Z29cvCreateBlobTrackPostProcListPFP22CvBlobTrackPostProcOnevE">cvCreateBlobTrackPostProcList</a>(<a class="tu ref" href="#_ZL46cvCreateModuleBlobTrackPostProcTimeAverRectOnev" title='cvCreateModuleBlobTrackPostProcTimeAverRectOne' data-use='r' data-ref="_ZL46cvCreateModuleBlobTrackPostProcTimeAverRectOnev">cvCreateModuleBlobTrackPostProcTimeAverRectOne</a>);</td></tr>
+<tr><th id="122">122</th><td>}</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td><a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackPostProc" title='CvBlobTrackPostProc' data-ref="CvBlobTrackPostProc">CvBlobTrackPostProc</a>* <dfn class="decl def" id="_Z42cvCreateModuleBlobTrackPostProcTimeAverExpv" title='cvCreateModuleBlobTrackPostProcTimeAverExp' data-ref="_Z42cvCreateModuleBlobTrackPostProcTimeAverExpv">cvCreateModuleBlobTrackPostProcTimeAverExp</dfn>()</td></tr>
+<tr><th id="125">125</th><td>{</td></tr>
+<tr><th id="126">126</th><td>    <b>return</b> <a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#_Z29cvCreateBlobTrackPostProcListPFP22CvBlobTrackPostProcOnevE" title='cvCreateBlobTrackPostProcList' data-ref="_Z29cvCreateBlobTrackPostProcListPFP22CvBlobTrackPostProcOnevE">cvCreateBlobTrackPostProcList</a>(<a class="tu ref" href="#_ZL45cvCreateModuleBlobTrackPostProcTimeAverExpOnev" title='cvCreateModuleBlobTrackPostProcTimeAverExpOne' data-use='r' data-ref="_ZL45cvCreateModuleBlobTrackPostProcTimeAverExpOnev">cvCreateModuleBlobTrackPostProcTimeAverExpOne</a>);</td></tr>
+<tr><th id="127">127</th><td>}</td></tr>
+<tr><th id="128">128</th><td><i>/*======================= KALMAN FILTER =========================*/</i></td></tr>
+<tr><th id="129">129</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

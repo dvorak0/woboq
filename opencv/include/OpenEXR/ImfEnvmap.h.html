@@ -1,0 +1,341 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ImfEnvmap.h source code [include/OpenEXR/ImfEnvmap.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Imf::CubeMapFace,Imf::Envmap "/>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/OpenEXR/ImfEnvmap.h'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>include</a>/<a href='./'>OpenEXR</a>/<a href='ImfEnvmap.h.html'>ImfEnvmap.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>// Copyright (c) 2004, Industrial Light &amp; Magic, a division of Lucas</i></td></tr>
+<tr><th id="4">4</th><td><i>// Digital Ltd. LLC</i></td></tr>
+<tr><th id="5">5</th><td><i>// </i></td></tr>
+<tr><th id="6">6</th><td><i>// All rights reserved.</i></td></tr>
+<tr><th id="7">7</th><td><i>// </i></td></tr>
+<tr><th id="8">8</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="9">9</th><td><i>// modification, are permitted provided that the following conditions are</i></td></tr>
+<tr><th id="10">10</th><td><i>// met:</i></td></tr>
+<tr><th id="11">11</th><td><i>// *       Redistributions of source code must retain the above copyright</i></td></tr>
+<tr><th id="12">12</th><td><i>// notice, this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="13">13</th><td><i>// *       Redistributions in binary form must reproduce the above</i></td></tr>
+<tr><th id="14">14</th><td><i>// copyright notice, this list of conditions and the following disclaimer</i></td></tr>
+<tr><th id="15">15</th><td><i>// in the documentation and/or other materials provided with the</i></td></tr>
+<tr><th id="16">16</th><td><i>// distribution.</i></td></tr>
+<tr><th id="17">17</th><td><i>// *       Neither the name of Industrial Light &amp; Magic nor the names of</i></td></tr>
+<tr><th id="18">18</th><td><i>// its contributors may be used to endorse or promote products derived</i></td></tr>
+<tr><th id="19">19</th><td><i>// from this software without specific prior written permission. </i></td></tr>
+<tr><th id="20">20</th><td><i>// </i></td></tr>
+<tr><th id="21">21</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</i></td></tr>
+<tr><th id="22">22</th><td><i>// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT</i></td></tr>
+<tr><th id="23">23</th><td><i>// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR</i></td></tr>
+<tr><th id="24">24</th><td><i>// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT</i></td></tr>
+<tr><th id="25">25</th><td><i>// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,</i></td></tr>
+<tr><th id="26">26</th><td><i>// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT</i></td></tr>
+<tr><th id="27">27</th><td><i>// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,</i></td></tr>
+<tr><th id="28">28</th><td><i>// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY</i></td></tr>
+<tr><th id="29">29</th><td><i>// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</i></td></tr>
+<tr><th id="30">30</th><td><i>// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</i></td></tr>
+<tr><th id="31">31</th><td><i>// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="32">32</th><td><i>//</i></td></tr>
+<tr><th id="33">33</th><td><i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><u>#<span data-ppcond="36">ifndef</span> <span class="macro" data-ref="_M/INCLUDED_IMF_ENVMAP_H">INCLUDED_IMF_ENVMAP_H</span></u></td></tr>
+<tr><th id="37">37</th><td><u>#define <dfn class="macro" id="_M/INCLUDED_IMF_ENVMAP_H" data-ref="_M/INCLUDED_IMF_ENVMAP_H">INCLUDED_IMF_ENVMAP_H</dfn></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><i>//-----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//	Environment maps</i></td></tr>
+<tr><th id="42">42</th><td><i>//</i></td></tr>
+<tr><th id="43">43</th><td><i>//	Environment maps define a mapping from 3D directions to 2D</i></td></tr>
+<tr><th id="44">44</th><td><i>//	pixel space locations.  Environment maps are typically used</i></td></tr>
+<tr><th id="45">45</th><td><i>//	in 3D rendering, for effects such as quickly approximating</i></td></tr>
+<tr><th id="46">46</th><td><i>//	how shiny surfaces reflect their environment.</i></td></tr>
+<tr><th id="47">47</th><td><i>//</i></td></tr>
+<tr><th id="48">48</th><td><i>//	Environment maps can be stored in scanline-based or in tiled</i></td></tr>
+<tr><th id="49">49</th><td><i>//	OpenEXR files.  The fact that an image is an environment map</i></td></tr>
+<tr><th id="50">50</th><td><i>//	is indicated by the presence of an EnvmapAttribute whose name</i></td></tr>
+<tr><th id="51">51</th><td><i>//	is "envmap". (Convenience functions to access this attribute</i></td></tr>
+<tr><th id="52">52</th><td><i>//	are defined in header file ImfStandardAttributes.h.)</i></td></tr>
+<tr><th id="53">53</th><td><i>//	The attribute's value defines the mapping from 3D directions</i></td></tr>
+<tr><th id="54">54</th><td><i>//	to 2D pixel space locations.</i></td></tr>
+<tr><th id="55">55</th><td><i>//</i></td></tr>
+<tr><th id="56">56</th><td><i>//	This header file defines the set of possible EnvmapAttribute</i></td></tr>
+<tr><th id="57">57</th><td><i>//	values.</i></td></tr>
+<tr><th id="58">58</th><td><i>//</i></td></tr>
+<tr><th id="59">59</th><td><i>//	For each possible EnvmapAttribute value, this header file also</i></td></tr>
+<tr><th id="60">60</th><td><i>//	defines a set of convienience functions to convert between 3D</i></td></tr>
+<tr><th id="61">61</th><td><i>//	directions and 2D pixel locations.</i></td></tr>
+<tr><th id="62">62</th><td><i>//</i></td></tr>
+<tr><th id="63">63</th><td><i>//	Most of the convenience functions defined below require a</i></td></tr>
+<tr><th id="64">64</th><td><i>//	dataWindow parameter.  For scanline-based images, and for</i></td></tr>
+<tr><th id="65">65</th><td><i>//	tiled images with level mode ONE_LEVEL, the dataWindow</i></td></tr>
+<tr><th id="66">66</th><td><i>//	parameter should be set to the image's data window, as</i></td></tr>
+<tr><th id="67">67</th><td><i>//	defined in the image header.  For tiled images with level</i></td></tr>
+<tr><th id="68">68</th><td><i>//	mode MIPMAP_LEVELS or RIPMAP_LEVELS, the data window of the</i></td></tr>
+<tr><th id="69">69</th><td><i>//	image level that is being accessed should be used instead.</i></td></tr>
+<tr><th id="70">70</th><td><i>//	(See the dataWindowForLevel() methods in ImfTiledInputFile.h</i></td></tr>
+<tr><th id="71">71</th><td><i>//	and ImfTiledOutputFile.h.)</i></td></tr>
+<tr><th id="72">72</th><td><i>//</i></td></tr>
+<tr><th id="73">73</th><td><i>//-----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td><u>#include <a href="ImathBox.h.html">"ImathBox.h"</a></u></td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><b>namespace</b> <span class="namespace">Imf</span> {</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td><i>//--------------------------------</i></td></tr>
+<tr><th id="80">80</th><td><i>// Supported environment map types</i></td></tr>
+<tr><th id="81">81</th><td><i>//--------------------------------</i></td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><b>enum</b> <dfn class="type def" id="Imf::Envmap" title='Imf::Envmap' data-ref="Imf::Envmap">Envmap</dfn></td></tr>
+<tr><th id="84">84</th><td>{</td></tr>
+<tr><th id="85">85</th><td>    <dfn class="enum" id="Imf::Envmap::ENVMAP_LATLONG" title='Imf::Envmap::ENVMAP_LATLONG' data-ref="Imf::Envmap::ENVMAP_LATLONG">ENVMAP_LATLONG</dfn> = <var>0</var>,		<i>// Latitude-longitude environment map</i></td></tr>
+<tr><th id="86">86</th><td>    <dfn class="enum" id="Imf::Envmap::ENVMAP_CUBE" title='Imf::Envmap::ENVMAP_CUBE' data-ref="Imf::Envmap::ENVMAP_CUBE">ENVMAP_CUBE</dfn> = <var>1</var>,		<i>// Cube map</i></td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td>    <dfn class="enum" id="Imf::Envmap::NUM_ENVMAPTYPES" title='Imf::Envmap::NUM_ENVMAPTYPES' data-ref="Imf::Envmap::NUM_ENVMAPTYPES">NUM_ENVMAPTYPES</dfn>		<i>// Number of different environment map types</i></td></tr>
+<tr><th id="89">89</th><td>};</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td><i>//-------------------------------------------------------------------------</i></td></tr>
+<tr><th id="93">93</th><td><i>// Latitude-Longitude Map:</i></td></tr>
+<tr><th id="94">94</th><td><i>//</i></td></tr>
+<tr><th id="95">95</th><td><i>// The environment is projected onto the image using polar coordinates</i></td></tr>
+<tr><th id="96">96</th><td><i>// (latitude and longitude).  A pixel's x coordinate corresponds to</i></td></tr>
+<tr><th id="97">97</th><td><i>// its longitude, and the y coordinate corresponds to its latitude.</i></td></tr>
+<tr><th id="98">98</th><td><i>// Pixel (dataWindow.min.x, dataWindow.min.y) has latitude +pi/2 and</i></td></tr>
+<tr><th id="99">99</th><td><i>// longitude +pi; pixel (dataWindow.max.x, dataWindow.max.y) has</i></td></tr>
+<tr><th id="100">100</th><td><i>// latitude -pi/2 and longitude -pi.</i></td></tr>
+<tr><th id="101">101</th><td><i>//</i></td></tr>
+<tr><th id="102">102</th><td><i>// In 3D space, latitudes -pi/2 and +pi/2 correspond to the negative and</i></td></tr>
+<tr><th id="103">103</th><td><i>// positive y direction.  Latitude 0, longitude 0 points into positive</i></td></tr>
+<tr><th id="104">104</th><td><i>// z direction; and latitude 0, longitude pi/2 points into positive x</i></td></tr>
+<tr><th id="105">105</th><td><i>// direction.</i></td></tr>
+<tr><th id="106">106</th><td><i>//</i></td></tr>
+<tr><th id="107">107</th><td><i>// The size of the data window should be 2*N by N pixels (width by height),</i></td></tr>
+<tr><th id="108">108</th><td><i>// where N can be any integer greater than 0.</i></td></tr>
+<tr><th id="109">109</th><td><i>//-------------------------------------------------------------------------</i></td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td><b>namespace</b> <span class="namespace">LatLongMap</span></td></tr>
+<tr><th id="112">112</th><td>{</td></tr>
+<tr><th id="113">113</th><td>    <i>//----------------------------------------------------</i></td></tr>
+<tr><th id="114">114</th><td><i>    // Convert a 3D direction to a 2D vector whose x and y</i></td></tr>
+<tr><th id="115">115</th><td><i>    // components represent the corresponding latitude</i></td></tr>
+<tr><th id="116">116</th><td><i>    // and longitude.</i></td></tr>
+<tr><th id="117">117</th><td><i>    //----------------------------------------------------</i></td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a>		<dfn class="decl" id="_ZN3Imf10LatLongMap7latLongERKN5Imath4Vec3IfEE" title='Imf::LatLongMap::latLong' data-ref="_ZN3Imf10LatLongMap7latLongERKN5Imath4Vec3IfEE">latLong</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V3f" title='Imath::V3f' data-type='Vec3&lt;float&gt;' data-ref="Imath::V3f">V3f</a> &amp;<dfn class="local col6 decl" id="1456direction" title='direction' data-type='const Imath::V3f &amp;' data-ref="1456direction">direction</dfn>);</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    <i>//--------------------------------------------------------</i></td></tr>
+<tr><th id="123">123</th><td><i>    // Convert the position of a pixel to a 2D vector whose</i></td></tr>
+<tr><th id="124">124</th><td><i>    // x and y components represent the corresponding latitude</i></td></tr>
+<tr><th id="125">125</th><td><i>    // and longitude.</i></td></tr>
+<tr><th id="126">126</th><td><i>    //--------------------------------------------------------</i></td></tr>
+<tr><th id="127">127</th><td></td></tr>
+<tr><th id="128">128</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a>		<dfn class="decl" id="_ZN3Imf10LatLongMap7latLongERKN5Imath3BoxINS1_4Vec2IiEEEERKNS3_IfEE" title='Imf::LatLongMap::latLong' data-ref="_ZN3Imf10LatLongMap7latLongERKN5Imath3BoxINS1_4Vec2IiEEEERKNS3_IfEE">latLong</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col7 decl" id="1457dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1457dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="129">129</th><td>				 <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a> &amp;<dfn class="local col8 decl" id="1458pixelPosition" title='pixelPosition' data-type='const Imath::V2f &amp;' data-ref="1458pixelPosition">pixelPosition</dfn>);</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>    <i>//-------------------------------------------------------------</i></td></tr>
+<tr><th id="133">133</th><td><i>    // Convert a 2D vector, whose x and y components represent</i></td></tr>
+<tr><th id="134">134</th><td><i>    // longitude and latitude, into a corresponding pixel position.</i></td></tr>
+<tr><th id="135">135</th><td><i>    //-------------------------------------------------------------</i></td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a>		<dfn class="decl" id="_ZN3Imf10LatLongMap13pixelPositionERKN5Imath3BoxINS1_4Vec2IiEEEERKNS3_IfEE" title='Imf::LatLongMap::pixelPosition' data-ref="_ZN3Imf10LatLongMap13pixelPositionERKN5Imath3BoxINS1_4Vec2IiEEEERKNS3_IfEE">pixelPosition</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col9 decl" id="1459dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1459dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="138">138</th><td>				       <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a> &amp;<dfn class="local col0 decl" id="1460latLong" title='latLong' data-type='const Imath::V2f &amp;' data-ref="1460latLong">latLong</dfn>);</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td>    <i>//-----------------------------------------------------</i></td></tr>
+<tr><th id="142">142</th><td><i>    // Convert a 3D direction vector into a corresponding</i></td></tr>
+<tr><th id="143">143</th><td><i>    // pixel position.  pixelPosition(dw,dir) is equivalent</i></td></tr>
+<tr><th id="144">144</th><td><i>    // to pixelPosition(dw,latLong(dw,dir)).</i></td></tr>
+<tr><th id="145">145</th><td><i>    //-----------------------------------------------------</i></td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a>		<dfn class="decl" id="_ZN3Imf10LatLongMap13pixelPositionERKN5Imath3BoxINS1_4Vec2IiEEEERKNS1_4Vec3IfEE" title='Imf::LatLongMap::pixelPosition' data-ref="_ZN3Imf10LatLongMap13pixelPositionERKN5Imath3BoxINS1_4Vec2IiEEEERKNS1_4Vec3IfEE">pixelPosition</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col1 decl" id="1461dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1461dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="148">148</th><td>				       <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V3f" title='Imath::V3f' data-type='Vec3&lt;float&gt;' data-ref="Imath::V3f">V3f</a> &amp;<dfn class="local col2 decl" id="1462direction" title='direction' data-type='const Imath::V3f &amp;' data-ref="1462direction">direction</dfn>);</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>    <i>//--------------------------------------------------------</i></td></tr>
+<tr><th id="152">152</th><td><i>    // Convert the position of a pixel in a latitude-longitude</i></td></tr>
+<tr><th id="153">153</th><td><i>    // map into a corresponding 3D direction.</i></td></tr>
+<tr><th id="154">154</th><td><i>    //--------------------------------------------------------</i></td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V3f" title='Imath::V3f' data-type='Vec3&lt;float&gt;' data-ref="Imath::V3f">V3f</a>		<dfn class="decl" id="_ZN3Imf10LatLongMap9directionERKN5Imath3BoxINS1_4Vec2IiEEEERKNS3_IfEE" title='Imf::LatLongMap::direction' data-ref="_ZN3Imf10LatLongMap9directionERKN5Imath3BoxINS1_4Vec2IiEEEERKNS3_IfEE">direction</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col3 decl" id="1463dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1463dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="157">157</th><td>				   <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a> &amp;<dfn class="local col4 decl" id="1464pixelPosition" title='pixelPosition' data-type='const Imath::V2f &amp;' data-ref="1464pixelPosition">pixelPosition</dfn>);</td></tr>
+<tr><th id="158">158</th><td>}</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td><i>//--------------------------------------------------------------</i></td></tr>
+<tr><th id="162">162</th><td><i>// Cube Map:</i></td></tr>
+<tr><th id="163">163</th><td><i>//</i></td></tr>
+<tr><th id="164">164</th><td><i>// The environment is projected onto the six faces of an</i></td></tr>
+<tr><th id="165">165</th><td><i>// axis-aligned cube.  The cube's faces are then arranged</i></td></tr>
+<tr><th id="166">166</th><td><i>// in a 2D image as shown below.</i></td></tr>
+<tr><th id="167">167</th><td><i>//</i></td></tr>
+<tr><th id="168">168</th><td><i>//          2-----------3</i></td></tr>
+<tr><th id="169">169</th><td><i>//         /           /|</i></td></tr>
+<tr><th id="170">170</th><td><i>//        /           / |       Y</i></td></tr>
+<tr><th id="171">171</th><td><i>//       /           /  |       |</i></td></tr>
+<tr><th id="172">172</th><td><i>//      6-----------7   |       |</i></td></tr>
+<tr><th id="173">173</th><td><i>//      |           |   |       |</i></td></tr>
+<tr><th id="174">174</th><td><i>//      |           |   |       |</i></td></tr>
+<tr><th id="175">175</th><td><i>//      |   0       |   1       *------- X</i></td></tr>
+<tr><th id="176">176</th><td><i>//      |           |  /       /</i></td></tr>
+<tr><th id="177">177</th><td><i>//      |           | /       /</i></td></tr>
+<tr><th id="178">178</th><td><i>//      |           |/       /</i></td></tr>
+<tr><th id="179">179</th><td><i>//      4-----------5       Z</i></td></tr>
+<tr><th id="180">180</th><td><i>// </i></td></tr>
+<tr><th id="181">181</th><td><i>//   dataWindow.min</i></td></tr>
+<tr><th id="182">182</th><td><i>//        /</i></td></tr>
+<tr><th id="183">183</th><td><i>//       / </i></td></tr>
+<tr><th id="184">184</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="185">185</th><td><i>//      |3    Y    7|</i></td></tr>
+<tr><th id="186">186</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="187">187</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="188">188</th><td><i>//      |  ---+---Z |  +X face</i></td></tr>
+<tr><th id="189">189</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="190">190</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="191">191</th><td><i>//      |1         5|</i></td></tr>
+<tr><th id="192">192</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="193">193</th><td><i>//      |6    Y    2|</i></td></tr>
+<tr><th id="194">194</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="195">195</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="196">196</th><td><i>//      | Z---+---  |  -X face</i></td></tr>
+<tr><th id="197">197</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="198">198</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="199">199</th><td><i>//      |4         0|</i></td></tr>
+<tr><th id="200">200</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="201">201</th><td><i>//      |6    Z    7|</i></td></tr>
+<tr><th id="202">202</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="203">203</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="204">204</th><td><i>//      |  ---+---X |  +Y face</i></td></tr>
+<tr><th id="205">205</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="206">206</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="207">207</th><td><i>//      |2         3|</i></td></tr>
+<tr><th id="208">208</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="209">209</th><td><i>//      |0         1|</i></td></tr>
+<tr><th id="210">210</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="211">211</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="212">212</th><td><i>//      |  ---+---X |  -Y face</i></td></tr>
+<tr><th id="213">213</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="214">214</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="215">215</th><td><i>//      |4    Z    5|</i></td></tr>
+<tr><th id="216">216</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="217">217</th><td><i>//      |7    Y    6|</i></td></tr>
+<tr><th id="218">218</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="219">219</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="220">220</th><td><i>//      | X---+---  |  +Z face</i></td></tr>
+<tr><th id="221">221</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="222">222</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="223">223</th><td><i>//      |5         4|</i></td></tr>
+<tr><th id="224">224</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="225">225</th><td><i>//      |2    Y    3|</i></td></tr>
+<tr><th id="226">226</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="227">227</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="228">228</th><td><i>//      |  ---+---X |  -Z face</i></td></tr>
+<tr><th id="229">229</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="230">230</th><td><i>//      |     |     |</i></td></tr>
+<tr><th id="231">231</th><td><i>//      |0         1|</i></td></tr>
+<tr><th id="232">232</th><td><i>//      +-----------+</i></td></tr>
+<tr><th id="233">233</th><td><i>//                 /</i></td></tr>
+<tr><th id="234">234</th><td><i>//                /</i></td></tr>
+<tr><th id="235">235</th><td><i>//          dataWindow.max</i></td></tr>
+<tr><th id="236">236</th><td><i>//</i></td></tr>
+<tr><th id="237">237</th><td><i>// The size of the data window should be N by 6*N pixels</i></td></tr>
+<tr><th id="238">238</th><td><i>// (width by height), where N can be any integer greater</i></td></tr>
+<tr><th id="239">239</th><td><i>// than 0.</i></td></tr>
+<tr><th id="240">240</th><td><i>// </i></td></tr>
+<tr><th id="241">241</th><td><i>//--------------------------------------------------------------</i></td></tr>
+<tr><th id="242">242</th><td><i></i></td></tr>
+<tr><th id="243">243</th><td><i>//------------------------------------</i></td></tr>
+<tr><th id="244">244</th><td><i>// Names for the six faces of the cube</i></td></tr>
+<tr><th id="245">245</th><td><i>//------------------------------------</i></td></tr>
+<tr><th id="246">246</th><td></td></tr>
+<tr><th id="247">247</th><td><b>enum</b> <dfn class="type def" id="Imf::CubeMapFace" title='Imf::CubeMapFace' data-ref="Imf::CubeMapFace">CubeMapFace</dfn></td></tr>
+<tr><th id="248">248</th><td>{</td></tr>
+<tr><th id="249">249</th><td>    <dfn class="enum" id="Imf::CubeMapFace::CUBEFACE_POS_X" title='Imf::CubeMapFace::CUBEFACE_POS_X' data-ref="Imf::CubeMapFace::CUBEFACE_POS_X">CUBEFACE_POS_X</dfn>,	<i>// +X face</i></td></tr>
+<tr><th id="250">250</th><td>    <dfn class="enum" id="Imf::CubeMapFace::CUBEFACE_NEG_X" title='Imf::CubeMapFace::CUBEFACE_NEG_X' data-ref="Imf::CubeMapFace::CUBEFACE_NEG_X">CUBEFACE_NEG_X</dfn>,	<i>// -X face</i></td></tr>
+<tr><th id="251">251</th><td>    <dfn class="enum" id="Imf::CubeMapFace::CUBEFACE_POS_Y" title='Imf::CubeMapFace::CUBEFACE_POS_Y' data-ref="Imf::CubeMapFace::CUBEFACE_POS_Y">CUBEFACE_POS_Y</dfn>,	<i>// +Y face</i></td></tr>
+<tr><th id="252">252</th><td>    <dfn class="enum" id="Imf::CubeMapFace::CUBEFACE_NEG_Y" title='Imf::CubeMapFace::CUBEFACE_NEG_Y' data-ref="Imf::CubeMapFace::CUBEFACE_NEG_Y">CUBEFACE_NEG_Y</dfn>,	<i>// -Y face</i></td></tr>
+<tr><th id="253">253</th><td>    <dfn class="enum" id="Imf::CubeMapFace::CUBEFACE_POS_Z" title='Imf::CubeMapFace::CUBEFACE_POS_Z' data-ref="Imf::CubeMapFace::CUBEFACE_POS_Z">CUBEFACE_POS_Z</dfn>,	<i>// +Z face</i></td></tr>
+<tr><th id="254">254</th><td>    <dfn class="enum" id="Imf::CubeMapFace::CUBEFACE_NEG_Z" title='Imf::CubeMapFace::CUBEFACE_NEG_Z' data-ref="Imf::CubeMapFace::CUBEFACE_NEG_Z">CUBEFACE_NEG_Z</dfn> 	<i>// -Z face</i></td></tr>
+<tr><th id="255">255</th><td>};</td></tr>
+<tr><th id="256">256</th><td></td></tr>
+<tr><th id="257">257</th><td><b>namespace</b> <span class="namespace">CubeMap</span></td></tr>
+<tr><th id="258">258</th><td>{</td></tr>
+<tr><th id="259">259</th><td>    <i>//---------------------------------------------</i></td></tr>
+<tr><th id="260">260</th><td><i>    // Width and height of a cube's face, in pixels</i></td></tr>
+<tr><th id="261">261</th><td><i>    //---------------------------------------------</i></td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td>    <em>int</em>			<dfn class="decl" id="_ZN3Imf7CubeMap10sizeOfFaceERKN5Imath3BoxINS1_4Vec2IiEEEE" title='Imf::CubeMap::sizeOfFace' data-ref="_ZN3Imf7CubeMap10sizeOfFaceERKN5Imath3BoxINS1_4Vec2IiEEEE">sizeOfFace</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col5 decl" id="1465dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1465dataWindow">dataWindow</dfn>);</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td></td></tr>
+<tr><th id="266">266</th><td>    <i>//------------------------------------------</i></td></tr>
+<tr><th id="267">267</th><td><i>    // Compute the region in the environment map</i></td></tr>
+<tr><th id="268">268</th><td><i>    // that is covered by the specified face.</i></td></tr>
+<tr><th id="269">269</th><td><i>    //------------------------------------------</i></td></tr>
+<tr><th id="270">270</th><td></td></tr>
+<tr><th id="271">271</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a>	<dfn class="decl" id="_ZN3Imf7CubeMap17dataWindowForFaceENS_11CubeMapFaceERKN5Imath3BoxINS2_4Vec2IiEEEE" title='Imf::CubeMap::dataWindowForFace' data-ref="_ZN3Imf7CubeMap17dataWindowForFaceENS_11CubeMapFaceERKN5Imath3BoxINS2_4Vec2IiEEEE">dataWindowForFace</dfn> (<a class="type" href="#Imf::CubeMapFace" title='Imf::CubeMapFace' data-ref="Imf::CubeMapFace">CubeMapFace</a> <dfn class="local col6 decl" id="1466face" title='face' data-type='Imf::CubeMapFace' data-ref="1466face">face</dfn>,</td></tr>
+<tr><th id="272">272</th><td>					   <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col7 decl" id="1467dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1467dataWindow">dataWindow</dfn>);</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td>    <i>//----------------------------------------------------</i></td></tr>
+<tr><th id="276">276</th><td><i>    // Convert the coordinates of a pixel within a face</i></td></tr>
+<tr><th id="277">277</th><td><i>    // [in the range from (0,0) to (s-1,s-1), where</i></td></tr>
+<tr><th id="278">278</th><td><i>    // s == sizeOfFace(dataWindow)] to pixel coordinates</i></td></tr>
+<tr><th id="279">279</th><td><i>    // in the environment map.</i></td></tr>
+<tr><th id="280">280</th><td><i>    //----------------------------------------------------</i></td></tr>
+<tr><th id="281">281</th><td></td></tr>
+<tr><th id="282">282</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a>		<dfn class="decl" id="_ZN3Imf7CubeMap13pixelPositionENS_11CubeMapFaceERKN5Imath3BoxINS2_4Vec2IiEEEENS4_IfEE" title='Imf::CubeMap::pixelPosition' data-ref="_ZN3Imf7CubeMap13pixelPositionENS_11CubeMapFaceERKN5Imath3BoxINS2_4Vec2IiEEEENS4_IfEE">pixelPosition</dfn> (<a class="type" href="#Imf::CubeMapFace" title='Imf::CubeMapFace' data-ref="Imf::CubeMapFace">CubeMapFace</a> <dfn class="local col8 decl" id="1468face" title='face' data-type='Imf::CubeMapFace' data-ref="1468face">face</dfn>,</td></tr>
+<tr><th id="283">283</th><td>				       <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col9 decl" id="1469dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1469dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="284">284</th><td>				       <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a> <dfn class="local col0 decl" id="1470positionInFace" title='positionInFace' data-type='Imath::V2f' data-ref="1470positionInFace">positionInFace</dfn>);</td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td></td></tr>
+<tr><th id="287">287</th><td>    <i>//--------------------------------------------------------------</i></td></tr>
+<tr><th id="288">288</th><td><i>    // Convert a 3D direction into a cube face, and a pixel position</i></td></tr>
+<tr><th id="289">289</th><td><i>    // within that face.</i></td></tr>
+<tr><th id="290">290</th><td><i>    //</i></td></tr>
+<tr><th id="291">291</th><td><i>    // If you have a 3D direction, dir, the following code fragment</i></td></tr>
+<tr><th id="292">292</th><td><i>    // finds the position, pos, of the corresponding pixel in an</i></td></tr>
+<tr><th id="293">293</th><td><i>    // environment map with data window dw:</i></td></tr>
+<tr><th id="294">294</th><td><i>    //</i></td></tr>
+<tr><th id="295">295</th><td><i>    // CubeMapFace f;</i></td></tr>
+<tr><th id="296">296</th><td><i>    // V2f pif, pos;</i></td></tr>
+<tr><th id="297">297</th><td><i>    //</i></td></tr>
+<tr><th id="298">298</th><td><i>    // faceAndPixelPosition (dir, dw, f, pif);</i></td></tr>
+<tr><th id="299">299</th><td><i>    // pos = pixelPosition (f, dw, pif);</i></td></tr>
+<tr><th id="300">300</th><td><i>    //</i></td></tr>
+<tr><th id="301">301</th><td><i>    //--------------------------------------------------------------</i></td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td>    <em>void</em>		<dfn class="decl" id="_ZN3Imf7CubeMap20faceAndPixelPositionERKN5Imath4Vec3IfEERKNS1_3BoxINS1_4Vec2IiEEEERNS_11CubeMapFaceERNS7_IfEE" title='Imf::CubeMap::faceAndPixelPosition' data-ref="_ZN3Imf7CubeMap20faceAndPixelPositionERKN5Imath4Vec3IfEERKNS1_3BoxINS1_4Vec2IiEEEERNS_11CubeMapFaceERNS7_IfEE">faceAndPixelPosition</dfn> (<em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V3f" title='Imath::V3f' data-type='Vec3&lt;float&gt;' data-ref="Imath::V3f">V3f</a> &amp;<dfn class="local col1 decl" id="1471direction" title='direction' data-type='const Imath::V3f &amp;' data-ref="1471direction">direction</dfn>,</td></tr>
+<tr><th id="304">304</th><td>					      <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col2 decl" id="1472dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1472dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="305">305</th><td>					      <a class="type" href="#Imf::CubeMapFace" title='Imf::CubeMapFace' data-ref="Imf::CubeMapFace">CubeMapFace</a> &amp;<dfn class="local col3 decl" id="1473face" title='face' data-type='Imf::CubeMapFace &amp;' data-ref="1473face">face</dfn>,</td></tr>
+<tr><th id="306">306</th><td>					      <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a> &amp;<dfn class="local col4 decl" id="1474positionInFace" title='positionInFace' data-type='Imath::V2f &amp;' data-ref="1474positionInFace">positionInFace</dfn>);</td></tr>
+<tr><th id="307">307</th><td></td></tr>
+<tr><th id="308">308</th><td>   </td></tr>
+<tr><th id="309">309</th><td>    <i>// --------------------------------------------------------</i></td></tr>
+<tr><th id="310">310</th><td><i>    // Given a cube face and a pixel position within that face,</i></td></tr>
+<tr><th id="311">311</th><td><i>    // compute the corresponding 3D direction.</i></td></tr>
+<tr><th id="312">312</th><td><i>    // --------------------------------------------------------</i></td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td>    <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V3f" title='Imath::V3f' data-type='Vec3&lt;float&gt;' data-ref="Imath::V3f">V3f</a>		<dfn class="decl" id="_ZN3Imf7CubeMap9directionENS_11CubeMapFaceERKN5Imath3BoxINS2_4Vec2IiEEEERKNS4_IfEE" title='Imf::CubeMap::direction' data-ref="_ZN3Imf7CubeMap9directionENS_11CubeMapFaceERKN5Imath3BoxINS2_4Vec2IiEEEERKNS4_IfEE">direction</dfn> (<a class="type" href="#Imf::CubeMapFace" title='Imf::CubeMapFace' data-ref="Imf::CubeMapFace">CubeMapFace</a> <dfn class="local col5 decl" id="1475face" title='face' data-type='Imf::CubeMapFace' data-ref="1475face">face</dfn>,</td></tr>
+<tr><th id="315">315</th><td>				   <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathBox.h.html#Imath::Box2i" title='Imath::Box2i' data-type='Box&lt;V2i&gt;' data-ref="Imath::Box2i">Box2i</a> &amp;<dfn class="local col6 decl" id="1476dataWindow" title='dataWindow' data-type='const Imath::Box2i &amp;' data-ref="1476dataWindow">dataWindow</dfn>,</td></tr>
+<tr><th id="316">316</th><td>				   <em>const</em> <span class="namespace">Imath::</span><a class="typedef" href="ImathVec.h.html#Imath::V2f" title='Imath::V2f' data-type='Vec2&lt;float&gt;' data-ref="Imath::V2f">V2f</a> &amp;<dfn class="local col7 decl" id="1477positionInFace" title='positionInFace' data-type='const Imath::V2f &amp;' data-ref="1477positionInFace">positionInFace</dfn>);</td></tr>
+<tr><th id="317">317</th><td>}</td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td>} <i>// namespace Imf</i></td></tr>
+<tr><th id="321">321</th><td></td></tr>
+<tr><th id="322">322</th><td><u>#<span data-ppcond="36">endif</span></u></td></tr>
+<tr><th id="323">323</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../opencv/modules/highgui/src/grfmt_exr.cpp.html'>opencv/modules/highgui/src/grfmt_exr.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

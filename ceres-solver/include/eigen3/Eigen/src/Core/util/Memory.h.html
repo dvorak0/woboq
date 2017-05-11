@@ -1,0 +1,1000 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Memory.h source code [include/eigen3/Eigen/src/Core/util/Memory.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::aligned_allocator,Eigen::internal::aligned_stack_memory_handler,Eigen::internal::smart_copy_helper "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/eigen3/Eigen/src/Core/util/Memory.h'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data';</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>include</a>/<a href='../../../..'>eigen3</a>/<a href='../../..'>Eigen</a>/<a href='../..'>src</a>/<a href='..'>Core</a>/<a href='./'>util</a>/<a href='Memory.h.html'>Memory.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2008-2010 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2008-2009 Benoit Jacob &lt;jacob.benoit.1@gmail.com&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>// Copyright (C) 2009 Kenneth Riddile &lt;kfriddile@yahoo.com&gt;</i></td></tr>
+<tr><th id="7">7</th><td><i>// Copyright (C) 2010 Hauke Heibel &lt;hauke.heibel@gmail.com&gt;</i></td></tr>
+<tr><th id="8">8</th><td><i>// Copyright (C) 2010 Thomas Capricelli &lt;orzel@freehackers.org&gt;</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="11">11</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="12">12</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td></td></tr>
+<tr><th id="15">15</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="16">16</th><td><i>*** Platform checks for aligned malloc functions                           ***</i></td></tr>
+<tr><th id="17">17</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#<span data-ppcond="19">ifndef</span> <span class="macro" data-ref="_M/EIGEN_MEMORY_H">EIGEN_MEMORY_H</span></u></td></tr>
+<tr><th id="20">20</th><td><u>#define <dfn class="macro" id="_M/EIGEN_MEMORY_H" data-ref="_M/EIGEN_MEMORY_H">EIGEN_MEMORY_H</dfn></u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#<span data-ppcond="22">ifndef</span> <span class="macro" data-ref="_M/EIGEN_MALLOC_ALREADY_ALIGNED">EIGEN_MALLOC_ALREADY_ALIGNED</span></u></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><i>// Try to determine automatically if malloc is already aligned.</i></td></tr>
+<tr><th id="25">25</th><td><i></i></td></tr>
+<tr><th id="26">26</th><td><i>// On 64-bit systems, glibc's malloc returns 16-byte-aligned pointers, see:</i></td></tr>
+<tr><th id="27">27</th><td><i>//   <a href="http://www.gnu.org/s/libc/manual/html_node/Aligned-Memory-Blocks.html">http://www.gnu.org/s/libc/manual/html_node/Aligned-Memory-Blocks.html</a></i></td></tr>
+<tr><th id="28">28</th><td><i>// This is true at least since glibc 2.8.</i></td></tr>
+<tr><th id="29">29</th><td><i>// This leaves the question how to detect 64-bit. According to this document,</i></td></tr>
+<tr><th id="30">30</th><td><i>//   <a href="http://gcc.fyxm.net/summit/2003/Porting%20to%2064%20bit.pdf">http://gcc.fyxm.net/summit/2003/Porting%20to%2064%20bit.pdf</a></i></td></tr>
+<tr><th id="31">31</th><td><i>// page 114, "[The] LP64 model [...] is used by all 64-bit UNIX ports" so it's indeed</i></td></tr>
+<tr><th id="32">32</th><td><i>// quite safe, at least within the context of glibc, to equate 64-bit with LP64.</i></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">if</span> defined(<a class="macro" href="../../../../../features.h.html#365" data-ref="_M/__GLIBC__">__GLIBC__</a>) &amp;&amp; ((<a class="macro" href="../../../../../features.h.html#365" title="2" data-ref="_M/__GLIBC__">__GLIBC__</a>&gt;=2 &amp;&amp; <a class="macro" href="../../../../../features.h.html#366" title="19" data-ref="_M/__GLIBC_MINOR__">__GLIBC_MINOR__</a> &gt;= 8) || <a class="macro" href="../../../../../features.h.html#365" title="2" data-ref="_M/__GLIBC__">__GLIBC__</a>&gt;2) \</u></td></tr>
+<tr><th id="34">34</th><td><u> &amp;&amp; defined(<span class="macro" data-ref="_M/__LP64__">__LP64__</span>) &amp;&amp; ! defined( <span class="macro" data-ref="_M/__SANITIZE_ADDRESS__">__SANITIZE_ADDRESS__</span> )</u></td></tr>
+<tr><th id="35">35</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_GLIBC_MALLOC_ALREADY_ALIGNED" data-ref="_M/EIGEN_GLIBC_MALLOC_ALREADY_ALIGNED">EIGEN_GLIBC_MALLOC_ALREADY_ALIGNED</dfn> 1</u></td></tr>
+<tr><th id="36">36</th><td><u>#<span data-ppcond="33">else</span></u></td></tr>
+<tr><th id="37">37</th><td>  <u>#define EIGEN_GLIBC_MALLOC_ALREADY_ALIGNED 0</u></td></tr>
+<tr><th id="38">38</th><td><u>#<span data-ppcond="33">endif</span></u></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><i>// FreeBSD 6 seems to have 16-byte aligned malloc</i></td></tr>
+<tr><th id="41">41</th><td><i>//   See <a href="http://svn.freebsd.org/viewvc/base/stable/6/lib/libc/stdlib/malloc.c?view=markup">http://svn.freebsd.org/viewvc/base/stable/6/lib/libc/stdlib/malloc.c?view=markup</a></i></td></tr>
+<tr><th id="42">42</th><td><i>// FreeBSD 7 seems to have 16-byte aligned malloc except on ARM and MIPS architectures</i></td></tr>
+<tr><th id="43">43</th><td><i>//   See <a href="http://svn.freebsd.org/viewvc/base/stable/7/lib/libc/stdlib/malloc.c?view=markup">http://svn.freebsd.org/viewvc/base/stable/7/lib/libc/stdlib/malloc.c?view=markup</a></i></td></tr>
+<tr><th id="44">44</th><td><u>#<span data-ppcond="44">if</span> defined(<span class="macro" data-ref="_M/__FreeBSD__">__FreeBSD__</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/__arm__">__arm__</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/__mips__">__mips__</span>)</u></td></tr>
+<tr><th id="45">45</th><td>  <u>#define EIGEN_FREEBSD_MALLOC_ALREADY_ALIGNED 1</u></td></tr>
+<tr><th id="46">46</th><td><u>#<span data-ppcond="44">else</span></u></td></tr>
+<tr><th id="47">47</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_FREEBSD_MALLOC_ALREADY_ALIGNED" data-ref="_M/EIGEN_FREEBSD_MALLOC_ALREADY_ALIGNED">EIGEN_FREEBSD_MALLOC_ALREADY_ALIGNED</dfn> 0</u></td></tr>
+<tr><th id="48">48</th><td><u>#<span data-ppcond="44">endif</span></u></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><u>#<span data-ppcond="50">if</span> defined(<span class="macro" data-ref="_M/__APPLE__">__APPLE__</span>) \</u></td></tr>
+<tr><th id="51">51</th><td><u> || defined(<span class="macro" data-ref="_M/_WIN64">_WIN64</span>) \</u></td></tr>
+<tr><th id="52">52</th><td><u> || <a class="macro" href="#35" title="1" data-ref="_M/EIGEN_GLIBC_MALLOC_ALREADY_ALIGNED">EIGEN_GLIBC_MALLOC_ALREADY_ALIGNED</a> \</u></td></tr>
+<tr><th id="53">53</th><td><u> || <a class="macro" href="#47" title="0" data-ref="_M/EIGEN_FREEBSD_MALLOC_ALREADY_ALIGNED">EIGEN_FREEBSD_MALLOC_ALREADY_ALIGNED</a></u></td></tr>
+<tr><th id="54">54</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_MALLOC_ALREADY_ALIGNED" data-ref="_M/EIGEN_MALLOC_ALREADY_ALIGNED">EIGEN_MALLOC_ALREADY_ALIGNED</dfn> 1</u></td></tr>
+<tr><th id="55">55</th><td><u>#<span data-ppcond="50">else</span></u></td></tr>
+<tr><th id="56">56</th><td>  <u>#define EIGEN_MALLOC_ALREADY_ALIGNED 0</u></td></tr>
+<tr><th id="57">57</th><td><u>#<span data-ppcond="50">endif</span></u></td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><u>#<span data-ppcond="22">endif</span></u></td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td><i>// See bug 554 (<a href="http://eigen.tuxfamily.org/bz/show_bug.cgi?id=554">http://eigen.tuxfamily.org/bz/show_bug.cgi?id=554</a>)</i></td></tr>
+<tr><th id="62">62</th><td><i>// It seems to be unsafe to check _POSIX_ADVISORY_INFO without including unistd.h first.</i></td></tr>
+<tr><th id="63">63</th><td><i>// Currently, let's include it only on unix systems:</i></td></tr>
+<tr><th id="64">64</th><td><u>#<span data-ppcond="64">if</span> defined(<span class="macro" data-ref="_M/__unix__">__unix__</span>) || defined(<span class="macro" data-ref="_M/__unix">__unix</span>)</u></td></tr>
+<tr><th id="65">65</th><td>  <u>#include <a href="../../../../../unistd.h.html">&lt;unistd.h&gt;</a></u></td></tr>
+<tr><th id="66">66</th><td>  <u>#<span data-ppcond="66">if</span> ((defined <span class="macro" data-ref="_M/__QNXNTO__">__QNXNTO__</span>) || (defined <span class="macro" data-ref="_M/_GNU_SOURCE">_GNU_SOURCE</span>) || ((defined <a class="macro" href="../../../../../features.h.html#162" data-ref="_M/_XOPEN_SOURCE">_XOPEN_SOURCE</a>) &amp;&amp; (<a class="macro" href="../../../../../features.h.html#162" title="700" data-ref="_M/_XOPEN_SOURCE">_XOPEN_SOURCE</a> &gt;= 600))) &amp;&amp; (defined <a class="macro" href="../../../../../x86_64-linux-gnu/bits/posix_opt.h.html#167" data-ref="_M/_POSIX_ADVISORY_INFO">_POSIX_ADVISORY_INFO</a>) &amp;&amp; (<a class="macro" href="../../../../../x86_64-linux-gnu/bits/posix_opt.h.html#167" title="200809L" data-ref="_M/_POSIX_ADVISORY_INFO">_POSIX_ADVISORY_INFO</a> &gt; 0)</u></td></tr>
+<tr><th id="67">67</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_HAS_POSIX_MEMALIGN" data-ref="_M/EIGEN_HAS_POSIX_MEMALIGN">EIGEN_HAS_POSIX_MEMALIGN</dfn> 1</u></td></tr>
+<tr><th id="68">68</th><td>  <u>#<span data-ppcond="66">endif</span></u></td></tr>
+<tr><th id="69">69</th><td><u>#<span data-ppcond="64">endif</span></u></td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td><u>#<span data-ppcond="71">ifndef</span> <a class="macro" href="#67" data-ref="_M/EIGEN_HAS_POSIX_MEMALIGN">EIGEN_HAS_POSIX_MEMALIGN</a></u></td></tr>
+<tr><th id="72">72</th><td>  <u>#define EIGEN_HAS_POSIX_MEMALIGN 0</u></td></tr>
+<tr><th id="73">73</th><td><u>#<span data-ppcond="71">endif</span></u></td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td><u>#<span data-ppcond="75">ifdef</span> <a class="macro" href="../../../Core.html#66" data-ref="_M/EIGEN_VECTORIZE_SSE">EIGEN_VECTORIZE_SSE</a></u></td></tr>
+<tr><th id="76">76</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_HAS_MM_MALLOC" data-ref="_M/EIGEN_HAS_MM_MALLOC">EIGEN_HAS_MM_MALLOC</dfn> 1</u></td></tr>
+<tr><th id="77">77</th><td><u>#<span data-ppcond="75">else</span></u></td></tr>
+<tr><th id="78">78</th><td>  <u>#define EIGEN_HAS_MM_MALLOC 0</u></td></tr>
+<tr><th id="79">79</th><td><u>#<span data-ppcond="75">endif</span></u></td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal19throw_std_bad_allocEv" title='Eigen::internal::throw_std_bad_alloc' data-ref="_ZN5Eigen8internal19throw_std_bad_allocEv">throw_std_bad_alloc</dfn>()</td></tr>
+<tr><th id="86">86</th><td>{</td></tr>
+<tr><th id="87">87</th><td>  <u>#<span data-ppcond="87">ifdef</span> <a class="macro" href="../../../Core.html#173" data-ref="_M/EIGEN_EXCEPTIONS">EIGEN_EXCEPTIONS</a></u></td></tr>
+<tr><th id="88">88</th><td>    <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../../../c++/4.8/new.html#std::bad_alloc" title='std::bad_alloc' data-ref="std::bad_alloc">bad_alloc</a><a class="ref" href="../../../../../c++/4.8/new.html#_ZNSt9bad_allocC1Ev" title='std::bad_alloc::bad_alloc' data-ref="_ZNSt9bad_allocC1Ev">(</a>);</td></tr>
+<tr><th id="89">89</th><td>  <u>#<span data-ppcond="87">else</span></u></td></tr>
+<tr><th id="90">90</th><td>    std::size_t huge = -<var>1</var>;</td></tr>
+<tr><th id="91">91</th><td>    <b>new</b> <em>int</em>[huge];</td></tr>
+<tr><th id="92">92</th><td>  <u>#<span data-ppcond="87">endif</span></u></td></tr>
+<tr><th id="93">93</th><td>}</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="96">96</th><td><i>*** Implementation of handmade aligned functions                           ***</i></td></tr>
+<tr><th id="97">97</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td><i>/* ----- Hand made implementations of aligned malloc/free and realloc ----- */</i></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><i class="doc">/**<span class="command"> \internal</span> Like malloc, but the returned pointer is guaranteed to be 16-byte aligned.</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc">  * Fast, but wastes 16 additional bytes of memory. Does not throw any exception.</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="104">104</th><td><b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal23handmade_aligned_mallocEm" title='Eigen::internal::handmade_aligned_malloc' data-ref="_ZN5Eigen8internal23handmade_aligned_mallocEm">handmade_aligned_malloc</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="6766size" title='size' data-type='std::size_t' data-ref="6766size">size</dfn>)</td></tr>
+<tr><th id="105">105</th><td>{</td></tr>
+<tr><th id="106">106</th><td>  <em>void</em> *<dfn class="local col7 decl" id="6767original" title='original' data-type='void *' data-ref="6767original">original</dfn> = <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#malloc" title='malloc' data-ref="malloc">malloc</a>(<a class="local col6 ref" href="#6766size" title='size' data-ref="6766size">size</a>+<var>16</var>);</td></tr>
+<tr><th id="107">107</th><td>  <b>if</b> (<a class="local col7 ref" href="#6767original" title='original' data-ref="6767original">original</a> == <var>0</var>) <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="108">108</th><td>  <em>void</em> *<dfn class="local col8 decl" id="6768aligned" title='aligned' data-type='void *' data-ref="6768aligned">aligned</dfn> = <b>reinterpret_cast</b>&lt;<em>void</em>*&gt;((<b>reinterpret_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;(<a class="local col7 ref" href="#6767original" title='original' data-ref="6767original">original</a>) &amp; ~(<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>(<var>15</var>))) + <var>16</var>);</td></tr>
+<tr><th id="109">109</th><td>  *(<b>reinterpret_cast</b>&lt;<em>void</em>**&gt;(<a class="local col8 ref" href="#6768aligned" title='aligned' data-ref="6768aligned">aligned</a>) - <var>1</var>) = <a class="local col7 ref" href="#6767original" title='original' data-ref="6767original">original</a>;</td></tr>
+<tr><th id="110">110</th><td>  <b>return</b> <a class="local col8 ref" href="#6768aligned" title='aligned' data-ref="6768aligned">aligned</a>;</td></tr>
+<tr><th id="111">111</th><td>}</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td><i class="doc">/**<span class="command"> \internal</span> Frees memory allocated with handmade_aligned_malloc */</i></td></tr>
+<tr><th id="114">114</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal21handmade_aligned_freeEPv" title='Eigen::internal::handmade_aligned_free' data-ref="_ZN5Eigen8internal21handmade_aligned_freeEPv">handmade_aligned_free</dfn>(<em>void</em> *<dfn class="local col9 decl" id="6769ptr" title='ptr' data-type='void *' data-ref="6769ptr">ptr</dfn>)</td></tr>
+<tr><th id="115">115</th><td>{</td></tr>
+<tr><th id="116">116</th><td>  <b>if</b> (<a class="local col9 ref" href="#6769ptr" title='ptr' data-ref="6769ptr">ptr</a>) <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#free" title='free' data-ref="free">free</a>(*(<b>reinterpret_cast</b>&lt;<em>void</em>**&gt;(<a class="local col9 ref" href="#6769ptr" title='ptr' data-ref="6769ptr">ptr</a>) - <var>1</var>));</td></tr>
+<tr><th id="117">117</th><td>}</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td><i class="doc">/**<span class="command"> \internal</span></i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">  * <span class="command">\brief</span> Reallocates aligned memory.</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">  * Since we know that our handmade version is based on std::realloc</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">  * we can use std::realloc to implement efficient reallocation.</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="124">124</th><td><b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal24handmade_aligned_reallocEPvmm" title='Eigen::internal::handmade_aligned_realloc' data-ref="_ZN5Eigen8internal24handmade_aligned_reallocEPvmm">handmade_aligned_realloc</dfn>(<em>void</em>* <dfn class="local col0 decl" id="6770ptr" title='ptr' data-type='void *' data-ref="6770ptr">ptr</dfn>, <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="6771size" title='size' data-type='std::size_t' data-ref="6771size">size</dfn>, <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> = <var>0</var>)</td></tr>
+<tr><th id="125">125</th><td>{</td></tr>
+<tr><th id="126">126</th><td>  <b>if</b> (<a class="local col0 ref" href="#6770ptr" title='ptr' data-ref="6770ptr">ptr</a> == <var>0</var>) <b>return</b> <a class="ref" href="#_ZN5Eigen8internal23handmade_aligned_mallocEm" title='Eigen::internal::handmade_aligned_malloc' data-ref="_ZN5Eigen8internal23handmade_aligned_mallocEm">handmade_aligned_malloc</a>(<a class="local col1 ref" href="#6771size" title='size' data-ref="6771size">size</a>);</td></tr>
+<tr><th id="127">127</th><td>  <em>void</em> *<dfn class="local col2 decl" id="6772original" title='original' data-type='void *' data-ref="6772original">original</dfn> = *(<b>reinterpret_cast</b>&lt;<em>void</em>**&gt;(<a class="local col0 ref" href="#6770ptr" title='ptr' data-ref="6770ptr">ptr</a>) - <var>1</var>);</td></tr>
+<tr><th id="128">128</th><td>  <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a> <dfn class="local col3 decl" id="6773previous_offset" title='previous_offset' data-type='std::ptrdiff_t' data-ref="6773previous_offset">previous_offset</dfn> = <b>static_cast</b>&lt;<em>char</em> *&gt;(<a class="local col0 ref" href="#6770ptr" title='ptr' data-ref="6770ptr">ptr</a>)-<b>static_cast</b>&lt;<em>char</em> *&gt;(<a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a>);</td></tr>
+<tr><th id="129">129</th><td>  <a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a> = <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#realloc" title='realloc' data-ref="realloc">realloc</a>(<a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a>,<a class="local col1 ref" href="#6771size" title='size' data-ref="6771size">size</a>+<var>16</var>);</td></tr>
+<tr><th id="130">130</th><td>  <b>if</b> (<a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a> == <var>0</var>) <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="131">131</th><td>  <em>void</em> *<dfn class="local col4 decl" id="6774aligned" title='aligned' data-type='void *' data-ref="6774aligned">aligned</dfn> = <b>reinterpret_cast</b>&lt;<em>void</em>*&gt;((<b>reinterpret_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;(<a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a>) &amp; ~(<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>(<var>15</var>))) + <var>16</var>);</td></tr>
+<tr><th id="132">132</th><td>  <em>void</em> *<dfn class="local col5 decl" id="6775previous_aligned" title='previous_aligned' data-type='void *' data-ref="6775previous_aligned">previous_aligned</dfn> = <b>static_cast</b>&lt;<em>char</em> *&gt;(<a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a>)+<a class="local col3 ref" href="#6773previous_offset" title='previous_offset' data-ref="6773previous_offset">previous_offset</a>;</td></tr>
+<tr><th id="133">133</th><td>  <b>if</b>(<a class="local col4 ref" href="#6774aligned" title='aligned' data-ref="6774aligned">aligned</a>!=<a class="local col5 ref" href="#6775previous_aligned" title='previous_aligned' data-ref="6775previous_aligned">previous_aligned</a>)</td></tr>
+<tr><th id="134">134</th><td>    <span class="namespace">std::</span><a class="ref" href="../../../../../string.h.html#memmove" title='memmove' data-ref="memmove">memmove</a>(<a class="local col4 ref" href="#6774aligned" title='aligned' data-ref="6774aligned">aligned</a>, <a class="local col5 ref" href="#6775previous_aligned" title='previous_aligned' data-ref="6775previous_aligned">previous_aligned</a>, <a class="local col1 ref" href="#6771size" title='size' data-ref="6771size">size</a>);</td></tr>
+<tr><th id="135">135</th><td>  </td></tr>
+<tr><th id="136">136</th><td>  *(<b>reinterpret_cast</b>&lt;<em>void</em>**&gt;(<a class="local col4 ref" href="#6774aligned" title='aligned' data-ref="6774aligned">aligned</a>) - <var>1</var>) = <a class="local col2 ref" href="#6772original" title='original' data-ref="6772original">original</a>;</td></tr>
+<tr><th id="137">137</th><td>  <b>return</b> <a class="local col4 ref" href="#6774aligned" title='aligned' data-ref="6774aligned">aligned</a>;</td></tr>
+<tr><th id="138">138</th><td>}</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="141">141</th><td><i>*** Implementation of generic aligned realloc (when no realloc can be used)***</i></td></tr>
+<tr><th id="142">142</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><em>void</em>* <a class="decl" href="#_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</a>(<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="6776size" title='size' data-type='std::size_t' data-ref="6776size">size</dfn>);</td></tr>
+<tr><th id="145">145</th><td><em>void</em>  <a class="decl" href="#_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</a>(<em>void</em> *<dfn class="local col7 decl" id="6777ptr" title='ptr' data-type='void *' data-ref="6777ptr">ptr</dfn>);</td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td><i class="doc">/**<span class="command"> \internal</span></i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">  * <span class="command">\brief</span> Reallocates aligned memory.</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">  * Allows reallocation with aligned ptr types. This implementation will</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">  * always create a new memory chunk and copy the old data.</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="152">152</th><td><b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal23generic_aligned_reallocEPvmm" title='Eigen::internal::generic_aligned_realloc' data-ref="_ZN5Eigen8internal23generic_aligned_reallocEPvmm">generic_aligned_realloc</dfn>(<em>void</em>* <dfn class="local col8 decl" id="6778ptr" title='ptr' data-type='void *' data-ref="6778ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="6779size" title='size' data-type='size_t' data-ref="6779size">size</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="6780old_size" title='old_size' data-type='size_t' data-ref="6780old_size">old_size</dfn>)</td></tr>
+<tr><th id="153">153</th><td>{</td></tr>
+<tr><th id="154">154</th><td>  <b>if</b> (<a class="local col8 ref" href="#6778ptr" title='ptr' data-ref="6778ptr">ptr</a>==<var>0</var>)</td></tr>
+<tr><th id="155">155</th><td>    <b>return</b> <a class="ref" href="#_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</a>(<a class="local col9 ref" href="#6779size" title='size' data-ref="6779size">size</a>);</td></tr>
+<tr><th id="156">156</th><td></td></tr>
+<tr><th id="157">157</th><td>  <b>if</b> (<a class="local col9 ref" href="#6779size" title='size' data-ref="6779size">size</a>==<var>0</var>)</td></tr>
+<tr><th id="158">158</th><td>  {</td></tr>
+<tr><th id="159">159</th><td>    <a class="ref" href="#_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</a>(<a class="local col8 ref" href="#6778ptr" title='ptr' data-ref="6778ptr">ptr</a>);</td></tr>
+<tr><th id="160">160</th><td>    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="161">161</th><td>  }</td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>  <em>void</em>* <dfn class="local col1 decl" id="6781newptr" title='newptr' data-type='void *' data-ref="6781newptr">newptr</dfn> = <a class="ref" href="#_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</a>(<a class="local col9 ref" href="#6779size" title='size' data-ref="6779size">size</a>);</td></tr>
+<tr><th id="164">164</th><td>  <b>if</b> (<a class="local col1 ref" href="#6781newptr" title='newptr' data-ref="6781newptr">newptr</a> == <var>0</var>)</td></tr>
+<tr><th id="165">165</th><td>  {</td></tr>
+<tr><th id="166">166</th><td>    <u>#<span data-ppcond="166">ifdef</span> <a class="macro" href="../../../Core.html#143" data-ref="_M/EIGEN_HAS_ERRNO">EIGEN_HAS_ERRNO</a></u></td></tr>
+<tr><th id="167">167</th><td>    <a class="macro" href="../../../../../x86_64-linux-gnu/bits/errno.h.html#54" title="(*__errno_location ())" data-ref="_M/errno">errno</a> = <a class="macro" href="../../../../../asm-generic/errno-base.h.html#15" title="12" data-ref="_M/ENOMEM">ENOMEM</a>; <i>// according to the standard</i></td></tr>
+<tr><th id="168">168</th><td>    <u>#<span data-ppcond="166">endif</span></u></td></tr>
+<tr><th id="169">169</th><td>    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="170">170</th><td>  }</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td>  <b>if</b> (<a class="local col8 ref" href="#6778ptr" title='ptr' data-ref="6778ptr">ptr</a> != <var>0</var>)</td></tr>
+<tr><th id="173">173</th><td>  {</td></tr>
+<tr><th id="174">174</th><td>    <span class="namespace">std::</span><a class="ref" href="../../../../../string.h.html#memcpy" title='memcpy' data-ref="memcpy">memcpy</a>(<a class="local col1 ref" href="#6781newptr" title='newptr' data-ref="6781newptr">newptr</a>, <a class="local col8 ref" href="#6778ptr" title='ptr' data-ref="6778ptr">ptr</a>, (<span class="namespace">std::</span><a class="ref" href="../../../../../c++/4.8/bits/stl_algobase.h.html#_ZSt3minRKT_S1_" title='std::min' data-ref="_ZSt3minRKT_S1_">min</a>)(<a class="local col9 ref" href="#6779size" title='size' data-ref="6779size">size</a>,<a class="local col0 ref" href="#6780old_size" title='old_size' data-ref="6780old_size">old_size</a>));</td></tr>
+<tr><th id="175">175</th><td>    <a class="ref" href="#_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</a>(<a class="local col8 ref" href="#6778ptr" title='ptr' data-ref="6778ptr">ptr</a>);</td></tr>
+<tr><th id="176">176</th><td>  }</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td>  <b>return</b> <a class="local col1 ref" href="#6781newptr" title='newptr' data-ref="6781newptr">newptr</a>;</td></tr>
+<tr><th id="179">179</th><td>}</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="182">182</th><td><i>*** Implementation of portable aligned versions of malloc/free/realloc     ***</i></td></tr>
+<tr><th id="183">183</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="184">184</th><td></td></tr>
+<tr><th id="185">185</th><td><u>#<span data-ppcond="185">ifdef</span> <span class="macro" data-ref="_M/EIGEN_NO_MALLOC">EIGEN_NO_MALLOC</span></u></td></tr>
+<tr><th id="186">186</th><td><b>inline</b> <em>void</em> check_that_malloc_is_allowed()</td></tr>
+<tr><th id="187">187</th><td>{</td></tr>
+<tr><th id="188">188</th><td>  eigen_assert(<b>false</b> &amp;&amp; <q>"heap allocation is forbidden (EIGEN_NO_MALLOC is defined)"</q>);</td></tr>
+<tr><th id="189">189</th><td>}</td></tr>
+<tr><th id="190">190</th><td><u>#elif defined <span class="macro" data-ref="_M/EIGEN_RUNTIME_NO_MALLOC">EIGEN_RUNTIME_NO_MALLOC</span></u></td></tr>
+<tr><th id="191">191</th><td><b>inline</b> <em>bool</em> is_malloc_allowed_impl(<em>bool</em> update, <em>bool</em> new_value = <b>false</b>)</td></tr>
+<tr><th id="192">192</th><td>{</td></tr>
+<tr><th id="193">193</th><td>  <em>static</em> <em>bool</em> value = <b>true</b>;</td></tr>
+<tr><th id="194">194</th><td>  <b>if</b> (update == <var>1</var>)</td></tr>
+<tr><th id="195">195</th><td>    value = new_value;</td></tr>
+<tr><th id="196">196</th><td>  <b>return</b> value;</td></tr>
+<tr><th id="197">197</th><td>}</td></tr>
+<tr><th id="198">198</th><td><b>inline</b> <em>bool</em> is_malloc_allowed() { <b>return</b> is_malloc_allowed_impl(<b>false</b>); }</td></tr>
+<tr><th id="199">199</th><td><b>inline</b> <em>bool</em> set_is_malloc_allowed(<em>bool</em> new_value) { <b>return</b> is_malloc_allowed_impl(<b>true</b>, new_value); }</td></tr>
+<tr><th id="200">200</th><td><b>inline</b> <em>void</em> check_that_malloc_is_allowed()</td></tr>
+<tr><th id="201">201</th><td>{</td></tr>
+<tr><th id="202">202</th><td>  eigen_assert(is_malloc_allowed() &amp;&amp; <q>"heap allocation is forbidden (EIGEN_RUNTIME_NO_MALLOC is defined and g_is_malloc_allowed is false)"</q>);</td></tr>
+<tr><th id="203">203</th><td>}</td></tr>
+<tr><th id="204">204</th><td><u>#<span data-ppcond="185">else</span></u> </td></tr>
+<tr><th id="205">205</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal28check_that_malloc_is_allowedEv" title='Eigen::internal::check_that_malloc_is_allowed' data-ref="_ZN5Eigen8internal28check_that_malloc_is_allowedEv">check_that_malloc_is_allowed</dfn>()</td></tr>
+<tr><th id="206">206</th><td>{}</td></tr>
+<tr><th id="207">207</th><td><u>#<span data-ppcond="185">endif</span></u></td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td><i class="doc">/**<span class="command"> \internal</span> Allocates<span class="command"> \a</span> <span class="arg">size</span> bytes. The returned pointer is guaranteed to have 16 bytes alignment.</i></td></tr>
+<tr><th id="210">210</th><td><i class="doc">  * On allocation error, the returned pointer is null, and std::bad_alloc is thrown.</i></td></tr>
+<tr><th id="211">211</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="212">212</th><td><b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</dfn>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="6782size" title='size' data-type='size_t' data-ref="6782size">size</dfn>)</td></tr>
+<tr><th id="213">213</th><td>{</td></tr>
+<tr><th id="214">214</th><td>  <a class="ref" href="#_ZN5Eigen8internal28check_that_malloc_is_allowedEv" title='Eigen::internal::check_that_malloc_is_allowed' data-ref="_ZN5Eigen8internal28check_that_malloc_is_allowedEv">check_that_malloc_is_allowed</a>();</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td>  <em>void</em> *<dfn class="local col3 decl" id="6783result" title='result' data-type='void *' data-ref="6783result">result</dfn>;</td></tr>
+<tr><th id="217">217</th><td>  <u>#<span data-ppcond="217">if</span> !<a class="macro" href="Macros.h.html#75" title="1" data-ref="_M/EIGEN_ALIGN">EIGEN_ALIGN</a></u></td></tr>
+<tr><th id="218">218</th><td>    result = std::malloc(size);</td></tr>
+<tr><th id="219">219</th><td>  <u>#<span data-ppcond="217">elif</span> <a class="macro" href="#54" title="1" data-ref="_M/EIGEN_MALLOC_ALREADY_ALIGNED">EIGEN_MALLOC_ALREADY_ALIGNED</a></u></td></tr>
+<tr><th id="220">220</th><td>    <a class="local col3 ref" href="#6783result" title='result' data-ref="6783result">result</a> = <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#malloc" title='malloc' data-ref="malloc">malloc</a>(<a class="local col2 ref" href="#6782size" title='size' data-ref="6782size">size</a>);</td></tr>
+<tr><th id="221">221</th><td>  <u>#<span data-ppcond="217">elif</span> EIGEN_HAS_POSIX_MEMALIGN</u></td></tr>
+<tr><th id="222">222</th><td>    <b>if</b>(posix_memalign(&amp;result, <var>16</var>, size)) result = <var>0</var>;</td></tr>
+<tr><th id="223">223</th><td>  <u>#elif EIGEN_HAS_MM_MALLOC</u></td></tr>
+<tr><th id="224">224</th><td>    result = _mm_malloc(size, <var>16</var>);</td></tr>
+<tr><th id="225">225</th><td>  <u>#elif defined(_MSC_VER) &amp;&amp; (!defined(_WIN32_WCE))</u></td></tr>
+<tr><th id="226">226</th><td>    result = _aligned_malloc(size, <var>16</var>);</td></tr>
+<tr><th id="227">227</th><td>  <u>#else</u></td></tr>
+<tr><th id="228">228</th><td>    result = handmade_aligned_malloc(size);</td></tr>
+<tr><th id="229">229</th><td>  <u>#<span data-ppcond="217">endif</span></u></td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td>  <b>if</b>(!<a class="local col3 ref" href="#6783result" title='result' data-ref="6783result">result</a> &amp;&amp; <a class="local col2 ref" href="#6782size" title='size' data-ref="6782size">size</a>)</td></tr>
+<tr><th id="232">232</th><td>    <a class="ref" href="#_ZN5Eigen8internal19throw_std_bad_allocEv" title='Eigen::internal::throw_std_bad_alloc' data-ref="_ZN5Eigen8internal19throw_std_bad_allocEv">throw_std_bad_alloc</a>();</td></tr>
+<tr><th id="233">233</th><td></td></tr>
+<tr><th id="234">234</th><td>  <b>return</b> <a class="local col3 ref" href="#6783result" title='result' data-ref="6783result">result</a>;</td></tr>
+<tr><th id="235">235</th><td>}</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+<tr><th id="237">237</th><td><i class="doc">/**<span class="command"> \internal</span> Frees memory allocated with aligned_malloc. */</i></td></tr>
+<tr><th id="238">238</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</dfn>(<em>void</em> *<dfn class="local col4 decl" id="6784ptr" title='ptr' data-type='void *' data-ref="6784ptr">ptr</dfn>)</td></tr>
+<tr><th id="239">239</th><td>{</td></tr>
+<tr><th id="240">240</th><td>  <u>#<span data-ppcond="240">if</span> !<a class="macro" href="Macros.h.html#75" title="1" data-ref="_M/EIGEN_ALIGN">EIGEN_ALIGN</a></u></td></tr>
+<tr><th id="241">241</th><td>    std::free(ptr);</td></tr>
+<tr><th id="242">242</th><td>  <u>#<span data-ppcond="240">elif</span> <a class="macro" href="#54" title="1" data-ref="_M/EIGEN_MALLOC_ALREADY_ALIGNED">EIGEN_MALLOC_ALREADY_ALIGNED</a></u></td></tr>
+<tr><th id="243">243</th><td>    <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#free" title='free' data-ref="free">free</a>(<a class="local col4 ref" href="#6784ptr" title='ptr' data-ref="6784ptr">ptr</a>);</td></tr>
+<tr><th id="244">244</th><td>  <u>#<span data-ppcond="240">elif</span> EIGEN_HAS_POSIX_MEMALIGN</u></td></tr>
+<tr><th id="245">245</th><td>    std::free(ptr);</td></tr>
+<tr><th id="246">246</th><td>  <u>#elif EIGEN_HAS_MM_MALLOC</u></td></tr>
+<tr><th id="247">247</th><td>    _mm_free(ptr);</td></tr>
+<tr><th id="248">248</th><td>  <u>#elif defined(_MSC_VER) &amp;&amp; (!defined(_WIN32_WCE))</u></td></tr>
+<tr><th id="249">249</th><td>    _aligned_free(ptr);</td></tr>
+<tr><th id="250">250</th><td>  <u>#else</u></td></tr>
+<tr><th id="251">251</th><td>    handmade_aligned_free(ptr);</td></tr>
+<tr><th id="252">252</th><td>  <u>#<span data-ppcond="240">endif</span></u></td></tr>
+<tr><th id="253">253</th><td>}</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="256">256</th><td><i class="doc">*<span class="command"> \internal</span></i></td></tr>
+<tr><th id="257">257</th><td><i class="doc">* <span class="command">\brief</span> Reallocates an aligned block of memory.</i></td></tr>
+<tr><th id="258">258</th><td><i class="doc">* <span class="command">\throws</span> std::bad_alloc on allocation failure</i></td></tr>
+<tr><th id="259">259</th><td><i class="doc">**/</i></td></tr>
+<tr><th id="260">260</th><td><b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal15aligned_reallocEPvmm" title='Eigen::internal::aligned_realloc' data-ref="_ZN5Eigen8internal15aligned_reallocEPvmm">aligned_realloc</dfn>(<em>void</em> *<dfn class="local col5 decl" id="6785ptr" title='ptr' data-type='void *' data-ref="6785ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="6786new_size" title='new_size' data-type='size_t' data-ref="6786new_size">new_size</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="6787old_size" title='old_size' data-type='size_t' data-ref="6787old_size">old_size</dfn>)</td></tr>
+<tr><th id="261">261</th><td>{</td></tr>
+<tr><th id="262">262</th><td>  <a class="macro" href="Macros.h.html#241" title="(void)old_size;" data-ref="_M/EIGEN_UNUSED_VARIABLE">EIGEN_UNUSED_VARIABLE</a>(<a class="local col7 ref" href="#6787old_size" title='old_size' data-ref="6787old_size">old_size</a>);</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td>  <em>void</em> *<dfn class="local col8 decl" id="6788result" title='result' data-type='void *' data-ref="6788result">result</dfn>;</td></tr>
+<tr><th id="265">265</th><td><u>#<span data-ppcond="265">if</span> !<a class="macro" href="Macros.h.html#75" title="1" data-ref="_M/EIGEN_ALIGN">EIGEN_ALIGN</a></u></td></tr>
+<tr><th id="266">266</th><td>  result = std::realloc(ptr,new_size);</td></tr>
+<tr><th id="267">267</th><td><u>#<span data-ppcond="265">elif</span> <a class="macro" href="#54" title="1" data-ref="_M/EIGEN_MALLOC_ALREADY_ALIGNED">EIGEN_MALLOC_ALREADY_ALIGNED</a></u></td></tr>
+<tr><th id="268">268</th><td>  <a class="local col8 ref" href="#6788result" title='result' data-ref="6788result">result</a> = <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#realloc" title='realloc' data-ref="realloc">realloc</a>(<a class="local col5 ref" href="#6785ptr" title='ptr' data-ref="6785ptr">ptr</a>,<a class="local col6 ref" href="#6786new_size" title='new_size' data-ref="6786new_size">new_size</a>);</td></tr>
+<tr><th id="269">269</th><td><u>#<span data-ppcond="265">elif</span> EIGEN_HAS_POSIX_MEMALIGN</u></td></tr>
+<tr><th id="270">270</th><td>  result = generic_aligned_realloc(ptr,new_size,old_size);</td></tr>
+<tr><th id="271">271</th><td><u>#elif EIGEN_HAS_MM_MALLOC</u></td></tr>
+<tr><th id="272">272</th><td>  <i>// The defined(_mm_free) is just here to verify that this MSVC version</i></td></tr>
+<tr><th id="273">273</th><td><i>  // implements _mm_malloc/_mm_free based on the corresponding _aligned_</i></td></tr>
+<tr><th id="274">274</th><td><i>  // functions. This may not always be the case and we just try to be safe.</i></td></tr>
+<tr><th id="275">275</th><td>  <u>#if defined(_MSC_VER) &amp;&amp; defined(_mm_free)</u></td></tr>
+<tr><th id="276">276</th><td>    result = _aligned_realloc(ptr,new_size,<var>16</var>);</td></tr>
+<tr><th id="277">277</th><td>  <u>#else</u></td></tr>
+<tr><th id="278">278</th><td>    result = generic_aligned_realloc(ptr,new_size,old_size);</td></tr>
+<tr><th id="279">279</th><td>  <u>#endif</u></td></tr>
+<tr><th id="280">280</th><td><u>#elif defined(_MSC_VER)</u></td></tr>
+<tr><th id="281">281</th><td>  result = _aligned_realloc(ptr,new_size,<var>16</var>);</td></tr>
+<tr><th id="282">282</th><td><u>#else</u></td></tr>
+<tr><th id="283">283</th><td>  result = handmade_aligned_realloc(ptr,new_size,old_size);</td></tr>
+<tr><th id="284">284</th><td><u>#<span data-ppcond="265">endif</span></u></td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td>  <b>if</b> (!<a class="local col8 ref" href="#6788result" title='result' data-ref="6788result">result</a> &amp;&amp; <a class="local col6 ref" href="#6786new_size" title='new_size' data-ref="6786new_size">new_size</a>)</td></tr>
+<tr><th id="287">287</th><td>    <a class="ref" href="#_ZN5Eigen8internal19throw_std_bad_allocEv" title='Eigen::internal::throw_std_bad_alloc' data-ref="_ZN5Eigen8internal19throw_std_bad_allocEv">throw_std_bad_alloc</a>();</td></tr>
+<tr><th id="288">288</th><td></td></tr>
+<tr><th id="289">289</th><td>  <b>return</b> <a class="local col8 ref" href="#6788result" title='result' data-ref="6788result">result</a>;</td></tr>
+<tr><th id="290">290</th><td>}</td></tr>
+<tr><th id="291">291</th><td></td></tr>
+<tr><th id="292">292</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="293">293</th><td><i>*** Implementation of conditionally aligned functions                      ***</i></td></tr>
+<tr><th id="294">294</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td><i class="doc">/**<span class="command"> \internal</span> Allocates<span class="command"> \a</span> <span class="arg">size</span> bytes. If Align is true, then the returned ptr is 16-byte-aligned.</i></td></tr>
+<tr><th id="297">297</th><td><i class="doc">  * On allocation error, the returned pointer is null, and a std::bad_alloc is thrown.</i></td></tr>
+<tr><th id="298">298</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="299">299</th><td><b>template</b>&lt;<em>bool</em> Align&gt; <b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal26conditional_aligned_mallocEm" title='Eigen::internal::conditional_aligned_malloc' data-ref="_ZN5Eigen8internal26conditional_aligned_mallocEm">conditional_aligned_malloc</dfn>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="6789size" title='size' data-type='size_t' data-ref="6789size">size</dfn>)</td></tr>
+<tr><th id="300">300</th><td>{</td></tr>
+<tr><th id="301">301</th><td>  <b>return</b> <a class="ref" href="#_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</a>(<a class="local col9 ref" href="#6789size" title='size' data-ref="6789size">size</a>);</td></tr>
+<tr><th id="302">302</th><td>}</td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td><b>template</b>&lt;&gt; <b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal26conditional_aligned_mallocEm" title='Eigen::internal::conditional_aligned_malloc' data-ref="_ZN5Eigen8internal26conditional_aligned_mallocEm">conditional_aligned_malloc</dfn>&lt;<b>false</b>&gt;(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="6790size" title='size' data-type='size_t' data-ref="6790size">size</dfn>)</td></tr>
+<tr><th id="305">305</th><td>{</td></tr>
+<tr><th id="306">306</th><td>  <a class="ref" href="#_ZN5Eigen8internal28check_that_malloc_is_allowedEv" title='Eigen::internal::check_that_malloc_is_allowed' data-ref="_ZN5Eigen8internal28check_that_malloc_is_allowedEv">check_that_malloc_is_allowed</a>();</td></tr>
+<tr><th id="307">307</th><td></td></tr>
+<tr><th id="308">308</th><td>  <em>void</em> *<dfn class="local col1 decl" id="6791result" title='result' data-type='void *' data-ref="6791result">result</dfn> = <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#malloc" title='malloc' data-ref="malloc">malloc</a>(<a class="local col0 ref" href="#6790size" title='size' data-ref="6790size">size</a>);</td></tr>
+<tr><th id="309">309</th><td>  <b>if</b>(!<a class="local col1 ref" href="#6791result" title='result' data-ref="6791result">result</a> &amp;&amp; <a class="local col0 ref" href="#6790size" title='size' data-ref="6790size">size</a>)</td></tr>
+<tr><th id="310">310</th><td>    <a class="ref" href="#_ZN5Eigen8internal19throw_std_bad_allocEv" title='Eigen::internal::throw_std_bad_alloc' data-ref="_ZN5Eigen8internal19throw_std_bad_allocEv">throw_std_bad_alloc</a>();</td></tr>
+<tr><th id="311">311</th><td>  <b>return</b> <a class="local col1 ref" href="#6791result" title='result' data-ref="6791result">result</a>;</td></tr>
+<tr><th id="312">312</th><td>}</td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td><i class="doc">/**<span class="command"> \internal</span> Frees memory allocated with conditional_aligned_malloc */</i></td></tr>
+<tr><th id="315">315</th><td><b>template</b>&lt;<em>bool</em> Align&gt; <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal24conditional_aligned_freeEPv" title='Eigen::internal::conditional_aligned_free' data-ref="_ZN5Eigen8internal24conditional_aligned_freeEPv">conditional_aligned_free</dfn>(<em>void</em> *<dfn class="local col2 decl" id="6792ptr" title='ptr' data-type='void *' data-ref="6792ptr">ptr</dfn>)</td></tr>
+<tr><th id="316">316</th><td>{</td></tr>
+<tr><th id="317">317</th><td>  <a class="ref" href="#_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</a>(<a class="local col2 ref" href="#6792ptr" title='ptr' data-ref="6792ptr">ptr</a>);</td></tr>
+<tr><th id="318">318</th><td>}</td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td><b>template</b>&lt;&gt; <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal24conditional_aligned_freeEPv" title='Eigen::internal::conditional_aligned_free' data-ref="_ZN5Eigen8internal24conditional_aligned_freeEPv">conditional_aligned_free</dfn>&lt;<b>false</b>&gt;(<em>void</em> *<dfn class="local col3 decl" id="6793ptr" title='ptr' data-type='void *' data-ref="6793ptr">ptr</dfn>)</td></tr>
+<tr><th id="321">321</th><td>{</td></tr>
+<tr><th id="322">322</th><td>  <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#free" title='free' data-ref="free">free</a>(<a class="local col3 ref" href="#6793ptr" title='ptr' data-ref="6793ptr">ptr</a>);</td></tr>
+<tr><th id="323">323</th><td>}</td></tr>
+<tr><th id="324">324</th><td></td></tr>
+<tr><th id="325">325</th><td><b>template</b>&lt;<em>bool</em> Align&gt; <b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal27conditional_aligned_reallocEPvmm" title='Eigen::internal::conditional_aligned_realloc' data-ref="_ZN5Eigen8internal27conditional_aligned_reallocEPvmm">conditional_aligned_realloc</dfn>(<em>void</em>* <dfn class="local col4 decl" id="6794ptr" title='ptr' data-type='void *' data-ref="6794ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="6795new_size" title='new_size' data-type='size_t' data-ref="6795new_size">new_size</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="6796old_size" title='old_size' data-type='size_t' data-ref="6796old_size">old_size</dfn>)</td></tr>
+<tr><th id="326">326</th><td>{</td></tr>
+<tr><th id="327">327</th><td>  <b>return</b> <a class="ref" href="#_ZN5Eigen8internal15aligned_reallocEPvmm" title='Eigen::internal::aligned_realloc' data-ref="_ZN5Eigen8internal15aligned_reallocEPvmm">aligned_realloc</a>(<a class="local col4 ref" href="#6794ptr" title='ptr' data-ref="6794ptr">ptr</a>, <a class="local col5 ref" href="#6795new_size" title='new_size' data-ref="6795new_size">new_size</a>, <a class="local col6 ref" href="#6796old_size" title='old_size' data-ref="6796old_size">old_size</a>);</td></tr>
+<tr><th id="328">328</th><td>}</td></tr>
+<tr><th id="329">329</th><td></td></tr>
+<tr><th id="330">330</th><td><b>template</b>&lt;&gt; <b>inline</b> <em>void</em>* <dfn class="decl def" id="_ZN5Eigen8internal27conditional_aligned_reallocEPvmm" title='Eigen::internal::conditional_aligned_realloc' data-ref="_ZN5Eigen8internal27conditional_aligned_reallocEPvmm">conditional_aligned_realloc</dfn>&lt;<b>false</b>&gt;(<em>void</em>* <dfn class="local col7 decl" id="6797ptr" title='ptr' data-type='void *' data-ref="6797ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col8 decl" id="6798new_size" title='new_size' data-type='size_t' data-ref="6798new_size">new_size</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>)</td></tr>
+<tr><th id="331">331</th><td>{</td></tr>
+<tr><th id="332">332</th><td>  <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../../../stdlib.h.html#realloc" title='realloc' data-ref="realloc">realloc</a>(<a class="local col7 ref" href="#6797ptr" title='ptr' data-ref="6797ptr">ptr</a>, <a class="local col8 ref" href="#6798new_size" title='new_size' data-ref="6798new_size">new_size</a>);</td></tr>
+<tr><th id="333">333</th><td>}</td></tr>
+<tr><th id="334">334</th><td></td></tr>
+<tr><th id="335">335</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="336">336</th><td><i>*** Construction/destruction of array elements                             ***</i></td></tr>
+<tr><th id="337">337</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="338">338</th><td></td></tr>
+<tr><th id="339">339</th><td><i class="doc">/**<span class="command"> \internal</span> Constructs the elements of an array.</i></td></tr>
+<tr><th id="340">340</th><td><i class="doc">  * The<span class="command"> \a</span> <span class="arg">size</span> parameter tells on how many objects to call the constructor of T.</i></td></tr>
+<tr><th id="341">341</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="342">342</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>inline</b> T* <dfn class="decl def" id="_ZN5Eigen8internal27construct_elements_of_arrayEPT_m" title='Eigen::internal::construct_elements_of_array' data-ref="_ZN5Eigen8internal27construct_elements_of_arrayEPT_m">construct_elements_of_array</dfn>(T *<dfn class="local col9 decl" id="6799ptr" title='ptr' data-type='T *' data-ref="6799ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="6800size" title='size' data-type='size_t' data-ref="6800size">size</dfn>)</td></tr>
+<tr><th id="343">343</th><td>{</td></tr>
+<tr><th id="344">344</th><td>  <b>for</b> (<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="6801i" title='i' data-type='size_t' data-ref="6801i">i</dfn>=<var>0</var>; <a class="local col1 ref" href="#6801i" title='i' data-ref="6801i">i</a> &lt; <a class="local col0 ref" href="#6800size" title='size' data-ref="6800size">size</a>; ++<a class="local col1 ref" href="#6801i" title='i' data-ref="6801i">i</a>) ::<b>new</b> (<a class="local col9 ref" href="#6799ptr" title='ptr' data-ref="6799ptr">ptr</a> + <a class="local col1 ref" href="#6801i" title='i' data-ref="6801i">i</a>) T;</td></tr>
+<tr><th id="345">345</th><td>  <b>return</b> <a class="local col9 ref" href="#6799ptr" title='ptr' data-ref="6799ptr">ptr</a>;</td></tr>
+<tr><th id="346">346</th><td>}</td></tr>
+<tr><th id="347">347</th><td></td></tr>
+<tr><th id="348">348</th><td><i class="doc">/**<span class="command"> \internal</span> Destructs the elements of an array.</i></td></tr>
+<tr><th id="349">349</th><td><i class="doc">  * The<span class="command"> \a</span> <span class="arg">size</span> parameters tells on how many objects to call the destructor of T.</i></td></tr>
+<tr><th id="350">350</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="351">351</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal26destruct_elements_of_arrayEPT_m" title='Eigen::internal::destruct_elements_of_array' data-ref="_ZN5Eigen8internal26destruct_elements_of_arrayEPT_m">destruct_elements_of_array</dfn>(T *<dfn class="local col2 decl" id="6802ptr" title='ptr' data-type='T *' data-ref="6802ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col3 decl" id="6803size" title='size' data-type='size_t' data-ref="6803size">size</dfn>)</td></tr>
+<tr><th id="352">352</th><td>{</td></tr>
+<tr><th id="353">353</th><td>  <i>// always destruct an array starting from the end.</i></td></tr>
+<tr><th id="354">354</th><td>  <b>if</b>(<a class="local col2 ref" href="#6802ptr" title='ptr' data-ref="6802ptr">ptr</a>)</td></tr>
+<tr><th id="355">355</th><td>    <b>while</b>(<a class="local col3 ref" href="#6803size" title='size' data-ref="6803size">size</a>) <a class="local col2 ref" href="#6802ptr" title='ptr' data-ref="6802ptr">ptr</a>[--<a class="local col3 ref" href="#6803size" title='size' data-ref="6803size">size</a>].~T();</td></tr>
+<tr><th id="356">356</th><td>}</td></tr>
+<tr><th id="357">357</th><td></td></tr>
+<tr><th id="358">358</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="359">359</th><td><i>*** Implementation of aligned new/delete-like functions                    ***</i></td></tr>
+<tr><th id="360">360</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="361">361</th><td></td></tr>
+<tr><th id="362">362</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="363">363</th><td><a class="macro" href="Macros.h.html#135" title="__attribute__((always_inline)) inline" data-ref="_M/EIGEN_ALWAYS_INLINE">EIGEN_ALWAYS_INLINE</a> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal23check_size_for_overflowEm" title='Eigen::internal::check_size_for_overflow' data-ref="_ZN5Eigen8internal23check_size_for_overflowEm">check_size_for_overflow</dfn>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="6804size" title='size' data-type='size_t' data-ref="6804size">size</dfn>)</td></tr>
+<tr><th id="364">364</th><td>{</td></tr>
+<tr><th id="365">365</th><td>  <b>if</b>(<a class="local col4 ref" href="#6804size" title='size' data-ref="6804size">size</a> &gt; <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>(-<var>1</var>) / <b>sizeof</b>(T))</td></tr>
+<tr><th id="366">366</th><td>    <a class="ref" href="#_ZN5Eigen8internal19throw_std_bad_allocEv" title='Eigen::internal::throw_std_bad_alloc' data-ref="_ZN5Eigen8internal19throw_std_bad_allocEv">throw_std_bad_alloc</a>();</td></tr>
+<tr><th id="367">367</th><td>}</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td><i class="doc">/**<span class="command"> \internal</span> Allocates<span class="command"> \a</span> <span class="arg">size</span> objects of type T. The returned pointer is guaranteed to have 16 bytes alignment.</i></td></tr>
+<tr><th id="370">370</th><td><i class="doc">  * On allocation error, the returned pointer is undefined, but a std::bad_alloc is thrown.</i></td></tr>
+<tr><th id="371">371</th><td><i class="doc">  * The default constructor of T is called.</i></td></tr>
+<tr><th id="372">372</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="373">373</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>inline</b> T* <dfn class="decl def" id="_ZN5Eigen8internal11aligned_newEm" title='Eigen::internal::aligned_new' data-ref="_ZN5Eigen8internal11aligned_newEm">aligned_new</dfn>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="6805size" title='size' data-type='size_t' data-ref="6805size">size</dfn>)</td></tr>
+<tr><th id="374">374</th><td>{</td></tr>
+<tr><th id="375">375</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col5 ref" href="#6805size" title='size' data-ref="6805size">size</a>);</td></tr>
+<tr><th id="376">376</th><td>  T *<dfn class="local col6 decl" id="6806result" title='result' data-type='T *' data-ref="6806result">result</dfn> = <b>reinterpret_cast</b>&lt;T*&gt;(<a class="ref" href="#_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</a>(<b>sizeof</b>(T)*<a class="local col5 ref" href="#6805size" title='size' data-ref="6805size">size</a>));</td></tr>
+<tr><th id="377">377</th><td>  <b>return</b> construct_elements_of_array(<a class="local col6 ref" href="#6806result" title='result' data-ref="6806result">result</a>, <a class="local col5 ref" href="#6805size" title='size' data-ref="6805size">size</a>);</td></tr>
+<tr><th id="378">378</th><td>}</td></tr>
+<tr><th id="379">379</th><td></td></tr>
+<tr><th id="380">380</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> Align&gt; <b>inline</b> T* <dfn class="decl def" id="_ZN5Eigen8internal23conditional_aligned_newEm" title='Eigen::internal::conditional_aligned_new' data-ref="_ZN5Eigen8internal23conditional_aligned_newEm">conditional_aligned_new</dfn>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="6807size" title='size' data-type='size_t' data-ref="6807size">size</dfn>)</td></tr>
+<tr><th id="381">381</th><td>{</td></tr>
+<tr><th id="382">382</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col7 ref" href="#6807size" title='size' data-ref="6807size">size</a>);</td></tr>
+<tr><th id="383">383</th><td>  T *<dfn class="local col8 decl" id="6808result" title='result' data-type='T *' data-ref="6808result">result</dfn> = <b>reinterpret_cast</b>&lt;T*&gt;(conditional_aligned_malloc&lt;<a class="tu ref" href="#Align" title='Align' data-use='c' data-ref="Align">Align</a>&gt;(<b>sizeof</b>(T)*<a class="local col7 ref" href="#6807size" title='size' data-ref="6807size">size</a>));</td></tr>
+<tr><th id="384">384</th><td>  <b>return</b> construct_elements_of_array(<a class="local col8 ref" href="#6808result" title='result' data-ref="6808result">result</a>, <a class="local col7 ref" href="#6807size" title='size' data-ref="6807size">size</a>);</td></tr>
+<tr><th id="385">385</th><td>}</td></tr>
+<tr><th id="386">386</th><td></td></tr>
+<tr><th id="387">387</th><td><i class="doc">/**<span class="command"> \internal</span> Deletes objects constructed with aligned_new</i></td></tr>
+<tr><th id="388">388</th><td><i class="doc">  * The<span class="command"> \a</span> <span class="arg">size</span> parameters tells on how many objects to call the destructor of T.</i></td></tr>
+<tr><th id="389">389</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="390">390</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal14aligned_deleteEPT_m" title='Eigen::internal::aligned_delete' data-ref="_ZN5Eigen8internal14aligned_deleteEPT_m">aligned_delete</dfn>(T *<dfn class="local col9 decl" id="6809ptr" title='ptr' data-type='T *' data-ref="6809ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="6810size" title='size' data-type='size_t' data-ref="6810size">size</dfn>)</td></tr>
+<tr><th id="391">391</th><td>{</td></tr>
+<tr><th id="392">392</th><td>  destruct_elements_of_array&lt;T&gt;(<a class="local col9 ref" href="#6809ptr" title='ptr' data-ref="6809ptr">ptr</a>, <a class="local col0 ref" href="#6810size" title='size' data-ref="6810size">size</a>);</td></tr>
+<tr><th id="393">393</th><td>  aligned_free(<a class="local col9 ref" href="#6809ptr" title='ptr' data-ref="6809ptr">ptr</a>);</td></tr>
+<tr><th id="394">394</th><td>}</td></tr>
+<tr><th id="395">395</th><td></td></tr>
+<tr><th id="396">396</th><td><i class="doc">/**<span class="command"> \internal</span> Deletes objects constructed with conditional_aligned_new</i></td></tr>
+<tr><th id="397">397</th><td><i class="doc">  * The<span class="command"> \a</span> <span class="arg">size</span> parameters tells on how many objects to call the destructor of T.</i></td></tr>
+<tr><th id="398">398</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="399">399</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> Align&gt; <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal26conditional_aligned_deleteEPT_m" title='Eigen::internal::conditional_aligned_delete' data-ref="_ZN5Eigen8internal26conditional_aligned_deleteEPT_m">conditional_aligned_delete</dfn>(T *<dfn class="local col1 decl" id="6811ptr" title='ptr' data-type='T *' data-ref="6811ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="6812size" title='size' data-type='size_t' data-ref="6812size">size</dfn>)</td></tr>
+<tr><th id="400">400</th><td>{</td></tr>
+<tr><th id="401">401</th><td>  destruct_elements_of_array&lt;T&gt;(<a class="local col1 ref" href="#6811ptr" title='ptr' data-ref="6811ptr">ptr</a>, <a class="local col2 ref" href="#6812size" title='size' data-ref="6812size">size</a>);</td></tr>
+<tr><th id="402">402</th><td>  conditional_aligned_free&lt;<a class="tu ref" href="#Align" title='Align' data-use='c' data-ref="Align">Align</a>&gt;(<a class="local col1 ref" href="#6811ptr" title='ptr' data-ref="6811ptr">ptr</a>);</td></tr>
+<tr><th id="403">403</th><td>}</td></tr>
+<tr><th id="404">404</th><td></td></tr>
+<tr><th id="405">405</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> Align&gt; <b>inline</b> T* <dfn class="decl def" id="_ZN5Eigen8internal31conditional_aligned_realloc_newEPT_mm" title='Eigen::internal::conditional_aligned_realloc_new' data-ref="_ZN5Eigen8internal31conditional_aligned_realloc_newEPT_mm">conditional_aligned_realloc_new</dfn>(T* <dfn class="local col3 decl" id="6813pts" title='pts' data-type='T *' data-ref="6813pts">pts</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="6814new_size" title='new_size' data-type='size_t' data-ref="6814new_size">new_size</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="6815old_size" title='old_size' data-type='size_t' data-ref="6815old_size">old_size</dfn>)</td></tr>
+<tr><th id="406">406</th><td>{</td></tr>
+<tr><th id="407">407</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a>);</td></tr>
+<tr><th id="408">408</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>);</td></tr>
+<tr><th id="409">409</th><td>  <b>if</b>(<a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a> &lt; <a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>)</td></tr>
+<tr><th id="410">410</th><td>    destruct_elements_of_array(<a class="local col3 ref" href="#6813pts" title='pts' data-ref="6813pts">pts</a>+<a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a>, <a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>-<a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a>);</td></tr>
+<tr><th id="411">411</th><td>  T *<dfn class="local col6 decl" id="6816result" title='result' data-type='T *' data-ref="6816result">result</dfn> = <b>reinterpret_cast</b>&lt;T*&gt;(conditional_aligned_realloc&lt;<a class="tu ref" href="#Align" title='Align' data-use='c' data-ref="Align">Align</a>&gt;(<b>reinterpret_cast</b>&lt;<em>void</em>*&gt;(<a class="local col3 ref" href="#6813pts" title='pts' data-ref="6813pts">pts</a>), <b>sizeof</b>(T)*<a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a>, <b>sizeof</b>(T)*<a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>));</td></tr>
+<tr><th id="412">412</th><td>  <b>if</b>(<a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a> &gt; <a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>)</td></tr>
+<tr><th id="413">413</th><td>    construct_elements_of_array(<a class="local col6 ref" href="#6816result" title='result' data-ref="6816result">result</a>+<a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>, <a class="local col4 ref" href="#6814new_size" title='new_size' data-ref="6814new_size">new_size</a>-<a class="local col5 ref" href="#6815old_size" title='old_size' data-ref="6815old_size">old_size</a>);</td></tr>
+<tr><th id="414">414</th><td>  <b>return</b> <a class="local col6 ref" href="#6816result" title='result' data-ref="6816result">result</a>;</td></tr>
+<tr><th id="415">415</th><td>}</td></tr>
+<tr><th id="416">416</th><td></td></tr>
+<tr><th id="417">417</th><td></td></tr>
+<tr><th id="418">418</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> Align&gt; <b>inline</b> T* <dfn class="decl def" id="_ZN5Eigen8internal28conditional_aligned_new_autoEm" title='Eigen::internal::conditional_aligned_new_auto' data-ref="_ZN5Eigen8internal28conditional_aligned_new_autoEm">conditional_aligned_new_auto</dfn>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="6817size" title='size' data-type='size_t' data-ref="6817size">size</dfn>)</td></tr>
+<tr><th id="419">419</th><td>{</td></tr>
+<tr><th id="420">420</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col7 ref" href="#6817size" title='size' data-ref="6817size">size</a>);</td></tr>
+<tr><th id="421">421</th><td>  T *<dfn class="local col8 decl" id="6818result" title='result' data-type='T *' data-ref="6818result">result</dfn> = <b>reinterpret_cast</b>&lt;T*&gt;(conditional_aligned_malloc&lt;<a class="tu ref" href="#Align" title='Align' data-use='c' data-ref="Align">Align</a>&gt;(<b>sizeof</b>(T)*<a class="local col7 ref" href="#6817size" title='size' data-ref="6817size">size</a>));</td></tr>
+<tr><th id="422">422</th><td>  <b>if</b>(<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization)</td></tr>
+<tr><th id="423">423</th><td>    construct_elements_of_array(<a class="local col8 ref" href="#6818result" title='result' data-ref="6818result">result</a>, <a class="local col7 ref" href="#6817size" title='size' data-ref="6817size">size</a>);</td></tr>
+<tr><th id="424">424</th><td>  <b>return</b> <a class="local col8 ref" href="#6818result" title='result' data-ref="6818result">result</a>;</td></tr>
+<tr><th id="425">425</th><td>}</td></tr>
+<tr><th id="426">426</th><td></td></tr>
+<tr><th id="427">427</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> Align&gt; <b>inline</b> T* <dfn class="decl def" id="_ZN5Eigen8internal36conditional_aligned_realloc_new_autoEPT_mm" title='Eigen::internal::conditional_aligned_realloc_new_auto' data-ref="_ZN5Eigen8internal36conditional_aligned_realloc_new_autoEPT_mm">conditional_aligned_realloc_new_auto</dfn>(T* <dfn class="local col9 decl" id="6819pts" title='pts' data-type='T *' data-ref="6819pts">pts</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="6820new_size" title='new_size' data-type='size_t' data-ref="6820new_size">new_size</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="6821old_size" title='old_size' data-type='size_t' data-ref="6821old_size">old_size</dfn>)</td></tr>
+<tr><th id="428">428</th><td>{</td></tr>
+<tr><th id="429">429</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a>);</td></tr>
+<tr><th id="430">430</th><td>  check_size_for_overflow&lt;T&gt;(<a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>);</td></tr>
+<tr><th id="431">431</th><td>  <b>if</b>(<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization &amp;&amp; (<a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a> &lt; <a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>))</td></tr>
+<tr><th id="432">432</th><td>    destruct_elements_of_array(<a class="local col9 ref" href="#6819pts" title='pts' data-ref="6819pts">pts</a>+<a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a>, <a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>-<a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a>);</td></tr>
+<tr><th id="433">433</th><td>  T *<dfn class="local col2 decl" id="6822result" title='result' data-type='T *' data-ref="6822result">result</dfn> = <b>reinterpret_cast</b>&lt;T*&gt;(conditional_aligned_realloc&lt;<a class="tu ref" href="#Align" title='Align' data-use='c' data-ref="Align">Align</a>&gt;(<b>reinterpret_cast</b>&lt;<em>void</em>*&gt;(<a class="local col9 ref" href="#6819pts" title='pts' data-ref="6819pts">pts</a>), <b>sizeof</b>(T)*<a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a>, <b>sizeof</b>(T)*<a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>));</td></tr>
+<tr><th id="434">434</th><td>  <b>if</b>(<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization &amp;&amp; (<a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a> &gt; <a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>))</td></tr>
+<tr><th id="435">435</th><td>    construct_elements_of_array(<a class="local col2 ref" href="#6822result" title='result' data-ref="6822result">result</a>+<a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>, <a class="local col0 ref" href="#6820new_size" title='new_size' data-ref="6820new_size">new_size</a>-<a class="local col1 ref" href="#6821old_size" title='old_size' data-ref="6821old_size">old_size</a>);</td></tr>
+<tr><th id="436">436</th><td>  <b>return</b> <a class="local col2 ref" href="#6822result" title='result' data-ref="6822result">result</a>;</td></tr>
+<tr><th id="437">437</th><td>}</td></tr>
+<tr><th id="438">438</th><td></td></tr>
+<tr><th id="439">439</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> Align&gt; <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal31conditional_aligned_delete_autoEPT_m" title='Eigen::internal::conditional_aligned_delete_auto' data-ref="_ZN5Eigen8internal31conditional_aligned_delete_autoEPT_m">conditional_aligned_delete_auto</dfn>(T *<dfn class="local col3 decl" id="6823ptr" title='ptr' data-type='T *' data-ref="6823ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="6824size" title='size' data-type='size_t' data-ref="6824size">size</dfn>)</td></tr>
+<tr><th id="440">440</th><td>{</td></tr>
+<tr><th id="441">441</th><td>  <b>if</b>(<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization)</td></tr>
+<tr><th id="442">442</th><td>    destruct_elements_of_array&lt;T&gt;(<a class="local col3 ref" href="#6823ptr" title='ptr' data-ref="6823ptr">ptr</a>, <a class="local col4 ref" href="#6824size" title='size' data-ref="6824size">size</a>);</td></tr>
+<tr><th id="443">443</th><td>  conditional_aligned_free&lt;<a class="tu ref" href="#Align" title='Align' data-use='c' data-ref="Align">Align</a>&gt;(<a class="local col3 ref" href="#6823ptr" title='ptr' data-ref="6823ptr">ptr</a>);</td></tr>
+<tr><th id="444">444</th><td>}</td></tr>
+<tr><th id="445">445</th><td></td></tr>
+<tr><th id="446">446</th><td><i>/****************************************************************************/</i></td></tr>
+<tr><th id="447">447</th><td></td></tr>
+<tr><th id="448">448</th><td><i class="doc">/**<span class="command"> \internal</span> Returns the index of the first element of the array that is well aligned for vectorization.</i></td></tr>
+<tr><th id="449">449</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="450">450</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">array</span> the address of the start of the array</i></td></tr>
+<tr><th id="451">451</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">size</span> the size of the array</i></td></tr>
+<tr><th id="452">452</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="453">453</th><td><i class="doc">  * <span class="command">\note</span> If no element of the array is well aligned, the size of the array is returned. Typically,</i></td></tr>
+<tr><th id="454">454</th><td><i class="doc">  * for example with SSE, "well aligned" means 16-byte-aligned. If vectorization is disabled or if the</i></td></tr>
+<tr><th id="455">455</th><td><i class="doc">  * packet size for the given scalar type is 1, then everything is considered well-aligned.</i></td></tr>
+<tr><th id="456">456</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="457">457</th><td><i class="doc">  * <span class="command">\note</span> If the scalar type is vectorizable, we rely on the following assumptions: sizeof(Scalar) is a</i></td></tr>
+<tr><th id="458">458</th><td><i class="doc">  * power of 2, the packet size in bytes is also a power of 2, and is a multiple of sizeof(Scalar). On the</i></td></tr>
+<tr><th id="459">459</th><td><i class="doc">  * other hand, we do not assume that the array address is a multiple of sizeof(Scalar), as that fails for</i></td></tr>
+<tr><th id="460">460</th><td><i class="doc">  * example with Scalar=double on certain 32-bit platforms, see bug #79.</i></td></tr>
+<tr><th id="461">461</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="462">462</th><td><i class="doc">  * There is also the variant first_aligned(const MatrixBase&amp;) defined in DenseCoeffsBase.h.</i></td></tr>
+<tr><th id="463">463</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="464">464</th><td><b>template</b>&lt;<b>typename</b> Scalar, <b>typename</b> Index&gt;</td></tr>
+<tr><th id="465">465</th><td><em>static</em> <b>inline</b> Index <dfn class="decl def" id="_ZN5Eigen8internalL13first_alignedEPKT_T0_" title='Eigen::internal::first_aligned' data-ref="_ZN5Eigen8internalL13first_alignedEPKT_T0_">first_aligned</dfn>(<em>const</em> Scalar* <dfn class="local col5 decl" id="6825array" title='array' data-type='const Scalar *' data-ref="6825array">array</dfn>, Index <dfn class="local col6 decl" id="6826size" title='size' data-type='Index' data-ref="6826size">size</dfn>)</td></tr>
+<tr><th id="466">466</th><td>{</td></tr>
+<tr><th id="467">467</th><td>  <b>enum</b> { <dfn class="local col7 enum" id="6827PacketSize" title='PacketSize' data-type='0' data-ref="6827PacketSize">PacketSize</dfn> = <a class="type" href="XprHelper.h.html#Eigen::internal::packet_traits" title='Eigen::internal::packet_traits' data-ref="Eigen::internal::packet_traits">packet_traits</a>&lt;Scalar&gt;::size,</td></tr>
+<tr><th id="468">468</th><td>         <dfn class="local col8 enum" id="6828PacketAlignedMask" title='PacketAlignedMask' data-type='0' data-ref="6828PacketAlignedMask">PacketAlignedMask</dfn> = <a class="local col7 enum" href="#6827PacketSize" title='PacketSize' data-ref="6827PacketSize">PacketSize</a>-<var>1</var></td></tr>
+<tr><th id="469">469</th><td>  };</td></tr>
+<tr><th id="470">470</th><td></td></tr>
+<tr><th id="471">471</th><td>  <b>if</b>(<a class="local col7 enum" href="#6827PacketSize" title='PacketSize' data-ref="6827PacketSize">PacketSize</a>==<var>1</var>)</td></tr>
+<tr><th id="472">472</th><td>  {</td></tr>
+<tr><th id="473">473</th><td>    <i>// Either there is no vectorization, or a packet consists of exactly 1 scalar so that all elements</i></td></tr>
+<tr><th id="474">474</th><td><i>    // of the array have the same alignment.</i></td></tr>
+<tr><th id="475">475</th><td>    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="476">476</th><td>  }</td></tr>
+<tr><th id="477">477</th><td>  <b>else</b> <b>if</b>(<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>(<a class="local col5 ref" href="#6825array" title='array' data-ref="6825array">array</a>) &amp; (<b>sizeof</b>(Scalar)-<var>1</var>))</td></tr>
+<tr><th id="478">478</th><td>  {</td></tr>
+<tr><th id="479">479</th><td>    <i>// There is vectorization for this scalar type, but the array is not aligned to the size of a single scalar.</i></td></tr>
+<tr><th id="480">480</th><td><i>    // Consequently, no element of the array is well aligned.</i></td></tr>
+<tr><th id="481">481</th><td>    <b>return</b> <a class="local col6 ref" href="#6826size" title='size' data-ref="6826size">size</a>;</td></tr>
+<tr><th id="482">482</th><td>  }</td></tr>
+<tr><th id="483">483</th><td>  <b>else</b></td></tr>
+<tr><th id="484">484</th><td>  {</td></tr>
+<tr><th id="485">485</th><td>    <b>return</b> <span class="namespace">std::</span>min&lt;Index&gt;( (<a class="local col7 enum" href="#6827PacketSize" title='PacketSize' data-ref="6827PacketSize">PacketSize</a> - (Index((<a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>(<a class="local col5 ref" href="#6825array" title='array' data-ref="6825array">array</a>)/<b>sizeof</b>(Scalar))) &amp; <a class="local col8 enum" href="#6828PacketAlignedMask" title='PacketAlignedMask' data-ref="6828PacketAlignedMask">PacketAlignedMask</a>))</td></tr>
+<tr><th id="486">486</th><td>                           &amp; <a class="local col8 enum" href="#6828PacketAlignedMask" title='PacketAlignedMask' data-ref="6828PacketAlignedMask">PacketAlignedMask</a>, <a class="local col6 ref" href="#6826size" title='size' data-ref="6826size">size</a>);</td></tr>
+<tr><th id="487">487</th><td>  }</td></tr>
+<tr><th id="488">488</th><td>}</td></tr>
+<tr><th id="489">489</th><td></td></tr>
+<tr><th id="490">490</th><td><i class="doc">/**<span class="command"> \internal</span> Returns the smallest integer multiple of<span class="command"> \a</span> <span class="arg">base</span> and greater or equal to<span class="command"> \a</span> <span class="arg">size</span></i></td></tr>
+<tr><th id="491">491</th><td><i class="doc">  */</i> </td></tr>
+<tr><th id="492">492</th><td><b>template</b>&lt;<b>typename</b> Index&gt; </td></tr>
+<tr><th id="493">493</th><td><b>inline</b> <em>static</em> Index <dfn class="decl def" id="_ZN5Eigen8internalL14first_multipleET_S1_" title='Eigen::internal::first_multiple' data-ref="_ZN5Eigen8internalL14first_multipleET_S1_">first_multiple</dfn>(Index <dfn class="local col9 decl" id="6829size" title='size' data-type='Index' data-ref="6829size">size</dfn>, Index <dfn class="local col0 decl" id="6830base" title='base' data-type='Index' data-ref="6830base">base</dfn>)</td></tr>
+<tr><th id="494">494</th><td>{</td></tr>
+<tr><th id="495">495</th><td>  <b>return</b> ((<a class="local col9 ref" href="#6829size" title='size' data-ref="6829size">size</a>+<a class="local col0 ref" href="#6830base" title='base' data-ref="6830base">base</a>-<var>1</var>)/<a class="local col0 ref" href="#6830base" title='base' data-ref="6830base">base</a>)*<a class="local col0 ref" href="#6830base" title='base' data-ref="6830base">base</a>;</td></tr>
+<tr><th id="496">496</th><td>}</td></tr>
+<tr><th id="497">497</th><td></td></tr>
+<tr><th id="498">498</th><td><i>// std::copy is much slower than memcpy, so let's introduce a smart_copy which</i></td></tr>
+<tr><th id="499">499</th><td><i>// use memcpy on trivial types, i.e., on types that does not require an initialization ctor.</i></td></tr>
+<tr><th id="500">500</th><td><b>template</b>&lt;<b>typename</b> T, <em>bool</em> UseMemcpy&gt; <b>struct</b> <dfn class="type" id="Eigen::internal::smart_copy_helper" title='Eigen::internal::smart_copy_helper' data-ref="Eigen::internal::smart_copy_helper">smart_copy_helper</dfn>;</td></tr>
+<tr><th id="501">501</th><td></td></tr>
+<tr><th id="502">502</th><td><b>template</b>&lt;<b>typename</b> T&gt; <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal10smart_copyEPKT_S3_PS1_" title='Eigen::internal::smart_copy' data-ref="_ZN5Eigen8internal10smart_copyEPKT_S3_PS1_">smart_copy</dfn>(<em>const</em> T* <dfn class="local col1 decl" id="6831start" title='start' data-type='const T *' data-ref="6831start">start</dfn>, <em>const</em> T* <dfn class="local col2 decl" id="6832end" title='end' data-type='const T *' data-ref="6832end">end</dfn>, T* <dfn class="local col3 decl" id="6833target" title='target' data-type='T *' data-ref="6833target">target</dfn>)</td></tr>
+<tr><th id="503">503</th><td>{</td></tr>
+<tr><th id="504">504</th><td>  <a class="type" href="#Eigen::internal::smart_copy_helper" title='Eigen::internal::smart_copy_helper' data-ref="Eigen::internal::smart_copy_helper">smart_copy_helper</a>&lt;T,!<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization&gt;::run(<a class="local col1 ref" href="#6831start" title='start' data-ref="6831start">start</a>, <a class="local col2 ref" href="#6832end" title='end' data-ref="6832end">end</a>, <a class="local col3 ref" href="#6833target" title='target' data-ref="6833target">target</a>);</td></tr>
+<tr><th id="505">505</th><td>}</td></tr>
+<tr><th id="506">506</th><td></td></tr>
+<tr><th id="507">507</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::smart_copy_helper" title='Eigen::internal::smart_copy_helper' data-ref="Eigen::internal::smart_copy_helper">smart_copy_helper</dfn>&lt;T,<b>true</b>&gt; {</td></tr>
+<tr><th id="508">508</th><td>  <em>static</em> <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal17smart_copy_helperIT_Lb1EE3runEPKS2_S5_PS2_" title='Eigen::internal::smart_copy_helper&lt;type-parameter-0-0, true&gt;::run' data-ref="_ZN5Eigen8internal17smart_copy_helperIT_Lb1EE3runEPKS2_S5_PS2_">run</dfn>(<em>const</em> T* <dfn class="local col4 decl" id="6834start" title='start' data-type='const T *' data-ref="6834start">start</dfn>, <em>const</em> T* <dfn class="local col5 decl" id="6835end" title='end' data-type='const T *' data-ref="6835end">end</dfn>, T* <dfn class="local col6 decl" id="6836target" title='target' data-type='T *' data-ref="6836target">target</dfn>)</td></tr>
+<tr><th id="509">509</th><td>  { memcpy(<a class="local col6 ref" href="#6836target" title='target' data-ref="6836target">target</a>, <a class="local col4 ref" href="#6834start" title='start' data-ref="6834start">start</a>, <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a>(<a class="local col5 ref" href="#6835end" title='end' data-ref="6835end">end</a>)-<span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a>(<a class="local col4 ref" href="#6834start" title='start' data-ref="6834start">start</a>)); }</td></tr>
+<tr><th id="510">510</th><td>};</td></tr>
+<tr><th id="511">511</th><td></td></tr>
+<tr><th id="512">512</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::smart_copy_helper" title='Eigen::internal::smart_copy_helper' data-ref="Eigen::internal::smart_copy_helper">smart_copy_helper</dfn>&lt;T,<b>false</b>&gt; {</td></tr>
+<tr><th id="513">513</th><td>  <em>static</em> <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal17smart_copy_helperIT_Lb0EE3runEPKS2_S5_PS2_" title='Eigen::internal::smart_copy_helper&lt;type-parameter-0-0, false&gt;::run' data-ref="_ZN5Eigen8internal17smart_copy_helperIT_Lb0EE3runEPKS2_S5_PS2_">run</dfn>(<em>const</em> T* <dfn class="local col7 decl" id="6837start" title='start' data-type='const T *' data-ref="6837start">start</dfn>, <em>const</em> T* <dfn class="local col8 decl" id="6838end" title='end' data-type='const T *' data-ref="6838end">end</dfn>, T* <dfn class="local col9 decl" id="6839target" title='target' data-type='T *' data-ref="6839target">target</dfn>)</td></tr>
+<tr><th id="514">514</th><td>  { <span class="namespace">std::</span>copy(<a class="local col7 ref" href="#6837start" title='start' data-ref="6837start">start</a>, <a class="local col8 ref" href="#6838end" title='end' data-ref="6838end">end</a>, <a class="local col9 ref" href="#6839target" title='target' data-ref="6839target">target</a>); }</td></tr>
+<tr><th id="515">515</th><td>};</td></tr>
+<tr><th id="516">516</th><td></td></tr>
+<tr><th id="517">517</th><td></td></tr>
+<tr><th id="518">518</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="519">519</th><td><i>*** Implementation of runtime stack allocation (falling back to malloc)    ***</i></td></tr>
+<tr><th id="520">520</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="521">521</th><td><i></i></td></tr>
+<tr><th id="522">522</th><td><i>// you can overwrite Eigen's default behavior regarding alloca by defining EIGEN_ALLOCA</i></td></tr>
+<tr><th id="523">523</th><td><i>// to the appropriate stack allocation function</i></td></tr>
+<tr><th id="524">524</th><td><u>#<span data-ppcond="524">ifndef</span> <span class="macro" data-ref="_M/EIGEN_ALLOCA">EIGEN_ALLOCA</span></u></td></tr>
+<tr><th id="525">525</th><td>  <u>#<span data-ppcond="525">if</span> (defined <span class="macro" data-ref="_M/__linux__">__linux__</span>)</u></td></tr>
+<tr><th id="526">526</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_ALLOCA" data-ref="_M/EIGEN_ALLOCA">EIGEN_ALLOCA</dfn> alloca</u></td></tr>
+<tr><th id="527">527</th><td>  <u>#<span data-ppcond="525">elif</span> defined(_MSC_VER)</u></td></tr>
+<tr><th id="528">528</th><td>    <u>#define EIGEN_ALLOCA _alloca</u></td></tr>
+<tr><th id="529">529</th><td>  <u>#<span data-ppcond="525">endif</span></u></td></tr>
+<tr><th id="530">530</th><td><u>#<span data-ppcond="524">endif</span></u></td></tr>
+<tr><th id="531">531</th><td></td></tr>
+<tr><th id="532">532</th><td><i>// This helper class construct the allocated memory, and takes care of destructing and freeing the handled data</i></td></tr>
+<tr><th id="533">533</th><td><i>// at destruction time. In practice this helper class is mainly useful to avoid memory leak in case of exceptions.</i></td></tr>
+<tr><th id="534">534</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>class</b> <dfn class="type def" id="Eigen::internal::aligned_stack_memory_handler" title='Eigen::internal::aligned_stack_memory_handler' data-ref="Eigen::internal::aligned_stack_memory_handler">aligned_stack_memory_handler</dfn></td></tr>
+<tr><th id="535">535</th><td>{</td></tr>
+<tr><th id="536">536</th><td>  <b>public</b>:</td></tr>
+<tr><th id="537">537</th><td>    <i>/* Creates a stack_memory_handler responsible for the buffer \a ptr of size \a size.</i></td></tr>
+<tr><th id="538">538</th><td><i>     * Note that \a ptr can be 0 regardless of the other parameters.</i></td></tr>
+<tr><th id="539">539</th><td><i>     * This constructor takes care of constructing/initializing the elements of the buffer if required by the scalar type T (see NumTraits&lt;T&gt;::RequireInitialization).</i></td></tr>
+<tr><th id="540">540</th><td><i>     * In this case, the buffer elements will also be destructed when this handler will be destructed.</i></td></tr>
+<tr><th id="541">541</th><td><i>     * Finally, if \a dealloc is true, then the pointer \a ptr is freed.</i></td></tr>
+<tr><th id="542">542</th><td><i>     **/</i></td></tr>
+<tr><th id="543">543</th><td>    <dfn class="decl def" id="_ZN5Eigen8internal28aligned_stack_memory_handlerC1EPT_mb" title='Eigen::internal::aligned_stack_memory_handler::aligned_stack_memory_handler&lt;T&gt;' data-ref="_ZN5Eigen8internal28aligned_stack_memory_handlerC1EPT_mb">aligned_stack_memory_handler</dfn>(T* <dfn class="local col0 decl" id="6840ptr" title='ptr' data-type='T *' data-ref="6840ptr">ptr</dfn>, <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="6841size" title='size' data-type='size_t' data-ref="6841size">size</dfn>, <em>bool</em> <dfn class="local col2 decl" id="6842dealloc" title='dealloc' data-type='bool' data-ref="6842dealloc">dealloc</dfn>)</td></tr>
+<tr><th id="544">544</th><td>      : <a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</a>(<a class="local col0 ref" href="#6840ptr" title='ptr' data-ref="6840ptr">ptr</a>), <a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_size" title='Eigen::internal::aligned_stack_memory_handler::m_size' data-ref="Eigen::internal::aligned_stack_memory_handler::m_size">m_size</a>(<a class="local col1 ref" href="#6841size" title='size' data-ref="6841size">size</a>), <a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_deallocate" title='Eigen::internal::aligned_stack_memory_handler::m_deallocate' data-ref="Eigen::internal::aligned_stack_memory_handler::m_deallocate">m_deallocate</a>(<a class="local col2 ref" href="#6842dealloc" title='dealloc' data-ref="6842dealloc">dealloc</a>)</td></tr>
+<tr><th id="545">545</th><td>    {</td></tr>
+<tr><th id="546">546</th><td>      <b>if</b>(<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization &amp;&amp; <a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</a>)</td></tr>
+<tr><th id="547">547</th><td>        <span class="namespace">Eigen::internal::</span>construct_elements_of_array(<a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</a>, <a class="local col1 ref" href="#6841size" title='size' data-ref="6841size">size</a>);</td></tr>
+<tr><th id="548">548</th><td>    }</td></tr>
+<tr><th id="549">549</th><td>    <dfn class="decl def" id="_ZN5Eigen8internal28aligned_stack_memory_handlerD1Ev" title='Eigen::internal::aligned_stack_memory_handler::~aligned_stack_memory_handler&lt;T&gt;' data-ref="_ZN5Eigen8internal28aligned_stack_memory_handlerD1Ev">~</dfn>aligned_stack_memory_handler()</td></tr>
+<tr><th id="550">550</th><td>    {</td></tr>
+<tr><th id="551">551</th><td>      <b>if</b>(<a class="type" href="ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::RequireInitialization &amp;&amp; <a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</a>)</td></tr>
+<tr><th id="552">552</th><td>        <span class="namespace">Eigen::internal::</span>destruct_elements_of_array&lt;T&gt;(<a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</a>, <a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_size" title='Eigen::internal::aligned_stack_memory_handler::m_size' data-ref="Eigen::internal::aligned_stack_memory_handler::m_size">m_size</a>);</td></tr>
+<tr><th id="553">553</th><td>      <b>if</b>(<a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_deallocate" title='Eigen::internal::aligned_stack_memory_handler::m_deallocate' data-ref="Eigen::internal::aligned_stack_memory_handler::m_deallocate">m_deallocate</a>)</td></tr>
+<tr><th id="554">554</th><td>        <span class="namespace">Eigen::internal::</span><a class="ref" href="#_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</a>(<a class="member" href="#Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</a>);</td></tr>
+<tr><th id="555">555</th><td>    }</td></tr>
+<tr><th id="556">556</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="557">557</th><td>    T* <dfn class="decl" id="Eigen::internal::aligned_stack_memory_handler::m_ptr" title='Eigen::internal::aligned_stack_memory_handler::m_ptr' data-ref="Eigen::internal::aligned_stack_memory_handler::m_ptr">m_ptr</dfn>;</td></tr>
+<tr><th id="558">558</th><td>    <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="Eigen::internal::aligned_stack_memory_handler::m_size" title='Eigen::internal::aligned_stack_memory_handler::m_size' data-ref="Eigen::internal::aligned_stack_memory_handler::m_size">m_size</dfn>;</td></tr>
+<tr><th id="559">559</th><td>    <em>bool</em> <dfn class="decl" id="Eigen::internal::aligned_stack_memory_handler::m_deallocate" title='Eigen::internal::aligned_stack_memory_handler::m_deallocate' data-ref="Eigen::internal::aligned_stack_memory_handler::m_deallocate">m_deallocate</dfn>;</td></tr>
+<tr><th id="560">560</th><td>};</td></tr>
+<tr><th id="561">561</th><td></td></tr>
+<tr><th id="562">562</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="563">563</th><td></td></tr>
+<tr><th id="564">564</th><td><i class="doc">/**<span class="command"> \internal</span></i></td></tr>
+<tr><th id="565">565</th><td><i class="doc">  * Declares, allocates and construct an aligned buffer named NAME of SIZE elements of type TYPE on the stack</i></td></tr>
+<tr><th id="566">566</th><td><i class="doc">  * if SIZE is smaller than EIGEN_STACK_ALLOCATION_LIMIT, and if stack allocation is supported by the platform</i></td></tr>
+<tr><th id="567">567</th><td><i class="doc">  * (currently, this is Linux and Visual Studio only). Otherwise the memory is allocated on the heap.</i></td></tr>
+<tr><th id="568">568</th><td><i class="doc">  * The allocated buffer is automatically deleted when exiting the scope of this declaration.</i></td></tr>
+<tr><th id="569">569</th><td><i class="doc">  * If BUFFER is non null, then the declared variable is simply an alias for BUFFER, and no allocation/deletion occurs.</i></td></tr>
+<tr><th id="570">570</th><td><i class="doc">  * Here is an example:</i></td></tr>
+<tr><th id="571">571</th><td><i class="doc">  * <span class="command">\code</span></i></td></tr>
+<tr><th id="572">572</th><td><i class="doc">  *<span class="verb"> {</span></i></td></tr>
+<tr><th id="573">573</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">   ei_declare_aligned_stack_constructed_variable(float,data,size,0);</span></i></td></tr>
+<tr><th id="574">574</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">   // use data[0] to data[size-1]</span></i></td></tr>
+<tr><th id="575">575</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> }</span></i></td></tr>
+<tr><th id="576">576</th><td><i class="doc"><span class="verb"></span>  * \endcode</i></td></tr>
+<tr><th id="577">577</th><td><i class="doc">  * The underlying stack allocation function can controlled with the EIGEN_ALLOCA preprocessor token.</i></td></tr>
+<tr><th id="578">578</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="579">579</th><td><u>#<span data-ppcond="579">ifdef</span> <a class="macro" href="#526" data-ref="_M/EIGEN_ALLOCA">EIGEN_ALLOCA</a></u></td></tr>
+<tr><th id="580">580</th><td></td></tr>
+<tr><th id="581">581</th><td>  <u>#<span data-ppcond="581">ifdef</span> <span class="macro" data-ref="_M/__arm__">__arm__</span></u></td></tr>
+<tr><th id="582">582</th><td>    <u>#define EIGEN_ALIGNED_ALLOCA(SIZE) reinterpret_cast&lt;void*&gt;((reinterpret_cast&lt;size_t&gt;(EIGEN_ALLOCA(SIZE+16)) &amp; ~(size_t(15))) + 16)</u></td></tr>
+<tr><th id="583">583</th><td>  <u>#<span data-ppcond="581">else</span></u></td></tr>
+<tr><th id="584">584</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_ALIGNED_ALLOCA" data-ref="_M/EIGEN_ALIGNED_ALLOCA">EIGEN_ALIGNED_ALLOCA</dfn> EIGEN_ALLOCA</u></td></tr>
+<tr><th id="585">585</th><td>  <u>#<span data-ppcond="581">endif</span></u></td></tr>
+<tr><th id="586">586</th><td></td></tr>
+<tr><th id="587">587</th><td>  <u>#define <dfn class="macro" id="_M/ei_declare_aligned_stack_constructed_variable" data-ref="_M/ei_declare_aligned_stack_constructed_variable">ei_declare_aligned_stack_constructed_variable</dfn>(TYPE,NAME,SIZE,BUFFER) \</u></td></tr>
+<tr><th id="588">588</th><td><u>    Eigen::internal::check_size_for_overflow&lt;TYPE&gt;(SIZE); \</u></td></tr>
+<tr><th id="589">589</th><td><u>    TYPE* NAME = (BUFFER)!=0 ? (BUFFER) \</u></td></tr>
+<tr><th id="590">590</th><td><u>               : reinterpret_cast&lt;TYPE*&gt;( \</u></td></tr>
+<tr><th id="591">591</th><td><u>                      (sizeof(TYPE)*SIZE&lt;=EIGEN_STACK_ALLOCATION_LIMIT) ? EIGEN_ALIGNED_ALLOCA(sizeof(TYPE)*SIZE) \</u></td></tr>
+<tr><th id="592">592</th><td><u>                    : Eigen::internal::aligned_malloc(sizeof(TYPE)*SIZE) );  \</u></td></tr>
+<tr><th id="593">593</th><td><u>    Eigen::internal::aligned_stack_memory_handler&lt;TYPE&gt; EIGEN_CAT(NAME,_stack_memory_destructor)((BUFFER)==0 ? NAME : 0,SIZE,sizeof(TYPE)*SIZE&gt;EIGEN_STACK_ALLOCATION_LIMIT)</u></td></tr>
+<tr><th id="594">594</th><td></td></tr>
+<tr><th id="595">595</th><td><u>#<span data-ppcond="579">else</span></u></td></tr>
+<tr><th id="596">596</th><td></td></tr>
+<tr><th id="597">597</th><td>  <u>#define ei_declare_aligned_stack_constructed_variable(TYPE,NAME,SIZE,BUFFER) \</u></td></tr>
+<tr><th id="598">598</th><td><u>    Eigen::internal::check_size_for_overflow&lt;TYPE&gt;(SIZE); \</u></td></tr>
+<tr><th id="599">599</th><td><u>    TYPE* NAME = (BUFFER)!=0 ? BUFFER : reinterpret_cast&lt;TYPE*&gt;(Eigen::internal::aligned_malloc(sizeof(TYPE)*SIZE));    \</u></td></tr>
+<tr><th id="600">600</th><td><u>    Eigen::internal::aligned_stack_memory_handler&lt;TYPE&gt; EIGEN_CAT(NAME,_stack_memory_destructor)((BUFFER)==0 ? NAME : 0,SIZE,true)</u></td></tr>
+<tr><th id="601">601</th><td>    </td></tr>
+<tr><th id="602">602</th><td><u>#<span data-ppcond="579">endif</span></u></td></tr>
+<tr><th id="603">603</th><td></td></tr>
+<tr><th id="604">604</th><td></td></tr>
+<tr><th id="605">605</th><td><i>/*****************************************************************************</i></td></tr>
+<tr><th id="606">606</th><td><i>*** Implementation of EIGEN_MAKE_ALIGNED_OPERATOR_NEW [_IF]                ***</i></td></tr>
+<tr><th id="607">607</th><td><i>*****************************************************************************/</i></td></tr>
+<tr><th id="608">608</th><td></td></tr>
+<tr><th id="609">609</th><td><u>#<span data-ppcond="609">if</span> <a class="macro" href="Macros.h.html#75" title="1" data-ref="_M/EIGEN_ALIGN">EIGEN_ALIGN</a></u></td></tr>
+<tr><th id="610">610</th><td>  <u>#<span data-ppcond="610">ifdef</span> <a class="macro" href="../../../Core.html#173" data-ref="_M/EIGEN_EXCEPTIONS">EIGEN_EXCEPTIONS</a></u></td></tr>
+<tr><th id="611">611</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW" data-ref="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW">EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW</dfn>(NeedsToAlign) \</u></td></tr>
+<tr><th id="612">612</th><td><u>      void* operator new(size_t size, const std::nothrow_t&amp;) throw() { \</u></td></tr>
+<tr><th id="613">613</th><td><u>        try { return Eigen::internal::conditional_aligned_malloc&lt;NeedsToAlign&gt;(size); } \</u></td></tr>
+<tr><th id="614">614</th><td><u>        catch (...) { return 0; } \</u></td></tr>
+<tr><th id="615">615</th><td><u>        return 0; \</u></td></tr>
+<tr><th id="616">616</th><td><u>      }</u></td></tr>
+<tr><th id="617">617</th><td>  <u>#<span data-ppcond="610">else</span></u></td></tr>
+<tr><th id="618">618</th><td>    <u>#define EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \</u></td></tr>
+<tr><th id="619">619</th><td><u>      void* operator new(size_t size, const std::nothrow_t&amp;) throw() { \</u></td></tr>
+<tr><th id="620">620</th><td><u>        return Eigen::internal::conditional_aligned_malloc&lt;NeedsToAlign&gt;(size); \</u></td></tr>
+<tr><th id="621">621</th><td><u>      }</u></td></tr>
+<tr><th id="622">622</th><td>  <u>#<span data-ppcond="610">endif</span></u></td></tr>
+<tr><th id="623">623</th><td></td></tr>
+<tr><th id="624">624</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF" data-ref="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF">EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF</dfn>(NeedsToAlign) \</u></td></tr>
+<tr><th id="625">625</th><td><u>      void *operator new(size_t size) { \</u></td></tr>
+<tr><th id="626">626</th><td><u>        return Eigen::internal::conditional_aligned_malloc&lt;NeedsToAlign&gt;(size); \</u></td></tr>
+<tr><th id="627">627</th><td><u>      } \</u></td></tr>
+<tr><th id="628">628</th><td><u>      void *operator new[](size_t size) { \</u></td></tr>
+<tr><th id="629">629</th><td><u>        return Eigen::internal::conditional_aligned_malloc&lt;NeedsToAlign&gt;(size); \</u></td></tr>
+<tr><th id="630">630</th><td><u>      } \</u></td></tr>
+<tr><th id="631">631</th><td><u>      void operator delete(void * ptr) throw() { Eigen::internal::conditional_aligned_free&lt;NeedsToAlign&gt;(ptr); } \</u></td></tr>
+<tr><th id="632">632</th><td><u>      void operator delete[](void * ptr) throw() { Eigen::internal::conditional_aligned_free&lt;NeedsToAlign&gt;(ptr); } \</u></td></tr>
+<tr><th id="633">633</th><td><u>      /* in-place new and delete. since (at least afaik) there is no actual   */ \</u></td></tr>
+<tr><th id="634">634</th><td><u>      /* memory allocated we can safely let the default implementation handle */ \</u></td></tr>
+<tr><th id="635">635</th><td><u>      /* this particular case. */ \</u></td></tr>
+<tr><th id="636">636</th><td><u>      static void *operator new(size_t size, void *ptr) { return ::operator new(size,ptr); } \</u></td></tr>
+<tr><th id="637">637</th><td><u>      void operator delete(void * memory, void *ptr) throw() { return ::operator delete(memory,ptr); } \</u></td></tr>
+<tr><th id="638">638</th><td><u>      /* nothrow-new (returns zero instead of std::bad_alloc) */ \</u></td></tr>
+<tr><th id="639">639</th><td><u>      EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \</u></td></tr>
+<tr><th id="640">640</th><td><u>      void operator delete(void *ptr, const std::nothrow_t&amp;) throw() { \</u></td></tr>
+<tr><th id="641">641</th><td><u>        Eigen::internal::conditional_aligned_free&lt;NeedsToAlign&gt;(ptr); \</u></td></tr>
+<tr><th id="642">642</th><td><u>      } \</u></td></tr>
+<tr><th id="643">643</th><td><u>      typedef void eigen_aligned_operator_new_marker_type;</u></td></tr>
+<tr><th id="644">644</th><td><u>#<span data-ppcond="609">else</span></u></td></tr>
+<tr><th id="645">645</th><td>  <u>#define EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(NeedsToAlign)</u></td></tr>
+<tr><th id="646">646</th><td><u>#<span data-ppcond="609">endif</span></u></td></tr>
+<tr><th id="647">647</th><td></td></tr>
+<tr><th id="648">648</th><td><u>#define <dfn class="macro" id="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW" data-ref="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW">EIGEN_MAKE_ALIGNED_OPERATOR_NEW</dfn> EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(true)</u></td></tr>
+<tr><th id="649">649</th><td><u>#define <dfn class="macro" id="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE" data-ref="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE">EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE</dfn>(Scalar,Size) \</u></td></tr>
+<tr><th id="650">650</th><td><u>  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(bool(((Size)!=Eigen::Dynamic) &amp;&amp; ((sizeof(Scalar)*(Size))%16==0)))</u></td></tr>
+<tr><th id="651">651</th><td></td></tr>
+<tr><th id="652">652</th><td><i>/****************************************************************************/</i></td></tr>
+<tr><th id="653">653</th><td></td></tr>
+<tr><th id="654">654</th><td><i class="doc">/** <span class="command">\class</span> <span class="verb">aligned_allocator</span></i></td></tr>
+<tr><th id="655">655</th><td><i class="doc">* <span class="command">\ingroup</span> <span class="verb">Core_Module</span></i></td></tr>
+<tr><th id="656">656</th><td><i class="doc">*</i></td></tr>
+<tr><th id="657">657</th><td><i class="doc">* <span class="command">\brief</span> STL compatible allocator to use with with 16 byte aligned types</i></td></tr>
+<tr><th id="658">658</th><td><i class="doc">*</i></td></tr>
+<tr><th id="659">659</th><td><i class="doc">* Example:</i></td></tr>
+<tr><th id="660">660</th><td><i class="doc">* <span class="command">\code</span></i></td></tr>
+<tr><th id="661">661</th><td><i class="doc">*<span class="verb"> // Matrix4f requires 16 bytes alignment:</span></i></td></tr>
+<tr><th id="662">662</th><td><i class="doc"><span class="verb"></span>*<span class="verb"> std::map&lt; int, Matrix4f, std::less&lt;int&gt;, </span></i></td></tr>
+<tr><th id="663">663</th><td><i class="doc"><span class="verb"></span>*<span class="verb">           aligned_allocator&lt;std::pair&lt;const int, Matrix4f&gt; &gt; &gt; my_map_mat4;</span></i></td></tr>
+<tr><th id="664">664</th><td><i class="doc"><span class="verb"></span>*<span class="verb"> // Vector3f does not require 16 bytes alignment, no need to use Eigen's allocator:</span></i></td></tr>
+<tr><th id="665">665</th><td><i class="doc"><span class="verb"></span>*<span class="verb"> std::map&lt; int, Vector3f &gt; my_map_vec3;</span></i></td></tr>
+<tr><th id="666">666</th><td><i class="doc"><span class="verb"></span>* \endcode</i></td></tr>
+<tr><th id="667">667</th><td><i class="doc">*</i></td></tr>
+<tr><th id="668">668</th><td><i class="doc">* <span class="command">\sa</span> <span class="command">\ref</span> <span class="verb">TopicStlContainers.</span></i></td></tr>
+<tr><th id="669">669</th><td><i class="doc">*/</i></td></tr>
+<tr><th id="670">670</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="671">671</th><td><b>class</b> <dfn class="type def" id="Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</dfn></td></tr>
+<tr><th id="672">672</th><td>{</td></tr>
+<tr><th id="673">673</th><td><b>public</b>:</td></tr>
+<tr><th id="674">674</th><td>    <b>typedef</b> <a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>    <dfn class="typedef" id="Eigen::aligned_allocator::size_type" title='Eigen::aligned_allocator::size_type' data-type='size_t' data-ref="Eigen::aligned_allocator::size_type">size_type</dfn>;</td></tr>
+<tr><th id="675">675</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a> <dfn class="typedef" id="Eigen::aligned_allocator::difference_type" title='Eigen::aligned_allocator::difference_type' data-type='std::ptrdiff_t' data-ref="Eigen::aligned_allocator::difference_type">difference_type</dfn>;</td></tr>
+<tr><th id="676">676</th><td>    <b>typedef</b> T*        <dfn class="typedef" id="Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</dfn>;</td></tr>
+<tr><th id="677">677</th><td>    <b>typedef</b> <em>const</em> T*  <dfn class="typedef" id="Eigen::aligned_allocator::const_pointer" title='Eigen::aligned_allocator::const_pointer' data-type='const T *' data-ref="Eigen::aligned_allocator::const_pointer">const_pointer</dfn>;</td></tr>
+<tr><th id="678">678</th><td>    <b>typedef</b> T&amp;        <dfn class="typedef" id="Eigen::aligned_allocator::reference" title='Eigen::aligned_allocator::reference' data-type='T &amp;' data-ref="Eigen::aligned_allocator::reference">reference</dfn>;</td></tr>
+<tr><th id="679">679</th><td>    <b>typedef</b> <em>const</em> T&amp;  <dfn class="typedef" id="Eigen::aligned_allocator::const_reference" title='Eigen::aligned_allocator::const_reference' data-type='const T &amp;' data-ref="Eigen::aligned_allocator::const_reference">const_reference</dfn>;</td></tr>
+<tr><th id="680">680</th><td>    <b>typedef</b> T         <dfn class="typedef" id="Eigen::aligned_allocator::value_type" title='Eigen::aligned_allocator::value_type' data-type='T' data-ref="Eigen::aligned_allocator::value_type">value_type</dfn>;</td></tr>
+<tr><th id="681">681</th><td></td></tr>
+<tr><th id="682">682</th><td>    <b>template</b>&lt;<b>class</b> U&gt;</td></tr>
+<tr><th id="683">683</th><td>    <b>struct</b> <dfn class="type def" id="Eigen::aligned_allocator::rebind" title='Eigen::aligned_allocator::rebind' data-ref="Eigen::aligned_allocator::rebind">rebind</dfn></td></tr>
+<tr><th id="684">684</th><td>    {</td></tr>
+<tr><th id="685">685</th><td>        <b>typedef</b> <a class="type" href="#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;U&gt; <dfn class="typedef" id="Eigen::aligned_allocator::rebind::other" title='Eigen::aligned_allocator::rebind::other' data-type='aligned_allocator&lt;U&gt;' data-ref="Eigen::aligned_allocator::rebind::other">other</dfn>;</td></tr>
+<tr><th id="686">686</th><td>    };</td></tr>
+<tr><th id="687">687</th><td></td></tr>
+<tr><th id="688">688</th><td>    <a class="typedef" href="#Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</a> <dfn class="decl def" id="_ZNK5Eigen17aligned_allocator7addressERT_" title='Eigen::aligned_allocator::address' data-ref="_ZNK5Eigen17aligned_allocator7addressERT_">address</dfn>( <a class="typedef" href="#Eigen::aligned_allocator::reference" title='Eigen::aligned_allocator::reference' data-type='T &amp;' data-ref="Eigen::aligned_allocator::reference">reference</a> <dfn class="local col3 decl" id="6843value" title='value' data-type='reference' data-ref="6843value">value</dfn> ) <em>const</em></td></tr>
+<tr><th id="689">689</th><td>    {</td></tr>
+<tr><th id="690">690</th><td>        <b>return</b> &amp;<a class="local col3 ref" href="#6843value" title='value' data-ref="6843value">value</a>;</td></tr>
+<tr><th id="691">691</th><td>    }</td></tr>
+<tr><th id="692">692</th><td></td></tr>
+<tr><th id="693">693</th><td>    <a class="typedef" href="#Eigen::aligned_allocator::const_pointer" title='Eigen::aligned_allocator::const_pointer' data-type='const T *' data-ref="Eigen::aligned_allocator::const_pointer">const_pointer</a> <dfn class="decl def" id="_ZNK5Eigen17aligned_allocator7addressERKT_" title='Eigen::aligned_allocator::address' data-ref="_ZNK5Eigen17aligned_allocator7addressERKT_">address</dfn>( <a class="typedef" href="#Eigen::aligned_allocator::const_reference" title='Eigen::aligned_allocator::const_reference' data-type='const T &amp;' data-ref="Eigen::aligned_allocator::const_reference">const_reference</a> <dfn class="local col4 decl" id="6844value" title='value' data-type='const_reference' data-ref="6844value">value</dfn> ) <em>const</em></td></tr>
+<tr><th id="694">694</th><td>    {</td></tr>
+<tr><th id="695">695</th><td>        <b>return</b> &amp;<a class="local col4 ref" href="#6844value" title='value' data-ref="6844value">value</a>;</td></tr>
+<tr><th id="696">696</th><td>    }</td></tr>
+<tr><th id="697">697</th><td></td></tr>
+<tr><th id="698">698</th><td>    <dfn class="decl def" id="_ZN5Eigen17aligned_allocatorC1Ev" title='Eigen::aligned_allocator::aligned_allocator&lt;T&gt;' data-ref="_ZN5Eigen17aligned_allocatorC1Ev">aligned_allocator</dfn>()</td></tr>
+<tr><th id="699">699</th><td>    {</td></tr>
+<tr><th id="700">700</th><td>    }</td></tr>
+<tr><th id="701">701</th><td></td></tr>
+<tr><th id="702">702</th><td>    <dfn class="decl def" id="_ZN5Eigen17aligned_allocatorC1ERKNS_17aligned_allocatorIT_EE" title='Eigen::aligned_allocator::aligned_allocator&lt;T&gt;' data-ref="_ZN5Eigen17aligned_allocatorC1ERKNS_17aligned_allocatorIT_EE">aligned_allocator</dfn>( <em>const</em> aligned_allocator&amp; )</td></tr>
+<tr><th id="703">703</th><td>    {</td></tr>
+<tr><th id="704">704</th><td>    }</td></tr>
+<tr><th id="705">705</th><td></td></tr>
+<tr><th id="706">706</th><td>    <b>template</b>&lt;<b>class</b> U&gt;</td></tr>
+<tr><th id="707">707</th><td>    <dfn class="decl def" id="_ZN5Eigen17aligned_allocatorC1ERKNS_17aligned_allocatorIT_EE" title='Eigen::aligned_allocator::aligned_allocator&lt;T&gt;' data-ref="_ZN5Eigen17aligned_allocatorC1ERKNS_17aligned_allocatorIT_EE">aligned_allocator</dfn>( <em>const</em> <a class="type" href="#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;U&gt;&amp; )</td></tr>
+<tr><th id="708">708</th><td>    {</td></tr>
+<tr><th id="709">709</th><td>    }</td></tr>
+<tr><th id="710">710</th><td></td></tr>
+<tr><th id="711">711</th><td>    <dfn class="decl def" id="_ZN5Eigen17aligned_allocatorD1Ev" title='Eigen::aligned_allocator::~aligned_allocator&lt;T&gt;' data-ref="_ZN5Eigen17aligned_allocatorD1Ev">~</dfn>aligned_allocator()</td></tr>
+<tr><th id="712">712</th><td>    {</td></tr>
+<tr><th id="713">713</th><td>    }</td></tr>
+<tr><th id="714">714</th><td></td></tr>
+<tr><th id="715">715</th><td>    <a class="typedef" href="#Eigen::aligned_allocator::size_type" title='Eigen::aligned_allocator::size_type' data-type='size_t' data-ref="Eigen::aligned_allocator::size_type">size_type</a> <dfn class="decl def" id="_ZNK5Eigen17aligned_allocator8max_sizeEv" title='Eigen::aligned_allocator::max_size' data-ref="_ZNK5Eigen17aligned_allocator8max_sizeEv">max_size</dfn>() <em>const</em></td></tr>
+<tr><th id="716">716</th><td>    {</td></tr>
+<tr><th id="717">717</th><td>        <b>return</b> (<span class="namespace">std::</span><a class="type" href="../../../../../c++/4.8/limits.html#std::numeric_limits" title='std::numeric_limits' data-ref="std::numeric_limits">numeric_limits</a>&lt;<a class="typedef" href="#Eigen::aligned_allocator::size_type" title='Eigen::aligned_allocator::size_type' data-type='size_t' data-ref="Eigen::aligned_allocator::size_type">size_type</a>&gt;::<a class="ref" href="../../../../../c++/4.8/limits.html#_ZNSt14numeric_limitsImE3maxEv" title='std::numeric_limits&lt;unsigned long&gt;::max' data-ref="_ZNSt14numeric_limitsImE3maxEv">max</a>)();</td></tr>
+<tr><th id="718">718</th><td>    }</td></tr>
+<tr><th id="719">719</th><td></td></tr>
+<tr><th id="720">720</th><td>    <a class="typedef" href="#Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</a> <dfn class="decl def" id="_ZN5Eigen17aligned_allocator8allocateEmPKv" title='Eigen::aligned_allocator::allocate' data-ref="_ZN5Eigen17aligned_allocator8allocateEmPKv">allocate</dfn>( <a class="typedef" href="#Eigen::aligned_allocator::size_type" title='Eigen::aligned_allocator::size_type' data-type='size_t' data-ref="Eigen::aligned_allocator::size_type">size_type</a> <dfn class="local col5 decl" id="6845num" title='num' data-type='size_type' data-ref="6845num">num</dfn>, <em>const</em> <em>void</em>* <dfn class="local col6 decl" id="6846hint" title='hint' data-type='const void *' data-ref="6846hint">hint</dfn> = <var>0</var> )</td></tr>
+<tr><th id="721">721</th><td>    {</td></tr>
+<tr><th id="722">722</th><td>        <a class="macro" href="Macros.h.html#241" title="(void)hint;" data-ref="_M/EIGEN_UNUSED_VARIABLE">EIGEN_UNUSED_VARIABLE</a>(<a class="local col6 ref" href="#6846hint" title='hint' data-ref="6846hint">hint</a>);</td></tr>
+<tr><th id="723">723</th><td>        <span class="namespace">internal::</span>check_size_for_overflow&lt;T&gt;(<a class="local col5 ref" href="#6845num" title='num' data-ref="6845num">num</a>);</td></tr>
+<tr><th id="724">724</th><td>        <b>return</b> <b>static_cast</b>&lt;<a class="typedef" href="#Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</a>&gt;( <span class="namespace">internal::</span><a class="ref" href="#_ZN5Eigen8internal14aligned_mallocEm" title='Eigen::internal::aligned_malloc' data-ref="_ZN5Eigen8internal14aligned_mallocEm">aligned_malloc</a>( <a class="local col5 ref" href="#6845num" title='num' data-ref="6845num">num</a> * <b>sizeof</b>(T) ) );</td></tr>
+<tr><th id="725">725</th><td>    }</td></tr>
+<tr><th id="726">726</th><td></td></tr>
+<tr><th id="727">727</th><td>    <em>void</em> <dfn class="decl def" id="_ZN5Eigen17aligned_allocator9constructEPT_RKS1_" title='Eigen::aligned_allocator::construct' data-ref="_ZN5Eigen17aligned_allocator9constructEPT_RKS1_">construct</dfn>( <a class="typedef" href="#Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</a> <dfn class="local col7 decl" id="6847p" title='p' data-type='pointer' data-ref="6847p">p</dfn>, <em>const</em> T&amp; <dfn class="local col8 decl" id="6848value" title='value' data-type='const T &amp;' data-ref="6848value">value</dfn> )</td></tr>
+<tr><th id="728">728</th><td>    {</td></tr>
+<tr><th id="729">729</th><td>        ::<b>new</b>( <a class="local col7 ref" href="#6847p" title='p' data-ref="6847p">p</a> ) T( <a class="local col8 ref" href="#6848value" title='value' data-ref="6848value">value</a> );</td></tr>
+<tr><th id="730">730</th><td>    }</td></tr>
+<tr><th id="731">731</th><td></td></tr>
+<tr><th id="732">732</th><td>    <i>// Support for c++11</i></td></tr>
+<tr><th id="733">733</th><td><u>#<span data-ppcond="733">if</span> (<span class="macro" title="199711L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201103L)</u></td></tr>
+<tr><th id="734">734</th><td>    <b>template</b>&lt;<b>typename</b>... Args&gt;</td></tr>
+<tr><th id="735">735</th><td>    <em>void</em>  construct(pointer p, Args&amp;&amp;... args)</td></tr>
+<tr><th id="736">736</th><td>    {</td></tr>
+<tr><th id="737">737</th><td>      ::<b>new</b>(p) T(std::forward&lt;Args&gt;(args)...);</td></tr>
+<tr><th id="738">738</th><td>    }</td></tr>
+<tr><th id="739">739</th><td><u>#<span data-ppcond="733">endif</span></u></td></tr>
+<tr><th id="740">740</th><td></td></tr>
+<tr><th id="741">741</th><td>    <em>void</em> <dfn class="decl def" id="_ZN5Eigen17aligned_allocator7destroyEPT_" title='Eigen::aligned_allocator::destroy' data-ref="_ZN5Eigen17aligned_allocator7destroyEPT_">destroy</dfn>( <a class="typedef" href="#Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</a> <dfn class="local col9 decl" id="6849p" title='p' data-type='pointer' data-ref="6849p">p</dfn> )</td></tr>
+<tr><th id="742">742</th><td>    {</td></tr>
+<tr><th id="743">743</th><td>        <a class="local col9 ref" href="#6849p" title='p' data-ref="6849p">p</a>-&gt;~T();</td></tr>
+<tr><th id="744">744</th><td>    }</td></tr>
+<tr><th id="745">745</th><td></td></tr>
+<tr><th id="746">746</th><td>    <em>void</em> <dfn class="decl def" id="_ZN5Eigen17aligned_allocator10deallocateEPT_m" title='Eigen::aligned_allocator::deallocate' data-ref="_ZN5Eigen17aligned_allocator10deallocateEPT_m">deallocate</dfn>( <a class="typedef" href="#Eigen::aligned_allocator::pointer" title='Eigen::aligned_allocator::pointer' data-type='T *' data-ref="Eigen::aligned_allocator::pointer">pointer</a> <dfn class="local col0 decl" id="6850p" title='p' data-type='pointer' data-ref="6850p">p</dfn>, <a class="typedef" href="#Eigen::aligned_allocator::size_type" title='Eigen::aligned_allocator::size_type' data-type='size_t' data-ref="Eigen::aligned_allocator::size_type">size_type</a> <i>/*num*/</i> )</td></tr>
+<tr><th id="747">747</th><td>    {</td></tr>
+<tr><th id="748">748</th><td>        <span class="namespace">internal::</span><a class="ref" href="#_ZN5Eigen8internal12aligned_freeEPv" title='Eigen::internal::aligned_free' data-ref="_ZN5Eigen8internal12aligned_freeEPv">aligned_free</a>( <a class="local col0 ref" href="#6850p" title='p' data-ref="6850p">p</a> );</td></tr>
+<tr><th id="749">749</th><td>    }</td></tr>
+<tr><th id="750">750</th><td></td></tr>
+<tr><th id="751">751</th><td>    <em>bool</em> <dfn class="decl def" id="_ZNK5Eigen17aligned_allocatorneERKNS_17aligned_allocatorIT_EE" title='Eigen::aligned_allocator::operator!=' data-ref="_ZNK5Eigen17aligned_allocatorneERKNS_17aligned_allocatorIT_EE"><b>operator</b>!=</dfn>(<em>const</em> <a class="type" href="#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;T&gt;&amp; ) <em>const</em></td></tr>
+<tr><th id="752">752</th><td>    { <b>return</b> <b>false</b>; }</td></tr>
+<tr><th id="753">753</th><td></td></tr>
+<tr><th id="754">754</th><td>    <em>bool</em> <dfn class="decl def" id="_ZNK5Eigen17aligned_allocatoreqERKNS_17aligned_allocatorIT_EE" title='Eigen::aligned_allocator::operator==' data-ref="_ZNK5Eigen17aligned_allocatoreqERKNS_17aligned_allocatorIT_EE"><b>operator</b>==</dfn>(<em>const</em> <a class="type" href="#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;T&gt;&amp; ) <em>const</em></td></tr>
+<tr><th id="755">755</th><td>    { <b>return</b> <b>true</b>; }</td></tr>
+<tr><th id="756">756</th><td>};</td></tr>
+<tr><th id="757">757</th><td></td></tr>
+<tr><th id="758">758</th><td><i>//---------- Cache sizes ----------</i></td></tr>
+<tr><th id="759">759</th><td></td></tr>
+<tr><th id="760">760</th><td><u>#<span data-ppcond="760">if</span> !defined(<span class="macro" data-ref="_M/EIGEN_NO_CPUID">EIGEN_NO_CPUID</span>)</u></td></tr>
+<tr><th id="761">761</th><td><u>#  <span data-ppcond="761">if</span> defined(<span class="macro" data-ref="_M/__GNUC__">__GNUC__</span>) &amp;&amp; ( defined(<span class="macro" data-ref="_M/__i386__">__i386__</span>) || defined(<span class="macro" data-ref="_M/__x86_64__">__x86_64__</span>) )</u></td></tr>
+<tr><th id="762">762</th><td><u>#    <span data-ppcond="762">if</span> defined(<span class="macro" data-ref="_M/__PIC__">__PIC__</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/__i386__">__i386__</span>)</u></td></tr>
+<tr><th id="763">763</th><td>       <i>// Case for x86 with PIC</i></td></tr>
+<tr><th id="764">764</th><td><u>#      define EIGEN_CPUID(abcd,func,id) \</u></td></tr>
+<tr><th id="765">765</th><td><u>         __asm__ __volatile__ ("xchgl %%ebx, %k1;cpuid; xchgl %%ebx,%k1": "=a" (abcd[0]), "=&amp;r" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "a" (func), "c" (id));</u></td></tr>
+<tr><th id="766">766</th><td><u>#    elif defined(<span class="macro" data-ref="_M/__PIC__">__PIC__</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/__x86_64__">__x86_64__</span>)</u></td></tr>
+<tr><th id="767">767</th><td>       <i>// Case for x64 with PIC. In theory this is only a problem with recent gcc and with medium or large code model, not with the default small code model.</i></td></tr>
+<tr><th id="768">768</th><td><i>       // However, we cannot detect which code model is used, and the xchg overhead is negligible anyway.</i></td></tr>
+<tr><th id="769">769</th><td><u>#      define EIGEN_CPUID(abcd,func,id) \</u></td></tr>
+<tr><th id="770">770</th><td><u>        __asm__ __volatile__ ("xchg{q}\t{%%}rbx, %q1; cpuid; xchg{q}\t{%%}rbx, %q1": "=a" (abcd[0]), "=&amp;r" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "0" (func), "2" (id));</u></td></tr>
+<tr><th id="771">771</th><td><u>#    <span data-ppcond="762">else</span></u></td></tr>
+<tr><th id="772">772</th><td>       <i>// Case for x86_64 or x86 w/o PIC</i></td></tr>
+<tr><th id="773">773</th><td><u>#      define <dfn class="macro" id="_M/EIGEN_CPUID" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</dfn>(abcd,func,id) \</u></td></tr>
+<tr><th id="774">774</th><td><u>         __asm__ __volatile__ ("cpuid": "=a" (abcd[0]), "=b" (abcd[1]), "=c" (abcd[2]), "=d" (abcd[3]) : "0" (func), "2" (id) );</u></td></tr>
+<tr><th id="775">775</th><td><u>#    <span data-ppcond="762">endif</span></u></td></tr>
+<tr><th id="776">776</th><td><u>#  <span data-ppcond="761">elif</span> defined(_MSC_VER)</u></td></tr>
+<tr><th id="777">777</th><td><u>#    if (_MSC_VER &gt; 1500) &amp;&amp; ( defined(_M_IX86) || defined(_M_X64) )</u></td></tr>
+<tr><th id="778">778</th><td><u>#      define EIGEN_CPUID(abcd,func,id) __cpuidex((int*)abcd,func,id)</u></td></tr>
+<tr><th id="779">779</th><td><u>#    endif</u></td></tr>
+<tr><th id="780">780</th><td><u>#  <span data-ppcond="761">endif</span></u></td></tr>
+<tr><th id="781">781</th><td><u>#<span data-ppcond="760">endif</span></u></td></tr>
+<tr><th id="782">782</th><td></td></tr>
+<tr><th id="783">783</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="784">784</th><td></td></tr>
+<tr><th id="785">785</th><td><u>#<span data-ppcond="785">ifdef</span> <a class="macro" href="#773" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a></u></td></tr>
+<tr><th id="786">786</th><td></td></tr>
+<tr><th id="787">787</th><td><b>inline</b> <em>bool</em> <dfn class="decl def" id="_ZN5Eigen8internal15cpuid_is_vendorEPiPKc" title='Eigen::internal::cpuid_is_vendor' data-ref="_ZN5Eigen8internal15cpuid_is_vendorEPiPKc">cpuid_is_vendor</dfn>(<em>int</em> <dfn class="local col1 decl" id="6851abcd" title='abcd' data-type='int *' data-ref="6851abcd">abcd</dfn>[<var>4</var>], <em>const</em> <em>char</em>* <dfn class="local col2 decl" id="6852vendor" title='vendor' data-type='const char *' data-ref="6852vendor">vendor</dfn>)</td></tr>
+<tr><th id="788">788</th><td>{</td></tr>
+<tr><th id="789">789</th><td>  <b>return</b> <a class="local col1 ref" href="#6851abcd" title='abcd' data-ref="6851abcd">abcd</a>[<var>1</var>]==(<b>reinterpret_cast</b>&lt;<em>const</em> <em>int</em>*&gt;(<a class="local col2 ref" href="#6852vendor" title='vendor' data-ref="6852vendor">vendor</a>))[<var>0</var>] &amp;&amp; <a class="local col1 ref" href="#6851abcd" title='abcd' data-ref="6851abcd">abcd</a>[<var>3</var>]==(<b>reinterpret_cast</b>&lt;<em>const</em> <em>int</em>*&gt;(<a class="local col2 ref" href="#6852vendor" title='vendor' data-ref="6852vendor">vendor</a>))[<var>1</var>] &amp;&amp; <a class="local col1 ref" href="#6851abcd" title='abcd' data-ref="6851abcd">abcd</a>[<var>2</var>]==(<b>reinterpret_cast</b>&lt;<em>const</em> <em>int</em>*&gt;(<a class="local col2 ref" href="#6852vendor" title='vendor' data-ref="6852vendor">vendor</a>))[<var>2</var>];</td></tr>
+<tr><th id="790">790</th><td>}</td></tr>
+<tr><th id="791">791</th><td></td></tr>
+<tr><th id="792">792</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal28queryCacheSizes_intel_directERiS1_S1_" title='Eigen::internal::queryCacheSizes_intel_direct' data-ref="_ZN5Eigen8internal28queryCacheSizes_intel_directERiS1_S1_">queryCacheSizes_intel_direct</dfn>(<em>int</em>&amp; <dfn class="local col3 decl" id="6853l1" title='l1' data-type='int &amp;' data-ref="6853l1">l1</dfn>, <em>int</em>&amp; <dfn class="local col4 decl" id="6854l2" title='l2' data-type='int &amp;' data-ref="6854l2">l2</dfn>, <em>int</em>&amp; <dfn class="local col5 decl" id="6855l3" title='l3' data-type='int &amp;' data-ref="6855l3">l3</dfn>)</td></tr>
+<tr><th id="793">793</th><td>{</td></tr>
+<tr><th id="794">794</th><td>  <em>int</em> <dfn class="local col6 decl" id="6856abcd" title='abcd' data-type='int [4]' data-ref="6856abcd">abcd</dfn>[<var>4</var>];</td></tr>
+<tr><th id="795">795</th><td>  <a class="local col3 ref" href="#6853l1" title='l1' data-ref="6853l1">l1</a> = <a class="local col4 ref" href="#6854l2" title='l2' data-ref="6854l2">l2</a> = <a class="local col5 ref" href="#6855l3" title='l3' data-ref="6855l3">l3</a> = <var>0</var>;</td></tr>
+<tr><th id="796">796</th><td>  <em>int</em> <dfn class="local col7 decl" id="6857cache_id" title='cache_id' data-type='int' data-ref="6857cache_id">cache_id</dfn> = <var>0</var>;</td></tr>
+<tr><th id="797">797</th><td>  <em>int</em> <dfn class="local col8 decl" id="6858cache_type" title='cache_type' data-type='int' data-ref="6858cache_type">cache_type</dfn> = <var>0</var>;</td></tr>
+<tr><th id="798">798</th><td>  <b>do</b> {</td></tr>
+<tr><th id="799">799</th><td>    <a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>0</var>] = <a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>1</var>] = <a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>2</var>] = <a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>3</var>] = <var>0</var>;</td></tr>
+<tr><th id="800">800</th><td>    <a class="macro" href="#773" title="__asm__ __volatile__ (&quot;cpuid&quot;: &quot;=a&quot; (abcd[0]), &quot;=b&quot; (abcd[1]), &quot;=c&quot; (abcd[2]), &quot;=d&quot; (abcd[3]) : &quot;0&quot; (0x4), &quot;2&quot; (cache_id) );" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a>(<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>,<var>0x4</var>,<a class="local col7 ref" href="#6857cache_id" title='cache_id' data-ref="6857cache_id">cache_id</a>);</td></tr>
+<tr><th id="801">801</th><td>    <a class="local col8 ref" href="#6858cache_type" title='cache_type' data-ref="6858cache_type">cache_type</a>  = (<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>0</var>] &amp; <var>0x0F</var>) &gt;&gt; <var>0</var>;</td></tr>
+<tr><th id="802">802</th><td>    <b>if</b>(<a class="local col8 ref" href="#6858cache_type" title='cache_type' data-ref="6858cache_type">cache_type</a>==<var>1</var>||<a class="local col8 ref" href="#6858cache_type" title='cache_type' data-ref="6858cache_type">cache_type</a>==<var>3</var>) <i>// data or unified cache</i></td></tr>
+<tr><th id="803">803</th><td>    {</td></tr>
+<tr><th id="804">804</th><td>      <em>int</em> <dfn class="local col9 decl" id="6859cache_level" title='cache_level' data-type='int' data-ref="6859cache_level">cache_level</dfn> = (<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>0</var>] &amp; <var>0xE0</var>) &gt;&gt; <var>5</var>;  <i>// A[7:5]</i></td></tr>
+<tr><th id="805">805</th><td>      <em>int</em> <dfn class="local col0 decl" id="6860ways" title='ways' data-type='int' data-ref="6860ways">ways</dfn>        = (<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>1</var>] &amp; <var>0xFFC00000</var>) &gt;&gt; <var>22</var>; <i>// B[31:22]</i></td></tr>
+<tr><th id="806">806</th><td>      <em>int</em> <dfn class="local col1 decl" id="6861partitions" title='partitions' data-type='int' data-ref="6861partitions">partitions</dfn>  = (<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>1</var>] &amp; <var>0x003FF000</var>) &gt;&gt; <var>12</var>; <i>// B[21:12]</i></td></tr>
+<tr><th id="807">807</th><td>      <em>int</em> <dfn class="local col2 decl" id="6862line_size" title='line_size' data-type='int' data-ref="6862line_size">line_size</dfn>   = (<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>1</var>] &amp; <var>0x00000FFF</var>) &gt;&gt;  <var>0</var>; <i>// B[11:0]</i></td></tr>
+<tr><th id="808">808</th><td>      <em>int</em> <dfn class="local col3 decl" id="6863sets" title='sets' data-type='int' data-ref="6863sets">sets</dfn>        = (<a class="local col6 ref" href="#6856abcd" title='abcd' data-ref="6856abcd">abcd</a>[<var>2</var>]);                    <i>// C[31:0]</i></td></tr>
+<tr><th id="809">809</th><td></td></tr>
+<tr><th id="810">810</th><td>      <em>int</em> <dfn class="local col4 decl" id="6864cache_size" title='cache_size' data-type='int' data-ref="6864cache_size">cache_size</dfn> = (<a class="local col0 ref" href="#6860ways" title='ways' data-ref="6860ways">ways</a>+<var>1</var>) * (<a class="local col1 ref" href="#6861partitions" title='partitions' data-ref="6861partitions">partitions</a>+<var>1</var>) * (<a class="local col2 ref" href="#6862line_size" title='line_size' data-ref="6862line_size">line_size</a>+<var>1</var>) * (<a class="local col3 ref" href="#6863sets" title='sets' data-ref="6863sets">sets</a>+<var>1</var>);</td></tr>
+<tr><th id="811">811</th><td></td></tr>
+<tr><th id="812">812</th><td>      <b>switch</b>(<a class="local col9 ref" href="#6859cache_level" title='cache_level' data-ref="6859cache_level">cache_level</a>)</td></tr>
+<tr><th id="813">813</th><td>      {</td></tr>
+<tr><th id="814">814</th><td>        <b>case</b> <var>1</var>: <a class="local col3 ref" href="#6853l1" title='l1' data-ref="6853l1">l1</a> = <a class="local col4 ref" href="#6864cache_size" title='cache_size' data-ref="6864cache_size">cache_size</a>; <b>break</b>;</td></tr>
+<tr><th id="815">815</th><td>        <b>case</b> <var>2</var>: <a class="local col4 ref" href="#6854l2" title='l2' data-ref="6854l2">l2</a> = <a class="local col4 ref" href="#6864cache_size" title='cache_size' data-ref="6864cache_size">cache_size</a>; <b>break</b>;</td></tr>
+<tr><th id="816">816</th><td>        <b>case</b> <var>3</var>: <a class="local col5 ref" href="#6855l3" title='l3' data-ref="6855l3">l3</a> = <a class="local col4 ref" href="#6864cache_size" title='cache_size' data-ref="6864cache_size">cache_size</a>; <b>break</b>;</td></tr>
+<tr><th id="817">817</th><td>        <b>default</b>: <b>break</b>;</td></tr>
+<tr><th id="818">818</th><td>      }</td></tr>
+<tr><th id="819">819</th><td>    }</td></tr>
+<tr><th id="820">820</th><td>    <a class="local col7 ref" href="#6857cache_id" title='cache_id' data-ref="6857cache_id">cache_id</a>++;</td></tr>
+<tr><th id="821">821</th><td>  } <b>while</b>(<a class="local col8 ref" href="#6858cache_type" title='cache_type' data-ref="6858cache_type">cache_type</a>&gt;<var>0</var> &amp;&amp; <a class="local col7 ref" href="#6857cache_id" title='cache_id' data-ref="6857cache_id">cache_id</a>&lt;<var>16</var>);</td></tr>
+<tr><th id="822">822</th><td>}</td></tr>
+<tr><th id="823">823</th><td></td></tr>
+<tr><th id="824">824</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal27queryCacheSizes_intel_codesERiS1_S1_" title='Eigen::internal::queryCacheSizes_intel_codes' data-ref="_ZN5Eigen8internal27queryCacheSizes_intel_codesERiS1_S1_">queryCacheSizes_intel_codes</dfn>(<em>int</em>&amp; <dfn class="local col5 decl" id="6865l1" title='l1' data-type='int &amp;' data-ref="6865l1">l1</dfn>, <em>int</em>&amp; <dfn class="local col6 decl" id="6866l2" title='l2' data-type='int &amp;' data-ref="6866l2">l2</dfn>, <em>int</em>&amp; <dfn class="local col7 decl" id="6867l3" title='l3' data-type='int &amp;' data-ref="6867l3">l3</dfn>)</td></tr>
+<tr><th id="825">825</th><td>{</td></tr>
+<tr><th id="826">826</th><td>  <em>int</em> <dfn class="local col8 decl" id="6868abcd" title='abcd' data-type='int [4]' data-ref="6868abcd">abcd</dfn>[<var>4</var>];</td></tr>
+<tr><th id="827">827</th><td>  <a class="local col8 ref" href="#6868abcd" title='abcd' data-ref="6868abcd">abcd</a>[<var>0</var>] = <a class="local col8 ref" href="#6868abcd" title='abcd' data-ref="6868abcd">abcd</a>[<var>1</var>] = <a class="local col8 ref" href="#6868abcd" title='abcd' data-ref="6868abcd">abcd</a>[<var>2</var>] = <a class="local col8 ref" href="#6868abcd" title='abcd' data-ref="6868abcd">abcd</a>[<var>3</var>] = <var>0</var>;</td></tr>
+<tr><th id="828">828</th><td>  <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>0</var>;</td></tr>
+<tr><th id="829">829</th><td>  <a class="macro" href="#773" title="__asm__ __volatile__ (&quot;cpuid&quot;: &quot;=a&quot; (abcd[0]), &quot;=b&quot; (abcd[1]), &quot;=c&quot; (abcd[2]), &quot;=d&quot; (abcd[3]) : &quot;0&quot; (0x00000002), &quot;2&quot; (0) );" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a>(<a class="local col8 ref" href="#6868abcd" title='abcd' data-ref="6868abcd">abcd</a>,<var>0x00000002</var>,<var>0</var>);</td></tr>
+<tr><th id="830">830</th><td>  <em>unsigned</em> <em>char</em> * <dfn class="local col9 decl" id="6869bytes" title='bytes' data-type='unsigned char *' data-ref="6869bytes">bytes</dfn> = <b>reinterpret_cast</b>&lt;<em>unsigned</em> <em>char</em> *&gt;(<a class="local col8 ref" href="#6868abcd" title='abcd' data-ref="6868abcd">abcd</a>)+<var>2</var>;</td></tr>
+<tr><th id="831">831</th><td>  <em>bool</em> <dfn class="local col0 decl" id="6870check_for_p2_core2" title='check_for_p2_core2' data-type='bool' data-ref="6870check_for_p2_core2">check_for_p2_core2</dfn> = <b>false</b>;</td></tr>
+<tr><th id="832">832</th><td>  <b>for</b>(<em>int</em> <dfn class="local col1 decl" id="6871i" title='i' data-type='int' data-ref="6871i">i</dfn>=<var>0</var>; <a class="local col1 ref" href="#6871i" title='i' data-ref="6871i">i</a>&lt;<var>14</var>; ++<a class="local col1 ref" href="#6871i" title='i' data-ref="6871i">i</a>)</td></tr>
+<tr><th id="833">833</th><td>  {</td></tr>
+<tr><th id="834">834</th><td>    <b>switch</b>(<a class="local col9 ref" href="#6869bytes" title='bytes' data-ref="6869bytes">bytes</a>[<a class="local col1 ref" href="#6871i" title='i' data-ref="6871i">i</a>])</td></tr>
+<tr><th id="835">835</th><td>    {</td></tr>
+<tr><th id="836">836</th><td>      <b>case</b> <var>0x0A</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>8</var>; <b>break</b>;   <i>// 0Ah   data L1 cache, 8 KB, 2 ways, 32 byte lines</i></td></tr>
+<tr><th id="837">837</th><td>      <b>case</b> <var>0x0C</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>16</var>; <b>break</b>;  <i>// 0Ch   data L1 cache, 16 KB, 4 ways, 32 byte lines</i></td></tr>
+<tr><th id="838">838</th><td>      <b>case</b> <var>0x0E</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>24</var>; <b>break</b>;  <i>// 0Eh   data L1 cache, 24 KB, 6 ways, 64 byte lines</i></td></tr>
+<tr><th id="839">839</th><td>      <b>case</b> <var>0x10</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>16</var>; <b>break</b>;  <i>// 10h   data L1 cache, 16 KB, 4 ways, 32 byte lines (IA-64)</i></td></tr>
+<tr><th id="840">840</th><td>      <b>case</b> <var>0x15</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>16</var>; <b>break</b>;  <i>// 15h   code L1 cache, 16 KB, 4 ways, 32 byte lines (IA-64)</i></td></tr>
+<tr><th id="841">841</th><td>      <b>case</b> <var>0x2C</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>32</var>; <b>break</b>;  <i>// 2Ch   data L1 cache, 32 KB, 8 ways, 64 byte lines</i></td></tr>
+<tr><th id="842">842</th><td>      <b>case</b> <var>0x30</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>32</var>; <b>break</b>;  <i>// 30h   code L1 cache, 32 KB, 8 ways, 64 byte lines</i></td></tr>
+<tr><th id="843">843</th><td>      <b>case</b> <var>0x60</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>16</var>; <b>break</b>;  <i>// 60h   data L1 cache, 16 KB, 8 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="844">844</th><td>      <b>case</b> <var>0x66</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>8</var>; <b>break</b>;   <i>// 66h   data L1 cache, 8 KB, 4 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="845">845</th><td>      <b>case</b> <var>0x67</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>16</var>; <b>break</b>;  <i>// 67h   data L1 cache, 16 KB, 4 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="846">846</th><td>      <b>case</b> <var>0x68</var>: <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> = <var>32</var>; <b>break</b>;  <i>// 68h   data L1 cache, 32 KB, 4 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="847">847</th><td>      <b>case</b> <var>0x1A</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>96</var>; <b>break</b>;   <i>// code and data L2 cache, 96 KB, 6 ways, 64 byte lines (IA-64)</i></td></tr>
+<tr><th id="848">848</th><td>      <b>case</b> <var>0x22</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>512</var>; <b>break</b>;   <i>// code and data L3 cache, 512 KB, 4 ways (!), 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="849">849</th><td>      <b>case</b> <var>0x23</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>1024</var>; <b>break</b>;   <i>// code and data L3 cache, 1024 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="850">850</th><td>      <b>case</b> <var>0x25</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>2048</var>; <b>break</b>;   <i>// code and data L3 cache, 2048 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="851">851</th><td>      <b>case</b> <var>0x29</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>4096</var>; <b>break</b>;   <i>// code and data L3 cache, 4096 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="852">852</th><td>      <b>case</b> <var>0x39</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>128</var>; <b>break</b>;   <i>// code and data L2 cache, 128 KB, 4 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="853">853</th><td>      <b>case</b> <var>0x3A</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>192</var>; <b>break</b>;   <i>// code and data L2 cache, 192 KB, 6 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="854">854</th><td>      <b>case</b> <var>0x3B</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>128</var>; <b>break</b>;   <i>// code and data L2 cache, 128 KB, 2 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="855">855</th><td>      <b>case</b> <var>0x3C</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>256</var>; <b>break</b>;   <i>// code and data L2 cache, 256 KB, 4 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="856">856</th><td>      <b>case</b> <var>0x3D</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>384</var>; <b>break</b>;   <i>// code and data L2 cache, 384 KB, 6 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="857">857</th><td>      <b>case</b> <var>0x3E</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 4 ways, 64 byte lines, sectored</i></td></tr>
+<tr><th id="858">858</th><td>      <b>case</b> <var>0x40</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>0</var>; <b>break</b>;   <i>// no integrated L2 cache (P6 core) or L3 cache (P4 core)</i></td></tr>
+<tr><th id="859">859</th><td>      <b>case</b> <var>0x41</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>128</var>; <b>break</b>;   <i>// code and data L2 cache, 128 KB, 4 ways, 32 byte lines</i></td></tr>
+<tr><th id="860">860</th><td>      <b>case</b> <var>0x42</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>256</var>; <b>break</b>;   <i>// code and data L2 cache, 256 KB, 4 ways, 32 byte lines</i></td></tr>
+<tr><th id="861">861</th><td>      <b>case</b> <var>0x43</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 4 ways, 32 byte lines</i></td></tr>
+<tr><th id="862">862</th><td>      <b>case</b> <var>0x44</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>1024</var>; <b>break</b>;   <i>// code and data L2 cache, 1024 KB, 4 ways, 32 byte lines</i></td></tr>
+<tr><th id="863">863</th><td>      <b>case</b> <var>0x45</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>2048</var>; <b>break</b>;   <i>// code and data L2 cache, 2048 KB, 4 ways, 32 byte lines</i></td></tr>
+<tr><th id="864">864</th><td>      <b>case</b> <var>0x46</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>4096</var>; <b>break</b>;   <i>// code and data L3 cache, 4096 KB, 4 ways, 64 byte lines</i></td></tr>
+<tr><th id="865">865</th><td>      <b>case</b> <var>0x47</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>8192</var>; <b>break</b>;   <i>// code and data L3 cache, 8192 KB, 8 ways, 64 byte lines</i></td></tr>
+<tr><th id="866">866</th><td>      <b>case</b> <var>0x48</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>3072</var>; <b>break</b>;   <i>// code and data L2 cache, 3072 KB, 12 ways, 64 byte lines</i></td></tr>
+<tr><th id="867">867</th><td>      <b>case</b> <var>0x49</var>: <b>if</b>(<a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a>!=<var>0</var>) <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>4096</var>; <b>else</b> {<a class="local col0 ref" href="#6870check_for_p2_core2" title='check_for_p2_core2' data-ref="6870check_for_p2_core2">check_for_p2_core2</a>=<b>true</b>; <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>4096</var>;} <b>break</b>;<i>// code and data L3 cache, 4096 KB, 16 ways, 64 byte lines (P4) or L2 for core2</i></td></tr>
+<tr><th id="868">868</th><td>      <b>case</b> <var>0x4A</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>6144</var>; <b>break</b>;   <i>// code and data L3 cache, 6144 KB, 12 ways, 64 byte lines</i></td></tr>
+<tr><th id="869">869</th><td>      <b>case</b> <var>0x4B</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>8192</var>; <b>break</b>;   <i>// code and data L3 cache, 8192 KB, 16 ways, 64 byte lines</i></td></tr>
+<tr><th id="870">870</th><td>      <b>case</b> <var>0x4C</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>12288</var>; <b>break</b>;   <i>// code and data L3 cache, 12288 KB, 12 ways, 64 byte lines</i></td></tr>
+<tr><th id="871">871</th><td>      <b>case</b> <var>0x4D</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>16384</var>; <b>break</b>;   <i>// code and data L3 cache, 16384 KB, 16 ways, 64 byte lines</i></td></tr>
+<tr><th id="872">872</th><td>      <b>case</b> <var>0x4E</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>6144</var>; <b>break</b>;   <i>// code and data L2 cache, 6144 KB, 24 ways, 64 byte lines</i></td></tr>
+<tr><th id="873">873</th><td>      <b>case</b> <var>0x78</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>1024</var>; <b>break</b>;   <i>// code and data L2 cache, 1024 KB, 4 ways, 64 byte lines</i></td></tr>
+<tr><th id="874">874</th><td>      <b>case</b> <var>0x79</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>128</var>; <b>break</b>;   <i>// code and data L2 cache, 128 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="875">875</th><td>      <b>case</b> <var>0x7A</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>256</var>; <b>break</b>;   <i>// code and data L2 cache, 256 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="876">876</th><td>      <b>case</b> <var>0x7B</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="877">877</th><td>      <b>case</b> <var>0x7C</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>1024</var>; <b>break</b>;   <i>// code and data L2 cache, 1024 KB, 8 ways, 64 byte lines, dual-sectored</i></td></tr>
+<tr><th id="878">878</th><td>      <b>case</b> <var>0x7D</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>2048</var>; <b>break</b>;   <i>// code and data L2 cache, 2048 KB, 8 ways, 64 byte lines</i></td></tr>
+<tr><th id="879">879</th><td>      <b>case</b> <var>0x7E</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>256</var>; <b>break</b>;   <i>// code and data L2 cache, 256 KB, 8 ways, 128 byte lines, sect. (IA-64)</i></td></tr>
+<tr><th id="880">880</th><td>      <b>case</b> <var>0x7F</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 2 ways, 64 byte lines</i></td></tr>
+<tr><th id="881">881</th><td>      <b>case</b> <var>0x80</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 8 ways, 64 byte lines</i></td></tr>
+<tr><th id="882">882</th><td>      <b>case</b> <var>0x81</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>128</var>; <b>break</b>;   <i>// code and data L2 cache, 128 KB, 8 ways, 32 byte lines</i></td></tr>
+<tr><th id="883">883</th><td>      <b>case</b> <var>0x82</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>256</var>; <b>break</b>;   <i>// code and data L2 cache, 256 KB, 8 ways, 32 byte lines</i></td></tr>
+<tr><th id="884">884</th><td>      <b>case</b> <var>0x83</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 8 ways, 32 byte lines</i></td></tr>
+<tr><th id="885">885</th><td>      <b>case</b> <var>0x84</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>1024</var>; <b>break</b>;   <i>// code and data L2 cache, 1024 KB, 8 ways, 32 byte lines</i></td></tr>
+<tr><th id="886">886</th><td>      <b>case</b> <var>0x85</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>2048</var>; <b>break</b>;   <i>// code and data L2 cache, 2048 KB, 8 ways, 32 byte lines</i></td></tr>
+<tr><th id="887">887</th><td>      <b>case</b> <var>0x86</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>512</var>; <b>break</b>;   <i>// code and data L2 cache, 512 KB, 4 ways, 64 byte lines</i></td></tr>
+<tr><th id="888">888</th><td>      <b>case</b> <var>0x87</var>: <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> = <var>1024</var>; <b>break</b>;   <i>// code and data L2 cache, 1024 KB, 8 ways, 64 byte lines</i></td></tr>
+<tr><th id="889">889</th><td>      <b>case</b> <var>0x88</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>2048</var>; <b>break</b>;   <i>// code and data L3 cache, 2048 KB, 4 ways, 64 byte lines (IA-64)</i></td></tr>
+<tr><th id="890">890</th><td>      <b>case</b> <var>0x89</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>4096</var>; <b>break</b>;   <i>// code and data L3 cache, 4096 KB, 4 ways, 64 byte lines (IA-64)</i></td></tr>
+<tr><th id="891">891</th><td>      <b>case</b> <var>0x8A</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>8192</var>; <b>break</b>;   <i>// code and data L3 cache, 8192 KB, 4 ways, 64 byte lines (IA-64)</i></td></tr>
+<tr><th id="892">892</th><td>      <b>case</b> <var>0x8D</var>: <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>3072</var>; <b>break</b>;   <i>// code and data L3 cache, 3072 KB, 12 ways, 128 byte lines (IA-64)</i></td></tr>
+<tr><th id="893">893</th><td></td></tr>
+<tr><th id="894">894</th><td>      <b>default</b>: <b>break</b>;</td></tr>
+<tr><th id="895">895</th><td>    }</td></tr>
+<tr><th id="896">896</th><td>  }</td></tr>
+<tr><th id="897">897</th><td>  <b>if</b>(<a class="local col0 ref" href="#6870check_for_p2_core2" title='check_for_p2_core2' data-ref="6870check_for_p2_core2">check_for_p2_core2</a> &amp;&amp; <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> == <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a>)</td></tr>
+<tr><th id="898">898</th><td>    <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> = <var>0</var>;</td></tr>
+<tr><th id="899">899</th><td>  <a class="local col5 ref" href="#6865l1" title='l1' data-ref="6865l1">l1</a> *= <var>1024</var>;</td></tr>
+<tr><th id="900">900</th><td>  <a class="local col6 ref" href="#6866l2" title='l2' data-ref="6866l2">l2</a> *= <var>1024</var>;</td></tr>
+<tr><th id="901">901</th><td>  <a class="local col7 ref" href="#6867l3" title='l3' data-ref="6867l3">l3</a> *= <var>1024</var>;</td></tr>
+<tr><th id="902">902</th><td>}</td></tr>
+<tr><th id="903">903</th><td></td></tr>
+<tr><th id="904">904</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal21queryCacheSizes_intelERiS1_S1_i" title='Eigen::internal::queryCacheSizes_intel' data-ref="_ZN5Eigen8internal21queryCacheSizes_intelERiS1_S1_i">queryCacheSizes_intel</dfn>(<em>int</em>&amp; <dfn class="local col2 decl" id="6872l1" title='l1' data-type='int &amp;' data-ref="6872l1">l1</dfn>, <em>int</em>&amp; <dfn class="local col3 decl" id="6873l2" title='l2' data-type='int &amp;' data-ref="6873l2">l2</dfn>, <em>int</em>&amp; <dfn class="local col4 decl" id="6874l3" title='l3' data-type='int &amp;' data-ref="6874l3">l3</dfn>, <em>int</em> <dfn class="local col5 decl" id="6875max_std_funcs" title='max_std_funcs' data-type='int' data-ref="6875max_std_funcs">max_std_funcs</dfn>)</td></tr>
+<tr><th id="905">905</th><td>{</td></tr>
+<tr><th id="906">906</th><td>  <b>if</b>(<a class="local col5 ref" href="#6875max_std_funcs" title='max_std_funcs' data-ref="6875max_std_funcs">max_std_funcs</a>&gt;=<var>4</var>)</td></tr>
+<tr><th id="907">907</th><td>    <a class="ref" href="#_ZN5Eigen8internal28queryCacheSizes_intel_directERiS1_S1_" title='Eigen::internal::queryCacheSizes_intel_direct' data-ref="_ZN5Eigen8internal28queryCacheSizes_intel_directERiS1_S1_">queryCacheSizes_intel_direct</a>(<span class='refarg'><a class="local col2 ref" href="#6872l1" title='l1' data-ref="6872l1">l1</a></span>,<span class='refarg'><a class="local col3 ref" href="#6873l2" title='l2' data-ref="6873l2">l2</a></span>,<span class='refarg'><a class="local col4 ref" href="#6874l3" title='l3' data-ref="6874l3">l3</a></span>);</td></tr>
+<tr><th id="908">908</th><td>  <b>else</b></td></tr>
+<tr><th id="909">909</th><td>    <a class="ref" href="#_ZN5Eigen8internal27queryCacheSizes_intel_codesERiS1_S1_" title='Eigen::internal::queryCacheSizes_intel_codes' data-ref="_ZN5Eigen8internal27queryCacheSizes_intel_codesERiS1_S1_">queryCacheSizes_intel_codes</a>(<span class='refarg'><a class="local col2 ref" href="#6872l1" title='l1' data-ref="6872l1">l1</a></span>,<span class='refarg'><a class="local col3 ref" href="#6873l2" title='l2' data-ref="6873l2">l2</a></span>,<span class='refarg'><a class="local col4 ref" href="#6874l3" title='l3' data-ref="6874l3">l3</a></span>);</td></tr>
+<tr><th id="910">910</th><td>}</td></tr>
+<tr><th id="911">911</th><td></td></tr>
+<tr><th id="912">912</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal19queryCacheSizes_amdERiS1_S1_" title='Eigen::internal::queryCacheSizes_amd' data-ref="_ZN5Eigen8internal19queryCacheSizes_amdERiS1_S1_">queryCacheSizes_amd</dfn>(<em>int</em>&amp; <dfn class="local col6 decl" id="6876l1" title='l1' data-type='int &amp;' data-ref="6876l1">l1</dfn>, <em>int</em>&amp; <dfn class="local col7 decl" id="6877l2" title='l2' data-type='int &amp;' data-ref="6877l2">l2</dfn>, <em>int</em>&amp; <dfn class="local col8 decl" id="6878l3" title='l3' data-type='int &amp;' data-ref="6878l3">l3</dfn>)</td></tr>
+<tr><th id="913">913</th><td>{</td></tr>
+<tr><th id="914">914</th><td>  <em>int</em> <dfn class="local col9 decl" id="6879abcd" title='abcd' data-type='int [4]' data-ref="6879abcd">abcd</dfn>[<var>4</var>];</td></tr>
+<tr><th id="915">915</th><td>  <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>0</var>] = <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>1</var>] = <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>2</var>] = <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>3</var>] = <var>0</var>;</td></tr>
+<tr><th id="916">916</th><td>  <a class="macro" href="#773" title="__asm__ __volatile__ (&quot;cpuid&quot;: &quot;=a&quot; (abcd[0]), &quot;=b&quot; (abcd[1]), &quot;=c&quot; (abcd[2]), &quot;=d&quot; (abcd[3]) : &quot;0&quot; (0x80000005), &quot;2&quot; (0) );" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a>(<a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>,<var>0x80000005</var>,<var>0</var>);</td></tr>
+<tr><th id="917">917</th><td>  <a class="local col6 ref" href="#6876l1" title='l1' data-ref="6876l1">l1</a> = (<a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>2</var>] &gt;&gt; <var>24</var>) * <var>1024</var>; <i>// C[31:24] = L1 size in KB</i></td></tr>
+<tr><th id="918">918</th><td>  <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>0</var>] = <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>1</var>] = <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>2</var>] = <a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>3</var>] = <var>0</var>;</td></tr>
+<tr><th id="919">919</th><td>  <a class="macro" href="#773" title="__asm__ __volatile__ (&quot;cpuid&quot;: &quot;=a&quot; (abcd[0]), &quot;=b&quot; (abcd[1]), &quot;=c&quot; (abcd[2]), &quot;=d&quot; (abcd[3]) : &quot;0&quot; (0x80000006), &quot;2&quot; (0) );" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a>(<a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>,<var>0x80000006</var>,<var>0</var>);</td></tr>
+<tr><th id="920">920</th><td>  <a class="local col7 ref" href="#6877l2" title='l2' data-ref="6877l2">l2</a> = (<a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>2</var>] &gt;&gt; <var>16</var>) * <var>1024</var>; <i>// C[31;16] = l2 cache size in KB</i></td></tr>
+<tr><th id="921">921</th><td>  <a class="local col8 ref" href="#6878l3" title='l3' data-ref="6878l3">l3</a> = ((<a class="local col9 ref" href="#6879abcd" title='abcd' data-ref="6879abcd">abcd</a>[<var>3</var>] &amp; <var>0xFFFC000</var>) &gt;&gt; <var>18</var>) * <var>512</var> * <var>1024</var>; <i>// D[31;18] = l3 cache size in 512KB</i></td></tr>
+<tr><th id="922">922</th><td>}</td></tr>
+<tr><th id="923">923</th><td><u>#<span data-ppcond="785">endif</span></u></td></tr>
+<tr><th id="924">924</th><td></td></tr>
+<tr><th id="925">925</th><td><i class="doc">/**<span class="command"> \internal</span></i></td></tr>
+<tr><th id="926">926</th><td><i class="doc"> * Queries and returns the cache sizes in Bytes of the L1, L2, and L3 data caches respectively */</i></td></tr>
+<tr><th id="927">927</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5Eigen8internal15queryCacheSizesERiS1_S1_" title='Eigen::internal::queryCacheSizes' data-ref="_ZN5Eigen8internal15queryCacheSizesERiS1_S1_">queryCacheSizes</dfn>(<em>int</em>&amp; <dfn class="local col0 decl" id="6880l1" title='l1' data-type='int &amp;' data-ref="6880l1">l1</dfn>, <em>int</em>&amp; <dfn class="local col1 decl" id="6881l2" title='l2' data-type='int &amp;' data-ref="6881l2">l2</dfn>, <em>int</em>&amp; <dfn class="local col2 decl" id="6882l3" title='l3' data-type='int &amp;' data-ref="6882l3">l3</dfn>)</td></tr>
+<tr><th id="928">928</th><td>{</td></tr>
+<tr><th id="929">929</th><td>  <u>#<span data-ppcond="929">ifdef</span> <a class="macro" href="#773" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a></u></td></tr>
+<tr><th id="930">930</th><td>  <em>int</em> <dfn class="local col3 decl" id="6883abcd" title='abcd' data-type='int [4]' data-ref="6883abcd">abcd</dfn>[<var>4</var>];</td></tr>
+<tr><th id="931">931</th><td></td></tr>
+<tr><th id="932">932</th><td>  <i>// identify the CPU vendor</i></td></tr>
+<tr><th id="933">933</th><td>  <a class="macro" href="#773" title="__asm__ __volatile__ (&quot;cpuid&quot;: &quot;=a&quot; (abcd[0]), &quot;=b&quot; (abcd[1]), &quot;=c&quot; (abcd[2]), &quot;=d&quot; (abcd[3]) : &quot;0&quot; (0x0), &quot;2&quot; (0) );" data-ref="_M/EIGEN_CPUID">EIGEN_CPUID</a>(<a class="local col3 ref" href="#6883abcd" title='abcd' data-ref="6883abcd">abcd</a>,<var>0x0</var>,<var>0</var>);</td></tr>
+<tr><th id="934">934</th><td>  <em>int</em> <dfn class="local col4 decl" id="6884max_std_funcs" title='max_std_funcs' data-type='int' data-ref="6884max_std_funcs">max_std_funcs</dfn> = <a class="local col3 ref" href="#6883abcd" title='abcd' data-ref="6883abcd">abcd</a>[<var>1</var>];</td></tr>
+<tr><th id="935">935</th><td>  <b>if</b>(<a class="ref" href="#_ZN5Eigen8internal15cpuid_is_vendorEPiPKc" title='Eigen::internal::cpuid_is_vendor' data-ref="_ZN5Eigen8internal15cpuid_is_vendorEPiPKc">cpuid_is_vendor</a>(<a class="local col3 ref" href="#6883abcd" title='abcd' data-ref="6883abcd">abcd</a>,<q>"GenuineIntel"</q>))</td></tr>
+<tr><th id="936">936</th><td>    <a class="ref" href="#_ZN5Eigen8internal21queryCacheSizes_intelERiS1_S1_i" title='Eigen::internal::queryCacheSizes_intel' data-ref="_ZN5Eigen8internal21queryCacheSizes_intelERiS1_S1_i">queryCacheSizes_intel</a>(<span class='refarg'><a class="local col0 ref" href="#6880l1" title='l1' data-ref="6880l1">l1</a></span>,<span class='refarg'><a class="local col1 ref" href="#6881l2" title='l2' data-ref="6881l2">l2</a></span>,<span class='refarg'><a class="local col2 ref" href="#6882l3" title='l3' data-ref="6882l3">l3</a></span>,<a class="local col4 ref" href="#6884max_std_funcs" title='max_std_funcs' data-ref="6884max_std_funcs">max_std_funcs</a>);</td></tr>
+<tr><th id="937">937</th><td>  <b>else</b> <b>if</b>(<a class="ref" href="#_ZN5Eigen8internal15cpuid_is_vendorEPiPKc" title='Eigen::internal::cpuid_is_vendor' data-ref="_ZN5Eigen8internal15cpuid_is_vendorEPiPKc">cpuid_is_vendor</a>(<a class="local col3 ref" href="#6883abcd" title='abcd' data-ref="6883abcd">abcd</a>,<q>"AuthenticAMD"</q>) || <a class="ref" href="#_ZN5Eigen8internal15cpuid_is_vendorEPiPKc" title='Eigen::internal::cpuid_is_vendor' data-ref="_ZN5Eigen8internal15cpuid_is_vendorEPiPKc">cpuid_is_vendor</a>(<a class="local col3 ref" href="#6883abcd" title='abcd' data-ref="6883abcd">abcd</a>,<q>"AMDisbetter!"</q>))</td></tr>
+<tr><th id="938">938</th><td>    <a class="ref" href="#_ZN5Eigen8internal19queryCacheSizes_amdERiS1_S1_" title='Eigen::internal::queryCacheSizes_amd' data-ref="_ZN5Eigen8internal19queryCacheSizes_amdERiS1_S1_">queryCacheSizes_amd</a>(<span class='refarg'><a class="local col0 ref" href="#6880l1" title='l1' data-ref="6880l1">l1</a></span>,<span class='refarg'><a class="local col1 ref" href="#6881l2" title='l2' data-ref="6881l2">l2</a></span>,<span class='refarg'><a class="local col2 ref" href="#6882l3" title='l3' data-ref="6882l3">l3</a></span>);</td></tr>
+<tr><th id="939">939</th><td>  <b>else</b></td></tr>
+<tr><th id="940">940</th><td>    <i>// by default let's use Intel's API</i></td></tr>
+<tr><th id="941">941</th><td>    <a class="ref" href="#_ZN5Eigen8internal21queryCacheSizes_intelERiS1_S1_i" title='Eigen::internal::queryCacheSizes_intel' data-ref="_ZN5Eigen8internal21queryCacheSizes_intelERiS1_S1_i">queryCacheSizes_intel</a>(<span class='refarg'><a class="local col0 ref" href="#6880l1" title='l1' data-ref="6880l1">l1</a></span>,<span class='refarg'><a class="local col1 ref" href="#6881l2" title='l2' data-ref="6881l2">l2</a></span>,<span class='refarg'><a class="local col2 ref" href="#6882l3" title='l3' data-ref="6882l3">l3</a></span>,<a class="local col4 ref" href="#6884max_std_funcs" title='max_std_funcs' data-ref="6884max_std_funcs">max_std_funcs</a>);</td></tr>
+<tr><th id="942">942</th><td></td></tr>
+<tr><th id="943">943</th><td>  <i>// here is the list of other vendors:</i></td></tr>
+<tr><th id="944">944</th><td><i>//   ||cpuid_is_vendor(abcd,"VIA VIA VIA ")</i></td></tr>
+<tr><th id="945">945</th><td><i>//   ||cpuid_is_vendor(abcd,"CyrixInstead")</i></td></tr>
+<tr><th id="946">946</th><td><i>//   ||cpuid_is_vendor(abcd,"CentaurHauls")</i></td></tr>
+<tr><th id="947">947</th><td><i>//   ||cpuid_is_vendor(abcd,"GenuineTMx86")</i></td></tr>
+<tr><th id="948">948</th><td><i>//   ||cpuid_is_vendor(abcd,"TransmetaCPU")</i></td></tr>
+<tr><th id="949">949</th><td><i>//   ||cpuid_is_vendor(abcd,"RiseRiseRise")</i></td></tr>
+<tr><th id="950">950</th><td><i>//   ||cpuid_is_vendor(abcd,"Geode by NSC")</i></td></tr>
+<tr><th id="951">951</th><td><i>//   ||cpuid_is_vendor(abcd,"SiS SiS SiS ")</i></td></tr>
+<tr><th id="952">952</th><td><i>//   ||cpuid_is_vendor(abcd,"UMC UMC UMC ")</i></td></tr>
+<tr><th id="953">953</th><td><i>//   ||cpuid_is_vendor(abcd,"NexGenDriven")</i></td></tr>
+<tr><th id="954">954</th><td>  <u>#<span data-ppcond="929">else</span></u></td></tr>
+<tr><th id="955">955</th><td>  l1 = l2 = l3 = -<var>1</var>;</td></tr>
+<tr><th id="956">956</th><td>  <u>#<span data-ppcond="929">endif</span></u></td></tr>
+<tr><th id="957">957</th><td>}</td></tr>
+<tr><th id="958">958</th><td></td></tr>
+<tr><th id="959">959</th><td><i class="doc">/**<span class="command"> \internal</span></i></td></tr>
+<tr><th id="960">960</th><td><i class="doc"> * <span class="command">\returns</span> the size in Bytes of the L1 data cache */</i></td></tr>
+<tr><th id="961">961</th><td><b>inline</b> <em>int</em> <dfn class="decl def" id="_ZN5Eigen8internal16queryL1CacheSizeEv" title='Eigen::internal::queryL1CacheSize' data-ref="_ZN5Eigen8internal16queryL1CacheSizeEv">queryL1CacheSize</dfn>()</td></tr>
+<tr><th id="962">962</th><td>{</td></tr>
+<tr><th id="963">963</th><td>  <em>int</em> <dfn class="local col5 decl" id="6885l1" title='l1' data-type='int' data-ref="6885l1">l1</dfn>(-<var>1</var>), <dfn class="local col6 decl" id="6886l2" title='l2' data-type='int' data-ref="6886l2">l2</dfn>, <dfn class="local col7 decl" id="6887l3" title='l3' data-type='int' data-ref="6887l3">l3</dfn>;</td></tr>
+<tr><th id="964">964</th><td>  <a class="ref" href="#_ZN5Eigen8internal15queryCacheSizesERiS1_S1_" title='Eigen::internal::queryCacheSizes' data-ref="_ZN5Eigen8internal15queryCacheSizesERiS1_S1_">queryCacheSizes</a>(<span class='refarg'><a class="local col5 ref" href="#6885l1" title='l1' data-ref="6885l1">l1</a></span>,<span class='refarg'><a class="local col6 ref" href="#6886l2" title='l2' data-ref="6886l2">l2</a></span>,<span class='refarg'><a class="local col7 ref" href="#6887l3" title='l3' data-ref="6887l3">l3</a></span>);</td></tr>
+<tr><th id="965">965</th><td>  <b>return</b> <a class="local col5 ref" href="#6885l1" title='l1' data-ref="6885l1">l1</a>;</td></tr>
+<tr><th id="966">966</th><td>}</td></tr>
+<tr><th id="967">967</th><td></td></tr>
+<tr><th id="968">968</th><td><i class="doc">/**<span class="command"> \internal</span></i></td></tr>
+<tr><th id="969">969</th><td><i class="doc"> * <span class="command">\returns</span> the size in Bytes of the L2 or L3 cache if this later is present */</i></td></tr>
+<tr><th id="970">970</th><td><b>inline</b> <em>int</em> <dfn class="decl def" id="_ZN5Eigen8internal22queryTopLevelCacheSizeEv" title='Eigen::internal::queryTopLevelCacheSize' data-ref="_ZN5Eigen8internal22queryTopLevelCacheSizeEv">queryTopLevelCacheSize</dfn>()</td></tr>
+<tr><th id="971">971</th><td>{</td></tr>
+<tr><th id="972">972</th><td>  <em>int</em> <dfn class="local col8 decl" id="6888l1" title='l1' data-type='int' data-ref="6888l1">l1</dfn>, <dfn class="local col9 decl" id="6889l2" title='l2' data-type='int' data-ref="6889l2">l2</dfn>(-<var>1</var>), <dfn class="local col0 decl" id="6890l3" title='l3' data-type='int' data-ref="6890l3">l3</dfn>(-<var>1</var>);</td></tr>
+<tr><th id="973">973</th><td>  <a class="ref" href="#_ZN5Eigen8internal15queryCacheSizesERiS1_S1_" title='Eigen::internal::queryCacheSizes' data-ref="_ZN5Eigen8internal15queryCacheSizesERiS1_S1_">queryCacheSizes</a>(<span class='refarg'><a class="local col8 ref" href="#6888l1" title='l1' data-ref="6888l1">l1</a></span>,<span class='refarg'><a class="local col9 ref" href="#6889l2" title='l2' data-ref="6889l2">l2</a></span>,<span class='refarg'><a class="local col0 ref" href="#6890l3" title='l3' data-ref="6890l3">l3</a></span>);</td></tr>
+<tr><th id="974">974</th><td>  <b>return</b> (<span class="namespace">std::</span><a class="ref" href="../../../../../c++/4.8/bits/algorithmfwd.h.html#_ZSt3maxRKT_S1_" title='std::max' data-ref="_ZSt3maxRKT_S1_">max</a>)(<a class="local col9 ref" href="#6889l2" title='l2' data-ref="6889l2">l2</a>,<a class="local col0 ref" href="#6890l3" title='l3' data-ref="6890l3">l3</a>);</td></tr>
+<tr><th id="975">975</th><td>}</td></tr>
+<tr><th id="976">976</th><td></td></tr>
+<tr><th id="977">977</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="978">978</th><td></td></tr>
+<tr><th id="979">979</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="980">980</th><td></td></tr>
+<tr><th id="981">981</th><td><u>#<span data-ppcond="19">endif</span> // EIGEN_MEMORY_H</u></td></tr>
+<tr><th id="982">982</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../ceres-solver/examples/bal_problem.cc.html'>ceres-solver/examples/bal_problem.cc</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

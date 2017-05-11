@@ -1,0 +1,372 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>objimpl.h source code [include/python2.7/objimpl.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/python2.7/objimpl.h'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>include</a>/<a href='./'>python2.7</a>/<a href='objimpl.h.html'>objimpl.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* The PyObject_ memory family:  high-level object memory interfaces.</i></td></tr>
+<tr><th id="2">2</th><td><i>   See pymem.h for the low-level PyMem_ family.</i></td></tr>
+<tr><th id="3">3</th><td><i>*/</i></td></tr>
+<tr><th id="4">4</th><td></td></tr>
+<tr><th id="5">5</th><td><u>#<span data-ppcond="5">ifndef</span> <span class="macro" data-ref="_M/Py_OBJIMPL_H">Py_OBJIMPL_H</span></u></td></tr>
+<tr><th id="6">6</th><td><u>#define <dfn class="macro" id="_M/Py_OBJIMPL_H" data-ref="_M/Py_OBJIMPL_H">Py_OBJIMPL_H</dfn></u></td></tr>
+<tr><th id="7">7</th><td></td></tr>
+<tr><th id="8">8</th><td><u>#include <a href="pymem.h.html">"pymem.h"</a></u></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><u>#<span data-ppcond="10">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="11">11</th><td><b>extern</b> <q>"C"</q> {</td></tr>
+<tr><th id="12">12</th><td><u>#<span data-ppcond="10">endif</span></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><i>/* BEWARE:</i></td></tr>
+<tr><th id="15">15</th><td><i></i></td></tr>
+<tr><th id="16">16</th><td><i>   Each interface exports both functions and macros.  Extension modules should</i></td></tr>
+<tr><th id="17">17</th><td><i>   use the functions, to ensure binary compatibility across Python versions.</i></td></tr>
+<tr><th id="18">18</th><td><i>   Because the Python implementation is free to change internal details, and</i></td></tr>
+<tr><th id="19">19</th><td><i>   the macros may (or may not) expose details for speed, if you do use the</i></td></tr>
+<tr><th id="20">20</th><td><i>   macros you must recompile your extensions with each Python release.</i></td></tr>
+<tr><th id="21">21</th><td><i></i></td></tr>
+<tr><th id="22">22</th><td><i>   Never mix calls to PyObject_ memory functions with calls to the platform</i></td></tr>
+<tr><th id="23">23</th><td><i>   malloc/realloc/ calloc/free, or with calls to PyMem_.</i></td></tr>
+<tr><th id="24">24</th><td><i>*/</i></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><i>/*</i></td></tr>
+<tr><th id="27">27</th><td><i>Functions and macros for modules that implement new object types.</i></td></tr>
+<tr><th id="28">28</th><td><i></i></td></tr>
+<tr><th id="29">29</th><td><i> - PyObject_New(type, typeobj) allocates memory for a new object of the given</i></td></tr>
+<tr><th id="30">30</th><td><i>   type, and initializes part of it.  'type' must be the C structure type used</i></td></tr>
+<tr><th id="31">31</th><td><i>   to represent the object, and 'typeobj' the address of the corresponding</i></td></tr>
+<tr><th id="32">32</th><td><i>   type object.  Reference count and type pointer are filled in; the rest of</i></td></tr>
+<tr><th id="33">33</th><td><i>   the bytes of the object are *undefined*!  The resulting expression type is</i></td></tr>
+<tr><th id="34">34</th><td><i>   'type *'.  The size of the object is determined by the tp_basicsize field</i></td></tr>
+<tr><th id="35">35</th><td><i>   of the type object.</i></td></tr>
+<tr><th id="36">36</th><td><i></i></td></tr>
+<tr><th id="37">37</th><td><i> - PyObject_NewVar(type, typeobj, n) is similar but allocates a variable-size</i></td></tr>
+<tr><th id="38">38</th><td><i>   object with room for n items.  In addition to the refcount and type pointer</i></td></tr>
+<tr><th id="39">39</th><td><i>   fields, this also fills in the ob_size field.</i></td></tr>
+<tr><th id="40">40</th><td><i></i></td></tr>
+<tr><th id="41">41</th><td><i> - PyObject_Del(op) releases the memory allocated for an object.  It does not</i></td></tr>
+<tr><th id="42">42</th><td><i>   run a destructor -- it only frees the memory.  PyObject_Free is identical.</i></td></tr>
+<tr><th id="43">43</th><td><i></i></td></tr>
+<tr><th id="44">44</th><td><i> - PyObject_Init(op, typeobj) and PyObject_InitVar(op, typeobj, n) don't</i></td></tr>
+<tr><th id="45">45</th><td><i>   allocate memory.  Instead of a 'type' parameter, they take a pointer to a</i></td></tr>
+<tr><th id="46">46</th><td><i>   new object (allocated by an arbitrary allocator), and initialize its object</i></td></tr>
+<tr><th id="47">47</th><td><i>   header fields.</i></td></tr>
+<tr><th id="48">48</th><td><i></i></td></tr>
+<tr><th id="49">49</th><td><i>Note that objects created with PyObject_{New, NewVar} are allocated using the</i></td></tr>
+<tr><th id="50">50</th><td><i>specialized Python allocator (implemented in obmalloc.c), if WITH_PYMALLOC is</i></td></tr>
+<tr><th id="51">51</th><td><i>enabled.  In addition, a special debugging allocator is used if PYMALLOC_DEBUG</i></td></tr>
+<tr><th id="52">52</th><td><i>is also #defined.</i></td></tr>
+<tr><th id="53">53</th><td><i></i></td></tr>
+<tr><th id="54">54</th><td><i>In case a specific form of memory management is needed (for example, if you</i></td></tr>
+<tr><th id="55">55</th><td><i>must use the platform malloc heap(s), or shared memory, or C++ local storage or</i></td></tr>
+<tr><th id="56">56</th><td><i>operator new), you must first allocate the object with your custom allocator,</i></td></tr>
+<tr><th id="57">57</th><td><i>then pass its pointer to PyObject_{Init, InitVar} for filling in its Python-</i></td></tr>
+<tr><th id="58">58</th><td><i>specific fields:  reference count, type pointer, possibly others.  You should</i></td></tr>
+<tr><th id="59">59</th><td><i>be aware that Python no control over these objects because they don't</i></td></tr>
+<tr><th id="60">60</th><td><i>cooperate with the Python memory manager.  Such objects may not be eligible</i></td></tr>
+<tr><th id="61">61</th><td><i>for automatic garbage collection and you have to make sure that they are</i></td></tr>
+<tr><th id="62">62</th><td><i>released accordingly whenever their destructor gets called (cf. the specific</i></td></tr>
+<tr><th id="63">63</th><td><i>form of memory management you're using).</i></td></tr>
+<tr><th id="64">64</th><td><i></i></td></tr>
+<tr><th id="65">65</th><td><i>Unless you have specific memory management requirements, use</i></td></tr>
+<tr><th id="66">66</th><td><i>PyObject_{New, NewVar, Del}.</i></td></tr>
+<tr><th id="67">67</th><td><i>*/</i></td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td><i>/*</i></td></tr>
+<tr><th id="70">70</th><td><i> * Raw object memory interface</i></td></tr>
+<tr><th id="71">71</th><td><i> * ===========================</i></td></tr>
+<tr><th id="72">72</th><td><i> */</i></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><i>/* Functions to call the same malloc/realloc/free as used by Python's</i></td></tr>
+<tr><th id="75">75</th><td><i>   object allocator.  If WITH_PYMALLOC is enabled, these may differ from</i></td></tr>
+<tr><th id="76">76</th><td><i>   the platform malloc/realloc/free.  The Python object allocator is</i></td></tr>
+<tr><th id="77">77</th><td><i>   designed for fast, cache-conscious allocation of many "small" objects,</i></td></tr>
+<tr><th id="78">78</th><td><i>   and with low hidden memory overhead.</i></td></tr>
+<tr><th id="79">79</th><td><i></i></td></tr>
+<tr><th id="80">80</th><td><i>   PyObject_Malloc(0) returns a unique non-NULL pointer if possible.</i></td></tr>
+<tr><th id="81">81</th><td><i></i></td></tr>
+<tr><th id="82">82</th><td><i>   PyObject_Realloc(NULL, n) acts like PyObject_Malloc(n).</i></td></tr>
+<tr><th id="83">83</th><td><i>   PyObject_Realloc(p != NULL, 0) does not return  NULL, or free the memory</i></td></tr>
+<tr><th id="84">84</th><td><i>   at p.</i></td></tr>
+<tr><th id="85">85</th><td><i></i></td></tr>
+<tr><th id="86">86</th><td><i>   Returned pointers must be checked for NULL explicitly; no action is</i></td></tr>
+<tr><th id="87">87</th><td><i>   performed on failure other than to return NULL (no warning it printed, no</i></td></tr>
+<tr><th id="88">88</th><td><i>   exception is set, etc).</i></td></tr>
+<tr><th id="89">89</th><td><i></i></td></tr>
+<tr><th id="90">90</th><td><i>   For allocating objects, use PyObject_{New, NewVar} instead whenever</i></td></tr>
+<tr><th id="91">91</th><td><i>   possible.  The PyObject_{Malloc, Realloc, Free} family is exposed</i></td></tr>
+<tr><th id="92">92</th><td><i>   so that you can exploit Python's small-block allocator for non-object</i></td></tr>
+<tr><th id="93">93</th><td><i>   uses.  If you must use these routines to allocate object memory, make sure</i></td></tr>
+<tr><th id="94">94</th><td><i>   the object gets initialized via PyObject_{Init, InitVar} after obtaining</i></td></tr>
+<tr><th id="95">95</th><td><i>   the raw memory.</i></td></tr>
+<tr><th id="96">96</th><td><i>*/</i></td></tr>
+<tr><th id="97">97</th><td><a class="macro" href="pyport.h.html#793" title="void *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em> *) <dfn class="decl" id="PyObject_Malloc" title='PyObject_Malloc' data-ref="PyObject_Malloc">PyObject_Malloc</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>);</td></tr>
+<tr><th id="98">98</th><td><a class="macro" href="pyport.h.html#793" title="void *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em> *) <dfn class="decl" id="PyObject_Realloc" title='PyObject_Realloc' data-ref="PyObject_Realloc">PyObject_Realloc</dfn>(<em>void</em> *, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>);</td></tr>
+<tr><th id="99">99</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyObject_Free" title='PyObject_Free' data-ref="PyObject_Free">PyObject_Free</dfn>(<em>void</em> *);</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td><i>/* Macros */</i></td></tr>
+<tr><th id="103">103</th><td><u>#<span data-ppcond="103">ifdef</span> <a class="macro" href="../x86_64-linux-gnu/python2.7/pyconfig.h.html#1121" data-ref="_M/WITH_PYMALLOC">WITH_PYMALLOC</a></u></td></tr>
+<tr><th id="104">104</th><td><u>#<span data-ppcond="104">ifdef</span> <span class="macro" data-ref="_M/PYMALLOC_DEBUG">PYMALLOC_DEBUG</span>   /* WITH_PYMALLOC &amp;&amp; PYMALLOC_DEBUG */</u></td></tr>
+<tr><th id="105">105</th><td>PyAPI_FUNC(<em>void</em> *) _PyObject_DebugMalloc(size_t nbytes);</td></tr>
+<tr><th id="106">106</th><td>PyAPI_FUNC(<em>void</em> *) _PyObject_DebugRealloc(<em>void</em> *p, size_t nbytes);</td></tr>
+<tr><th id="107">107</th><td>PyAPI_FUNC(<em>void</em>) _PyObject_DebugFree(<em>void</em> *p);</td></tr>
+<tr><th id="108">108</th><td>PyAPI_FUNC(<em>void</em>) _PyObject_DebugDumpAddress(<em>const</em> <em>void</em> *p);</td></tr>
+<tr><th id="109">109</th><td>PyAPI_FUNC(<em>void</em>) _PyObject_DebugCheckAddress(<em>const</em> <em>void</em> *p);</td></tr>
+<tr><th id="110">110</th><td>PyAPI_FUNC(<em>void</em>) _PyObject_DebugMallocStats(<em>void</em>);</td></tr>
+<tr><th id="111">111</th><td>PyAPI_FUNC(<em>void</em> *) _PyObject_DebugMallocApi(<em>char</em> api, size_t nbytes);</td></tr>
+<tr><th id="112">112</th><td>PyAPI_FUNC(<em>void</em> *) _PyObject_DebugReallocApi(<em>char</em> api, <em>void</em> *p, size_t nbytes);</td></tr>
+<tr><th id="113">113</th><td>PyAPI_FUNC(<em>void</em>) _PyObject_DebugFreeApi(<em>char</em> api, <em>void</em> *p);</td></tr>
+<tr><th id="114">114</th><td>PyAPI_FUNC(<em>void</em>) _PyObject_DebugCheckAddressApi(<em>char</em> api, <em>const</em> <em>void</em> *p);</td></tr>
+<tr><th id="115">115</th><td>PyAPI_FUNC(<em>void</em> *) _PyMem_DebugMalloc(size_t nbytes);</td></tr>
+<tr><th id="116">116</th><td>PyAPI_FUNC(<em>void</em> *) _PyMem_DebugRealloc(<em>void</em> *p, size_t nbytes);</td></tr>
+<tr><th id="117">117</th><td>PyAPI_FUNC(<em>void</em>) _PyMem_DebugFree(<em>void</em> *p);</td></tr>
+<tr><th id="118">118</th><td><u>#define PyObject_MALLOC         _PyObject_DebugMalloc</u></td></tr>
+<tr><th id="119">119</th><td><u>#define PyObject_Malloc         _PyObject_DebugMalloc</u></td></tr>
+<tr><th id="120">120</th><td><u>#define PyObject_REALLOC        _PyObject_DebugRealloc</u></td></tr>
+<tr><th id="121">121</th><td><u>#define PyObject_Realloc        _PyObject_DebugRealloc</u></td></tr>
+<tr><th id="122">122</th><td><u>#define PyObject_FREE           _PyObject_DebugFree</u></td></tr>
+<tr><th id="123">123</th><td><u>#define PyObject_Free           _PyObject_DebugFree</u></td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td><u>#<span data-ppcond="104">else</span>   /* WITH_PYMALLOC &amp;&amp; ! PYMALLOC_DEBUG */</u></td></tr>
+<tr><th id="126">126</th><td><u>#define <dfn class="macro" id="_M/PyObject_MALLOC" data-ref="_M/PyObject_MALLOC">PyObject_MALLOC</dfn>         PyObject_Malloc</u></td></tr>
+<tr><th id="127">127</th><td><u>#define <dfn class="macro" id="_M/PyObject_REALLOC" data-ref="_M/PyObject_REALLOC">PyObject_REALLOC</dfn>        PyObject_Realloc</u></td></tr>
+<tr><th id="128">128</th><td><u>#define <dfn class="macro" id="_M/PyObject_FREE" data-ref="_M/PyObject_FREE">PyObject_FREE</dfn>           PyObject_Free</u></td></tr>
+<tr><th id="129">129</th><td><u>#<span data-ppcond="104">endif</span></u></td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td><u>#<span data-ppcond="103">else</span>   /* ! WITH_PYMALLOC */</u></td></tr>
+<tr><th id="132">132</th><td><u>#define PyObject_MALLOC         PyMem_MALLOC</u></td></tr>
+<tr><th id="133">133</th><td><u>#define PyObject_REALLOC        PyMem_REALLOC</u></td></tr>
+<tr><th id="134">134</th><td><u>#define PyObject_FREE           PyMem_FREE</u></td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td><u>#<span data-ppcond="103">endif</span>  /* WITH_PYMALLOC */</u></td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td><u>#define <dfn class="macro" id="_M/PyObject_Del" data-ref="_M/PyObject_Del">PyObject_Del</dfn>            PyObject_Free</u></td></tr>
+<tr><th id="139">139</th><td><u>#define <dfn class="macro" id="_M/PyObject_DEL" data-ref="_M/PyObject_DEL">PyObject_DEL</dfn>            PyObject_FREE</u></td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td><i>/* for source compatibility with 2.2 */</i></td></tr>
+<tr><th id="142">142</th><td><u>#define <dfn class="macro" id="_M/_PyObject_Del" data-ref="_M/_PyObject_Del">_PyObject_Del</dfn>           PyObject_Free</u></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><i>/*</i></td></tr>
+<tr><th id="145">145</th><td><i> * Generic object allocator interface</i></td></tr>
+<tr><th id="146">146</th><td><i> * ==================================</i></td></tr>
+<tr><th id="147">147</th><td><i> */</i></td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td><i>/* Functions */</i></td></tr>
+<tr><th id="150">150</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Init" title='PyObject_Init' data-ref="PyObject_Init">PyObject_Init</dfn>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="object.h.html#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *);</td></tr>
+<tr><th id="151">151</th><td><a class="macro" href="pyport.h.html#793" title="PyVarObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</a> *) <dfn class="decl" id="PyObject_InitVar" title='PyObject_InitVar' data-ref="PyObject_InitVar">PyObject_InitVar</dfn>(<a class="typedef" href="object.h.html#PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</a> *,</td></tr>
+<tr><th id="152">152</th><td>                                                 <a class="typedef" href="object.h.html#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="153">153</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_New" title='_PyObject_New' data-ref="_PyObject_New">_PyObject_New</dfn>(<a class="typedef" href="object.h.html#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *);</td></tr>
+<tr><th id="154">154</th><td><a class="macro" href="pyport.h.html#793" title="PyVarObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</a> *) <dfn class="decl" id="_PyObject_NewVar" title='_PyObject_NewVar' data-ref="_PyObject_NewVar">_PyObject_NewVar</dfn>(<a class="typedef" href="object.h.html#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td><u>#define <dfn class="macro" id="_M/PyObject_New" data-ref="_M/PyObject_New">PyObject_New</dfn>(type, typeobj) \</u></td></tr>
+<tr><th id="157">157</th><td><u>                ( (type *) _PyObject_New(typeobj) )</u></td></tr>
+<tr><th id="158">158</th><td><u>#define <dfn class="macro" id="_M/PyObject_NewVar" data-ref="_M/PyObject_NewVar">PyObject_NewVar</dfn>(type, typeobj, n) \</u></td></tr>
+<tr><th id="159">159</th><td><u>                ( (type *) _PyObject_NewVar((typeobj), (n)) )</u></td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td><i>/* Macros trading binary compatibility for speed. See also pymem.h.</i></td></tr>
+<tr><th id="162">162</th><td><i>   Note that these macros expect non-NULL object pointers.*/</i></td></tr>
+<tr><th id="163">163</th><td><u>#define <dfn class="macro" id="_M/PyObject_INIT" data-ref="_M/PyObject_INIT">PyObject_INIT</dfn>(op, typeobj) \</u></td></tr>
+<tr><th id="164">164</th><td><u>    ( Py_TYPE(op) = (typeobj), _Py_NewReference((PyObject *)(op)), (op) )</u></td></tr>
+<tr><th id="165">165</th><td><u>#define <dfn class="macro" id="_M/PyObject_INIT_VAR" data-ref="_M/PyObject_INIT_VAR">PyObject_INIT_VAR</dfn>(op, typeobj, size) \</u></td></tr>
+<tr><th id="166">166</th><td><u>    ( Py_SIZE(op) = (size), PyObject_INIT((op), (typeobj)) )</u></td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td><u>#define <dfn class="macro" id="_M/_PyObject_SIZE" data-ref="_M/_PyObject_SIZE">_PyObject_SIZE</dfn>(typeobj) ( (typeobj)-&gt;tp_basicsize )</u></td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><i>/* _PyObject_VAR_SIZE returns the number of bytes (as size_t) allocated for a</i></td></tr>
+<tr><th id="171">171</th><td><i>   vrbl-size object with nitems items, exclusive of gc overhead (if any).  The</i></td></tr>
+<tr><th id="172">172</th><td><i>   value is rounded up to the closest multiple of sizeof(void *), in order to</i></td></tr>
+<tr><th id="173">173</th><td><i>   ensure that pointer fields at the end of the object are correctly aligned</i></td></tr>
+<tr><th id="174">174</th><td><i>   for the platform (this is of special importance for subclasses of, e.g.,</i></td></tr>
+<tr><th id="175">175</th><td><i>   str or long, so that pointers can be stored after the embedded data).</i></td></tr>
+<tr><th id="176">176</th><td><i></i></td></tr>
+<tr><th id="177">177</th><td><i>   Note that there's no memory wastage in doing this, as malloc has to</i></td></tr>
+<tr><th id="178">178</th><td><i>   return (at worst) pointer-aligned memory anyway.</i></td></tr>
+<tr><th id="179">179</th><td><i>*/</i></td></tr>
+<tr><th id="180">180</th><td><u>#<span data-ppcond="180">if</span> ((<a class="macro" href="../x86_64-linux-gnu/python2.7/pyconfig.h.html#1043" title="8" data-ref="_M/SIZEOF_VOID_P">SIZEOF_VOID_P</a> - 1) &amp; <a class="macro" href="../x86_64-linux-gnu/python2.7/pyconfig.h.html#1043" title="8" data-ref="_M/SIZEOF_VOID_P">SIZEOF_VOID_P</a>) != 0</u></td></tr>
+<tr><th id="181">181</th><td><u>#   error "_PyObject_VAR_SIZE requires SIZEOF_VOID_P be a power of 2"</u></td></tr>
+<tr><th id="182">182</th><td><u>#<span data-ppcond="180">endif</span></u></td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td><u>#define <dfn class="macro" id="_M/_PyObject_VAR_SIZE" data-ref="_M/_PyObject_VAR_SIZE">_PyObject_VAR_SIZE</dfn>(typeobj, nitems)     \</u></td></tr>
+<tr><th id="185">185</th><td><u>    (size_t)                                    \</u></td></tr>
+<tr><th id="186">186</th><td><u>    ( ( (typeobj)-&gt;tp_basicsize +               \</u></td></tr>
+<tr><th id="187">187</th><td><u>        (nitems)*(typeobj)-&gt;tp_itemsize +       \</u></td></tr>
+<tr><th id="188">188</th><td><u>        (SIZEOF_VOID_P - 1)                     \</u></td></tr>
+<tr><th id="189">189</th><td><u>      ) &amp; ~(SIZEOF_VOID_P - 1)                  \</u></td></tr>
+<tr><th id="190">190</th><td><u>    )</u></td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td><u>#define <dfn class="macro" id="_M/PyObject_NEW" data-ref="_M/PyObject_NEW">PyObject_NEW</dfn>(type, typeobj) \</u></td></tr>
+<tr><th id="193">193</th><td><u>( (type *) PyObject_Init( \</u></td></tr>
+<tr><th id="194">194</th><td><u>    (PyObject *) PyObject_MALLOC( _PyObject_SIZE(typeobj) ), (typeobj)) )</u></td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td><u>#define <dfn class="macro" id="_M/PyObject_NEW_VAR" data-ref="_M/PyObject_NEW_VAR">PyObject_NEW_VAR</dfn>(type, typeobj, n) \</u></td></tr>
+<tr><th id="197">197</th><td><u>( (type *) PyObject_InitVar( \</u></td></tr>
+<tr><th id="198">198</th><td><u>      (PyVarObject *) PyObject_MALLOC(_PyObject_VAR_SIZE((typeobj),(n)) ),\</u></td></tr>
+<tr><th id="199">199</th><td><u>      (typeobj), (n)) )</u></td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td><i>/* This example code implements an object constructor with a custom</i></td></tr>
+<tr><th id="202">202</th><td><i>   allocator, where PyObject_New is inlined, and shows the important</i></td></tr>
+<tr><th id="203">203</th><td><i>   distinction between two steps (at least):</i></td></tr>
+<tr><th id="204">204</th><td><i>       1) the actual allocation of the object storage;</i></td></tr>
+<tr><th id="205">205</th><td><i>       2) the initialization of the Python specific fields</i></td></tr>
+<tr><th id="206">206</th><td><i>      in this storage with PyObject_{Init, InitVar}.</i></td></tr>
+<tr><th id="207">207</th><td><i></i></td></tr>
+<tr><th id="208">208</th><td><i>   PyObject *</i></td></tr>
+<tr><th id="209">209</th><td><i>   YourObject_New(...)</i></td></tr>
+<tr><th id="210">210</th><td><i>   {</i></td></tr>
+<tr><th id="211">211</th><td><i>       PyObject *op;</i></td></tr>
+<tr><th id="212">212</th><td><i></i></td></tr>
+<tr><th id="213">213</th><td><i>       op = (PyObject *) Your_Allocator(_PyObject_SIZE(YourTypeStruct));</i></td></tr>
+<tr><th id="214">214</th><td><i>       if (op == NULL)</i></td></tr>
+<tr><th id="215">215</th><td><i>       return PyErr_NoMemory();</i></td></tr>
+<tr><th id="216">216</th><td><i></i></td></tr>
+<tr><th id="217">217</th><td><i>       PyObject_Init(op, &amp;YourTypeStruct);</i></td></tr>
+<tr><th id="218">218</th><td><i></i></td></tr>
+<tr><th id="219">219</th><td><i>       op-&gt;ob_field = value;</i></td></tr>
+<tr><th id="220">220</th><td><i>       ...</i></td></tr>
+<tr><th id="221">221</th><td><i>       return op;</i></td></tr>
+<tr><th id="222">222</th><td><i>   }</i></td></tr>
+<tr><th id="223">223</th><td><i></i></td></tr>
+<tr><th id="224">224</th><td><i>   Note that in C++, the use of the new operator usually implies that</i></td></tr>
+<tr><th id="225">225</th><td><i>   the 1st step is performed automatically for you, so in a C++ class</i></td></tr>
+<tr><th id="226">226</th><td><i>   constructor you would start directly with PyObject_Init/InitVar</i></td></tr>
+<tr><th id="227">227</th><td><i>*/</i></td></tr>
+<tr><th id="228">228</th><td></td></tr>
+<tr><th id="229">229</th><td><i>/*</i></td></tr>
+<tr><th id="230">230</th><td><i> * Garbage Collection Support</i></td></tr>
+<tr><th id="231">231</th><td><i> * ==========================</i></td></tr>
+<tr><th id="232">232</th><td><i> */</i></td></tr>
+<tr><th id="233">233</th><td></td></tr>
+<tr><th id="234">234</th><td><i>/* C equivalent of gc.collect(). */</i></td></tr>
+<tr><th id="235">235</th><td><a class="macro" href="pyport.h.html#793" title="Py_ssize_t" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>) <dfn class="decl" id="PyGC_Collect" title='PyGC_Collect' data-ref="PyGC_Collect">PyGC_Collect</dfn>(<em>void</em>);</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+<tr><th id="237">237</th><td><i>/* Test if a type has a GC head */</i></td></tr>
+<tr><th id="238">238</th><td><u>#define <dfn class="macro" id="_M/PyType_IS_GC" data-ref="_M/PyType_IS_GC">PyType_IS_GC</dfn>(t) PyType_HasFeature((t), Py_TPFLAGS_HAVE_GC)</u></td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td><i>/* Test if an object has a GC head */</i></td></tr>
+<tr><th id="241">241</th><td><u>#define <dfn class="macro" id="_M/PyObject_IS_GC" data-ref="_M/PyObject_IS_GC">PyObject_IS_GC</dfn>(o) (PyType_IS_GC(Py_TYPE(o)) &amp;&amp; \</u></td></tr>
+<tr><th id="242">242</th><td><u>    (Py_TYPE(o)-&gt;tp_is_gc == NULL || Py_TYPE(o)-&gt;tp_is_gc(o)))</u></td></tr>
+<tr><th id="243">243</th><td></td></tr>
+<tr><th id="244">244</th><td><a class="macro" href="pyport.h.html#793" title="PyVarObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</a> *) <dfn class="decl" id="_PyObject_GC_Resize" title='_PyObject_GC_Resize' data-ref="_PyObject_GC_Resize">_PyObject_GC_Resize</dfn>(<a class="typedef" href="object.h.html#PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="245">245</th><td><u>#define <dfn class="macro" id="_M/PyObject_GC_Resize" data-ref="_M/PyObject_GC_Resize">PyObject_GC_Resize</dfn>(type, op, n) \</u></td></tr>
+<tr><th id="246">246</th><td><u>                ( (type *) _PyObject_GC_Resize((PyVarObject *)(op), (n)) )</u></td></tr>
+<tr><th id="247">247</th><td></td></tr>
+<tr><th id="248">248</th><td><i>/* for source compatibility with 2.2 */</i></td></tr>
+<tr><th id="249">249</th><td><u>#define <dfn class="macro" id="_M/_PyObject_GC_Del" data-ref="_M/_PyObject_GC_Del">_PyObject_GC_Del</dfn> PyObject_GC_Del</u></td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td><i>/* GC information is stored BEFORE the object structure. */</i></td></tr>
+<tr><th id="252">252</th><td><b>typedef</b> <b>union</b> <dfn class="type def" id="_gc_head" title='_gc_head' data-ref="_gc_head"><a class="type" href="#_gc_head" title='_gc_head' data-ref="_gc_head">_gc_head</a></dfn> {</td></tr>
+<tr><th id="253">253</th><td>    <b>struct</b> {</td></tr>
+<tr><th id="254">254</th><td>        <b>union</b> <a class="type" href="#_gc_head" title='_gc_head' data-ref="_gc_head">_gc_head</a> *<dfn class="decl" id="_gc_head::{anonymous}::gc_next" title='_gc_head::&lt;anonymous struct&gt;::gc_next' data-ref="_gc_head::{anonymous}::gc_next">gc_next</dfn>;</td></tr>
+<tr><th id="255">255</th><td>        <b>union</b> <a class="type" href="#_gc_head" title='_gc_head' data-ref="_gc_head">_gc_head</a> *<dfn class="decl" id="_gc_head::{anonymous}::gc_prev" title='_gc_head::&lt;anonymous struct&gt;::gc_prev' data-ref="_gc_head::{anonymous}::gc_prev">gc_prev</dfn>;</td></tr>
+<tr><th id="256">256</th><td>        <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="_gc_head::{anonymous}::gc_refs" title='_gc_head::&lt;anonymous struct&gt;::gc_refs' data-ref="_gc_head::{anonymous}::gc_refs">gc_refs</dfn>;</td></tr>
+<tr><th id="257">257</th><td>    } <dfn class="decl" id="_gc_head::gc" title='_gc_head::gc' data-ref="_gc_head::gc">gc</dfn>;</td></tr>
+<tr><th id="258">258</th><td>    <em>long</em> <em>double</em> <dfn class="decl" id="_gc_head::dummy" title='_gc_head::dummy' data-ref="_gc_head::dummy">dummy</dfn>;  <i>/* force worst-case alignment */</i></td></tr>
+<tr><th id="259">259</th><td>} <dfn class="typedef" id="PyGC_Head" title='PyGC_Head' data-type='union _gc_head' data-ref="PyGC_Head">PyGC_Head</dfn>;</td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td><b>extern</b> <a class="typedef" href="#PyGC_Head" title='PyGC_Head' data-type='union _gc_head' data-ref="PyGC_Head">PyGC_Head</a> *<dfn class="decl" id="_PyGC_generation0" title='_PyGC_generation0' data-ref="_PyGC_generation0">_PyGC_generation0</dfn>;</td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td><u>#define <dfn class="macro" id="_M/_Py_AS_GC" data-ref="_M/_Py_AS_GC">_Py_AS_GC</dfn>(o) ((PyGC_Head *)(o)-1)</u></td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td><u>#define <dfn class="macro" id="_M/_PyGC_REFS_UNTRACKED" data-ref="_M/_PyGC_REFS_UNTRACKED">_PyGC_REFS_UNTRACKED</dfn>                    (-2)</u></td></tr>
+<tr><th id="266">266</th><td><u>#define <dfn class="macro" id="_M/_PyGC_REFS_REACHABLE" data-ref="_M/_PyGC_REFS_REACHABLE">_PyGC_REFS_REACHABLE</dfn>                    (-3)</u></td></tr>
+<tr><th id="267">267</th><td><u>#define <dfn class="macro" id="_M/_PyGC_REFS_TENTATIVELY_UNREACHABLE" data-ref="_M/_PyGC_REFS_TENTATIVELY_UNREACHABLE">_PyGC_REFS_TENTATIVELY_UNREACHABLE</dfn>      (-4)</u></td></tr>
+<tr><th id="268">268</th><td></td></tr>
+<tr><th id="269">269</th><td><i>/* Tell the GC to track this object.  NB: While the object is tracked the</i></td></tr>
+<tr><th id="270">270</th><td><i> * collector it must be safe to call the ob_traverse method. */</i></td></tr>
+<tr><th id="271">271</th><td><u>#define <dfn class="macro" id="_M/_PyObject_GC_TRACK" data-ref="_M/_PyObject_GC_TRACK">_PyObject_GC_TRACK</dfn>(o) do { \</u></td></tr>
+<tr><th id="272">272</th><td><u>    PyGC_Head *g = _Py_AS_GC(o); \</u></td></tr>
+<tr><th id="273">273</th><td><u>    if (g-&gt;gc.gc_refs != _PyGC_REFS_UNTRACKED) \</u></td></tr>
+<tr><th id="274">274</th><td><u>        Py_FatalError("GC object already tracked"); \</u></td></tr>
+<tr><th id="275">275</th><td><u>    g-&gt;gc.gc_refs = _PyGC_REFS_REACHABLE; \</u></td></tr>
+<tr><th id="276">276</th><td><u>    g-&gt;gc.gc_next = _PyGC_generation0; \</u></td></tr>
+<tr><th id="277">277</th><td><u>    g-&gt;gc.gc_prev = _PyGC_generation0-&gt;gc.gc_prev; \</u></td></tr>
+<tr><th id="278">278</th><td><u>    g-&gt;gc.gc_prev-&gt;gc.gc_next = g; \</u></td></tr>
+<tr><th id="279">279</th><td><u>    _PyGC_generation0-&gt;gc.gc_prev = g; \</u></td></tr>
+<tr><th id="280">280</th><td><u>    } while (0);</u></td></tr>
+<tr><th id="281">281</th><td></td></tr>
+<tr><th id="282">282</th><td><i>/* Tell the GC to stop tracking this object.</i></td></tr>
+<tr><th id="283">283</th><td><i> * gc_next doesn't need to be set to NULL, but doing so is a good</i></td></tr>
+<tr><th id="284">284</th><td><i> * way to provoke memory errors if calling code is confused.</i></td></tr>
+<tr><th id="285">285</th><td><i> */</i></td></tr>
+<tr><th id="286">286</th><td><u>#define <dfn class="macro" id="_M/_PyObject_GC_UNTRACK" data-ref="_M/_PyObject_GC_UNTRACK">_PyObject_GC_UNTRACK</dfn>(o) do { \</u></td></tr>
+<tr><th id="287">287</th><td><u>    PyGC_Head *g = _Py_AS_GC(o); \</u></td></tr>
+<tr><th id="288">288</th><td><u>    assert(g-&gt;gc.gc_refs != _PyGC_REFS_UNTRACKED); \</u></td></tr>
+<tr><th id="289">289</th><td><u>    g-&gt;gc.gc_refs = _PyGC_REFS_UNTRACKED; \</u></td></tr>
+<tr><th id="290">290</th><td><u>    g-&gt;gc.gc_prev-&gt;gc.gc_next = g-&gt;gc.gc_next; \</u></td></tr>
+<tr><th id="291">291</th><td><u>    g-&gt;gc.gc_next-&gt;gc.gc_prev = g-&gt;gc.gc_prev; \</u></td></tr>
+<tr><th id="292">292</th><td><u>    g-&gt;gc.gc_next = NULL; \</u></td></tr>
+<tr><th id="293">293</th><td><u>    } while (0);</u></td></tr>
+<tr><th id="294">294</th><td></td></tr>
+<tr><th id="295">295</th><td><i>/* True if the object is currently tracked by the GC. */</i></td></tr>
+<tr><th id="296">296</th><td><u>#define <dfn class="macro" id="_M/_PyObject_GC_IS_TRACKED" data-ref="_M/_PyObject_GC_IS_TRACKED">_PyObject_GC_IS_TRACKED</dfn>(o) \</u></td></tr>
+<tr><th id="297">297</th><td><u>    ((_Py_AS_GC(o))-&gt;gc.gc_refs != _PyGC_REFS_UNTRACKED)</u></td></tr>
+<tr><th id="298">298</th><td></td></tr>
+<tr><th id="299">299</th><td><i>/* True if the object may be tracked by the GC in the future, or already is.</i></td></tr>
+<tr><th id="300">300</th><td><i>   This can be useful to implement some optimizations. */</i></td></tr>
+<tr><th id="301">301</th><td><u>#define <dfn class="macro" id="_M/_PyObject_GC_MAY_BE_TRACKED" data-ref="_M/_PyObject_GC_MAY_BE_TRACKED">_PyObject_GC_MAY_BE_TRACKED</dfn>(obj) \</u></td></tr>
+<tr><th id="302">302</th><td><u>    (PyObject_IS_GC(obj) &amp;&amp; \</u></td></tr>
+<tr><th id="303">303</th><td><u>        (!PyTuple_CheckExact(obj) || _PyObject_GC_IS_TRACKED(obj)))</u></td></tr>
+<tr><th id="304">304</th><td></td></tr>
+<tr><th id="305">305</th><td></td></tr>
+<tr><th id="306">306</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_GC_Malloc" title='_PyObject_GC_Malloc' data-ref="_PyObject_GC_Malloc">_PyObject_GC_Malloc</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>);</td></tr>
+<tr><th id="307">307</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_GC_New" title='_PyObject_GC_New' data-ref="_PyObject_GC_New">_PyObject_GC_New</dfn>(<a class="typedef" href="object.h.html#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *);</td></tr>
+<tr><th id="308">308</th><td><a class="macro" href="pyport.h.html#793" title="PyVarObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="object.h.html#PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</a> *) <dfn class="decl" id="_PyObject_GC_NewVar" title='_PyObject_GC_NewVar' data-ref="_PyObject_GC_NewVar">_PyObject_GC_NewVar</dfn>(<a class="typedef" href="object.h.html#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="309">309</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyObject_GC_Track" title='PyObject_GC_Track' data-ref="PyObject_GC_Track">PyObject_GC_Track</dfn>(<em>void</em> *);</td></tr>
+<tr><th id="310">310</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyObject_GC_UnTrack" title='PyObject_GC_UnTrack' data-ref="PyObject_GC_UnTrack">PyObject_GC_UnTrack</dfn>(<em>void</em> *);</td></tr>
+<tr><th id="311">311</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyObject_GC_Del" title='PyObject_GC_Del' data-ref="PyObject_GC_Del">PyObject_GC_Del</dfn>(<em>void</em> *);</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td><u>#define <dfn class="macro" id="_M/PyObject_GC_New" data-ref="_M/PyObject_GC_New">PyObject_GC_New</dfn>(type, typeobj) \</u></td></tr>
+<tr><th id="314">314</th><td><u>                ( (type *) _PyObject_GC_New(typeobj) )</u></td></tr>
+<tr><th id="315">315</th><td><u>#define <dfn class="macro" id="_M/PyObject_GC_NewVar" data-ref="_M/PyObject_GC_NewVar">PyObject_GC_NewVar</dfn>(type, typeobj, n) \</u></td></tr>
+<tr><th id="316">316</th><td><u>                ( (type *) _PyObject_GC_NewVar((typeobj), (n)) )</u></td></tr>
+<tr><th id="317">317</th><td></td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td><i>/* Utility macro to help write tp_traverse functions.</i></td></tr>
+<tr><th id="320">320</th><td><i> * To use this macro, the tp_traverse function must name its arguments</i></td></tr>
+<tr><th id="321">321</th><td><i> * "visit" and "arg".  This is intended to keep tp_traverse functions</i></td></tr>
+<tr><th id="322">322</th><td><i> * looking as much alike as possible.</i></td></tr>
+<tr><th id="323">323</th><td><i> */</i></td></tr>
+<tr><th id="324">324</th><td><u>#define <dfn class="macro" id="_M/Py_VISIT" data-ref="_M/Py_VISIT">Py_VISIT</dfn>(op)                                                    \</u></td></tr>
+<tr><th id="325">325</th><td><u>    do {                                                                \</u></td></tr>
+<tr><th id="326">326</th><td><u>        if (op) {                                                       \</u></td></tr>
+<tr><th id="327">327</th><td><u>            int vret = visit((PyObject *)(op), arg);                    \</u></td></tr>
+<tr><th id="328">328</th><td><u>            if (vret)                                                   \</u></td></tr>
+<tr><th id="329">329</th><td><u>                return vret;                                            \</u></td></tr>
+<tr><th id="330">330</th><td><u>        }                                                               \</u></td></tr>
+<tr><th id="331">331</th><td><u>    } while (0)</u></td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td><i>/* This is here for the sake of backwards compatibility.  Extensions that</i></td></tr>
+<tr><th id="334">334</th><td><i> * use the old GC API will still compile but the objects will not be</i></td></tr>
+<tr><th id="335">335</th><td><i> * tracked by the GC. */</i></td></tr>
+<tr><th id="336">336</th><td><u>#define <dfn class="macro" id="_M/PyGC_HEAD_SIZE" data-ref="_M/PyGC_HEAD_SIZE">PyGC_HEAD_SIZE</dfn> 0</u></td></tr>
+<tr><th id="337">337</th><td><u>#define <dfn class="macro" id="_M/PyObject_GC_Init" data-ref="_M/PyObject_GC_Init">PyObject_GC_Init</dfn>(op)</u></td></tr>
+<tr><th id="338">338</th><td><u>#define <dfn class="macro" id="_M/PyObject_GC_Fini" data-ref="_M/PyObject_GC_Fini">PyObject_GC_Fini</dfn>(op)</u></td></tr>
+<tr><th id="339">339</th><td><u>#define <dfn class="macro" id="_M/PyObject_AS_GC" data-ref="_M/PyObject_AS_GC">PyObject_AS_GC</dfn>(op) (op)</u></td></tr>
+<tr><th id="340">340</th><td><u>#define <dfn class="macro" id="_M/PyObject_FROM_GC" data-ref="_M/PyObject_FROM_GC">PyObject_FROM_GC</dfn>(op) (op)</u></td></tr>
+<tr><th id="341">341</th><td></td></tr>
+<tr><th id="342">342</th><td></td></tr>
+<tr><th id="343">343</th><td><i>/* Test if a type supports weak references */</i></td></tr>
+<tr><th id="344">344</th><td><u>#define <dfn class="macro" id="_M/PyType_SUPPORTS_WEAKREFS" data-ref="_M/PyType_SUPPORTS_WEAKREFS">PyType_SUPPORTS_WEAKREFS</dfn>(t) \</u></td></tr>
+<tr><th id="345">345</th><td><u>    (PyType_HasFeature((t), Py_TPFLAGS_HAVE_WEAKREFS) \</u></td></tr>
+<tr><th id="346">346</th><td><u>     &amp;&amp; ((t)-&gt;tp_weaklistoffset &gt; 0))</u></td></tr>
+<tr><th id="347">347</th><td></td></tr>
+<tr><th id="348">348</th><td><u>#define <dfn class="macro" id="_M/PyObject_GET_WEAKREFS_LISTPTR" data-ref="_M/PyObject_GET_WEAKREFS_LISTPTR">PyObject_GET_WEAKREFS_LISTPTR</dfn>(o) \</u></td></tr>
+<tr><th id="349">349</th><td><u>    ((PyObject **) (((char *) (o)) + Py_TYPE(o)-&gt;tp_weaklistoffset))</u></td></tr>
+<tr><th id="350">350</th><td></td></tr>
+<tr><th id="351">351</th><td><u>#<span data-ppcond="351">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="352">352</th><td>}</td></tr>
+<tr><th id="353">353</th><td><u>#<span data-ppcond="351">endif</span></u></td></tr>
+<tr><th id="354">354</th><td><u>#<span data-ppcond="5">endif</span> /* !Py_OBJIMPL_H */</u></td></tr>
+<tr><th id="355">355</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../opencv/modules/python/src2/cv2.cpp.html'>opencv/modules/python/src2/cv2.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

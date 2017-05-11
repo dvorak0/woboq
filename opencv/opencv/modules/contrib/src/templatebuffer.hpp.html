@@ -1,0 +1,571 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>templatebuffer.hpp source code [opencv/modules/contrib/src/templatebuffer.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Parallel_clipBufferValues,cv::TemplateBuffer "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/contrib/src/templatebuffer.hpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>contrib</a>/<a href='./'>src</a>/<a href='templatebuffer.hpp.html'>templatebuffer.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*#******************************************************************************</i></td></tr>
+<tr><th id="2">2</th><td><i>** IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="3">3</th><td><i>**</i></td></tr>
+<tr><th id="4">4</th><td><i>** By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="5">5</th><td><i>** If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="6">6</th><td><i>** copy or use the software.</i></td></tr>
+<tr><th id="7">7</th><td><i>**</i></td></tr>
+<tr><th id="8">8</th><td><i>**</i></td></tr>
+<tr><th id="9">9</th><td><i>** HVStools : interfaces allowing OpenCV users to integrate Human Vision System models. Presented models originate from Jeanny Herault's original research and have been reused and adapted by the author&amp;collaborators for computed vision applications since his thesis with Alice Caplier at Gipsa-Lab.</i></td></tr>
+<tr><th id="10">10</th><td><i>** Use: extract still images &amp; image sequences features, from contours details to motion spatio-temporal features, etc. for high level visual scene analysis. Also contribute to image enhancement/compression such as tone mapping.</i></td></tr>
+<tr><th id="11">11</th><td><i>**</i></td></tr>
+<tr><th id="12">12</th><td><i>** Maintainers : Listic lab (code author current affiliation &amp; applications) and Gipsa Lab (original research origins &amp; applications)</i></td></tr>
+<tr><th id="13">13</th><td><i>**</i></td></tr>
+<tr><th id="14">14</th><td><i>**  Creation - enhancement process 2007-2011</i></td></tr>
+<tr><th id="15">15</th><td><i>**      Author: Alexandre Benoit (benoit.alexandre.vision@gmail.com), LISTIC lab, Annecy le vieux, France</i></td></tr>
+<tr><th id="16">16</th><td><i>**</i></td></tr>
+<tr><th id="17">17</th><td><i>** Theses algorithm have been developped by Alexandre BENOIT since his thesis with Alice Caplier at Gipsa-Lab (www.gipsa-lab.inpg.fr) and the research he pursues at LISTIC Lab (www.listic.univ-savoie.fr).</i></td></tr>
+<tr><th id="18">18</th><td><i>** Refer to the following research paper for more information:</i></td></tr>
+<tr><th id="19">19</th><td><i>** Benoit A., Caplier A., Durette B., Herault, J., "USING HUMAN VISUAL SYSTEM MODELING FOR BIO-INSPIRED LOW LEVEL IMAGE PROCESSING", Elsevier, Computer Vision and Image Understanding 114 (2010), pp. 758-773, DOI: <a href="http://dx.doi.org/10.1016/j.cviu.2010.01.011">http://dx.doi.org/10.1016/j.cviu.2010.01.011</a></i></td></tr>
+<tr><th id="20">20</th><td><i>** This work have been carried out thanks to Jeanny Herault who's research and great discussions are the basis of all this work, please take a look at his book:</i></td></tr>
+<tr><th id="21">21</th><td><i>** Vision: Images, Signals and Neural Networks: Models of Neural Processing in Visual Perception (Progress in Neural Processing),By: Jeanny Herault, ISBN: 9814273686. WAPI (Tower ID): 113266891.</i></td></tr>
+<tr><th id="22">22</th><td><i>**</i></td></tr>
+<tr><th id="23">23</th><td><i>** The retina filter includes the research contributions of phd/research collegues from which code has been redrawn by the author :</i></td></tr>
+<tr><th id="24">24</th><td><i>** _take a look at the retinacolor.hpp module to discover Brice Chaix de Lavarene color mosaicing/demosaicing and the reference paper:</i></td></tr>
+<tr><th id="25">25</th><td><i>** ====&gt; B. Chaix de Lavarene, D. Alleysson, B. Durette, J. Herault (2007). "Efficient demosaicing through recursive filtering", IEEE International Conference on Image Processing ICIP 2007</i></td></tr>
+<tr><th id="26">26</th><td><i>** _take a look at imagelogpolprojection.hpp to discover retina spatial log sampling which originates from Barthelemy Durette phd with Jeanny Herault. A Retina / V1 cortex projection is also proposed and originates from Jeanny's discussions.</i></td></tr>
+<tr><th id="27">27</th><td><i>** ====&gt; more informations in the above cited Jeanny Heraults's book.</i></td></tr>
+<tr><th id="28">28</th><td><i>**</i></td></tr>
+<tr><th id="29">29</th><td><i>**                          License Agreement</i></td></tr>
+<tr><th id="30">30</th><td><i>**               For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="31">31</th><td><i>**</i></td></tr>
+<tr><th id="32">32</th><td><i>** Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="33">33</th><td><i>** Copyright (C) 2008-2011, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="34">34</th><td><i>**</i></td></tr>
+<tr><th id="35">35</th><td><i>**               For Human Visual System tools (hvstools)</i></td></tr>
+<tr><th id="36">36</th><td><i>** Copyright (C) 2007-2011, LISTIC Lab, Annecy le Vieux and GIPSA Lab, Grenoble, France, all rights reserved.</i></td></tr>
+<tr><th id="37">37</th><td><i>**</i></td></tr>
+<tr><th id="38">38</th><td><i>** Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="39">39</th><td><i>**</i></td></tr>
+<tr><th id="40">40</th><td><i>** Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="41">41</th><td><i>** are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="42">42</th><td><i>**</i></td></tr>
+<tr><th id="43">43</th><td><i>** * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="44">44</th><td><i>**    this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="45">45</th><td><i>**</i></td></tr>
+<tr><th id="46">46</th><td><i>** * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="47">47</th><td><i>**    this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="48">48</th><td><i>**    and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="49">49</th><td><i>**</i></td></tr>
+<tr><th id="50">50</th><td><i>** * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="51">51</th><td><i>**    derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="52">52</th><td><i>**</i></td></tr>
+<tr><th id="53">53</th><td><i>** This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="54">54</th><td><i>** any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="55">55</th><td><i>** warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="56">56</th><td><i>** In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="57">57</th><td><i>** indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="58">58</th><td><i>** (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="59">59</th><td><i>** loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="60">60</th><td><i>** and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="61">61</th><td><i>** or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="62">62</th><td><i>** the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="63">63</th><td><i>*******************************************************************************/</i></td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td><u>#<span data-ppcond="65">ifndef</span> <span class="macro" data-ref="_M/__TEMPLATEBUFFER_HPP__">__TEMPLATEBUFFER_HPP__</span></u></td></tr>
+<tr><th id="66">66</th><td><u>#define <dfn class="macro" id="_M/__TEMPLATEBUFFER_HPP__" data-ref="_M/__TEMPLATEBUFFER_HPP__">__TEMPLATEBUFFER_HPP__</dfn></u></td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><u>#include <a href="../../../../include/c++/4.8/valarray.html">&lt;valarray&gt;</a></u></td></tr>
+<tr><th id="69">69</th><td><u>#include <a href="../../../../include/c++/4.8/cstdlib.html">&lt;cstdlib&gt;</a></u></td></tr>
+<tr><th id="70">70</th><td><u>#include <a href="../../../../include/c++/4.8/iostream.html">&lt;iostream&gt;</a></u></td></tr>
+<tr><th id="71">71</th><td><u>#include <a href="../../../../include/c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><i>//// If a parallelization method is available then, you should define MAKE_PARALLEL, in the other case, the classical serial code will be used</i></td></tr>
+<tr><th id="75">75</th><td><u>#define <dfn class="macro" id="_M/MAKE_PARALLEL" data-ref="_M/MAKE_PARALLEL">MAKE_PARALLEL</dfn></u></td></tr>
+<tr><th id="76">76</th><td><i>// ==&gt; then include required includes</i></td></tr>
+<tr><th id="77">77</th><td><u>#<span data-ppcond="77">ifdef</span> <a class="macro" href="#75" data-ref="_M/MAKE_PARALLEL">MAKE_PARALLEL</a></u></td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td><i>// ==&gt; declare usefull generic tools</i></td></tr>
+<tr><th id="80">80</th><td><b>template</b> &lt;<b>class</b> type&gt;</td></tr>
+<tr><th id="81">81</th><td><b>class</b> <dfn class="type def" id="Parallel_clipBufferValues" title='Parallel_clipBufferValues' data-ref="Parallel_clipBufferValues">Parallel_clipBufferValues</dfn>: <b>public</b> <span class="namespace">cv::</span><a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::ParallelLoopBody" title='cv::ParallelLoopBody' data-ref="cv::ParallelLoopBody">ParallelLoopBody</a></td></tr>
+<tr><th id="82">82</th><td>{</td></tr>
+<tr><th id="83">83</th><td><b>private</b>:</td></tr>
+<tr><th id="84">84</th><td>    type *<dfn class="decl" id="Parallel_clipBufferValues::bufferToClip" title='Parallel_clipBufferValues::bufferToClip' data-ref="Parallel_clipBufferValues::bufferToClip">bufferToClip</dfn>;</td></tr>
+<tr><th id="85">85</th><td>    type <dfn class="decl" id="Parallel_clipBufferValues::minValue" title='Parallel_clipBufferValues::minValue' data-ref="Parallel_clipBufferValues::minValue">minValue</dfn>, <dfn class="decl" id="Parallel_clipBufferValues::maxValue" title='Parallel_clipBufferValues::maxValue' data-ref="Parallel_clipBufferValues::maxValue">maxValue</dfn>;</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td><b>public</b>:</td></tr>
+<tr><th id="88">88</th><td>    <dfn class="decl def" id="_ZN25Parallel_clipBufferValuesC1EPT_S0_S0_" title='Parallel_clipBufferValues::Parallel_clipBufferValues&lt;type&gt;' data-ref="_ZN25Parallel_clipBufferValuesC1EPT_S0_S0_">Parallel_clipBufferValues</dfn>(type* <dfn class="local col1 decl" id="1bufferToProcess" title='bufferToProcess' data-type='type *' data-ref="1bufferToProcess">bufferToProcess</dfn>, <em>const</em> type <dfn class="local col2 decl" id="2min" title='min' data-type='const type' data-ref="2min">min</dfn>, <em>const</em> type <dfn class="local col3 decl" id="3max" title='max' data-type='const type' data-ref="3max">max</dfn>)</td></tr>
+<tr><th id="89">89</th><td>        : <a class="member" href="#Parallel_clipBufferValues::bufferToClip" title='Parallel_clipBufferValues::bufferToClip' data-ref="Parallel_clipBufferValues::bufferToClip">bufferToClip</a>(<a class="local col1 ref" href="#1bufferToProcess" title='bufferToProcess' data-ref="1bufferToProcess">bufferToProcess</a>), <a class="member" href="#Parallel_clipBufferValues::minValue" title='Parallel_clipBufferValues::minValue' data-ref="Parallel_clipBufferValues::minValue">minValue</a>(<a class="local col2 ref" href="#2min" title='min' data-ref="2min">min</a>), <a class="member" href="#Parallel_clipBufferValues::maxValue" title='Parallel_clipBufferValues::maxValue' data-ref="Parallel_clipBufferValues::maxValue">maxValue</a>(<a class="local col3 ref" href="#3max" title='max' data-ref="3max">max</a>){}</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZNK25Parallel_clipBufferValuesclERKN2cv5RangeE" title='Parallel_clipBufferValues::operator()' data-ref="_ZNK25Parallel_clipBufferValuesclERKN2cv5RangeE"><b>operator</b>()</dfn>( <em>const</em> <span class="namespace">cv::</span><a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Range" title='cv::Range' data-ref="cv::Range">Range</a> &amp;<dfn class="local col4 decl" id="4r" title='r' data-type='const cv::Range &amp;' data-ref="4r">r</dfn> ) <em>const</em> {</td></tr>
+<tr><th id="92">92</th><td>        type *<dfn class="local col5 decl" id="5inputOutputBufferPTR" title='inputOutputBufferPTR' data-type='type *' data-ref="5inputOutputBufferPTR">inputOutputBufferPTR</dfn>=<a class="member" href="#Parallel_clipBufferValues::bufferToClip" title='Parallel_clipBufferValues::bufferToClip' data-ref="Parallel_clipBufferValues::bufferToClip">bufferToClip</a>+<a class="local col4 ref" href="#4r" title='r' data-ref="4r">r</a>.<a class="ref" href="../../core/include/opencv2/core/core.hpp.html#cv::Range::start" title='cv::Range::start' data-ref="cv::Range::start">start</a>;</td></tr>
+<tr><th id="93">93</th><td>        <b>for</b> (<em>int</em> <dfn class="local col6 decl" id="6jf" title='jf' data-type='int' data-ref="6jf">jf</dfn> = <a class="local col4 ref" href="#4r" title='r' data-ref="4r">r</a>.<a class="ref" href="../../core/include/opencv2/core/core.hpp.html#cv::Range::start" title='cv::Range::start' data-ref="cv::Range::start">start</a>; <a class="local col6 ref" href="#6jf" title='jf' data-ref="6jf">jf</a> != <a class="local col4 ref" href="#4r" title='r' data-ref="4r">r</a>.<a class="ref" href="../../core/include/opencv2/core/core.hpp.html#cv::Range::end" title='cv::Range::end' data-ref="cv::Range::end">end</a>; ++<a class="local col6 ref" href="#6jf" title='jf' data-ref="6jf">jf</a>, ++<a class="local col5 ref" href="#5inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="5inputOutputBufferPTR">inputOutputBufferPTR</a>)</td></tr>
+<tr><th id="94">94</th><td>        {</td></tr>
+<tr><th id="95">95</th><td>            <b>if</b> (*<a class="local col5 ref" href="#5inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="5inputOutputBufferPTR">inputOutputBufferPTR</a>&gt;<a class="member" href="#Parallel_clipBufferValues::maxValue" title='Parallel_clipBufferValues::maxValue' data-ref="Parallel_clipBufferValues::maxValue">maxValue</a>)</td></tr>
+<tr><th id="96">96</th><td>                *<a class="local col5 ref" href="#5inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="5inputOutputBufferPTR">inputOutputBufferPTR</a>=<a class="member" href="#Parallel_clipBufferValues::maxValue" title='Parallel_clipBufferValues::maxValue' data-ref="Parallel_clipBufferValues::maxValue">maxValue</a>;</td></tr>
+<tr><th id="97">97</th><td>            <b>else</b> <b>if</b> (*<a class="local col5 ref" href="#5inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="5inputOutputBufferPTR">inputOutputBufferPTR</a>&lt;<a class="member" href="#Parallel_clipBufferValues::minValue" title='Parallel_clipBufferValues::minValue' data-ref="Parallel_clipBufferValues::minValue">minValue</a>)</td></tr>
+<tr><th id="98">98</th><td>                *<a class="local col5 ref" href="#5inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="5inputOutputBufferPTR">inputOutputBufferPTR</a>=<a class="member" href="#Parallel_clipBufferValues::minValue" title='Parallel_clipBufferValues::minValue' data-ref="Parallel_clipBufferValues::minValue">minValue</a>;</td></tr>
+<tr><th id="99">99</th><td>        }</td></tr>
+<tr><th id="100">100</th><td>    }</td></tr>
+<tr><th id="101">101</th><td>};</td></tr>
+<tr><th id="102">102</th><td><u>#<span data-ppcond="77">endif</span></u></td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td><i>//#define __TEMPLATEBUFFERDEBUG //define TEMPLATEBUFFERDEBUG in order to display debug information</i></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="107">107</th><td>{</td></tr>
+<tr><th id="108">108</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="109">109</th><td><i class="doc">    * <span class="command">@class</span> <span class="verb">TemplateBuffer</span></i></td></tr>
+<tr><th id="110">110</th><td><i class="doc">    * <span class="command">@brief</span> this class is a simple template memory buffer which contains basic functions to get information on or normalize the buffer content</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">    * note that thanks to the parent STL template class "valarray", it is possible to perform easily operations on the full array such as addition, product etc.</i></td></tr>
+<tr><th id="112">112</th><td><i class="doc">    * <span class="command">@author</span> Alexandre BENOIT (benoit.alexandre.visio<span class="command">n@gmail</span>.com), helped by Gelu IONESCU (gelu.ionescu<span class="command">@li</span>s.inpg.fr)</i></td></tr>
+<tr><th id="113">113</th><td><i class="doc">    * creation date: september 2007</i></td></tr>
+<tr><th id="114">114</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="115">115</th><td>    <b>template</b> &lt;<b>class</b> type&gt; <b>class</b> <dfn class="type def" id="cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</dfn> : <b>public</b> <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;</td></tr>
+<tr><th id="116">116</th><td>    {</td></tr>
+<tr><th id="117">117</th><td>    <b>public</b>:</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">        * constructor for monodimensional array</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">dim:</span> the size of the vector</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="123">123</th><td>        <dfn class="decl def" id="_ZN2cv14TemplateBufferC1Em" title='cv::TemplateBuffer::TemplateBuffer&lt;type&gt;' data-ref="_ZN2cv14TemplateBufferC1Em">TemplateBuffer</dfn>(<em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="7dim" title='dim' data-type='const size_t' data-ref="7dim">dim</dfn>=<var>0</var>)</td></tr>
+<tr><th id="124">124</th><td>            : <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;((type)<var>0</var>, <a class="local col7 ref" href="#7dim" title='dim' data-ref="7dim">dim</a>)</td></tr>
+<tr><th id="125">125</th><td>        {</td></tr>
+<tr><th id="126">126</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBrows" title='cv::TemplateBuffer::_NBrows' data-ref="cv::TemplateBuffer::_NBrows">_NBrows</a>=<var>1</var>;</td></tr>
+<tr><th id="127">127</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBcolumns" title='cv::TemplateBuffer::_NBcolumns' data-ref="cv::TemplateBuffer::_NBcolumns">_NBcolumns</a>=<a class="local col7 ref" href="#7dim" title='dim' data-ref="7dim">dim</a>;</td></tr>
+<tr><th id="128">128</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBdepths" title='cv::TemplateBuffer::_NBdepths' data-ref="cv::TemplateBuffer::_NBdepths">_NBdepths</a>=<var>1</var>;</td></tr>
+<tr><th id="129">129</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>=<a class="local col7 ref" href="#7dim" title='dim' data-ref="7dim">dim</a>;</td></tr>
+<tr><th id="130">130</th><td>            <a class="member" href="#cv::TemplateBuffer::_doubleNBpixels" title='cv::TemplateBuffer::_doubleNBpixels' data-ref="cv::TemplateBuffer::_doubleNBpixels">_doubleNBpixels</a>=<var>2</var>*<a class="local col7 ref" href="#7dim" title='dim' data-ref="7dim">dim</a>;</td></tr>
+<tr><th id="131">131</th><td>        }</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">        * constructor by copy for monodimensional array</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">pVal:</span> the pointer to a buffer to copy</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">dim:</span> the size of the vector</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="138">138</th><td>        <dfn class="decl def" id="_ZN2cv14TemplateBufferC1EPKT_m" title='cv::TemplateBuffer::TemplateBuffer&lt;type&gt;' data-ref="_ZN2cv14TemplateBufferC1EPKT_m">TemplateBuffer</dfn>(<em>const</em> type* <dfn class="local col8 decl" id="8pVal" title='pVal' data-type='const type *' data-ref="8pVal">pVal</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="9dim" title='dim' data-type='const size_t' data-ref="9dim">dim</dfn>)</td></tr>
+<tr><th id="139">139</th><td>            : <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;(<a class="local col8 ref" href="#8pVal" title='pVal' data-ref="8pVal">pVal</a>, <a class="local col9 ref" href="#9dim" title='dim' data-ref="9dim">dim</a>)</td></tr>
+<tr><th id="140">140</th><td>        {</td></tr>
+<tr><th id="141">141</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBrows" title='cv::TemplateBuffer::_NBrows' data-ref="cv::TemplateBuffer::_NBrows">_NBrows</a>=<var>1</var>;</td></tr>
+<tr><th id="142">142</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBcolumns" title='cv::TemplateBuffer::_NBcolumns' data-ref="cv::TemplateBuffer::_NBcolumns">_NBcolumns</a>=<a class="local col9 ref" href="#9dim" title='dim' data-ref="9dim">dim</a>;</td></tr>
+<tr><th id="143">143</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBdepths" title='cv::TemplateBuffer::_NBdepths' data-ref="cv::TemplateBuffer::_NBdepths">_NBdepths</a>=<var>1</var>;</td></tr>
+<tr><th id="144">144</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>=<a class="local col9 ref" href="#9dim" title='dim' data-ref="9dim">dim</a>;</td></tr>
+<tr><th id="145">145</th><td>            <a class="member" href="#cv::TemplateBuffer::_doubleNBpixels" title='cv::TemplateBuffer::_doubleNBpixels' data-ref="cv::TemplateBuffer::_doubleNBpixels">_doubleNBpixels</a>=<var>2</var>*<a class="local col9 ref" href="#9dim" title='dim' data-ref="9dim">dim</a>;</td></tr>
+<tr><th id="146">146</th><td>        }</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">        * constructor for bidimensional array</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">dimRows:</span> the size of the vector</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">dimColumns:</span> the size of the vector</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">depth:</span> the number of layers of the buffer in its third dimension (3 of color images, 1 for gray images.</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="154">154</th><td>        <dfn class="decl def" id="_ZN2cv14TemplateBufferC1Emmm" title='cv::TemplateBuffer::TemplateBuffer&lt;type&gt;' data-ref="_ZN2cv14TemplateBufferC1Emmm">TemplateBuffer</dfn>(<em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="10dimRows" title='dimRows' data-type='const size_t' data-ref="10dimRows">dimRows</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="11dimColumns" title='dimColumns' data-type='const size_t' data-ref="11dimColumns">dimColumns</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="12depth" title='depth' data-type='const size_t' data-ref="12depth">depth</dfn>=<var>1</var>)</td></tr>
+<tr><th id="155">155</th><td>            : <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;((type)<var>0</var>, <a class="local col0 ref" href="#10dimRows" title='dimRows' data-ref="10dimRows">dimRows</a>*<a class="local col1 ref" href="#11dimColumns" title='dimColumns' data-ref="11dimColumns">dimColumns</a>*<a class="local col2 ref" href="#12depth" title='depth' data-ref="12depth">depth</a>)</td></tr>
+<tr><th id="156">156</th><td>        {</td></tr>
+<tr><th id="157">157</th><td><u>#<span data-ppcond="157">ifdef</span> <span class="macro" data-ref="_M/TEMPLATEBUFFERDEBUG">TEMPLATEBUFFERDEBUG</span></u></td></tr>
+<tr><th id="158">158</th><td>            std::cout&lt;&lt;<q>"TemplateBuffer::TemplateBuffer: new buffer, size="</q>&lt;&lt;dimRows&lt;&lt;<q>", "</q>&lt;&lt;dimColumns&lt;&lt;<q>", "</q>&lt;&lt;depth&lt;&lt;<q>"valarraySize="</q>&lt;&lt;<b>this</b>-&gt;size()&lt;&lt;std::endl;</td></tr>
+<tr><th id="159">159</th><td><u>#<span data-ppcond="157">endif</span></u></td></tr>
+<tr><th id="160">160</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBrows" title='cv::TemplateBuffer::_NBrows' data-ref="cv::TemplateBuffer::_NBrows">_NBrows</a>=<a class="local col0 ref" href="#10dimRows" title='dimRows' data-ref="10dimRows">dimRows</a>;</td></tr>
+<tr><th id="161">161</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBcolumns" title='cv::TemplateBuffer::_NBcolumns' data-ref="cv::TemplateBuffer::_NBcolumns">_NBcolumns</a>=<a class="local col1 ref" href="#11dimColumns" title='dimColumns' data-ref="11dimColumns">dimColumns</a>;</td></tr>
+<tr><th id="162">162</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBdepths" title='cv::TemplateBuffer::_NBdepths' data-ref="cv::TemplateBuffer::_NBdepths">_NBdepths</a>=<a class="local col2 ref" href="#12depth" title='depth' data-ref="12depth">depth</a>;</td></tr>
+<tr><th id="163">163</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>=<a class="local col0 ref" href="#10dimRows" title='dimRows' data-ref="10dimRows">dimRows</a>*<a class="local col1 ref" href="#11dimColumns" title='dimColumns' data-ref="11dimColumns">dimColumns</a>;</td></tr>
+<tr><th id="164">164</th><td>            <a class="member" href="#cv::TemplateBuffer::_doubleNBpixels" title='cv::TemplateBuffer::_doubleNBpixels' data-ref="cv::TemplateBuffer::_doubleNBpixels">_doubleNBpixels</a>=<var>2</var>*<a class="local col0 ref" href="#10dimRows" title='dimRows' data-ref="10dimRows">dimRows</a>*<a class="local col1 ref" href="#11dimColumns" title='dimColumns' data-ref="11dimColumns">dimColumns</a>;</td></tr>
+<tr><th id="165">165</th><td>            <i>//_createTableIndex();</i></td></tr>
+<tr><th id="166">166</th><td><u>#<span data-ppcond="166">ifdef</span> <span class="macro" data-ref="_M/TEMPLATEBUFFERDEBUG">TEMPLATEBUFFERDEBUG</span></u></td></tr>
+<tr><th id="167">167</th><td>            std::cout&lt;&lt;<q>"TemplateBuffer::TemplateBuffer: construction successful"</q>&lt;&lt;std::endl;</td></tr>
+<tr><th id="168">168</th><td><u>#<span data-ppcond="166">endif</span></u></td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td>        }</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">        * copy constructor</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">toCopy</span></i></td></tr>
+<tr><th id="175">175</th><td><i class="doc">        * <span class="command">@return</span> thenconstructed instance</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc">        *emplateBuffer(const TemplateBuffer &amp;toCopy)</i></td></tr>
+<tr><th id="177">177</th><td><i class="doc">        :_NBrows(toCopy.getNBrows()),_NBcolumns(toCopy.getNBcolumns()),_NBdepths(toCopy.getNBdephs()), _NBpixels(toCopy.getNBpixels()), _doubleNBpixels(toCopy.getNBpixels()*2)</i></td></tr>
+<tr><th id="178">178</th><td><i class="doc">        //std::valarray&lt;type&gt;(toCopy)</i></td></tr>
+<tr><th id="179">179</th><td><i class="doc">        {</i></td></tr>
+<tr><th id="180">180</th><td><i class="doc">        memcpy(Buffer(), toCopy.Buffer(), this-&gt;size());</i></td></tr>
+<tr><th id="181">181</th><td><i class="doc">        }*/</i></td></tr>
+<tr><th id="182">182</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="183">183</th><td><i class="doc">        * destructor</i></td></tr>
+<tr><th id="184">184</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="185">185</th><td>        <b>virtual</b> <dfn class="virtual decl def" id="_ZN2cv14TemplateBufferD1Ev" title='cv::TemplateBuffer::~TemplateBuffer&lt;type&gt;' data-ref="_ZN2cv14TemplateBufferD1Ev">~</dfn>TemplateBuffer()</td></tr>
+<tr><th id="186">186</th><td>        {</td></tr>
+<tr><th id="187">187</th><td><u>#<span data-ppcond="187">ifdef</span> <span class="macro" data-ref="_M/TEMPLATEBUFFERDEBUG">TEMPLATEBUFFERDEBUG</span></u></td></tr>
+<tr><th id="188">188</th><td>            std::cout&lt;&lt;<q>"~TemplateBuffer"</q>&lt;&lt;std::endl;</td></tr>
+<tr><th id="189">189</th><td><u>#<span data-ppcond="187">endif</span></u></td></tr>
+<tr><th id="190">190</th><td>        }</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc">        * delete the buffer content (set zeros)</i></td></tr>
+<tr><th id="194">194</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="195">195</th><td>        <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer7setZeroEv" title='cv::TemplateBuffer::setZero' data-ref="_ZN2cv14TemplateBuffer7setZeroEv">setZero</dfn>(){<span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;::<b>operator</b>=(<var>0</var>);};<i>//memset(Buffer(), 0, sizeof(type)*_NBpixels);};</i></td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="198">198</th><td><i class="doc">        * <span class="command">@return</span> the numbers of rows (height) of the images used by the object</i></td></tr>
+<tr><th id="199">199</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="200">200</th><td>        <b>inline</b> <em>unsigned</em> <em>int</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer9getNBrowsEv" title='cv::TemplateBuffer::getNBrows' data-ref="_ZN2cv14TemplateBuffer9getNBrowsEv">getNBrows</dfn>(){<b>return</b> (<em>unsigned</em> <em>int</em>)<a class="member" href="#cv::TemplateBuffer::_NBrows" title='cv::TemplateBuffer::_NBrows' data-ref="cv::TemplateBuffer::_NBrows">_NBrows</a>;};</td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="203">203</th><td><i class="doc">        * <span class="command">@return</span> the numbers of columns (width) of the images used by the object</i></td></tr>
+<tr><th id="204">204</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="205">205</th><td>        <b>inline</b> <em>unsigned</em> <em>int</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer12getNBcolumnsEv" title='cv::TemplateBuffer::getNBcolumns' data-ref="_ZN2cv14TemplateBuffer12getNBcolumnsEv">getNBcolumns</dfn>(){<b>return</b> (<em>unsigned</em> <em>int</em>)<a class="member" href="#cv::TemplateBuffer::_NBcolumns" title='cv::TemplateBuffer::_NBcolumns' data-ref="cv::TemplateBuffer::_NBcolumns">_NBcolumns</a>;};</td></tr>
+<tr><th id="206">206</th><td></td></tr>
+<tr><th id="207">207</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="208">208</th><td><i class="doc">        * <span class="command">@return</span> the numbers of pixels (width*height) of the images used by the object</i></td></tr>
+<tr><th id="209">209</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="210">210</th><td>        <b>inline</b> <em>unsigned</em> <em>int</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer11getNBpixelsEv" title='cv::TemplateBuffer::getNBpixels' data-ref="_ZN2cv14TemplateBuffer11getNBpixelsEv">getNBpixels</dfn>(){<b>return</b> (<em>unsigned</em> <em>int</em>)<a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>;};</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="213">213</th><td><i class="doc">        * <span class="command">@return</span> the numbers of pixels (width*height) of the images used by the object</i></td></tr>
+<tr><th id="214">214</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="215">215</th><td>        <b>inline</b> <em>unsigned</em> <em>int</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer17getDoubleNBpixelsEv" title='cv::TemplateBuffer::getDoubleNBpixels' data-ref="_ZN2cv14TemplateBuffer17getDoubleNBpixelsEv">getDoubleNBpixels</dfn>(){<b>return</b> (<em>unsigned</em> <em>int</em>)<a class="member" href="#cv::TemplateBuffer::_doubleNBpixels" title='cv::TemplateBuffer::_doubleNBpixels' data-ref="cv::TemplateBuffer::_doubleNBpixels">_doubleNBpixels</a>;};</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="218">218</th><td><i class="doc">        * <span class="command">@return</span> the numbers of depths (3rd dimension: 1 for gray images, 3 for rgb images) of the images used by the object</i></td></tr>
+<tr><th id="219">219</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="220">220</th><td>        <b>inline</b> <em>unsigned</em> <em>int</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer12getDepthSizeEv" title='cv::TemplateBuffer::getDepthSize' data-ref="_ZN2cv14TemplateBuffer12getDepthSizeEv">getDepthSize</dfn>(){<b>return</b> (<em>unsigned</em> <em>int</em>)<a class="member" href="#cv::TemplateBuffer::_NBdepths" title='cv::TemplateBuffer::_NBdepths' data-ref="cv::TemplateBuffer::_NBdepths">_NBdepths</a>;};</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="223">223</th><td><i class="doc">        * resize the buffer and recompute table index etc.</i></td></tr>
+<tr><th id="224">224</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="225">225</th><td>        <em>void</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer12resizeBufferEmmm" title='cv::TemplateBuffer::resizeBuffer' data-ref="_ZN2cv14TemplateBuffer12resizeBufferEmmm">resizeBuffer</dfn>(<em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col3 decl" id="13dimRows" title='dimRows' data-type='const size_t' data-ref="13dimRows">dimRows</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="14dimColumns" title='dimColumns' data-type='const size_t' data-ref="14dimColumns">dimColumns</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="15depth" title='depth' data-type='const size_t' data-ref="15depth">depth</dfn>=<var>1</var>)</td></tr>
+<tr><th id="226">226</th><td>        {</td></tr>
+<tr><th id="227">227</th><td>            <b>this</b>-&gt;resize(<a class="local col3 ref" href="#13dimRows" title='dimRows' data-ref="13dimRows">dimRows</a>*<a class="local col4 ref" href="#14dimColumns" title='dimColumns' data-ref="14dimColumns">dimColumns</a>*<a class="local col5 ref" href="#15depth" title='depth' data-ref="15depth">depth</a>);</td></tr>
+<tr><th id="228">228</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBrows" title='cv::TemplateBuffer::_NBrows' data-ref="cv::TemplateBuffer::_NBrows">_NBrows</a>=<a class="local col3 ref" href="#13dimRows" title='dimRows' data-ref="13dimRows">dimRows</a>;</td></tr>
+<tr><th id="229">229</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBcolumns" title='cv::TemplateBuffer::_NBcolumns' data-ref="cv::TemplateBuffer::_NBcolumns">_NBcolumns</a>=<a class="local col4 ref" href="#14dimColumns" title='dimColumns' data-ref="14dimColumns">dimColumns</a>;</td></tr>
+<tr><th id="230">230</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBdepths" title='cv::TemplateBuffer::_NBdepths' data-ref="cv::TemplateBuffer::_NBdepths">_NBdepths</a>=<a class="local col5 ref" href="#15depth" title='depth' data-ref="15depth">depth</a>;</td></tr>
+<tr><th id="231">231</th><td>            <a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>=<a class="local col3 ref" href="#13dimRows" title='dimRows' data-ref="13dimRows">dimRows</a>*<a class="local col4 ref" href="#14dimColumns" title='dimColumns' data-ref="14dimColumns">dimColumns</a>;</td></tr>
+<tr><th id="232">232</th><td>            <a class="member" href="#cv::TemplateBuffer::_doubleNBpixels" title='cv::TemplateBuffer::_doubleNBpixels' data-ref="cv::TemplateBuffer::_doubleNBpixels">_doubleNBpixels</a>=<var>2</var>*<a class="local col3 ref" href="#13dimRows" title='dimRows' data-ref="13dimRows">dimRows</a>*<a class="local col4 ref" href="#14dimColumns" title='dimColumns' data-ref="14dimColumns">dimColumns</a>;</td></tr>
+<tr><th id="233">233</th><td>        }</td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td>        <b>inline</b> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt; &amp; <dfn class="decl def" id="_ZN2cv14TemplateBufferaSERKSt8valarrayIT_E" title='cv::TemplateBuffer::operator=' data-ref="_ZN2cv14TemplateBufferaSERKSt8valarrayIT_E"><b>operator</b>=</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt; &amp;<dfn class="local col6 decl" id="16b" title='b' data-type='const std::valarray&lt;type&gt; &amp;' data-ref="16b">b</dfn>)</td></tr>
+<tr><th id="236">236</th><td>        {</td></tr>
+<tr><th id="237">237</th><td>            <i>//std::cout&lt;&lt;"TemplateBuffer&lt;type&gt; &amp; operator= affect vector: "&lt;&lt;std::endl;</i></td></tr>
+<tr><th id="238">238</th><td>            <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;::<b>operator</b>=(<a class="local col6 ref" href="#16b" title='b' data-ref="16b">b</a>);</td></tr>
+<tr><th id="239">239</th><td>            <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="240">240</th><td>        }</td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td>        <b>inline</b> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt; &amp; <dfn class="decl def" id="_ZN2cv14TemplateBufferaSERKT_" title='cv::TemplateBuffer::operator=' data-ref="_ZN2cv14TemplateBufferaSERKT_"><b>operator</b>=</dfn>(<em>const</em> type &amp;<dfn class="local col7 decl" id="17b" title='b' data-type='const type &amp;' data-ref="17b">b</dfn>)</td></tr>
+<tr><th id="243">243</th><td>        {</td></tr>
+<tr><th id="244">244</th><td>            <i>//std::cout&lt;&lt;"TemplateBuffer&lt;type&gt; &amp; operator= affect value: "&lt;&lt;b&lt;&lt;std::endl;</i></td></tr>
+<tr><th id="245">245</th><td>            <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/valarray.html#std::valarray" title='std::valarray' data-ref="std::valarray">valarray</a>&lt;type&gt;::<b>operator</b>=(<a class="local col7 ref" href="#17b" title='b' data-ref="17b">b</a>);</td></tr>
+<tr><th id="246">246</th><td>            <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="247">247</th><td>        }</td></tr>
+<tr><th id="248">248</th><td></td></tr>
+<tr><th id="249">249</th><td>        <i>/*  inline const type  &amp;operator[](const unsigned int &amp;b)</i></td></tr>
+<tr><th id="250">250</th><td><i>        {</i></td></tr>
+<tr><th id="251">251</th><td><i>        return (*this)[b];</i></td></tr>
+<tr><th id="252">252</th><td><i>        }</i></td></tr>
+<tr><th id="253">253</th><td><i>        */</i></td></tr>
+<tr><th id="254">254</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="255">255</th><td><i class="doc">        * <span class="command">@return</span> the buffer adress in non const mode</i></td></tr>
+<tr><th id="256">256</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="257">257</th><td>        <b>inline</b> type*    <dfn class="decl def" id="_ZN2cv14TemplateBuffer6BufferEv" title='cv::TemplateBuffer::Buffer' data-ref="_ZN2cv14TemplateBuffer6BufferEv">Buffer</dfn>()            {    <b>return</b> &amp;(*<b>this</b>)[<var>0</var>];    }</td></tr>
+<tr><th id="258">258</th><td></td></tr>
+<tr><th id="259">259</th><td>        <i>///////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="260">260</th><td><i>        // Standard Image manipulation functions</i></td></tr>
+<tr><th id="261">261</th><td></td></tr>
+<tr><th id="262">262</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="263">263</th><td><i class="doc">        * standard 0 to 255 image normalization function</i></td></tr>
+<tr><th id="264">264</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">inputOutputBuffer:</span> the image to be normalized (rewrites the input), if no parameter, then, the built in buffer reachable by getOutput() function is normalized</i></td></tr>
+<tr><th id="265">265</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">nbPixels:</span> specifies the number of pixel on which the normalization should be performed, if 0, then all pixels specified in the constructor are processed</i></td></tr>
+<tr><th id="266">266</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">maxOutputValue:</span> the maximum output value</i></td></tr>
+<tr><th id="267">267</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="268">268</th><td>        <em>static</em> <em>void</em> <a class="decl" href="#_ZN2cv14TemplateBuffer36normalizeGrayOutput_0_maxOutputValueEPT_mS1_" title='cv::TemplateBuffer::normalizeGrayOutput_0_maxOutputValue' data-ref="_ZN2cv14TemplateBuffer36normalizeGrayOutput_0_maxOutputValueEPT_mS1_">normalizeGrayOutput_0_maxOutputValue</a>(type *<dfn class="local col8 decl" id="18inputOutputBuffer" title='inputOutputBuffer' data-type='type *' data-ref="18inputOutputBuffer">inputOutputBuffer</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="19nbPixels" title='nbPixels' data-type='const size_t' data-ref="19nbPixels">nbPixels</dfn>, <em>const</em> type <dfn class="local col0 decl" id="20maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="20maxOutputValue">maxOutputValue</dfn>=(type)<var>255.0</var>);</td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="271">271</th><td><i class="doc">        * standard 0 to 255 image normalization function</i></td></tr>
+<tr><th id="272">272</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">inputOutputBuffer:</span> the image to be normalized (rewrites the input), if no parameter, then, the built in buffer reachable by getOutput() function is normalized</i></td></tr>
+<tr><th id="273">273</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">nbPixels:</span> specifies the number of pixel on which the normalization should be performed, if 0, then all pixels specified in the constructor are processed</i></td></tr>
+<tr><th id="274">274</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">maxOutputValue:</span> the maximum output value</i></td></tr>
+<tr><th id="275">275</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="276">276</th><td>        <em>void</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer36normalizeGrayOutput_0_maxOutputValueET_" title='cv::TemplateBuffer::normalizeGrayOutput_0_maxOutputValue' data-ref="_ZN2cv14TemplateBuffer36normalizeGrayOutput_0_maxOutputValueET_">normalizeGrayOutput_0_maxOutputValue</dfn>(<em>const</em> type <dfn class="local col1 decl" id="21maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="21maxOutputValue">maxOutputValue</dfn>=(type)<var>255.0</var>){normalizeGrayOutput_0_maxOutputValue(<b>this</b>-&gt;Buffer(), <b>this</b>-&gt;size(), <a class="local col1 ref" href="#21maxOutputValue" title='maxOutputValue' data-ref="21maxOutputValue">maxOutputValue</a>);};</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="279">279</th><td><i class="doc">        * sigmoide image normalization function (saturates min and max values)</i></td></tr>
+<tr><th id="280">280</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">meanValue:</span> specifies the mean value of th pixels to be processed</i></td></tr>
+<tr><th id="281">281</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">sensitivity:</span> strenght of the sigmoide</i></td></tr>
+<tr><th id="282">282</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">inputPicture:</span> the image to be normalized if no parameter, then, the built in buffer reachable by getOutput() function is normalized</i></td></tr>
+<tr><th id="283">283</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">outputBuffer:</span> the ouput buffer on which the result is writed, if no parameter, then, the built in buffer reachable by getOutput() function is normalized</i></td></tr>
+<tr><th id="284">284</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">maxOutputValue:</span> the maximum output value</i></td></tr>
+<tr><th id="285">285</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="286">286</th><td>        <em>static</em> <em>void</em> <a class="decl" href="#_ZN2cv14TemplateBuffer34normalizeGrayOutputCentredSigmoideET_S1_S1_PS1_S2_j" title='cv::TemplateBuffer::normalizeGrayOutputCentredSigmoide' data-ref="_ZN2cv14TemplateBuffer34normalizeGrayOutputCentredSigmoideET_S1_S1_PS1_S2_j">normalizeGrayOutputCentredSigmoide</a>(<em>const</em> type <dfn class="local col2 decl" id="22meanValue" title='meanValue' data-type='const type' data-ref="22meanValue">meanValue</dfn>, <em>const</em> type <dfn class="local col3 decl" id="23sensitivity" title='sensitivity' data-type='const type' data-ref="23sensitivity">sensitivity</dfn>, <em>const</em> type <dfn class="local col4 decl" id="24maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="24maxOutputValue">maxOutputValue</dfn>, type *<dfn class="local col5 decl" id="25inputPicture" title='inputPicture' data-type='type *' data-ref="25inputPicture">inputPicture</dfn>, type *<dfn class="local col6 decl" id="26outputBuffer" title='outputBuffer' data-type='type *' data-ref="26outputBuffer">outputBuffer</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <dfn class="local col7 decl" id="27nbPixels" title='nbPixels' data-type='const unsigned int' data-ref="27nbPixels">nbPixels</dfn>);</td></tr>
+<tr><th id="287">287</th><td></td></tr>
+<tr><th id="288">288</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="289">289</th><td><i class="doc">        * sigmoide image normalization function on the current buffer (saturates min and max values)</i></td></tr>
+<tr><th id="290">290</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">meanValue:</span> specifies the mean value of th pixels to be processed</i></td></tr>
+<tr><th id="291">291</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">sensitivity:</span> strenght of the sigmoide</i></td></tr>
+<tr><th id="292">292</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">maxOutputValue:</span> the maximum output value</i></td></tr>
+<tr><th id="293">293</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="294">294</th><td>        <b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer34normalizeGrayOutputCentredSigmoideET_S1_S1_" title='cv::TemplateBuffer::normalizeGrayOutputCentredSigmoide' data-ref="_ZN2cv14TemplateBuffer34normalizeGrayOutputCentredSigmoideET_S1_S1_">normalizeGrayOutputCentredSigmoide</dfn>(<em>const</em> type <dfn class="local col8 decl" id="28meanValue" title='meanValue' data-type='const type' data-ref="28meanValue">meanValue</dfn>=(type)<var>0.0</var>, <em>const</em> type <dfn class="local col9 decl" id="29sensitivity" title='sensitivity' data-type='const type' data-ref="29sensitivity">sensitivity</dfn>=(type)<var>2.0</var>, <em>const</em> type <dfn class="local col0 decl" id="30maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="30maxOutputValue">maxOutputValue</dfn>=(type)<var>255.0</var>){ (<em>void</em>)<a class="local col0 ref" href="#30maxOutputValue" title='maxOutputValue' data-ref="30maxOutputValue">maxOutputValue</a>; normalizeGrayOutputCentredSigmoide(<a class="local col8 ref" href="#28meanValue" title='meanValue' data-ref="28meanValue">meanValue</a>, <a class="local col9 ref" href="#29sensitivity" title='sensitivity' data-ref="29sensitivity">sensitivity</a>, <var>255.0</var>, <b>this</b>-&gt;Buffer(), <b>this</b>-&gt;Buffer(), <b>this</b>-&gt;getNBpixels());};</td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="297">297</th><td><i class="doc">        * sigmoide image normalization function (saturates min and max values), in this function, the sigmoide is centered on low values (high saturation of the medium and high values</i></td></tr>
+<tr><th id="298">298</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">inputPicture:</span> the image to be normalized if no parameter, then, the built in buffer reachable by getOutput() function is normalized</i></td></tr>
+<tr><th id="299">299</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">outputBuffer:</span> the ouput buffer on which the result is writed, if no parameter, then, the built in buffer reachable by getOutput() function is normalized</i></td></tr>
+<tr><th id="300">300</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">sensitivity:</span> strenght of the sigmoide</i></td></tr>
+<tr><th id="301">301</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">maxOutputValue:</span> the maximum output value</i></td></tr>
+<tr><th id="302">302</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="303">303</th><td>        <em>void</em> <a class="decl" href="#_ZN2cv14TemplateBuffer44normalizeGrayOutputNearZeroCentreredSigmoideEPT_S2_S1_S1_" title='cv::TemplateBuffer::normalizeGrayOutputNearZeroCentreredSigmoide' data-ref="_ZN2cv14TemplateBuffer44normalizeGrayOutputNearZeroCentreredSigmoideEPT_S2_S1_S1_">normalizeGrayOutputNearZeroCentreredSigmoide</a>(type *<dfn class="local col1 decl" id="31inputPicture" title='inputPicture' data-type='type *' data-ref="31inputPicture">inputPicture</dfn>=(type*)<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>, type *<dfn class="local col2 decl" id="32outputBuffer" title='outputBuffer' data-type='type *' data-ref="32outputBuffer">outputBuffer</dfn>=(type*)<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>, <em>const</em> type <dfn class="local col3 decl" id="33sensitivity" title='sensitivity' data-type='const type' data-ref="33sensitivity">sensitivity</dfn>=(type)<var>40</var>, <em>const</em> type <dfn class="local col4 decl" id="34maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="34maxOutputValue">maxOutputValue</dfn>=(type)<var>255.0</var>);</td></tr>
+<tr><th id="304">304</th><td></td></tr>
+<tr><th id="305">305</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="306">306</th><td><i class="doc">        * center and reduct the image (image-mean)/std</i></td></tr>
+<tr><th id="307">307</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">inputOutputBuffer:</span> the image to be normalized if no parameter, the result is rewrited on it</i></td></tr>
+<tr><th id="308">308</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="309">309</th><td>        <em>void</em> <a class="decl" href="#_ZN2cv14TemplateBuffer26centerReductImageLuminanceEPT_" title='cv::TemplateBuffer::centerReductImageLuminance' data-ref="_ZN2cv14TemplateBuffer26centerReductImageLuminanceEPT_">centerReductImageLuminance</a>(type *<dfn class="local col5 decl" id="35inputOutputBuffer" title='inputOutputBuffer' data-type='type *' data-ref="35inputOutputBuffer">inputOutputBuffer</dfn>=(type*)<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="310">310</th><td></td></tr>
+<tr><th id="311">311</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="312">312</th><td><i class="doc">        * <span class="command">@return</span> standard deviation of the buffer</i></td></tr>
+<tr><th id="313">313</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="314">314</th><td>        <em>double</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer20getStandardDeviationEv" title='cv::TemplateBuffer::getStandardDeviation' data-ref="_ZN2cv14TemplateBuffer20getStandardDeviationEv">getStandardDeviation</dfn>()</td></tr>
+<tr><th id="315">315</th><td>        {</td></tr>
+<tr><th id="316">316</th><td>            <em>double</em> <dfn class="local col6 decl" id="36standardDeviation" title='standardDeviation' data-type='double' data-ref="36standardDeviation">standardDeviation</dfn>=<var>0</var>;</td></tr>
+<tr><th id="317">317</th><td>            <em>double</em> <dfn class="local col7 decl" id="37meanValue" title='meanValue' data-type='double' data-ref="37meanValue">meanValue</dfn>=<a class="member" href="#_ZN2cv14TemplateBuffer7getMeanEv" title='cv::TemplateBuffer::getMean' data-ref="_ZN2cv14TemplateBuffer7getMeanEv">getMean</a>();</td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td>            type *<dfn class="local col8 decl" id="38bufferPTR" title='bufferPTR' data-type='type *' data-ref="38bufferPTR">bufferPTR</dfn>=<a class="member" href="#_ZN2cv14TemplateBuffer6BufferEv" title='cv::TemplateBuffer::Buffer' data-ref="_ZN2cv14TemplateBuffer6BufferEv">Buffer</a>();</td></tr>
+<tr><th id="320">320</th><td>            <b>for</b> (<em>unsigned</em> <em>int</em> <dfn class="local col9 decl" id="39i" title='i' data-type='unsigned int' data-ref="39i">i</dfn>=<var>0</var>;<a class="local col9 ref" href="#39i" title='i' data-ref="39i">i</a>&lt;<b>this</b>-&gt;size();++<a class="local col9 ref" href="#39i" title='i' data-ref="39i">i</a>)</td></tr>
+<tr><th id="321">321</th><td>            {</td></tr>
+<tr><th id="322">322</th><td>                <em>double</em> <dfn class="local col0 decl" id="40diff" title='diff' data-type='double' data-ref="40diff">diff</dfn>=(*(<a class="local col8 ref" href="#38bufferPTR" title='bufferPTR' data-ref="38bufferPTR">bufferPTR</a>++)-<a class="local col7 ref" href="#37meanValue" title='meanValue' data-ref="37meanValue">meanValue</a>);</td></tr>
+<tr><th id="323">323</th><td>                <a class="local col6 ref" href="#36standardDeviation" title='standardDeviation' data-ref="36standardDeviation">standardDeviation</a>+=<a class="local col0 ref" href="#40diff" title='diff' data-ref="40diff">diff</a>*<a class="local col0 ref" href="#40diff" title='diff' data-ref="40diff">diff</a>;</td></tr>
+<tr><th id="324">324</th><td>            }</td></tr>
+<tr><th id="325">325</th><td>            <b>return</b> sqrt(<a class="local col6 ref" href="#36standardDeviation" title='standardDeviation' data-ref="36standardDeviation">standardDeviation</a>/<b>this</b>-&gt;size());</td></tr>
+<tr><th id="326">326</th><td>        };</td></tr>
+<tr><th id="327">327</th><td></td></tr>
+<tr><th id="328">328</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="329">329</th><td><i class="doc">        * Clip buffer histogram</i></td></tr>
+<tr><th id="330">330</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">minRatio:</span> the minimum ratio of the lower pixel values, range=[0,1] and lower than maxRatio</i></td></tr>
+<tr><th id="331">331</th><td><i class="doc">        * <span class="command">@param</span> <span class="arg">maxRatio:</span> the aximum ratio of the higher pixel values, range=[0,1] and higher than minRatio</i></td></tr>
+<tr><th id="332">332</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="333">333</th><td>        <em>void</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer13clipHistogramEddd" title='cv::TemplateBuffer::clipHistogram' data-ref="_ZN2cv14TemplateBuffer13clipHistogramEddd">clipHistogram</dfn>(<em>double</em> <dfn class="local col1 decl" id="41minRatio" title='minRatio' data-type='double' data-ref="41minRatio">minRatio</dfn>, <em>double</em> <dfn class="local col2 decl" id="42maxRatio" title='maxRatio' data-type='double' data-ref="42maxRatio">maxRatio</dfn>, <em>double</em> <dfn class="local col3 decl" id="43maxOutputValue" title='maxOutputValue' data-type='double' data-ref="43maxOutputValue">maxOutputValue</dfn>)</td></tr>
+<tr><th id="334">334</th><td>        {</td></tr>
+<tr><th id="335">335</th><td></td></tr>
+<tr><th id="336">336</th><td>            <b>if</b> (<a class="local col1 ref" href="#41minRatio" title='minRatio' data-ref="41minRatio">minRatio</a>&gt;=<a class="local col2 ref" href="#42maxRatio" title='maxRatio' data-ref="42maxRatio">maxRatio</a>)</td></tr>
+<tr><th id="337">337</th><td>            {</td></tr>
+<tr><th id="338">338</th><td>                <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cerr" title='std::cerr' data-ref="std::cerr">cerr</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>"TemplateBuffer::clipHistogram: minRatio must be inferior to maxRatio, buffer unchanged"</q><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a><span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="339">339</th><td>                <b>return</b>;</td></tr>
+<tr><th id="340">340</th><td>            }</td></tr>
+<tr><th id="341">341</th><td></td></tr>
+<tr><th id="342">342</th><td>            <i>/*    minRatio=min(max(minRatio, 1.0),0.0);</i></td></tr>
+<tr><th id="343">343</th><td><i>            maxRatio=max(max(maxRatio, 0.0),1.0);</i></td></tr>
+<tr><th id="344">344</th><td><i>            */</i></td></tr>
+<tr><th id="345">345</th><td><i></i></td></tr>
+<tr><th id="346">346</th><td><i>            // find the pixel value just above the threshold</i></td></tr>
+<tr><th id="347">347</th><td>            <em>const</em> <em>double</em> <dfn class="local col4 decl" id="44maxThreshold" title='maxThreshold' data-type='const double' data-ref="44maxThreshold">maxThreshold</dfn>=<b>this</b>-&gt;max()*<a class="local col2 ref" href="#42maxRatio" title='maxRatio' data-ref="42maxRatio">maxRatio</a>;</td></tr>
+<tr><th id="348">348</th><td>            <em>const</em> <em>double</em> <dfn class="local col5 decl" id="45minThreshold" title='minThreshold' data-type='const double' data-ref="45minThreshold">minThreshold</dfn>=(<b>this</b>-&gt;max()-<b>this</b>-&gt;min())*<a class="local col1 ref" href="#41minRatio" title='minRatio' data-ref="41minRatio">minRatio</a>+<b>this</b>-&gt;min();</td></tr>
+<tr><th id="349">349</th><td></td></tr>
+<tr><th id="350">350</th><td>            type *<dfn class="local col6 decl" id="46bufferPTR" title='bufferPTR' data-type='type *' data-ref="46bufferPTR">bufferPTR</dfn>=<b>this</b>-&gt;Buffer();</td></tr>
+<tr><th id="351">351</th><td></td></tr>
+<tr><th id="352">352</th><td>            <em>double</em> <dfn class="local col7 decl" id="47deltaH" title='deltaH' data-type='double' data-ref="47deltaH">deltaH</dfn>=<a class="local col4 ref" href="#44maxThreshold" title='maxThreshold' data-ref="44maxThreshold">maxThreshold</a>;</td></tr>
+<tr><th id="353">353</th><td>            <em>double</em> <dfn class="local col8 decl" id="48deltaL" title='deltaL' data-type='double' data-ref="48deltaL">deltaL</dfn>=<a class="local col4 ref" href="#44maxThreshold" title='maxThreshold' data-ref="44maxThreshold">maxThreshold</a>;</td></tr>
+<tr><th id="354">354</th><td></td></tr>
+<tr><th id="355">355</th><td>            <em>double</em> <dfn class="local col9 decl" id="49updatedHighValue" title='updatedHighValue' data-type='double' data-ref="49updatedHighValue">updatedHighValue</dfn>=<a class="local col4 ref" href="#44maxThreshold" title='maxThreshold' data-ref="44maxThreshold">maxThreshold</a>;</td></tr>
+<tr><th id="356">356</th><td>            <em>double</em> <dfn class="local col0 decl" id="50updatedLowValue" title='updatedLowValue' data-type='double' data-ref="50updatedLowValue">updatedLowValue</dfn>=<a class="local col4 ref" href="#44maxThreshold" title='maxThreshold' data-ref="44maxThreshold">maxThreshold</a>;</td></tr>
+<tr><th id="357">357</th><td></td></tr>
+<tr><th id="358">358</th><td>            <b>for</b> (<em>unsigned</em> <em>int</em> <dfn class="local col1 decl" id="51i" title='i' data-type='unsigned int' data-ref="51i">i</dfn>=<var>0</var>;<a class="local col1 ref" href="#51i" title='i' data-ref="51i">i</a>&lt;<b>this</b>-&gt;size();++<a class="local col1 ref" href="#51i" title='i' data-ref="51i">i</a>)</td></tr>
+<tr><th id="359">359</th><td>            {</td></tr>
+<tr><th id="360">360</th><td>                <em>double</em> <dfn class="local col2 decl" id="52currentValue" title='currentValue' data-type='double' data-ref="52currentValue">currentValue</dfn>=(<em>double</em>)*(<a class="local col6 ref" href="#46bufferPTR" title='bufferPTR' data-ref="46bufferPTR">bufferPTR</a>++);</td></tr>
+<tr><th id="361">361</th><td></td></tr>
+<tr><th id="362">362</th><td>                <i>// updating "closest to the high threshold" pixel value</i></td></tr>
+<tr><th id="363">363</th><td>                <em>double</em> <dfn class="local col3 decl" id="53highValueTest" title='highValueTest' data-type='double' data-ref="53highValueTest">highValueTest</dfn>=<a class="local col4 ref" href="#44maxThreshold" title='maxThreshold' data-ref="44maxThreshold">maxThreshold</a>-<a class="local col2 ref" href="#52currentValue" title='currentValue' data-ref="52currentValue">currentValue</a>;</td></tr>
+<tr><th id="364">364</th><td>                <b>if</b> (<a class="local col3 ref" href="#53highValueTest" title='highValueTest' data-ref="53highValueTest">highValueTest</a>&gt;<var>0</var>)</td></tr>
+<tr><th id="365">365</th><td>                {</td></tr>
+<tr><th id="366">366</th><td>                    <b>if</b> (<a class="local col7 ref" href="#47deltaH" title='deltaH' data-ref="47deltaH">deltaH</a>&gt;<a class="local col3 ref" href="#53highValueTest" title='highValueTest' data-ref="53highValueTest">highValueTest</a>)</td></tr>
+<tr><th id="367">367</th><td>                    {</td></tr>
+<tr><th id="368">368</th><td>                        <a class="local col7 ref" href="#47deltaH" title='deltaH' data-ref="47deltaH">deltaH</a>=<a class="local col3 ref" href="#53highValueTest" title='highValueTest' data-ref="53highValueTest">highValueTest</a>;</td></tr>
+<tr><th id="369">369</th><td>                        <a class="local col9 ref" href="#49updatedHighValue" title='updatedHighValue' data-ref="49updatedHighValue">updatedHighValue</a>=<a class="local col2 ref" href="#52currentValue" title='currentValue' data-ref="52currentValue">currentValue</a>;</td></tr>
+<tr><th id="370">370</th><td>                    }</td></tr>
+<tr><th id="371">371</th><td>                }</td></tr>
+<tr><th id="372">372</th><td></td></tr>
+<tr><th id="373">373</th><td>                <i>// updating "closest to the low threshold" pixel value</i></td></tr>
+<tr><th id="374">374</th><td>                <em>double</em> <dfn class="local col4 decl" id="54lowValueTest" title='lowValueTest' data-type='double' data-ref="54lowValueTest">lowValueTest</dfn>=<a class="local col2 ref" href="#52currentValue" title='currentValue' data-ref="52currentValue">currentValue</a>-<a class="local col5 ref" href="#45minThreshold" title='minThreshold' data-ref="45minThreshold">minThreshold</a>;</td></tr>
+<tr><th id="375">375</th><td>                <b>if</b> (<a class="local col4 ref" href="#54lowValueTest" title='lowValueTest' data-ref="54lowValueTest">lowValueTest</a>&gt;<var>0</var>)</td></tr>
+<tr><th id="376">376</th><td>                {</td></tr>
+<tr><th id="377">377</th><td>                    <b>if</b> (<a class="local col8 ref" href="#48deltaL" title='deltaL' data-ref="48deltaL">deltaL</a>&gt;<a class="local col4 ref" href="#54lowValueTest" title='lowValueTest' data-ref="54lowValueTest">lowValueTest</a>)</td></tr>
+<tr><th id="378">378</th><td>                    {</td></tr>
+<tr><th id="379">379</th><td>                        <a class="local col8 ref" href="#48deltaL" title='deltaL' data-ref="48deltaL">deltaL</a>=<a class="local col4 ref" href="#54lowValueTest" title='lowValueTest' data-ref="54lowValueTest">lowValueTest</a>;</td></tr>
+<tr><th id="380">380</th><td>                        <a class="local col0 ref" href="#50updatedLowValue" title='updatedLowValue' data-ref="50updatedLowValue">updatedLowValue</a>=<a class="local col2 ref" href="#52currentValue" title='currentValue' data-ref="52currentValue">currentValue</a>;</td></tr>
+<tr><th id="381">381</th><td>                    }</td></tr>
+<tr><th id="382">382</th><td>                }</td></tr>
+<tr><th id="383">383</th><td>            }</td></tr>
+<tr><th id="384">384</th><td></td></tr>
+<tr><th id="385">385</th><td>            <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>"Tdebug"</q><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a><span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="386">386</th><td>            <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>"deltaL="</q><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a><a class="local col8 ref" href="#48deltaL" title='deltaL' data-ref="48deltaL">deltaL</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>", deltaH="</q><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a><a class="local col7 ref" href="#47deltaH" title='deltaH' data-ref="47deltaH">deltaH</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a><span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="387">387</th><td>            <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>"this-&gt;max()"</q>&lt;&lt;<b>this</b>-&gt;max()&lt;&lt;<q>"maxThreshold="</q>&lt;&lt;<a class="local col4 ref" href="#44maxThreshold" title='maxThreshold' data-ref="44maxThreshold">maxThreshold</a>&lt;&lt;<q>"updatedHighValue="</q>&lt;&lt;<a class="local col9 ref" href="#49updatedHighValue" title='updatedHighValue' data-ref="49updatedHighValue">updatedHighValue</a>&lt;&lt;<span class="namespace">std::</span>endl;</td></tr>
+<tr><th id="388">388</th><td>            <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>"this-&gt;min()"</q>&lt;&lt;<b>this</b>-&gt;min()&lt;&lt;<q>"minThreshold="</q>&lt;&lt;<a class="local col5 ref" href="#45minThreshold" title='minThreshold' data-ref="45minThreshold">minThreshold</a>&lt;&lt;<q>"updatedLowValue="</q>&lt;&lt;<a class="local col0 ref" href="#50updatedLowValue" title='updatedLowValue' data-ref="50updatedLowValue">updatedLowValue</a>&lt;&lt;<span class="namespace">std::</span>endl;</td></tr>
+<tr><th id="389">389</th><td>            <i>// clipping values outside than the updated thresholds</i></td></tr>
+<tr><th id="390">390</th><td>            <a class="local col6 ref" href="#46bufferPTR" title='bufferPTR' data-ref="46bufferPTR">bufferPTR</a>=<b>this</b>-&gt;Buffer();</td></tr>
+<tr><th id="391">391</th><td><u>#<span data-ppcond="391">ifdef</span> <a class="macro" href="#75" data-ref="_M/MAKE_PARALLEL">MAKE_PARALLEL</a> // call the TemplateBuffer multitreaded clipping method</u></td></tr>
+<tr><th id="392">392</th><td>            parallel_for_(<span class="namespace">cv::</span><a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Range" title='cv::Range' data-ref="cv::Range">Range</a>(<var>0</var>,<b>this</b>-&gt;size()), <a class="type" href="#Parallel_clipBufferValues" title='Parallel_clipBufferValues' data-ref="Parallel_clipBufferValues">Parallel_clipBufferValues</a>&lt;type&gt;(<a class="local col6 ref" href="#46bufferPTR" title='bufferPTR' data-ref="46bufferPTR">bufferPTR</a>, <a class="local col0 ref" href="#50updatedLowValue" title='updatedLowValue' data-ref="50updatedLowValue">updatedLowValue</a>, <a class="local col9 ref" href="#49updatedHighValue" title='updatedHighValue' data-ref="49updatedHighValue">updatedHighValue</a>));</td></tr>
+<tr><th id="393">393</th><td><u>#<span data-ppcond="391">else</span></u></td></tr>
+<tr><th id="394">394</th><td></td></tr>
+<tr><th id="395">395</th><td>            <b>for</b> (<em>unsigned</em> <em>int</em> i=<var>0</var>;i&lt;<b>this</b>-&gt;size();++i, ++bufferPTR)</td></tr>
+<tr><th id="396">396</th><td>            {</td></tr>
+<tr><th id="397">397</th><td>                <b>if</b> (*bufferPTR&lt;updatedLowValue)</td></tr>
+<tr><th id="398">398</th><td>                    *bufferPTR=updatedLowValue;</td></tr>
+<tr><th id="399">399</th><td>                <b>else</b> <b>if</b> (*bufferPTR&gt;updatedHighValue)</td></tr>
+<tr><th id="400">400</th><td>                    *bufferPTR=updatedHighValue;</td></tr>
+<tr><th id="401">401</th><td>            }</td></tr>
+<tr><th id="402">402</th><td><u>#<span data-ppcond="391">endif</span></u></td></tr>
+<tr><th id="403">403</th><td>            normalizeGrayOutput_0_maxOutputValue(<b>this</b>-&gt;Buffer(), <b>this</b>-&gt;size(), <a class="local col3 ref" href="#43maxOutputValue" title='maxOutputValue' data-ref="43maxOutputValue">maxOutputValue</a>);</td></tr>
+<tr><th id="404">404</th><td></td></tr>
+<tr><th id="405">405</th><td>        }</td></tr>
+<tr><th id="406">406</th><td></td></tr>
+<tr><th id="407">407</th><td>        <i class="doc">/**</i></td></tr>
+<tr><th id="408">408</th><td><i class="doc">        * <span class="command">@return</span> the mean value of the vector</i></td></tr>
+<tr><th id="409">409</th><td><i class="doc">        */</i></td></tr>
+<tr><th id="410">410</th><td>        <b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN2cv14TemplateBuffer7getMeanEv" title='cv::TemplateBuffer::getMean' data-ref="_ZN2cv14TemplateBuffer7getMeanEv">getMean</dfn>(){<b>return</b> <b>this</b>-&gt;sum()/<b>this</b>-&gt;size();};</td></tr>
+<tr><th id="411">411</th><td></td></tr>
+<tr><th id="412">412</th><td>    <b>protected</b>:</td></tr>
+<tr><th id="413">413</th><td>        <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="cv::TemplateBuffer::_NBrows" title='cv::TemplateBuffer::_NBrows' data-ref="cv::TemplateBuffer::_NBrows">_NBrows</dfn>;</td></tr>
+<tr><th id="414">414</th><td>        <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="cv::TemplateBuffer::_NBcolumns" title='cv::TemplateBuffer::_NBcolumns' data-ref="cv::TemplateBuffer::_NBcolumns">_NBcolumns</dfn>;</td></tr>
+<tr><th id="415">415</th><td>        <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="cv::TemplateBuffer::_NBdepths" title='cv::TemplateBuffer::_NBdepths' data-ref="cv::TemplateBuffer::_NBdepths">_NBdepths</dfn>;</td></tr>
+<tr><th id="416">416</th><td>        <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</dfn>;</td></tr>
+<tr><th id="417">417</th><td>        <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="cv::TemplateBuffer::_doubleNBpixels" title='cv::TemplateBuffer::_doubleNBpixels' data-ref="cv::TemplateBuffer::_doubleNBpixels">_doubleNBpixels</dfn>;</td></tr>
+<tr><th id="418">418</th><td>        <i>// utilities</i></td></tr>
+<tr><th id="419">419</th><td>        <em>static</em> type <a class="decl" href="#_ZN2cv14TemplateBuffer4_absET_" title='cv::TemplateBuffer::_abs' data-ref="_ZN2cv14TemplateBuffer4_absET_">_abs</a>(<em>const</em> type <dfn class="local col5 decl" id="55x" title='x' data-type='const type' data-ref="55x">x</dfn>);</td></tr>
+<tr><th id="420">420</th><td></td></tr>
+<tr><th id="421">421</th><td>    };</td></tr>
+<tr><th id="422">422</th><td></td></tr>
+<tr><th id="423">423</th><td>    <i>///////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="424">424</th><td><i>    /// normalize output between 0 and 255, can be applied on images of different size that the declared size if nbPixels parameters is setted up;</i></td></tr>
+<tr><th id="425">425</th><td>    <b>template</b> &lt;<b>class</b> type&gt;</td></tr>
+<tr><th id="426">426</th><td>    <em>void</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer36normalizeGrayOutput_0_maxOutputValueEPT_mS1_" title='cv::TemplateBuffer::normalizeGrayOutput_0_maxOutputValue' data-ref="_ZN2cv14TemplateBuffer36normalizeGrayOutput_0_maxOutputValueEPT_mS1_">normalizeGrayOutput_0_maxOutputValue</dfn>(type *<dfn class="local col6 decl" id="56inputOutputBuffer" title='inputOutputBuffer' data-type='type *' data-ref="56inputOutputBuffer">inputOutputBuffer</dfn>, <em>const</em> <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="57processedPixels" title='processedPixels' data-type='const size_t' data-ref="57processedPixels">processedPixels</dfn>, <em>const</em> type <dfn class="local col8 decl" id="58maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="58maxOutputValue">maxOutputValue</dfn>)</td></tr>
+<tr><th id="427">427</th><td>    {</td></tr>
+<tr><th id="428">428</th><td>        type <dfn class="local col9 decl" id="59maxValue" title='maxValue' data-type='type' data-ref="59maxValue">maxValue</dfn>=<a class="local col6 ref" href="#56inputOutputBuffer" title='inputOutputBuffer' data-ref="56inputOutputBuffer">inputOutputBuffer</a>[<var>0</var>], <dfn class="local col0 decl" id="60minValue" title='minValue' data-type='type' data-ref="60minValue">minValue</dfn>=<a class="local col6 ref" href="#56inputOutputBuffer" title='inputOutputBuffer' data-ref="56inputOutputBuffer">inputOutputBuffer</a>[<var>0</var>];</td></tr>
+<tr><th id="429">429</th><td></td></tr>
+<tr><th id="430">430</th><td>        <i>// get the min and max value</i></td></tr>
+<tr><th id="431">431</th><td>        type *<dfn class="local col1 decl" id="61inputOutputBufferPTR" title='inputOutputBufferPTR' data-type='type *' data-ref="61inputOutputBufferPTR">inputOutputBufferPTR</dfn>=<a class="local col6 ref" href="#56inputOutputBuffer" title='inputOutputBuffer' data-ref="56inputOutputBuffer">inputOutputBuffer</a>;</td></tr>
+<tr><th id="432">432</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="62j" title='j' data-type='size_t' data-ref="62j">j</dfn> = <var>0</var>; <a class="local col2 ref" href="#62j" title='j' data-ref="62j">j</a>&lt;<a class="local col7 ref" href="#57processedPixels" title='processedPixels' data-ref="57processedPixels">processedPixels</a>; ++<a class="local col2 ref" href="#62j" title='j' data-ref="62j">j</a>)</td></tr>
+<tr><th id="433">433</th><td>        {</td></tr>
+<tr><th id="434">434</th><td>            type <dfn class="local col3 decl" id="63pixValue" title='pixValue' data-type='type' data-ref="63pixValue">pixValue</dfn> = *(<a class="local col1 ref" href="#61inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="61inputOutputBufferPTR">inputOutputBufferPTR</a>++);</td></tr>
+<tr><th id="435">435</th><td>            <b>if</b> (<a class="local col9 ref" href="#59maxValue" title='maxValue' data-ref="59maxValue">maxValue</a> &lt; <a class="local col3 ref" href="#63pixValue" title='pixValue' data-ref="63pixValue">pixValue</a>)</td></tr>
+<tr><th id="436">436</th><td>                <a class="local col9 ref" href="#59maxValue" title='maxValue' data-ref="59maxValue">maxValue</a> = <a class="local col3 ref" href="#63pixValue" title='pixValue' data-ref="63pixValue">pixValue</a>;</td></tr>
+<tr><th id="437">437</th><td>            <b>else</b> <b>if</b> (<a class="local col0 ref" href="#60minValue" title='minValue' data-ref="60minValue">minValue</a> &gt; <a class="local col3 ref" href="#63pixValue" title='pixValue' data-ref="63pixValue">pixValue</a>)</td></tr>
+<tr><th id="438">438</th><td>                <a class="local col0 ref" href="#60minValue" title='minValue' data-ref="60minValue">minValue</a> = <a class="local col3 ref" href="#63pixValue" title='pixValue' data-ref="63pixValue">pixValue</a>;</td></tr>
+<tr><th id="439">439</th><td>        }</td></tr>
+<tr><th id="440">440</th><td>        <i>// change the range of the data to 0-&gt;255</i></td></tr>
+<tr><th id="441">441</th><td></td></tr>
+<tr><th id="442">442</th><td>        type <dfn class="local col4 decl" id="64factor" title='factor' data-type='type' data-ref="64factor">factor</dfn> = <a class="local col8 ref" href="#58maxOutputValue" title='maxOutputValue' data-ref="58maxOutputValue">maxOutputValue</a>/(<a class="local col9 ref" href="#59maxValue" title='maxValue' data-ref="59maxValue">maxValue</a>-<a class="local col0 ref" href="#60minValue" title='minValue' data-ref="60minValue">minValue</a>);</td></tr>
+<tr><th id="443">443</th><td>        type <dfn class="local col5 decl" id="65offset" title='offset' data-type='type' data-ref="65offset">offset</dfn> = (type)(-<a class="local col0 ref" href="#60minValue" title='minValue' data-ref="60minValue">minValue</a>*<a class="local col4 ref" href="#64factor" title='factor' data-ref="64factor">factor</a>);</td></tr>
+<tr><th id="444">444</th><td></td></tr>
+<tr><th id="445">445</th><td>        <a class="local col1 ref" href="#61inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="61inputOutputBufferPTR">inputOutputBufferPTR</a>=<a class="local col6 ref" href="#56inputOutputBuffer" title='inputOutputBuffer' data-ref="56inputOutputBuffer">inputOutputBuffer</a>;</td></tr>
+<tr><th id="446">446</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="66j" title='j' data-type='size_t' data-ref="66j">j</dfn> = <var>0</var>; <a class="local col6 ref" href="#66j" title='j' data-ref="66j">j</a> &lt; <a class="local col7 ref" href="#57processedPixels" title='processedPixels' data-ref="57processedPixels">processedPixels</a>; ++<a class="local col6 ref" href="#66j" title='j' data-ref="66j">j</a>, ++<a class="local col1 ref" href="#61inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="61inputOutputBufferPTR">inputOutputBufferPTR</a>)</td></tr>
+<tr><th id="447">447</th><td>            *<a class="local col1 ref" href="#61inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="61inputOutputBufferPTR">inputOutputBufferPTR</a>=*(<a class="local col1 ref" href="#61inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="61inputOutputBufferPTR">inputOutputBufferPTR</a>)*<a class="local col4 ref" href="#64factor" title='factor' data-ref="64factor">factor</a>+<a class="local col5 ref" href="#65offset" title='offset' data-ref="65offset">offset</a>;</td></tr>
+<tr><th id="448">448</th><td></td></tr>
+<tr><th id="449">449</th><td>    }</td></tr>
+<tr><th id="450">450</th><td>    <i>// normalize data with a sigmoide close to 0 (saturates values for those superior to 0)</i></td></tr>
+<tr><th id="451">451</th><td>    <b>template</b> &lt;<b>class</b> type&gt;</td></tr>
+<tr><th id="452">452</th><td>    <em>void</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer44normalizeGrayOutputNearZeroCentreredSigmoideEPT_S2_S1_S1_" title='cv::TemplateBuffer::normalizeGrayOutputNearZeroCentreredSigmoide' data-ref="_ZN2cv14TemplateBuffer44normalizeGrayOutputNearZeroCentreredSigmoideEPT_S2_S1_S1_">normalizeGrayOutputNearZeroCentreredSigmoide</dfn>(type *<dfn class="local col7 decl" id="67inputBuffer" title='inputBuffer' data-type='type *' data-ref="67inputBuffer">inputBuffer</dfn>, type *<dfn class="local col8 decl" id="68outputBuffer" title='outputBuffer' data-type='type *' data-ref="68outputBuffer">outputBuffer</dfn>, <em>const</em> type <dfn class="local col9 decl" id="69sensitivity" title='sensitivity' data-type='const type' data-ref="69sensitivity">sensitivity</dfn>, <em>const</em> type <dfn class="local col0 decl" id="70maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="70maxOutputValue">maxOutputValue</dfn>)</td></tr>
+<tr><th id="453">453</th><td>    {</td></tr>
+<tr><th id="454">454</th><td>        <b>if</b> (<a class="local col7 ref" href="#67inputBuffer" title='inputBuffer' data-ref="67inputBuffer">inputBuffer</a>==<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>)</td></tr>
+<tr><th id="455">455</th><td>            <a class="local col7 ref" href="#67inputBuffer" title='inputBuffer' data-ref="67inputBuffer">inputBuffer</a>=<a class="member" href="#_ZN2cv14TemplateBuffer6BufferEv" title='cv::TemplateBuffer::Buffer' data-ref="_ZN2cv14TemplateBuffer6BufferEv">Buffer</a>();</td></tr>
+<tr><th id="456">456</th><td>        <b>if</b> (<a class="local col8 ref" href="#68outputBuffer" title='outputBuffer' data-ref="68outputBuffer">outputBuffer</a>==<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>)</td></tr>
+<tr><th id="457">457</th><td>            <a class="local col8 ref" href="#68outputBuffer" title='outputBuffer' data-ref="68outputBuffer">outputBuffer</a>=<a class="member" href="#_ZN2cv14TemplateBuffer6BufferEv" title='cv::TemplateBuffer::Buffer' data-ref="_ZN2cv14TemplateBuffer6BufferEv">Buffer</a>();</td></tr>
+<tr><th id="458">458</th><td></td></tr>
+<tr><th id="459">459</th><td>        type <dfn class="local col1 decl" id="71X0cube" title='X0cube' data-type='type' data-ref="71X0cube">X0cube</dfn>=<a class="local col9 ref" href="#69sensitivity" title='sensitivity' data-ref="69sensitivity">sensitivity</a>*<a class="local col9 ref" href="#69sensitivity" title='sensitivity' data-ref="69sensitivity">sensitivity</a>*<a class="local col9 ref" href="#69sensitivity" title='sensitivity' data-ref="69sensitivity">sensitivity</a>;</td></tr>
+<tr><th id="460">460</th><td></td></tr>
+<tr><th id="461">461</th><td>        type *<dfn class="local col2 decl" id="72inputBufferPTR" title='inputBufferPTR' data-type='type *' data-ref="72inputBufferPTR">inputBufferPTR</dfn>=<a class="local col7 ref" href="#67inputBuffer" title='inputBuffer' data-ref="67inputBuffer">inputBuffer</a>;</td></tr>
+<tr><th id="462">462</th><td>        type *<dfn class="local col3 decl" id="73outputBufferPTR" title='outputBufferPTR' data-type='type *' data-ref="73outputBufferPTR">outputBufferPTR</dfn>=<a class="local col8 ref" href="#68outputBuffer" title='outputBuffer' data-ref="68outputBuffer">outputBuffer</a>;</td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="74j" title='j' data-type='size_t' data-ref="74j">j</dfn> = <var>0</var>; <a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a> &lt; <a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>; ++<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>, ++<a class="local col2 ref" href="#72inputBufferPTR" title='inputBufferPTR' data-ref="72inputBufferPTR">inputBufferPTR</a>)</td></tr>
+<tr><th id="465">465</th><td>        {</td></tr>
+<tr><th id="466">466</th><td></td></tr>
+<tr><th id="467">467</th><td>            type <dfn class="local col5 decl" id="75currentCubeLuminance" title='currentCubeLuminance' data-type='type' data-ref="75currentCubeLuminance">currentCubeLuminance</dfn>=*<a class="local col2 ref" href="#72inputBufferPTR" title='inputBufferPTR' data-ref="72inputBufferPTR">inputBufferPTR</a>**<a class="local col2 ref" href="#72inputBufferPTR" title='inputBufferPTR' data-ref="72inputBufferPTR">inputBufferPTR</a>**<a class="local col2 ref" href="#72inputBufferPTR" title='inputBufferPTR' data-ref="72inputBufferPTR">inputBufferPTR</a>;</td></tr>
+<tr><th id="468">468</th><td>            *(<a class="local col3 ref" href="#73outputBufferPTR" title='outputBufferPTR' data-ref="73outputBufferPTR">outputBufferPTR</a>++)=<a class="local col0 ref" href="#70maxOutputValue" title='maxOutputValue' data-ref="70maxOutputValue">maxOutputValue</a>*<a class="local col5 ref" href="#75currentCubeLuminance" title='currentCubeLuminance' data-ref="75currentCubeLuminance">currentCubeLuminance</a>/(<a class="local col5 ref" href="#75currentCubeLuminance" title='currentCubeLuminance' data-ref="75currentCubeLuminance">currentCubeLuminance</a>+<a class="local col1 ref" href="#71X0cube" title='X0cube' data-ref="71X0cube">X0cube</a>);</td></tr>
+<tr><th id="469">469</th><td>        }</td></tr>
+<tr><th id="470">470</th><td>    }</td></tr>
+<tr><th id="471">471</th><td></td></tr>
+<tr><th id="472">472</th><td>    <i>// normalize and adjust luminance with a centered to 128 sigmode</i></td></tr>
+<tr><th id="473">473</th><td>    <b>template</b> &lt;<b>class</b> type&gt;</td></tr>
+<tr><th id="474">474</th><td>    <em>void</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer34normalizeGrayOutputCentredSigmoideET_S1_S1_PS1_S2_j" title='cv::TemplateBuffer::normalizeGrayOutputCentredSigmoide' data-ref="_ZN2cv14TemplateBuffer34normalizeGrayOutputCentredSigmoideET_S1_S1_PS1_S2_j">normalizeGrayOutputCentredSigmoide</dfn>(<em>const</em> type <dfn class="local col6 decl" id="76meanValue" title='meanValue' data-type='const type' data-ref="76meanValue">meanValue</dfn>, <em>const</em> type <dfn class="local col7 decl" id="77sensitivity" title='sensitivity' data-type='const type' data-ref="77sensitivity">sensitivity</dfn>, <em>const</em> type <dfn class="local col8 decl" id="78maxOutputValue" title='maxOutputValue' data-type='const type' data-ref="78maxOutputValue">maxOutputValue</dfn>, type *<dfn class="local col9 decl" id="79inputBuffer" title='inputBuffer' data-type='type *' data-ref="79inputBuffer">inputBuffer</dfn>, type *<dfn class="local col0 decl" id="80outputBuffer" title='outputBuffer' data-type='type *' data-ref="80outputBuffer">outputBuffer</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <dfn class="local col1 decl" id="81nbPixels" title='nbPixels' data-type='const unsigned int' data-ref="81nbPixels">nbPixels</dfn>)</td></tr>
+<tr><th id="475">475</th><td>    {</td></tr>
+<tr><th id="476">476</th><td></td></tr>
+<tr><th id="477">477</th><td>        <b>if</b> (<a class="local col7 ref" href="#77sensitivity" title='sensitivity' data-ref="77sensitivity">sensitivity</a>==<var>1.0</var>)</td></tr>
+<tr><th id="478">478</th><td>        {</td></tr>
+<tr><th id="479">479</th><td>            <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cerr" title='std::cerr' data-ref="std::cerr">cerr</a><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a><q>"TemplateBuffer::TemplateBuffer&lt;type&gt;::normalizeGrayOutputCentredSigmoide error: 2nd parameter (sensitivity) must not equal 0, copying original data..."</q><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a><span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="480">480</th><td>            memcpy(<a class="local col0 ref" href="#80outputBuffer" title='outputBuffer' data-ref="80outputBuffer">outputBuffer</a>, <a class="local col9 ref" href="#79inputBuffer" title='inputBuffer' data-ref="79inputBuffer">inputBuffer</a>, <b>sizeof</b>(type)*<a class="local col1 ref" href="#81nbPixels" title='nbPixels' data-ref="81nbPixels">nbPixels</a>);</td></tr>
+<tr><th id="481">481</th><td>            <b>return</b>;</td></tr>
+<tr><th id="482">482</th><td>        }</td></tr>
+<tr><th id="483">483</th><td></td></tr>
+<tr><th id="484">484</th><td>        type <dfn class="local col2 decl" id="82X0" title='X0' data-type='type' data-ref="82X0">X0</dfn>=<a class="local col8 ref" href="#78maxOutputValue" title='maxOutputValue' data-ref="78maxOutputValue">maxOutputValue</a>/(<a class="local col7 ref" href="#77sensitivity" title='sensitivity' data-ref="77sensitivity">sensitivity</a>-(type)<var>1.0</var>);</td></tr>
+<tr><th id="485">485</th><td></td></tr>
+<tr><th id="486">486</th><td>        type *<dfn class="local col3 decl" id="83inputBufferPTR" title='inputBufferPTR' data-type='type *' data-ref="83inputBufferPTR">inputBufferPTR</dfn>=<a class="local col9 ref" href="#79inputBuffer" title='inputBuffer' data-ref="79inputBuffer">inputBuffer</a>;</td></tr>
+<tr><th id="487">487</th><td>        type *<dfn class="local col4 decl" id="84outputBufferPTR" title='outputBufferPTR' data-type='type *' data-ref="84outputBufferPTR">outputBufferPTR</dfn>=<a class="local col0 ref" href="#80outputBuffer" title='outputBuffer' data-ref="80outputBuffer">outputBuffer</a>;</td></tr>
+<tr><th id="488">488</th><td></td></tr>
+<tr><th id="489">489</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="85j" title='j' data-type='size_t' data-ref="85j">j</dfn> = <var>0</var>; <a class="local col5 ref" href="#85j" title='j' data-ref="85j">j</a> &lt; <a class="local col1 ref" href="#81nbPixels" title='nbPixels' data-ref="81nbPixels">nbPixels</a>; ++<a class="local col5 ref" href="#85j" title='j' data-ref="85j">j</a>, ++<a class="local col3 ref" href="#83inputBufferPTR" title='inputBufferPTR' data-ref="83inputBufferPTR">inputBufferPTR</a>)</td></tr>
+<tr><th id="490">490</th><td>            *(<a class="local col4 ref" href="#84outputBufferPTR" title='outputBufferPTR' data-ref="84outputBufferPTR">outputBufferPTR</a>++)=(<a class="local col6 ref" href="#76meanValue" title='meanValue' data-ref="76meanValue">meanValue</a>+(<a class="local col6 ref" href="#76meanValue" title='meanValue' data-ref="76meanValue">meanValue</a>+<a class="local col2 ref" href="#82X0" title='X0' data-ref="82X0">X0</a>)*(*(<a class="local col3 ref" href="#83inputBufferPTR" title='inputBufferPTR' data-ref="83inputBufferPTR">inputBufferPTR</a>)-<a class="local col6 ref" href="#76meanValue" title='meanValue' data-ref="76meanValue">meanValue</a>)/(<a class="member" href="#_ZN2cv14TemplateBuffer4_absET_" title='cv::TemplateBuffer::_abs' data-ref="_ZN2cv14TemplateBuffer4_absET_">_abs</a>(*(<a class="local col3 ref" href="#83inputBufferPTR" title='inputBufferPTR' data-ref="83inputBufferPTR">inputBufferPTR</a>)-<a class="local col6 ref" href="#76meanValue" title='meanValue' data-ref="76meanValue">meanValue</a>)+<a class="local col2 ref" href="#82X0" title='X0' data-ref="82X0">X0</a>));</td></tr>
+<tr><th id="491">491</th><td></td></tr>
+<tr><th id="492">492</th><td>    }</td></tr>
+<tr><th id="493">493</th><td></td></tr>
+<tr><th id="494">494</th><td>    <i>// center and reduct the image (image-mean)/std</i></td></tr>
+<tr><th id="495">495</th><td>    <b>template</b> &lt;<b>class</b> type&gt;</td></tr>
+<tr><th id="496">496</th><td>    <em>void</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer26centerReductImageLuminanceEPT_" title='cv::TemplateBuffer::centerReductImageLuminance' data-ref="_ZN2cv14TemplateBuffer26centerReductImageLuminanceEPT_">centerReductImageLuminance</dfn>(type *<dfn class="local col6 decl" id="86inputOutputBuffer" title='inputOutputBuffer' data-type='type *' data-ref="86inputOutputBuffer">inputOutputBuffer</dfn>)</td></tr>
+<tr><th id="497">497</th><td>    {</td></tr>
+<tr><th id="498">498</th><td>        <i>// if outputBuffer unsassigned, the rewrite the buffer</i></td></tr>
+<tr><th id="499">499</th><td>        <b>if</b> (<a class="local col6 ref" href="#86inputOutputBuffer" title='inputOutputBuffer' data-ref="86inputOutputBuffer">inputOutputBuffer</a>==<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>)</td></tr>
+<tr><th id="500">500</th><td>            <a class="local col6 ref" href="#86inputOutputBuffer" title='inputOutputBuffer' data-ref="86inputOutputBuffer">inputOutputBuffer</a>=<a class="member" href="#_ZN2cv14TemplateBuffer6BufferEv" title='cv::TemplateBuffer::Buffer' data-ref="_ZN2cv14TemplateBuffer6BufferEv">Buffer</a>();</td></tr>
+<tr><th id="501">501</th><td>        type <dfn class="local col7 decl" id="87meanValue" title='meanValue' data-type='type' data-ref="87meanValue">meanValue</dfn>=<var>0</var>, <dfn class="local col8 decl" id="88stdValue" title='stdValue' data-type='type' data-ref="88stdValue">stdValue</dfn>=<var>0</var>;</td></tr>
+<tr><th id="502">502</th><td></td></tr>
+<tr><th id="503">503</th><td>        <i>// compute mean value</i></td></tr>
+<tr><th id="504">504</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="89j" title='j' data-type='size_t' data-ref="89j">j</dfn> = <var>0</var>; <a class="local col9 ref" href="#89j" title='j' data-ref="89j">j</a> &lt; <a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>; ++<a class="local col9 ref" href="#89j" title='j' data-ref="89j">j</a>)</td></tr>
+<tr><th id="505">505</th><td>            <a class="local col7 ref" href="#87meanValue" title='meanValue' data-ref="87meanValue">meanValue</a>+=<a class="local col6 ref" href="#86inputOutputBuffer" title='inputOutputBuffer' data-ref="86inputOutputBuffer">inputOutputBuffer</a>[<a class="local col9 ref" href="#89j" title='j' data-ref="89j">j</a>];</td></tr>
+<tr><th id="506">506</th><td>        <a class="local col7 ref" href="#87meanValue" title='meanValue' data-ref="87meanValue">meanValue</a>/=((type)<a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>);</td></tr>
+<tr><th id="507">507</th><td></td></tr>
+<tr><th id="508">508</th><td>        <i>// compute std value</i></td></tr>
+<tr><th id="509">509</th><td>        type *<dfn class="local col0 decl" id="90inputOutputBufferPTR" title='inputOutputBufferPTR' data-type='type *' data-ref="90inputOutputBufferPTR">inputOutputBufferPTR</dfn>=<a class="local col6 ref" href="#86inputOutputBuffer" title='inputOutputBuffer' data-ref="86inputOutputBuffer">inputOutputBuffer</a>;</td></tr>
+<tr><th id="510">510</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="91index" title='index' data-type='size_t' data-ref="91index">index</dfn>=<var>0</var>;<a class="local col1 ref" href="#91index" title='index' data-ref="91index">index</a>&lt;<a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>;++<a class="local col1 ref" href="#91index" title='index' data-ref="91index">index</a>)</td></tr>
+<tr><th id="511">511</th><td>        {</td></tr>
+<tr><th id="512">512</th><td>            type <dfn class="local col2 decl" id="92inputMinusMean" title='inputMinusMean' data-type='type' data-ref="92inputMinusMean">inputMinusMean</dfn>=*(<a class="local col0 ref" href="#90inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="90inputOutputBufferPTR">inputOutputBufferPTR</a>++)-<a class="local col7 ref" href="#87meanValue" title='meanValue' data-ref="87meanValue">meanValue</a>;</td></tr>
+<tr><th id="513">513</th><td>            <a class="local col8 ref" href="#88stdValue" title='stdValue' data-ref="88stdValue">stdValue</a>+=<a class="local col2 ref" href="#92inputMinusMean" title='inputMinusMean' data-ref="92inputMinusMean">inputMinusMean</a>*<a class="local col2 ref" href="#92inputMinusMean" title='inputMinusMean' data-ref="92inputMinusMean">inputMinusMean</a>;</td></tr>
+<tr><th id="514">514</th><td>        }</td></tr>
+<tr><th id="515">515</th><td></td></tr>
+<tr><th id="516">516</th><td>        <a class="local col8 ref" href="#88stdValue" title='stdValue' data-ref="88stdValue">stdValue</a>=sqrt(<a class="local col8 ref" href="#88stdValue" title='stdValue' data-ref="88stdValue">stdValue</a>/((type)<a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>));</td></tr>
+<tr><th id="517">517</th><td>        <i>// adjust luminance in regard of mean and std value;</i></td></tr>
+<tr><th id="518">518</th><td>        <a class="local col0 ref" href="#90inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="90inputOutputBufferPTR">inputOutputBufferPTR</a>=<a class="local col6 ref" href="#86inputOutputBuffer" title='inputOutputBuffer' data-ref="86inputOutputBuffer">inputOutputBuffer</a>;</td></tr>
+<tr><th id="519">519</th><td>        <b>for</b> (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col3 decl" id="93index" title='index' data-type='size_t' data-ref="93index">index</dfn>=<var>0</var>;<a class="local col3 ref" href="#93index" title='index' data-ref="93index">index</a>&lt;<a class="member" href="#cv::TemplateBuffer::_NBpixels" title='cv::TemplateBuffer::_NBpixels' data-ref="cv::TemplateBuffer::_NBpixels">_NBpixels</a>;++<a class="local col3 ref" href="#93index" title='index' data-ref="93index">index</a>, ++<a class="local col0 ref" href="#90inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="90inputOutputBufferPTR">inputOutputBufferPTR</a>)</td></tr>
+<tr><th id="520">520</th><td>            *<a class="local col0 ref" href="#90inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="90inputOutputBufferPTR">inputOutputBufferPTR</a>=(*(<a class="local col0 ref" href="#90inputOutputBufferPTR" title='inputOutputBufferPTR' data-ref="90inputOutputBufferPTR">inputOutputBufferPTR</a>)-<a class="local col7 ref" href="#87meanValue" title='meanValue' data-ref="87meanValue">meanValue</a>)/<a class="local col8 ref" href="#88stdValue" title='stdValue' data-ref="88stdValue">stdValue</a>;</td></tr>
+<tr><th id="521">521</th><td>    }</td></tr>
+<tr><th id="522">522</th><td></td></tr>
+<tr><th id="523">523</th><td></td></tr>
+<tr><th id="524">524</th><td>    <b>template</b> &lt;<b>class</b> type&gt;</td></tr>
+<tr><th id="525">525</th><td>    type <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;type&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer4_absET_" title='cv::TemplateBuffer::_abs' data-ref="_ZN2cv14TemplateBuffer4_absET_">_abs</dfn>(<em>const</em> type <dfn class="local col4 decl" id="94x" title='x' data-type='const type' data-ref="94x">x</dfn>)</td></tr>
+<tr><th id="526">526</th><td>    {</td></tr>
+<tr><th id="527">527</th><td></td></tr>
+<tr><th id="528">528</th><td>        <b>if</b> (<a class="local col4 ref" href="#94x" title='x' data-ref="94x">x</a>&gt;<var>0</var>)</td></tr>
+<tr><th id="529">529</th><td>            <b>return</b> <a class="local col4 ref" href="#94x" title='x' data-ref="94x">x</a>;</td></tr>
+<tr><th id="530">530</th><td>        <b>else</b></td></tr>
+<tr><th id="531">531</th><td>            <b>return</b> -<a class="local col4 ref" href="#94x" title='x' data-ref="94x">x</a>;</td></tr>
+<tr><th id="532">532</th><td>    }</td></tr>
+<tr><th id="533">533</th><td></td></tr>
+<tr><th id="534">534</th><td>    <b>template</b> &lt; &gt;</td></tr>
+<tr><th id="535">535</th><td>    <b>inline</b> <em>int</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;<em>int</em>&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer4_absET_" title='cv::TemplateBuffer::_abs' data-ref="_ZN2cv14TemplateBuffer4_absET_">_abs</dfn>(<em>const</em> <em>int</em> <dfn class="local col5 decl" id="95x" title='x' data-type='const int' data-ref="95x">x</dfn>)</td></tr>
+<tr><th id="536">536</th><td>    {</td></tr>
+<tr><th id="537">537</th><td>        <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../../include/stdlib.h.html#abs" title='abs' data-ref="abs">abs</a>(<a class="local col5 ref" href="#95x" title='x' data-ref="95x">x</a>);</td></tr>
+<tr><th id="538">538</th><td>    }</td></tr>
+<tr><th id="539">539</th><td>    <b>template</b> &lt; &gt;</td></tr>
+<tr><th id="540">540</th><td>    <b>inline</b> <em>double</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;<em>double</em>&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer4_absET_" title='cv::TemplateBuffer::_abs' data-ref="_ZN2cv14TemplateBuffer4_absET_">_abs</dfn>(<em>const</em> <em>double</em> <dfn class="local col6 decl" id="96x" title='x' data-type='const double' data-ref="96x">x</dfn>)</td></tr>
+<tr><th id="541">541</th><td>    {</td></tr>
+<tr><th id="542">542</th><td>        <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#181" title='fabs' data-ref="fabs">fabs</a>(<a class="local col6 ref" href="#96x" title='x' data-ref="96x">x</a>);</td></tr>
+<tr><th id="543">543</th><td>    }</td></tr>
+<tr><th id="544">544</th><td></td></tr>
+<tr><th id="545">545</th><td>    <b>template</b> &lt; &gt;</td></tr>
+<tr><th id="546">546</th><td>    <b>inline</b> <em>float</em> <a class="type" href="#cv::TemplateBuffer" title='cv::TemplateBuffer' data-ref="cv::TemplateBuffer">TemplateBuffer</a>&lt;<em>float</em>&gt;::<dfn class="decl def" id="_ZN2cv14TemplateBuffer4_absET_" title='cv::TemplateBuffer::_abs' data-ref="_ZN2cv14TemplateBuffer4_absET_">_abs</dfn>(<em>const</em> <em>float</em> <dfn class="local col7 decl" id="97x" title='x' data-type='const float' data-ref="97x">x</dfn>)</td></tr>
+<tr><th id="547">547</th><td>    {</td></tr>
+<tr><th id="548">548</th><td>        <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/cmath.html#_ZSt4fabsf" title='std::fabs' data-ref="_ZSt4fabsf">fabs</a>(<a class="local col7 ref" href="#97x" title='x' data-ref="97x">x</a>);</td></tr>
+<tr><th id="549">549</th><td>    }</td></tr>
+<tr><th id="550">550</th><td></td></tr>
+<tr><th id="551">551</th><td>}</td></tr>
+<tr><th id="552">552</th><td><u>#<span data-ppcond="65">endif</span></u></td></tr>
+<tr><th id="553">553</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='basicretinafilter.cpp.html'>opencv/modules/contrib/src/basicretinafilter.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

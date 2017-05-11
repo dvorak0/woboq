@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>visibility_based_preconditioner.h source code [ceres-solver/internal/ceres/visibility_based_preconditioner.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::VisibilityBasedPreconditioner "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/visibility_based_preconditioner.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='visibility_based_preconditioner.h.html'>visibility_based_preconditioner.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// Preconditioners for linear systems that arise in Structure from</i></td></tr>
+<tr><th id="32">32</th><td><i>// Motion problems. VisibilityBasedPreconditioner implements:</i></td></tr>
+<tr><th id="33">33</th><td><i>//</i></td></tr>
+<tr><th id="34">34</th><td><i>//  CLUSTER_JACOBI</i></td></tr>
+<tr><th id="35">35</th><td><i>//  CLUSTER_TRIDIAGONAL</i></td></tr>
+<tr><th id="36">36</th><td><i>//</i></td></tr>
+<tr><th id="37">37</th><td><i>// Detailed descriptions of these preconditions beyond what is</i></td></tr>
+<tr><th id="38">38</th><td><i>// documented here can be found in</i></td></tr>
+<tr><th id="39">39</th><td><i>//</i></td></tr>
+<tr><th id="40">40</th><td><i>// Visibility Based Preconditioning for Bundle Adjustment</i></td></tr>
+<tr><th id="41">41</th><td><i>// A. Kushal &amp; S. Agarwal, CVPR 2012.</i></td></tr>
+<tr><th id="42">42</th><td><i>//</i></td></tr>
+<tr><th id="43">43</th><td><i>// <a href="http://www.cs.washington.edu/homes/sagarwal/vbp.pdf">http://www.cs.washington.edu/homes/sagarwal/vbp.pdf</a></i></td></tr>
+<tr><th id="44">44</th><td><i>//</i></td></tr>
+<tr><th id="45">45</th><td><i>// The two preconditioners share enough code that its most efficient</i></td></tr>
+<tr><th id="46">46</th><td><i>// to implement them as part of the same code base.</i></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><u>#<span data-ppcond="48">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_VISIBILITY_BASED_PRECONDITIONER_H_">CERES_INTERNAL_VISIBILITY_BASED_PRECONDITIONER_H_</span></u></td></tr>
+<tr><th id="49">49</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_VISIBILITY_BASED_PRECONDITIONER_H_" data-ref="_M/CERES_INTERNAL_VISIBILITY_BASED_PRECONDITIONER_H_">CERES_INTERNAL_VISIBILITY_BASED_PRECONDITIONER_H_</dfn></u></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><u>#include <a href="../../../include/c++/4.8/set.html">&lt;set&gt;</a></u></td></tr>
+<tr><th id="52">52</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="../../../include/c++/4.8/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="54">54</th><td><u>#include <a href="collections_port.h.html">"ceres/collections_port.h"</a></u></td></tr>
+<tr><th id="55">55</th><td><u>#include <a href="graph.h.html">"ceres/graph.h"</a></u></td></tr>
+<tr><th id="56">56</th><td><u>#include <a href="../../include/ceres/internal/macros.h.html">"ceres/internal/macros.h"</a></u></td></tr>
+<tr><th id="57">57</th><td><u>#include <a href="../../include/ceres/internal/scoped_ptr.h.html">"ceres/internal/scoped_ptr.h"</a></u></td></tr>
+<tr><th id="58">58</th><td><u>#include <a href="linear_solver.h.html">"ceres/linear_solver.h"</a></u></td></tr>
+<tr><th id="59">59</th><td><u>#include <a href="preconditioner.h.html">"ceres/preconditioner.h"</a></u></td></tr>
+<tr><th id="60">60</th><td><u>#include <a href="suitesparse.h.html">"ceres/suitesparse.h"</a></u></td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="63">63</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td><b>class</b> <dfn class="type" id="ceres::internal::BlockRandomAccessSparseMatrix" title='ceres::internal::BlockRandomAccessSparseMatrix' data-ref="ceres::internal::BlockRandomAccessSparseMatrix">BlockRandomAccessSparseMatrix</dfn>;</td></tr>
+<tr><th id="66">66</th><td><b>class</b> <a class="type" href="block_sparse_matrix.h.html#ceres::internal::BlockSparseMatrix" title='ceres::internal::BlockSparseMatrix' data-ref="ceres::internal::BlockSparseMatrix" id="ceres::internal::BlockSparseMatrix">BlockSparseMatrix</a>;</td></tr>
+<tr><th id="67">67</th><td><b>struct</b> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure" id="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>;</td></tr>
+<tr><th id="68">68</th><td><b>class</b> <a class="type" href="schur_jacobi_preconditioner.h.html#ceres::internal::SchurEliminatorBase" title='ceres::internal::SchurEliminatorBase' data-ref="ceres::internal::SchurEliminatorBase" id="ceres::internal::SchurEliminatorBase">SchurEliminatorBase</a>;</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td><i>// This class implements visibility based preconditioners for</i></td></tr>
+<tr><th id="71">71</th><td><i>// Structure from Motion/Bundle Adjustment problems. The name</i></td></tr>
+<tr><th id="72">72</th><td><i>// VisibilityBasedPreconditioner comes from the fact that the sparsity</i></td></tr>
+<tr><th id="73">73</th><td><i>// structure of the preconditioner matrix is determined by analyzing</i></td></tr>
+<tr><th id="74">74</th><td><i>// the visibility structure of the scene, i.e. which cameras see which</i></td></tr>
+<tr><th id="75">75</th><td><i>// points.</i></td></tr>
+<tr><th id="76">76</th><td><i>//</i></td></tr>
+<tr><th id="77">77</th><td><i>// The key idea of visibility based preconditioning is to identify</i></td></tr>
+<tr><th id="78">78</th><td><i>// cameras that we expect have strong interactions, and then using the</i></td></tr>
+<tr><th id="79">79</th><td><i>// entries in the Schur complement matrix corresponding to these</i></td></tr>
+<tr><th id="80">80</th><td><i>// camera pairs as an approximation to the full Schur complement.</i></td></tr>
+<tr><th id="81">81</th><td><i>//</i></td></tr>
+<tr><th id="82">82</th><td><i>// CLUSTER_JACOBI identifies these camera pairs by clustering cameras,</i></td></tr>
+<tr><th id="83">83</th><td><i>// and considering all non-zero camera pairs within each cluster. The</i></td></tr>
+<tr><th id="84">84</th><td><i>// clustering in the current implementation is done using the</i></td></tr>
+<tr><th id="85">85</th><td><i>// Canonical Views algorithm of Simon et al. (see</i></td></tr>
+<tr><th id="86">86</th><td><i>// canonical_views_clustering.h). For the purposes of clustering, the</i></td></tr>
+<tr><th id="87">87</th><td><i>// similarity or the degree of interaction between a pair of cameras</i></td></tr>
+<tr><th id="88">88</th><td><i>// is measured by counting the number of points visible in both the</i></td></tr>
+<tr><th id="89">89</th><td><i>// cameras. Thus the name VisibilityBasedPreconditioner. Further, if we</i></td></tr>
+<tr><th id="90">90</th><td><i>// were to permute the parameter blocks such that all the cameras in</i></td></tr>
+<tr><th id="91">91</th><td><i>// the same cluster occur contiguously, the preconditioner matrix will</i></td></tr>
+<tr><th id="92">92</th><td><i>// be a block diagonal matrix with blocks corresponding to the</i></td></tr>
+<tr><th id="93">93</th><td><i>// clusters. Thus in analogy with the Jacobi preconditioner we refer</i></td></tr>
+<tr><th id="94">94</th><td><i>// to this as the CLUSTER_JACOBI preconditioner.</i></td></tr>
+<tr><th id="95">95</th><td><i>//</i></td></tr>
+<tr><th id="96">96</th><td><i>// CLUSTER_TRIDIAGONAL adds more mass to the CLUSTER_JACOBI</i></td></tr>
+<tr><th id="97">97</th><td><i>// preconditioner by considering the interaction between clusters and</i></td></tr>
+<tr><th id="98">98</th><td><i>// identifying strong interactions between cluster pairs. This is done</i></td></tr>
+<tr><th id="99">99</th><td><i>// by constructing a weighted graph on the clusters, with the weight</i></td></tr>
+<tr><th id="100">100</th><td><i>// on the edges connecting two clusters proportional to the number of</i></td></tr>
+<tr><th id="101">101</th><td><i>// 3D points visible to cameras in both the clusters. A degree-2</i></td></tr>
+<tr><th id="102">102</th><td><i>// maximum spanning forest is identified in this graph and the camera</i></td></tr>
+<tr><th id="103">103</th><td><i>// pairs contained in the edges of this forest are added to the</i></td></tr>
+<tr><th id="104">104</th><td><i>// preconditioner. The detailed reasoning for this construction is</i></td></tr>
+<tr><th id="105">105</th><td><i>// explained in the paper mentioned above.</i></td></tr>
+<tr><th id="106">106</th><td><i>//</i></td></tr>
+<tr><th id="107">107</th><td><i>// Degree-2 spanning trees and forests have the property that they</i></td></tr>
+<tr><th id="108">108</th><td><i>// correspond to tri-diagonal matrices. Thus there exist a permutation</i></td></tr>
+<tr><th id="109">109</th><td><i>// of the camera blocks under which the CLUSTER_TRIDIAGONAL</i></td></tr>
+<tr><th id="110">110</th><td><i>// preconditioner matrix is a block tridiagonal matrix, and thus the</i></td></tr>
+<tr><th id="111">111</th><td><i>// name for the preconditioner.</i></td></tr>
+<tr><th id="112">112</th><td><i>//</i></td></tr>
+<tr><th id="113">113</th><td><i>// Thread Safety: This class is NOT thread safe.</i></td></tr>
+<tr><th id="114">114</th><td><i>//</i></td></tr>
+<tr><th id="115">115</th><td><i>// Example usage:</i></td></tr>
+<tr><th id="116">116</th><td><i>//</i></td></tr>
+<tr><th id="117">117</th><td><i>//   LinearSolver::Options options;</i></td></tr>
+<tr><th id="118">118</th><td><i>//   options.preconditioner_type = CLUSTER_JACOBI;</i></td></tr>
+<tr><th id="119">119</th><td><i>//   options.elimination_groups.push_back(num_points);</i></td></tr>
+<tr><th id="120">120</th><td><i>//   options.elimination_groups.push_back(num_cameras);</i></td></tr>
+<tr><th id="121">121</th><td><i>//   VisibilityBasedPreconditioner preconditioner(</i></td></tr>
+<tr><th id="122">122</th><td><i>//      *A.block_structure(), options);</i></td></tr>
+<tr><th id="123">123</th><td><i>//   preconditioner.Update(A, NULL);</i></td></tr>
+<tr><th id="124">124</th><td><i>//   preconditioner.RightMultiply(x, y);</i></td></tr>
+<tr><th id="125">125</th><td><i>//</i></td></tr>
+<tr><th id="126">126</th><td><u>#<span data-ppcond="126">ifndef</span> <span class="macro" data-ref="_M/CERES_NO_SUITESPARSE">CERES_NO_SUITESPARSE</span></u></td></tr>
+<tr><th id="127">127</th><td><b>class</b> <dfn class="type def" id="ceres::internal::VisibilityBasedPreconditioner" title='ceres::internal::VisibilityBasedPreconditioner' data-ref="ceres::internal::VisibilityBasedPreconditioner">VisibilityBasedPreconditioner</dfn> : <b>public</b> <a class="typedef" href="preconditioner.h.html#ceres::internal::BlockSparseMatrixPreconditioner" title='ceres::internal::BlockSparseMatrixPreconditioner' data-type='TypedPreconditioner&lt;ceres::internal::BlockSparseMatrix&gt;' data-ref="ceres::internal::BlockSparseMatrixPreconditioner">BlockSparseMatrixPreconditioner</a> {</td></tr>
+<tr><th id="128">128</th><td> <b>public</b>:</td></tr>
+<tr><th id="129">129</th><td>  <i>// Initialize the symbolic structure of the preconditioner. bs is</i></td></tr>
+<tr><th id="130">130</th><td><i>  // the block structure of the linear system to be solved. It is used</i></td></tr>
+<tr><th id="131">131</th><td><i>  // to determine the sparsity structure of the preconditioner matrix.</i></td></tr>
+<tr><th id="132">132</th><td><i>  //</i></td></tr>
+<tr><th id="133">133</th><td><i>  // It has the same structural requirement as other Schur complement</i></td></tr>
+<tr><th id="134">134</th><td><i>  // based solvers. Please see schur_eliminator.h for more details.</i></td></tr>
+<tr><th id="135">135</th><td>  <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditionerC1ERKNS0_27CompressedRowBlockStructureERKNS0_14Preconditioner7OptionsE" title='ceres::internal::VisibilityBasedPreconditioner::VisibilityBasedPreconditioner' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditionerC1ERKNS0_27CompressedRowBlockStructureERKNS0_14Preconditioner7OptionsE">VisibilityBasedPreconditioner</dfn>(<em>const</em> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>&amp; <dfn class="local col3 decl" id="13bs" title='bs' data-type='const ceres::internal::CompressedRowBlockStructure &amp;' data-ref="13bs">bs</dfn>,</td></tr>
+<tr><th id="136">136</th><td>                                <em>const</em> <a class="type" href="preconditioner.h.html#ceres::internal::Preconditioner" title='ceres::internal::Preconditioner' data-ref="ceres::internal::Preconditioner">Preconditioner</a>::<a class="type" href="preconditioner.h.html#ceres::internal::Preconditioner::Options" title='ceres::internal::Preconditioner::Options' data-ref="ceres::internal::Preconditioner::Options">Options</a>&amp; <dfn class="local col4 decl" id="14options" title='options' data-type='const Preconditioner::Options &amp;' data-ref="14options">options</dfn>);</td></tr>
+<tr><th id="137">137</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres8internal29VisibilityBasedPreconditionerD1Ev" title='ceres::internal::VisibilityBasedPreconditioner::~VisibilityBasedPreconditioner' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditionerD1Ev">~</dfn>VisibilityBasedPreconditioner();</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>  <i>// Preconditioner interface</i></td></tr>
+<tr><th id="140">140</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner13RightMultiplyEPKdPd" title='ceres::internal::VisibilityBasedPreconditioner::RightMultiply' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner13RightMultiplyEPKdPd">RightMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col5 decl" id="15x" title='x' data-type='const double *' data-ref="15x">x</dfn>, <em>double</em>* <dfn class="local col6 decl" id="16y" title='y' data-type='double *' data-ref="16y">y</dfn>) <em>const</em>;</td></tr>
+<tr><th id="141">141</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner8num_rowsEv" title='ceres::internal::VisibilityBasedPreconditioner::num_rows' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner8num_rowsEv">num_rows</dfn>() <em>const</em>;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <b>friend</b> <b>class</b> <a class="type" href="#ceres::internal::VisibilityBasedPreconditionerTest" title='ceres::internal::VisibilityBasedPreconditionerTest' data-ref="ceres::internal::VisibilityBasedPreconditionerTest">VisibilityBasedPreconditionerTest</a>;</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td> <b>private</b>:</td></tr>
+<tr><th id="146">146</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner10UpdateImplERKNS0_17BlockSparseMatrixEPKd" title='ceres::internal::VisibilityBasedPreconditioner::UpdateImpl' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner10UpdateImplERKNS0_17BlockSparseMatrixEPKd">UpdateImpl</dfn>(<em>const</em> <a class="type" href="block_sparse_matrix.h.html#ceres::internal::BlockSparseMatrix" title='ceres::internal::BlockSparseMatrix' data-ref="ceres::internal::BlockSparseMatrix">BlockSparseMatrix</a>&amp; <dfn class="local col7 decl" id="17A" title='A' data-type='const ceres::internal::BlockSparseMatrix &amp;' data-ref="17A">A</dfn>, <em>const</em> <em>double</em>* <dfn class="local col8 decl" id="18D" title='D' data-type='const double *' data-ref="18D">D</dfn>);</td></tr>
+<tr><th id="147">147</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner28ComputeClusterJacobiSparsityERKNS0_27CompressedRowBlockStructureE" title='ceres::internal::VisibilityBasedPreconditioner::ComputeClusterJacobiSparsity' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner28ComputeClusterJacobiSparsityERKNS0_27CompressedRowBlockStructureE">ComputeClusterJacobiSparsity</dfn>(<em>const</em> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>&amp; <dfn class="local col9 decl" id="19bs" title='bs' data-type='const ceres::internal::CompressedRowBlockStructure &amp;' data-ref="19bs">bs</dfn>);</td></tr>
+<tr><th id="148">148</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner33ComputeClusterTridiagonalSparsityERKNS0_27CompressedRowBlockStructureE" title='ceres::internal::VisibilityBasedPreconditioner::ComputeClusterTridiagonalSparsity' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner33ComputeClusterTridiagonalSparsityERKNS0_27CompressedRowBlockStructureE">ComputeClusterTridiagonalSparsity</dfn>(<em>const</em> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>&amp; <dfn class="local col0 decl" id="20bs" title='bs' data-type='const ceres::internal::CompressedRowBlockStructure &amp;' data-ref="20bs">bs</dfn>);</td></tr>
+<tr><th id="149">149</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner11InitStorageERKNS0_27CompressedRowBlockStructureE" title='ceres::internal::VisibilityBasedPreconditioner::InitStorage' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner11InitStorageERKNS0_27CompressedRowBlockStructureE">InitStorage</dfn>(<em>const</em> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>&amp; <dfn class="local col1 decl" id="21bs" title='bs' data-type='const ceres::internal::CompressedRowBlockStructure &amp;' data-ref="21bs">bs</dfn>);</td></tr>
+<tr><th id="150">150</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner14InitEliminatorERKNS0_27CompressedRowBlockStructureE" title='ceres::internal::VisibilityBasedPreconditioner::InitEliminator' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner14InitEliminatorERKNS0_27CompressedRowBlockStructureE">InitEliminator</dfn>(<em>const</em> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>&amp; <dfn class="local col2 decl" id="22bs" title='bs' data-type='const ceres::internal::CompressedRowBlockStructure &amp;' data-ref="22bs">bs</dfn>);</td></tr>
+<tr><th id="151">151</th><td>  <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolverTerminationType" title='ceres::internal::LinearSolverTerminationType' data-ref="ceres::internal::LinearSolverTerminationType">LinearSolverTerminationType</a> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner9FactorizeEv" title='ceres::internal::VisibilityBasedPreconditioner::Factorize' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner9FactorizeEv">Factorize</dfn>();</td></tr>
+<tr><th id="152">152</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner21ScaleOffDiagonalCellsEv" title='ceres::internal::VisibilityBasedPreconditioner::ScaleOffDiagonalCells' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner21ScaleOffDiagonalCellsEv">ScaleOffDiagonalCells</dfn>();</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner14ClusterCamerasERKSt6vectorISt3setIiSt4lessIiESaIiEESaIS7_EE" title='ceres::internal::VisibilityBasedPreconditioner::ClusterCameras' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner14ClusterCamerasERKSt6vectorISt3setIiSt4lessIiESaIiEESaIS7_EE">ClusterCameras</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_set.h.html#std::set" title='std::set' data-ref="std::set">set</a>&lt;<em>int</em>&gt; &gt;&amp; <dfn class="local col3 decl" id="23visibility" title='visibility' data-type='const std::vector&lt;std::set&lt;int&gt; &gt; &amp;' data-ref="23visibility">visibility</dfn>);</td></tr>
+<tr><th id="155">155</th><td>  <em>void</em> <dfn class="decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner20FlattenMembershipMapERKNS0_7HashMapIiiEEPSt6vectorIiSaIiEE" title='ceres::internal::VisibilityBasedPreconditioner::FlattenMembershipMap' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner20FlattenMembershipMapERKNS0_7HashMapIiiEEPSt6vectorIiSaIiEE">FlattenMembershipMap</dfn>(<em>const</em> <a class="type" href="collections_port.h.html#ceres::internal::HashMap" title='ceres::internal::HashMap' data-ref="ceres::internal::HashMap">HashMap</a>&lt;<em>int</em>, <em>int</em>&gt;&amp; <dfn class="local col4 decl" id="24membership_map" title='membership_map' data-type='const HashMap&lt;int, int&gt; &amp;' data-ref="24membership_map">membership_map</dfn>,</td></tr>
+<tr><th id="156">156</th><td>                            <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt;* <dfn class="local col5 decl" id="25membership_vector" title='membership_vector' data-type='std::vector&lt;int&gt; *' data-ref="25membership_vector">membership_vector</dfn>) <em>const</em>;</td></tr>
+<tr><th id="157">157</th><td>  <em>void</em> <dfn class="decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner24ComputeClusterVisibilityERKSt6vectorISt3setIiSt4lessIiESaIiEESaIS7_EEPS9_" title='ceres::internal::VisibilityBasedPreconditioner::ComputeClusterVisibility' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner24ComputeClusterVisibilityERKSt6vectorISt3setIiSt4lessIiESaIiEESaIS7_EEPS9_">ComputeClusterVisibility</dfn>(</td></tr>
+<tr><th id="158">158</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_set.h.html#std::set" title='std::set' data-ref="std::set">set</a>&lt;<em>int</em>&gt; &gt;&amp; <dfn class="local col6 decl" id="26visibility" title='visibility' data-type='const std::vector&lt;std::set&lt;int&gt; &gt; &amp;' data-ref="26visibility">visibility</dfn>,</td></tr>
+<tr><th id="159">159</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_set.h.html#std::set" title='std::set' data-ref="std::set">set</a>&lt;<em>int</em>&gt; &gt;* <dfn class="local col7 decl" id="27cluster_visibility" title='cluster_visibility' data-type='std::vector&lt;std::set&lt;int&gt; &gt; *' data-ref="27cluster_visibility">cluster_visibility</dfn>) <em>const</em>;</td></tr>
+<tr><th id="160">160</th><td>  <a class="type" href="graph.h.html#ceres::internal::WeightedGraph" title='ceres::internal::WeightedGraph' data-ref="ceres::internal::WeightedGraph">WeightedGraph</a>&lt;<em>int</em>&gt;* <dfn class="decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner18CreateClusterGraphERKSt6vectorISt3setIiSt4lessIiESaIiEESaIS7_EE" title='ceres::internal::VisibilityBasedPreconditioner::CreateClusterGraph' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner18CreateClusterGraphERKSt6vectorISt3setIiSt4lessIiESaIiEESaIS7_EE">CreateClusterGraph</dfn>(</td></tr>
+<tr><th id="161">161</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_set.h.html#std::set" title='std::set' data-ref="std::set">set</a>&lt;<em>int</em>&gt; &gt;&amp; <dfn class="local col8 decl" id="28visibility" title='visibility' data-type='const std::vector&lt;std::set&lt;int&gt; &gt; &amp;' data-ref="28visibility">visibility</dfn>) <em>const</em>;</td></tr>
+<tr><th id="162">162</th><td>  <em>void</em> <dfn class="decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner20ForestToClusterPairsERKNS0_13WeightedGraphIiEEPNS0_7HashSetISt4pairIiiEEE" title='ceres::internal::VisibilityBasedPreconditioner::ForestToClusterPairs' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner20ForestToClusterPairsERKNS0_13WeightedGraphIiEEPNS0_7HashSetISt4pairIiiEEE">ForestToClusterPairs</dfn>(<em>const</em> <a class="type" href="graph.h.html#ceres::internal::WeightedGraph" title='ceres::internal::WeightedGraph' data-ref="ceres::internal::WeightedGraph">WeightedGraph</a>&lt;<em>int</em>&gt;&amp; <dfn class="local col9 decl" id="29forest" title='forest' data-type='const WeightedGraph&lt;int&gt; &amp;' data-ref="29forest">forest</dfn>,</td></tr>
+<tr><th id="163">163</th><td>                            <a class="type" href="collections_port.h.html#ceres::internal::HashSet" title='ceres::internal::HashSet' data-ref="ceres::internal::HashSet">HashSet</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<em>int</em>, <em>int</em>&gt; &gt;* <dfn class="local col0 decl" id="30cluster_pairs" title='cluster_pairs' data-type='HashSet&lt;std::pair&lt;int, int&gt; &gt; *' data-ref="30cluster_pairs">cluster_pairs</dfn>) <em>const</em>;</td></tr>
+<tr><th id="164">164</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditioner33ComputeBlockPairsInPreconditionerERKNS0_27CompressedRowBlockStructureE" title='ceres::internal::VisibilityBasedPreconditioner::ComputeBlockPairsInPreconditioner' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditioner33ComputeBlockPairsInPreconditionerERKNS0_27CompressedRowBlockStructureE">ComputeBlockPairsInPreconditioner</dfn>(<em>const</em> <a class="type" href="block_structure.h.html#ceres::internal::CompressedRowBlockStructure" title='ceres::internal::CompressedRowBlockStructure' data-ref="ceres::internal::CompressedRowBlockStructure">CompressedRowBlockStructure</a>&amp; <dfn class="local col1 decl" id="31bs" title='bs' data-type='const ceres::internal::CompressedRowBlockStructure &amp;' data-ref="31bs">bs</dfn>);</td></tr>
+<tr><th id="165">165</th><td>  <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner27IsBlockPairInPreconditionerEii" title='ceres::internal::VisibilityBasedPreconditioner::IsBlockPairInPreconditioner' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner27IsBlockPairInPreconditionerEii">IsBlockPairInPreconditioner</dfn>(<em>int</em> <dfn class="local col2 decl" id="32block1" title='block1' data-type='int' data-ref="32block1">block1</dfn>, <em>int</em> <dfn class="local col3 decl" id="33block2" title='block2' data-type='int' data-ref="33block2">block2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="166">166</th><td>  <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal29VisibilityBasedPreconditioner22IsBlockPairOffDiagonalEii" title='ceres::internal::VisibilityBasedPreconditioner::IsBlockPairOffDiagonal' data-ref="_ZNK5ceres8internal29VisibilityBasedPreconditioner22IsBlockPairOffDiagonalEii">IsBlockPairOffDiagonal</dfn>(<em>int</em> <dfn class="local col4 decl" id="34block1" title='block1' data-type='int' data-ref="34block1">block1</dfn>, <em>int</em> <dfn class="local col5 decl" id="35block2" title='block2' data-type='int' data-ref="35block2">block2</dfn>) <em>const</em>;</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td>  <a class="type" href="preconditioner.h.html#ceres::internal::Preconditioner" title='ceres::internal::Preconditioner' data-ref="ceres::internal::Preconditioner">Preconditioner</a>::<a class="type" href="preconditioner.h.html#ceres::internal::Preconditioner::Options" title='ceres::internal::Preconditioner::Options' data-ref="ceres::internal::Preconditioner::Options">Options</a> <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::options_" title='ceres::internal::VisibilityBasedPreconditioner::options_' data-ref="ceres::internal::VisibilityBasedPreconditioner::options_">options_</dfn>;</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td>  <i>// Number of parameter blocks in the schur complement.</i></td></tr>
+<tr><th id="171">171</th><td>  <em>int</em> <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::num_blocks_" title='ceres::internal::VisibilityBasedPreconditioner::num_blocks_' data-ref="ceres::internal::VisibilityBasedPreconditioner::num_blocks_">num_blocks_</dfn>;</td></tr>
+<tr><th id="172">172</th><td>  <em>int</em> <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::num_clusters_" title='ceres::internal::VisibilityBasedPreconditioner::num_clusters_' data-ref="ceres::internal::VisibilityBasedPreconditioner::num_clusters_">num_clusters_</dfn>;</td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td>  <i>// Sizes of the blocks in the schur complement.</i></td></tr>
+<tr><th id="175">175</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt; <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::block_size_" title='ceres::internal::VisibilityBasedPreconditioner::block_size_' data-ref="ceres::internal::VisibilityBasedPreconditioner::block_size_">block_size_</dfn>;</td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td>  <i>// Mapping from cameras to clusters.</i></td></tr>
+<tr><th id="178">178</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt; <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::cluster_membership_" title='ceres::internal::VisibilityBasedPreconditioner::cluster_membership_' data-ref="ceres::internal::VisibilityBasedPreconditioner::cluster_membership_">cluster_membership_</dfn>;</td></tr>
+<tr><th id="179">179</th><td></td></tr>
+<tr><th id="180">180</th><td>  <i>// Non-zero camera pairs from the schur complement matrix that are</i></td></tr>
+<tr><th id="181">181</th><td><i>  // present in the preconditioner, sorted by row (first element of</i></td></tr>
+<tr><th id="182">182</th><td><i>  // each pair), then column (second).</i></td></tr>
+<tr><th id="183">183</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_set.h.html#std::set" title='std::set' data-ref="std::set">set</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<em>int</em>, <em>int</em>&gt; &gt; <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::block_pairs_" title='ceres::internal::VisibilityBasedPreconditioner::block_pairs_' data-ref="ceres::internal::VisibilityBasedPreconditioner::block_pairs_">block_pairs_</dfn>;</td></tr>
+<tr><th id="184">184</th><td></td></tr>
+<tr><th id="185">185</th><td>  <i>// Set of cluster pairs (including self pairs (i,i)) in the</i></td></tr>
+<tr><th id="186">186</th><td><i>  // preconditioner.</i></td></tr>
+<tr><th id="187">187</th><td>  <a class="type" href="collections_port.h.html#ceres::internal::HashSet" title='ceres::internal::HashSet' data-ref="ceres::internal::HashSet">HashSet</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<em>int</em>, <em>int</em>&gt; &gt; <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::cluster_pairs_" title='ceres::internal::VisibilityBasedPreconditioner::cluster_pairs_' data-ref="ceres::internal::VisibilityBasedPreconditioner::cluster_pairs_">cluster_pairs_</dfn>;</td></tr>
+<tr><th id="188">188</th><td>  <a class="type" href="../../include/ceres/internal/scoped_ptr.h.html#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;<a class="type" href="schur_jacobi_preconditioner.h.html#ceres::internal::SchurEliminatorBase" title='ceres::internal::SchurEliminatorBase' data-ref="ceres::internal::SchurEliminatorBase">SchurEliminatorBase</a>&gt; <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::eliminator_" title='ceres::internal::VisibilityBasedPreconditioner::eliminator_' data-ref="ceres::internal::VisibilityBasedPreconditioner::eliminator_">eliminator_</dfn>;</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>  <i>// Preconditioner matrix.</i></td></tr>
+<tr><th id="191">191</th><td>  <a class="type" href="../../include/ceres/internal/scoped_ptr.h.html#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;<a class="type" href="#ceres::internal::BlockRandomAccessSparseMatrix" title='ceres::internal::BlockRandomAccessSparseMatrix' data-ref="ceres::internal::BlockRandomAccessSparseMatrix">BlockRandomAccessSparseMatrix</a>&gt; <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::m_" title='ceres::internal::VisibilityBasedPreconditioner::m_' data-ref="ceres::internal::VisibilityBasedPreconditioner::m_">m_</dfn>;</td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td>  <i>// RightMultiply is a const method for LinearOperators. It is</i></td></tr>
+<tr><th id="194">194</th><td><i>  // implemented using CHOLMOD's sparse triangular matrix solve</i></td></tr>
+<tr><th id="195">195</th><td><i>  // function. This however requires non-const access to the</i></td></tr>
+<tr><th id="196">196</th><td><i>  // SuiteSparse context object, even though it does not result in any</i></td></tr>
+<tr><th id="197">197</th><td><i>  // of the state of the preconditioner being modified.</i></td></tr>
+<tr><th id="198">198</th><td>  <a class="type" href="suitesparse.h.html#ceres::internal::SuiteSparse" title='ceres::internal::SuiteSparse' data-ref="ceres::internal::SuiteSparse">SuiteSparse</a> <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::ss_" title='ceres::internal::VisibilityBasedPreconditioner::ss_' data-ref="ceres::internal::VisibilityBasedPreconditioner::ss_">ss_</dfn>;</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>  <i>// Symbolic and numeric factorization of the preconditioner.</i></td></tr>
+<tr><th id="201">201</th><td>  <a class="typedef" href="../../../include/suitesparse/cholmod_core.h.html#cholmod_factor" title='cholmod_factor' data-type='struct cholmod_factor_struct' data-ref="cholmod_factor">cholmod_factor</a>* <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::factor_" title='ceres::internal::VisibilityBasedPreconditioner::factor_' data-ref="ceres::internal::VisibilityBasedPreconditioner::factor_">factor_</dfn>;</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td>  <i>// Temporary vector used by RightMultiply.</i></td></tr>
+<tr><th id="204">204</th><td>  <a class="typedef" href="../../../include/suitesparse/cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a>* <dfn class="decl" id="ceres::internal::VisibilityBasedPreconditioner::tmp_rhs_" title='ceres::internal::VisibilityBasedPreconditioner::tmp_rhs_' data-ref="ceres::internal::VisibilityBasedPreconditioner::tmp_rhs_">tmp_rhs_</dfn>;</td></tr>
+<tr><th id="205">205</th><td>  <a class="macro" href="../../include/ceres/internal/macros.h.html#52" title="VisibilityBasedPreconditioner(const VisibilityBasedPreconditioner&amp;); void operator=(const VisibilityBasedPreconditioner&amp;)" data-ref="_M/CERES_DISALLOW_COPY_AND_ASSIGN">CERES_DISALLOW_COPY_AND_ASSIGN</a>(<dfn class="decl" id="_ZN5ceres8internal29VisibilityBasedPreconditionerC1ERKS1_" title='ceres::internal::VisibilityBasedPreconditioner::VisibilityBasedPreconditioner' data-ref="_ZN5ceres8internal29VisibilityBasedPreconditionerC1ERKS1_"><a class="type" href="#ceres::internal::VisibilityBasedPreconditioner" title='ceres::internal::VisibilityBasedPreconditioner' data-ref="ceres::internal::VisibilityBasedPreconditioner"><a class="type" href="#ceres::internal::VisibilityBasedPreconditioner" title='ceres::internal::VisibilityBasedPreconditioner' data-ref="ceres::internal::VisibilityBasedPreconditioner">VisibilityBasedPreconditioner</a></a></dfn>);</td></tr>
+<tr><th id="206">206</th><td>};</td></tr>
+<tr><th id="207">207</th><td><u>#<span data-ppcond="126">else</span>  // SuiteSparse</u></td></tr>
+<tr><th id="208">208</th><td><i>// If SuiteSparse is not compiled in, the preconditioner is not</i></td></tr>
+<tr><th id="209">209</th><td><i>// available.</i></td></tr>
+<tr><th id="210">210</th><td><b>class</b> VisibilityBasedPreconditioner : <b>public</b> BlockSparseMatrixPreconditioner {</td></tr>
+<tr><th id="211">211</th><td> <b>public</b>:</td></tr>
+<tr><th id="212">212</th><td>  VisibilityBasedPreconditioner(<em>const</em> CompressedRowBlockStructure&amp; bs,</td></tr>
+<tr><th id="213">213</th><td>                                <em>const</em> Preconditioner::Options&amp; options) {</td></tr>
+<tr><th id="214">214</th><td>    LOG(FATAL) &lt;&lt; <q>"Visibility based preconditioning is not available. Please "</q></td></tr>
+<tr><th id="215">215</th><td>        <q>"build Ceres with SuiteSparse."</q>;</td></tr>
+<tr><th id="216">216</th><td>  }</td></tr>
+<tr><th id="217">217</th><td>  <b>virtual</b> ~VisibilityBasedPreconditioner() {}</td></tr>
+<tr><th id="218">218</th><td>  <b>virtual</b> <em>void</em> RightMultiply(<em>const</em> <em>double</em>* x, <em>double</em>* y) <em>const</em> {}</td></tr>
+<tr><th id="219">219</th><td>  <b>virtual</b> <em>void</em> LeftMultiply(<em>const</em> <em>double</em>* x, <em>double</em>* y) <em>const</em> {}</td></tr>
+<tr><th id="220">220</th><td>  <b>virtual</b> <em>int</em> num_rows() <em>const</em> { <b>return</b> -<var>1</var>; }</td></tr>
+<tr><th id="221">221</th><td>  <b>virtual</b> <em>int</em> num_cols() <em>const</em> { <b>return</b> -<var>1</var>; }</td></tr>
+<tr><th id="222">222</th><td></td></tr>
+<tr><th id="223">223</th><td> <b>private</b>:</td></tr>
+<tr><th id="224">224</th><td>  <em>bool</em> UpdateImpl(<em>const</em> BlockSparseMatrix&amp; A, <em>const</em> <em>double</em>* D) {</td></tr>
+<tr><th id="225">225</th><td>    <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="226">226</th><td>  }</td></tr>
+<tr><th id="227">227</th><td>};</td></tr>
+<tr><th id="228">228</th><td><u>#<span data-ppcond="126">endif</span>  // CERES_NO_SUITESPARSE</u></td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="231">231</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td><u>#<span data-ppcond="48">endif</span>  // CERES_INTERNAL_VISIBILITY_BASED_PRECONDITIONER_H_</u></td></tr>
+<tr><th id="234">234</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='iterative_schur_complement_solver.cc.html'>ceres-solver/internal/ceres/iterative_schur_complement_solver.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

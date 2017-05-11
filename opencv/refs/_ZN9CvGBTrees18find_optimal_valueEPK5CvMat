@@ -1,0 +1,69 @@
+<dec f='opencv/modules/ml/include/opencv2/ml/ml.hpp' l='1738' type='float CvGBTrees::find_optimal_value(const CvMat * _Idx)'/>
+<doc f='opencv/modules/ml/include/opencv2/ml/ml.hpp' l='1722'>/*
+    //
+    // Find optimal constant prediction value according to the used loss
+    // function.
+    // The goal is to find a constant which gives the minimal summary loss
+    // on the _Idx samples.
+    //
+    // API
+    // virtual float find_optimal_value( const CvMat* _Idx );
+    //
+    // INPUT
+    // _Idx        - indices of the samples from the training set.
+    // OUTPUT
+    // RESULT
+    // optimal constant value.
+    */</doc>
+<use f='opencv/modules/ml/src/gbt.cpp' l='322' u='c' c='_ZN9CvGBTrees5trainEPK5CvMatiS2_S2_S2_S2_S2_15CvGBTreesParamsb'/>
+<use f='opencv/modules/ml/src/gbt.cpp' l='603' u='c' c='_ZN9CvGBTrees13change_valuesEP7CvDTreei'/>
+<def f='opencv/modules/ml/src/gbt.cpp' l='686' ll='766' type='float CvGBTrees::find_optimal_value(const CvMat * _Idx)'/>
+<doc f='opencv/modules/ml/src/gbt.cpp' l='636'>/*
+void CvGBTrees::change_values(CvDTree* tree, const int _k)
+{
+
+    CvDTreeNode** leaves;
+    int leaves_count = 0;
+    int offset = _k*sum_response_tmp-&gt;cols;
+    CvMat leaf_idx;
+    leaf_idx.rows = 1;
+
+    leaves = GetLeaves( tree, leaves_count);
+
+    for (int i=0; i&lt;leaves_count; ++i)
+    {
+        int n = leaves[i]-&gt;sample_count;
+        int* leaf_idx_data = new int[n];
+        data-&gt;get_sample_indices(leaves[i], leaf_idx_data);
+        //CvMat* leaf_idx = new CvMat();
+        //cvInitMatHeader(leaf_idx, n, 1, CV_32S, leaf_idx_data);
+        leaf_idx.cols = n;
+        leaf_idx.data.i = leaf_idx_data;
+
+        float value = find_optimal_value(&amp;leaf_idx);
+        leaves[i]-&gt;value = value;
+        float val = params.shrinkage * value;
+
+
+        for (int j=0; j&lt;n; ++j)
+        {
+            int idx = leaf_idx_data[j] + offset;
+            sum_response_tmp-&gt;data.fl[idx] = sum_response-&gt;data.fl[idx] + val;
+        }
+        //leaf_idx_data = 0;
+        //cvReleaseMat(&amp;leaf_idx);
+        leaf_idx.data.i = 0;
+        //delete leaf_idx;
+        delete[] leaf_idx_data;
+    }
+
+    // releasing the memory
+    for (int i=0; i&lt;leaves_count; ++i)
+    {
+        leaves[i] = 0;
+    }
+    delete[] leaves;
+
+}    //change_values(...);
+*/
+//===========================================================================</doc>

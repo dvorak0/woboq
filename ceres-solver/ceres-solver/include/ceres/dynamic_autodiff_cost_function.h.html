@@ -1,0 +1,270 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>dynamic_autodiff_cost_function.h source code [ceres-solver/include/ceres/dynamic_autodiff_cost_function.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::DynamicAutoDiffCostFunction "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/include/ceres/dynamic_autodiff_cost_function.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>include</a>/<a href='./'>ceres</a>/<a href='dynamic_autodiff_cost_function.h.html'>dynamic_autodiff_cost_function.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td><i>//         mierle@gmail.com (Keir Mierle)</i></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="32">ifndef</span> <span class="macro" data-ref="_M/CERES_PUBLIC_DYNAMIC_AUTODIFF_COST_FUNCTION_H_">CERES_PUBLIC_DYNAMIC_AUTODIFF_COST_FUNCTION_H_</span></u></td></tr>
+<tr><th id="33">33</th><td><u>#define <dfn class="macro" id="_M/CERES_PUBLIC_DYNAMIC_AUTODIFF_COST_FUNCTION_H_" data-ref="_M/CERES_PUBLIC_DYNAMIC_AUTODIFF_COST_FUNCTION_H_">CERES_PUBLIC_DYNAMIC_AUTODIFF_COST_FUNCTION_H_</dfn></u></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../include/c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../include/c++/4.8/numeric.html">&lt;numeric&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="dynamic_cost_function.h.html">"ceres/dynamic_cost_function.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="internal/scoped_ptr.h.html">"ceres/internal/scoped_ptr.h"</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="jet.h.html">"ceres/jet.h"</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="../../../include/glog/logging.h.html">"glog/logging.h"</a></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><i>// This autodiff implementation differs from the one found in</i></td></tr>
+<tr><th id="47">47</th><td><i>// autodiff_cost_function.h by supporting autodiff on cost functions</i></td></tr>
+<tr><th id="48">48</th><td><i>// with variable numbers of parameters with variable sizes. With the</i></td></tr>
+<tr><th id="49">49</th><td><i>// other implementation, all the sizes (both the number of parameter</i></td></tr>
+<tr><th id="50">50</th><td><i>// blocks and the size of each block) must be fixed at compile time.</i></td></tr>
+<tr><th id="51">51</th><td><i>//</i></td></tr>
+<tr><th id="52">52</th><td><i>// The functor API differs slightly from the API for fixed size</i></td></tr>
+<tr><th id="53">53</th><td><i>// autodiff; the expected interface for the cost functors is:</i></td></tr>
+<tr><th id="54">54</th><td><i>//</i></td></tr>
+<tr><th id="55">55</th><td><i>//   struct MyCostFunctor {</i></td></tr>
+<tr><th id="56">56</th><td><i>//     template&lt;typename T&gt;</i></td></tr>
+<tr><th id="57">57</th><td><i>//     bool operator()(T const* const* parameters, T* residuals) const {</i></td></tr>
+<tr><th id="58">58</th><td><i>//       // Use parameters[i] to access the i'th parameter block.</i></td></tr>
+<tr><th id="59">59</th><td><i>//     }</i></td></tr>
+<tr><th id="60">60</th><td><i>//   }</i></td></tr>
+<tr><th id="61">61</th><td><i>//</i></td></tr>
+<tr><th id="62">62</th><td><i>// Since the sizing of the parameters is done at runtime, you must</i></td></tr>
+<tr><th id="63">63</th><td><i>// also specify the sizes after creating the dynamic autodiff cost</i></td></tr>
+<tr><th id="64">64</th><td><i>// function. For example:</i></td></tr>
+<tr><th id="65">65</th><td><i>//</i></td></tr>
+<tr><th id="66">66</th><td><i>//   DynamicAutoDiffCostFunction&lt;MyCostFunctor, 3&gt; cost_function(</i></td></tr>
+<tr><th id="67">67</th><td><i>//       new MyCostFunctor());</i></td></tr>
+<tr><th id="68">68</th><td><i>//   cost_function.AddParameterBlock(5);</i></td></tr>
+<tr><th id="69">69</th><td><i>//   cost_function.AddParameterBlock(10);</i></td></tr>
+<tr><th id="70">70</th><td><i>//   cost_function.SetNumResiduals(21);</i></td></tr>
+<tr><th id="71">71</th><td><i>//</i></td></tr>
+<tr><th id="72">72</th><td><i>// Under the hood, the implementation evaluates the cost function</i></td></tr>
+<tr><th id="73">73</th><td><i>// multiple times, computing a small set of the derivatives (four by</i></td></tr>
+<tr><th id="74">74</th><td><i>// default, controlled by the Stride template parameter) with each</i></td></tr>
+<tr><th id="75">75</th><td><i>// pass. There is a tradeoff with the size of the passes; you may want</i></td></tr>
+<tr><th id="76">76</th><td><i>// to experiment with the stride.</i></td></tr>
+<tr><th id="77">77</th><td><b>template</b> &lt;<b>typename</b> CostFunctor, <em>int</em> Stride = <var>4</var>&gt;</td></tr>
+<tr><th id="78">78</th><td><b>class</b> <dfn class="type def" id="ceres::DynamicAutoDiffCostFunction" title='ceres::DynamicAutoDiffCostFunction' data-ref="ceres::DynamicAutoDiffCostFunction">DynamicAutoDiffCostFunction</dfn> : <b>public</b> <a class="type" href="dynamic_cost_function.h.html#ceres::DynamicCostFunction" title='ceres::DynamicCostFunction' data-ref="ceres::DynamicCostFunction">DynamicCostFunction</a> {</td></tr>
+<tr><th id="79">79</th><td> <b>public</b>:</td></tr>
+<tr><th id="80">80</th><td>  <b>explicit</b> <dfn class="decl def" id="_ZN5ceres27DynamicAutoDiffCostFunctionC1EPT_" title='ceres::DynamicAutoDiffCostFunction::DynamicAutoDiffCostFunction&lt;CostFunctor, Stride&gt;' data-ref="_ZN5ceres27DynamicAutoDiffCostFunctionC1EPT_">DynamicAutoDiffCostFunction</dfn>(CostFunctor* <dfn class="local col9 decl" id="859functor" title='functor' data-type='CostFunctor *' data-ref="859functor">functor</dfn>)</td></tr>
+<tr><th id="81">81</th><td>    : <a class="member" href="#ceres::DynamicAutoDiffCostFunction::functor_" title='ceres::DynamicAutoDiffCostFunction::functor_' data-ref="ceres::DynamicAutoDiffCostFunction::functor_">functor_</a>(<a class="local col9 ref" href="#859functor" title='functor' data-ref="859functor">functor</a>) {}</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres27DynamicAutoDiffCostFunctionD1Ev" title='ceres::DynamicAutoDiffCostFunction::~DynamicAutoDiffCostFunction&lt;CostFunctor, Stride&gt;' data-ref="_ZN5ceres27DynamicAutoDiffCostFunctionD1Ev">~</dfn>DynamicAutoDiffCostFunction() {}</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl def" id="_ZNK5ceres27DynamicAutoDiffCostFunction8EvaluateEPKPKdPdPS5_" title='ceres::DynamicAutoDiffCostFunction::Evaluate' data-ref="_ZNK5ceres27DynamicAutoDiffCostFunction8EvaluateEPKPKdPdPS5_">Evaluate</dfn>(<em>double</em> <em>const</em>* <em>const</em>* <dfn class="local col0 decl" id="860parameters" title='parameters' data-type='const double *const *' data-ref="860parameters">parameters</dfn>,</td></tr>
+<tr><th id="86">86</th><td>                        <em>double</em>* <dfn class="local col1 decl" id="861residuals" title='residuals' data-type='double *' data-ref="861residuals">residuals</dfn>,</td></tr>
+<tr><th id="87">87</th><td>                        <em>double</em>** <dfn class="local col2 decl" id="862jacobians" title='jacobians' data-type='double **' data-ref="862jacobians">jacobians</dfn>) <em>const</em> {</td></tr>
+<tr><th id="88">88</th><td>    <a class="macro" href="../../../include/glog/logging.h.html#770" title="while (google::CheckOpString _result = google::Check_GTImpl( google::GetReferenceableValue(num_residuals()), google::GetReferenceableValue(0), &quot;num_residuals()&quot; &quot; &quot; &quot;&gt;&quot; &quot; &quot; &quot;0&quot;)) google::LogMessageFatal(&quot;/home/yzf/code/ceres-solver/include/ceres/dynamic_autodiff_cost_function.h&quot;, 88, _result).stream()" data-ref="_M/CHECK_GT">CHECK_GT</a>(<a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction13num_residualsEv" title='ceres::CostFunction::num_residuals' data-ref="_ZNK5ceres12CostFunction13num_residualsEv">num_residuals</a>(), <var>0</var>)</td></tr>
+<tr><th id="89">89</th><td>        <a class="ref" href="../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"You must call DynamicAutoDiffCostFunction::SetNumResiduals() "</q></td></tr>
+<tr><th id="90">90</th><td>        <a class="ref" href="../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"before DynamicAutoDiffCostFunction::Evaluate()."</q>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <b>if</b> (<a class="local col2 ref" href="#862jacobians" title='jacobians' data-ref="862jacobians">jacobians</a> == <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="93">93</th><td>      <b>return</b> (*<a class="member" href="#ceres::DynamicAutoDiffCostFunction::functor_" title='ceres::DynamicAutoDiffCostFunction::functor_' data-ref="ceres::DynamicAutoDiffCostFunction::functor_">functor_</a>)(<a class="local col0 ref" href="#860parameters" title='parameters' data-ref="860parameters">parameters</a>, <a class="local col1 ref" href="#861residuals" title='residuals' data-ref="861residuals">residuals</a>);</td></tr>
+<tr><th id="94">94</th><td>    }</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>    <i>// The difficulty with Jets, as implemented in Ceres, is that they were</i></td></tr>
+<tr><th id="97">97</th><td><i>    // originally designed for strictly compile-sized use. At this point, there</i></td></tr>
+<tr><th id="98">98</th><td><i>    // is a large body of code that assumes inside a cost functor it is</i></td></tr>
+<tr><th id="99">99</th><td><i>    // acceptable to do e.g. T(1.5) and get an appropriately sized jet back.</i></td></tr>
+<tr><th id="100">100</th><td><i>    //</i></td></tr>
+<tr><th id="101">101</th><td><i>    // Unfortunately, it is impossible to communicate the expected size of a</i></td></tr>
+<tr><th id="102">102</th><td><i>    // dynamically sized jet to the static instantiations that existing code</i></td></tr>
+<tr><th id="103">103</th><td><i>    // depends on.</i></td></tr>
+<tr><th id="104">104</th><td><i>    //</i></td></tr>
+<tr><th id="105">105</th><td><i>    // To work around this issue, the solution here is to evaluate the</i></td></tr>
+<tr><th id="106">106</th><td><i>    // jacobians in a series of passes, each one computing Stripe *</i></td></tr>
+<tr><th id="107">107</th><td><i>    // num_residuals() derivatives. This is done with small, fixed-size jets.</i></td></tr>
+<tr><th id="108">108</th><td>    <em>const</em> <em>int</em> <dfn class="local col3 decl" id="863num_parameter_blocks" title='num_parameter_blocks' data-type='const int' data-ref="863num_parameter_blocks">num_parameter_blocks</dfn> = <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>().size();</td></tr>
+<tr><th id="109">109</th><td>    <em>const</em> <em>int</em> <dfn class="local col4 decl" id="864num_parameters" title='num_parameters' data-type='const int' data-ref="864num_parameters">num_parameters</dfn> = <span class="namespace">std::</span>accumulate(<a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>().begin(),</td></tr>
+<tr><th id="110">110</th><td>                                               <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>().end(),</td></tr>
+<tr><th id="111">111</th><td>                                               <var>0</var>);</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>    <i>// Allocate scratch space for the strided evaluation.</i></td></tr>
+<tr><th id="114">114</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="jet.h.html#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;<em>double</em>, <a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a>&gt; &gt; <dfn class="local col5 decl" id="865input_jets" title='input_jets' data-type='std::vector&lt;Jet&lt;double, Stride&gt; &gt;' data-ref="865input_jets">input_jets</dfn>(<a class="local col4 ref" href="#864num_parameters" title='num_parameters' data-ref="864num_parameters">num_parameters</a>);</td></tr>
+<tr><th id="115">115</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="jet.h.html#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;<em>double</em>, <a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a>&gt; &gt; <dfn class="local col6 decl" id="866output_jets" title='output_jets' data-type='std::vector&lt;Jet&lt;double, Stride&gt; &gt;' data-ref="866output_jets">output_jets</dfn>(<a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction13num_residualsEv" title='ceres::CostFunction::num_residuals' data-ref="_ZNK5ceres12CostFunction13num_residualsEv">num_residuals</a>());</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td>    <i>// Make the parameter pack that is sent to the functor (reused).</i></td></tr>
+<tr><th id="118">118</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="jet.h.html#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;<em>double</em>, <a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a>&gt;* &gt; <dfn class="local col7 decl" id="867jet_parameters" title='jet_parameters' data-type='std::vector&lt;Jet&lt;double, Stride&gt; *&gt;' data-ref="867jet_parameters">jet_parameters</dfn>(<a class="local col3 ref" href="#863num_parameter_blocks" title='num_parameter_blocks' data-ref="863num_parameter_blocks">num_parameter_blocks</a>,</td></tr>
+<tr><th id="119">119</th><td>        <b>static_cast</b>&lt;<a class="type" href="jet.h.html#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;<em>double</em>, <a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-use='r' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a>&gt;* &gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>));</td></tr>
+<tr><th id="120">120</th><td>    <em>int</em> <dfn class="local col8 decl" id="868num_active_parameters" title='num_active_parameters' data-type='int' data-ref="868num_active_parameters">num_active_parameters</dfn> = <var>0</var>;</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    <i>// To handle constant parameters between non-constant parameter blocks, the</i></td></tr>
+<tr><th id="123">123</th><td><i>    // start position --- a raw parameter index --- of each contiguous block of</i></td></tr>
+<tr><th id="124">124</th><td><i>    // non-constant parameters is recorded in start_derivative_section.</i></td></tr>
+<tr><th id="125">125</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt; <a class="ref fake" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vectorC1Ev" title='std::vector::vector&lt;_Tp, _Alloc&gt;' data-ref="_ZNSt6vectorC1Ev"></a><dfn class="local col9 decl" id="869start_derivative_section" title='start_derivative_section' data-type='std::vector&lt;int&gt;' data-ref="869start_derivative_section">start_derivative_section</dfn>;</td></tr>
+<tr><th id="126">126</th><td>    <em>bool</em> <dfn class="local col0 decl" id="870in_derivative_section" title='in_derivative_section' data-type='bool' data-ref="870in_derivative_section">in_derivative_section</dfn> = <b>false</b>;</td></tr>
+<tr><th id="127">127</th><td>    <em>int</em> <dfn class="local col1 decl" id="871parameter_cursor" title='parameter_cursor' data-type='int' data-ref="871parameter_cursor">parameter_cursor</dfn> = <var>0</var>;</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>    <i>// Discover the derivative sections and set the parameter values.</i></td></tr>
+<tr><th id="130">130</th><td>    <b>for</b> (<em>int</em> <dfn class="local col2 decl" id="872i" title='i' data-type='int' data-ref="872i">i</dfn> = <var>0</var>; <a class="local col2 ref" href="#872i" title='i' data-ref="872i">i</a> &lt; <a class="local col3 ref" href="#863num_parameter_blocks" title='num_parameter_blocks' data-ref="863num_parameter_blocks">num_parameter_blocks</a>; ++<a class="local col2 ref" href="#872i" title='i' data-ref="872i">i</a>) {</td></tr>
+<tr><th id="131">131</th><td>      <a class="local col7 ref" href="#867jet_parameters" title='jet_parameters' data-ref="867jet_parameters">jet_parameters</a>[<a class="local col2 ref" href="#872i" title='i' data-ref="872i">i</a>] = &amp;<a class="local col5 ref" href="#865input_jets" title='input_jets' data-ref="865input_jets">input_jets</a>[<a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>];</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td>      <em>const</em> <em>int</em> <dfn class="local col3 decl" id="873parameter_block_size" title='parameter_block_size' data-type='const int' data-ref="873parameter_block_size">parameter_block_size</dfn> = <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>()[<a class="local col2 ref" href="#872i" title='i' data-ref="872i">i</a>];</td></tr>
+<tr><th id="134">134</th><td>      <b>if</b> (<a class="local col2 ref" href="#862jacobians" title='jacobians' data-ref="862jacobians">jacobians</a>[<a class="local col2 ref" href="#872i" title='i' data-ref="872i">i</a>] != <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="135">135</th><td>        <b>if</b> (!<a class="local col0 ref" href="#870in_derivative_section" title='in_derivative_section' data-ref="870in_derivative_section">in_derivative_section</a>) {</td></tr>
+<tr><th id="136">136</th><td>          <a class="local col9 ref" href="#869start_derivative_section" title='start_derivative_section' data-ref="869start_derivative_section">start_derivative_section</a>.<a class="ref" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vector9push_backERKT_" title='std::vector::push_back' data-ref="_ZNSt6vector9push_backERKT_">push_back</a>(<a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>);</td></tr>
+<tr><th id="137">137</th><td>          <a class="local col0 ref" href="#870in_derivative_section" title='in_derivative_section' data-ref="870in_derivative_section">in_derivative_section</a> = <b>true</b>;</td></tr>
+<tr><th id="138">138</th><td>        }</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td>        <a class="local col8 ref" href="#868num_active_parameters" title='num_active_parameters' data-ref="868num_active_parameters">num_active_parameters</a> += <a class="local col3 ref" href="#873parameter_block_size" title='parameter_block_size' data-ref="873parameter_block_size">parameter_block_size</a>;</td></tr>
+<tr><th id="141">141</th><td>      } <b>else</b> {</td></tr>
+<tr><th id="142">142</th><td>        <a class="local col0 ref" href="#870in_derivative_section" title='in_derivative_section' data-ref="870in_derivative_section">in_derivative_section</a> = <b>false</b>;</td></tr>
+<tr><th id="143">143</th><td>      }</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>      <b>for</b> (<em>int</em> <dfn class="local col4 decl" id="874j" title='j' data-type='int' data-ref="874j">j</dfn> = <var>0</var>; <a class="local col4 ref" href="#874j" title='j' data-ref="874j">j</a> &lt; <a class="local col3 ref" href="#873parameter_block_size" title='parameter_block_size' data-ref="873parameter_block_size">parameter_block_size</a>; ++<a class="local col4 ref" href="#874j" title='j' data-ref="874j">j</a>, <a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>++) {</td></tr>
+<tr><th id="146">146</th><td>        <a class="local col5 ref" href="#865input_jets" title='input_jets' data-ref="865input_jets">input_jets</a>[<a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>].a = <a class="local col0 ref" href="#860parameters" title='parameters' data-ref="860parameters">parameters</a>[<a class="local col2 ref" href="#872i" title='i' data-ref="872i">i</a>][<a class="local col4 ref" href="#874j" title='j' data-ref="874j">j</a>];</td></tr>
+<tr><th id="147">147</th><td>      }</td></tr>
+<tr><th id="148">148</th><td>    }</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td>    <i>// When `num_active_parameters % Stride != 0` then it can be the case</i></td></tr>
+<tr><th id="151">151</th><td><i>    // that `active_parameter_count &lt; Stride` while parameter_cursor is less</i></td></tr>
+<tr><th id="152">152</th><td><i>    // than the total number of parameters and with no remaining non-constant</i></td></tr>
+<tr><th id="153">153</th><td><i>    // parameter blocks. Pushing parameter_cursor (the total number of</i></td></tr>
+<tr><th id="154">154</th><td><i>    // parameters) as a final entry to start_derivative_section is required</i></td></tr>
+<tr><th id="155">155</th><td><i>    // because if a constant parameter block is encountered after the</i></td></tr>
+<tr><th id="156">156</th><td><i>    // last non-constant block then current_derivative_section is incremented</i></td></tr>
+<tr><th id="157">157</th><td><i>    // and would otherwise index an invalid position in</i></td></tr>
+<tr><th id="158">158</th><td><i>    // start_derivative_section. Setting the final element to the total number</i></td></tr>
+<tr><th id="159">159</th><td><i>    // of parameters means that this can only happen at most once in the loop</i></td></tr>
+<tr><th id="160">160</th><td><i>    // below.</i></td></tr>
+<tr><th id="161">161</th><td>    <a class="local col9 ref" href="#869start_derivative_section" title='start_derivative_section' data-ref="869start_derivative_section">start_derivative_section</a>.<a class="ref" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vector9push_backERKT_" title='std::vector::push_back' data-ref="_ZNSt6vector9push_backERKT_">push_back</a>(<a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>);</td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>    <i>// Evaluate all of the strides. Each stride is a chunk of the derivative to</i></td></tr>
+<tr><th id="164">164</th><td><i>    // evaluate, typically some size proportional to the size of the SIMD</i></td></tr>
+<tr><th id="165">165</th><td><i>    // registers of the CPU.</i></td></tr>
+<tr><th id="166">166</th><td>    <em>int</em> <dfn class="local col5 decl" id="875num_strides" title='num_strides' data-type='int' data-ref="875num_strides">num_strides</dfn> = <b>static_cast</b>&lt;<em>int</em>&gt;(<a class="ref" href="jet.h.html#_ZN5ceres4ceilEd" title='ceres::ceil' data-ref="_ZN5ceres4ceilEd">ceil</a>(<a class="local col8 ref" href="#868num_active_parameters" title='num_active_parameters' data-ref="868num_active_parameters">num_active_parameters</a> /</td></tr>
+<tr><th id="167">167</th><td>                                            <b>static_cast</b>&lt;<em>float</em>&gt;(<a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-use='r' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a>)));</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>    <em>int</em> <dfn class="local col6 decl" id="876current_derivative_section" title='current_derivative_section' data-type='int' data-ref="876current_derivative_section">current_derivative_section</dfn> = <var>0</var>;</td></tr>
+<tr><th id="170">170</th><td>    <em>int</em> <dfn class="local col7 decl" id="877current_derivative_section_cursor" title='current_derivative_section_cursor' data-type='int' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</dfn> = <var>0</var>;</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td>    <b>for</b> (<em>int</em> <dfn class="local col8 decl" id="878pass" title='pass' data-type='int' data-ref="878pass">pass</dfn> = <var>0</var>; <a class="local col8 ref" href="#878pass" title='pass' data-ref="878pass">pass</a> &lt; <a class="local col5 ref" href="#875num_strides" title='num_strides' data-ref="875num_strides">num_strides</a>; ++<a class="local col8 ref" href="#878pass" title='pass' data-ref="878pass">pass</a>) {</td></tr>
+<tr><th id="173">173</th><td>      <i>// Set most of the jet components to zero, except for</i></td></tr>
+<tr><th id="174">174</th><td><i>      // non-constant #Stride parameters.</i></td></tr>
+<tr><th id="175">175</th><td>      <em>const</em> <em>int</em> <dfn class="local col9 decl" id="879initial_derivative_section" title='initial_derivative_section' data-type='const int' data-ref="879initial_derivative_section">initial_derivative_section</dfn> = <a class="local col6 ref" href="#876current_derivative_section" title='current_derivative_section' data-ref="876current_derivative_section">current_derivative_section</a>;</td></tr>
+<tr><th id="176">176</th><td>      <em>const</em> <em>int</em> <dfn class="local col0 decl" id="880initial_derivative_section_cursor" title='initial_derivative_section_cursor' data-type='const int' data-ref="880initial_derivative_section_cursor">initial_derivative_section_cursor</dfn> =</td></tr>
+<tr><th id="177">177</th><td>        <a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a>;</td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td>      <em>int</em> <dfn class="local col1 decl" id="881active_parameter_count" title='active_parameter_count' data-type='int' data-ref="881active_parameter_count">active_parameter_count</dfn> = <var>0</var>;</td></tr>
+<tr><th id="180">180</th><td>      <a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a> = <var>0</var>;</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>      <b>for</b> (<em>int</em> <dfn class="local col2 decl" id="882i" title='i' data-type='int' data-ref="882i">i</dfn> = <var>0</var>; <a class="local col2 ref" href="#882i" title='i' data-ref="882i">i</a> &lt; <a class="local col3 ref" href="#863num_parameter_blocks" title='num_parameter_blocks' data-ref="863num_parameter_blocks">num_parameter_blocks</a>; ++<a class="local col2 ref" href="#882i" title='i' data-ref="882i">i</a>) {</td></tr>
+<tr><th id="183">183</th><td>        <b>for</b> (<em>int</em> <dfn class="local col3 decl" id="883j" title='j' data-type='int' data-ref="883j">j</dfn> = <var>0</var>; <a class="local col3 ref" href="#883j" title='j' data-ref="883j">j</a> &lt; <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>()[<a class="local col2 ref" href="#882i" title='i' data-ref="882i">i</a>];</td></tr>
+<tr><th id="184">184</th><td>             ++<a class="local col3 ref" href="#883j" title='j' data-ref="883j">j</a>, <a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>++) {</td></tr>
+<tr><th id="185">185</th><td>          <a class="local col5 ref" href="#865input_jets" title='input_jets' data-ref="865input_jets">input_jets</a>[<a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>].v.setZero();</td></tr>
+<tr><th id="186">186</th><td>          <b>if</b> (<a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a> &lt; <a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-use='r' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a> &amp;&amp;</td></tr>
+<tr><th id="187">187</th><td>              <a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a> &gt;= (</td></tr>
+<tr><th id="188">188</th><td>                <a class="local col9 ref" href="#869start_derivative_section" title='start_derivative_section' data-ref="869start_derivative_section">start_derivative_section</a><a class="ref" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vectorixEm" title='std::vector::operator[]' data-ref="_ZNSt6vectorixEm">[<a class="local col6 ref" href="#876current_derivative_section" title='current_derivative_section' data-ref="876current_derivative_section">current_derivative_section</a>]</a> +</td></tr>
+<tr><th id="189">189</th><td>                <a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a>)) {</td></tr>
+<tr><th id="190">190</th><td>            <b>if</b> (<a class="local col2 ref" href="#862jacobians" title='jacobians' data-ref="862jacobians">jacobians</a>[<a class="local col2 ref" href="#882i" title='i' data-ref="882i">i</a>] != <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="191">191</th><td>              <a class="local col5 ref" href="#865input_jets" title='input_jets' data-ref="865input_jets">input_jets</a>[<a class="local col1 ref" href="#871parameter_cursor" title='parameter_cursor' data-ref="871parameter_cursor">parameter_cursor</a>].v[<a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a>] = <var>1.0</var>;</td></tr>
+<tr><th id="192">192</th><td>              ++<a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a>;</td></tr>
+<tr><th id="193">193</th><td>              ++<a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a>;</td></tr>
+<tr><th id="194">194</th><td>            } <b>else</b> {</td></tr>
+<tr><th id="195">195</th><td>              ++<a class="local col6 ref" href="#876current_derivative_section" title='current_derivative_section' data-ref="876current_derivative_section">current_derivative_section</a>;</td></tr>
+<tr><th id="196">196</th><td>              <a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a> = <var>0</var>;</td></tr>
+<tr><th id="197">197</th><td>            }</td></tr>
+<tr><th id="198">198</th><td>          }</td></tr>
+<tr><th id="199">199</th><td>        }</td></tr>
+<tr><th id="200">200</th><td>      }</td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>      <b>if</b> (!(*<a class="member" href="#ceres::DynamicAutoDiffCostFunction::functor_" title='ceres::DynamicAutoDiffCostFunction::functor_' data-ref="ceres::DynamicAutoDiffCostFunction::functor_">functor_</a>)(&amp;<a class="local col7 ref" href="#867jet_parameters" title='jet_parameters' data-ref="867jet_parameters">jet_parameters</a>[<var>0</var>], &amp;<a class="local col6 ref" href="#866output_jets" title='output_jets' data-ref="866output_jets">output_jets</a>[<var>0</var>])) {</td></tr>
+<tr><th id="203">203</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="204">204</th><td>      }</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>      <i>// Copy the pieces of the jacobians into their final place.</i></td></tr>
+<tr><th id="207">207</th><td>      <a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a> = <var>0</var>;</td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>      <a class="local col6 ref" href="#876current_derivative_section" title='current_derivative_section' data-ref="876current_derivative_section">current_derivative_section</a> = <a class="local col9 ref" href="#879initial_derivative_section" title='initial_derivative_section' data-ref="879initial_derivative_section">initial_derivative_section</a>;</td></tr>
+<tr><th id="210">210</th><td>      <a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a> = <a class="local col0 ref" href="#880initial_derivative_section_cursor" title='initial_derivative_section_cursor' data-ref="880initial_derivative_section_cursor">initial_derivative_section_cursor</a>;</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>      <b>for</b> (<em>int</em> <dfn class="local col4 decl" id="884i" title='i' data-type='int' data-ref="884i">i</dfn> = <var>0</var>, <dfn class="local col5 decl" id="885parameter_cursor" title='parameter_cursor' data-type='int' data-ref="885parameter_cursor">parameter_cursor</dfn> = <var>0</var>; <a class="local col4 ref" href="#884i" title='i' data-ref="884i">i</a> &lt; <a class="local col3 ref" href="#863num_parameter_blocks" title='num_parameter_blocks' data-ref="863num_parameter_blocks">num_parameter_blocks</a>; ++<a class="local col4 ref" href="#884i" title='i' data-ref="884i">i</a>) {</td></tr>
+<tr><th id="213">213</th><td>        <b>for</b> (<em>int</em> <dfn class="local col6 decl" id="886j" title='j' data-type='int' data-ref="886j">j</dfn> = <var>0</var>; <a class="local col6 ref" href="#886j" title='j' data-ref="886j">j</a> &lt; <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>()[<a class="local col4 ref" href="#884i" title='i' data-ref="884i">i</a>];</td></tr>
+<tr><th id="214">214</th><td>             ++<a class="local col6 ref" href="#886j" title='j' data-ref="886j">j</a>, <a class="local col5 ref" href="#885parameter_cursor" title='parameter_cursor' data-ref="885parameter_cursor">parameter_cursor</a>++) {</td></tr>
+<tr><th id="215">215</th><td>          <b>if</b> (<a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a> &lt; <a class="tu member" href="#ceres::DynamicAutoDiffCostFunction::Stride" title='ceres::DynamicAutoDiffCostFunction::Stride' data-use='r' data-ref="ceres::DynamicAutoDiffCostFunction::Stride">Stride</a> &amp;&amp;</td></tr>
+<tr><th id="216">216</th><td>              <a class="local col5 ref" href="#885parameter_cursor" title='parameter_cursor' data-ref="885parameter_cursor">parameter_cursor</a> &gt;= (</td></tr>
+<tr><th id="217">217</th><td>                <a class="local col9 ref" href="#869start_derivative_section" title='start_derivative_section' data-ref="869start_derivative_section">start_derivative_section</a><a class="ref" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vectorixEm" title='std::vector::operator[]' data-ref="_ZNSt6vectorixEm">[<a class="local col6 ref" href="#876current_derivative_section" title='current_derivative_section' data-ref="876current_derivative_section">current_derivative_section</a>]</a> +</td></tr>
+<tr><th id="218">218</th><td>                <a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a>)) {</td></tr>
+<tr><th id="219">219</th><td>            <b>if</b> (<a class="local col2 ref" href="#862jacobians" title='jacobians' data-ref="862jacobians">jacobians</a>[<a class="local col4 ref" href="#884i" title='i' data-ref="884i">i</a>] != <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="220">220</th><td>              <b>for</b> (<em>int</em> <dfn class="local col7 decl" id="887k" title='k' data-type='int' data-ref="887k">k</dfn> = <var>0</var>; <a class="local col7 ref" href="#887k" title='k' data-ref="887k">k</a> &lt; <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction13num_residualsEv" title='ceres::CostFunction::num_residuals' data-ref="_ZNK5ceres12CostFunction13num_residualsEv">num_residuals</a>(); ++<a class="local col7 ref" href="#887k" title='k' data-ref="887k">k</a>) {</td></tr>
+<tr><th id="221">221</th><td>                <a class="local col2 ref" href="#862jacobians" title='jacobians' data-ref="862jacobians">jacobians</a>[<a class="local col4 ref" href="#884i" title='i' data-ref="884i">i</a>][<a class="local col7 ref" href="#887k" title='k' data-ref="887k">k</a> * <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>()[<a class="local col4 ref" href="#884i" title='i' data-ref="884i">i</a>] + <a class="local col6 ref" href="#886j" title='j' data-ref="886j">j</a>] =</td></tr>
+<tr><th id="222">222</th><td>                    <a class="local col6 ref" href="#866output_jets" title='output_jets' data-ref="866output_jets">output_jets</a>[<a class="local col7 ref" href="#887k" title='k' data-ref="887k">k</a>].v[<a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a>];</td></tr>
+<tr><th id="223">223</th><td>              }</td></tr>
+<tr><th id="224">224</th><td>              ++<a class="local col1 ref" href="#881active_parameter_count" title='active_parameter_count' data-ref="881active_parameter_count">active_parameter_count</a>;</td></tr>
+<tr><th id="225">225</th><td>              ++<a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a>;</td></tr>
+<tr><th id="226">226</th><td>            } <b>else</b> {</td></tr>
+<tr><th id="227">227</th><td>              ++<a class="local col6 ref" href="#876current_derivative_section" title='current_derivative_section' data-ref="876current_derivative_section">current_derivative_section</a>;</td></tr>
+<tr><th id="228">228</th><td>              <a class="local col7 ref" href="#877current_derivative_section_cursor" title='current_derivative_section_cursor' data-ref="877current_derivative_section_cursor">current_derivative_section_cursor</a> = <var>0</var>;</td></tr>
+<tr><th id="229">229</th><td>            }</td></tr>
+<tr><th id="230">230</th><td>          }</td></tr>
+<tr><th id="231">231</th><td>        }</td></tr>
+<tr><th id="232">232</th><td>      }</td></tr>
+<tr><th id="233">233</th><td></td></tr>
+<tr><th id="234">234</th><td>      <i>// Only copy the residuals over once (even though we compute them on</i></td></tr>
+<tr><th id="235">235</th><td><i>      // every loop).</i></td></tr>
+<tr><th id="236">236</th><td>      <b>if</b> (<a class="local col8 ref" href="#878pass" title='pass' data-ref="878pass">pass</a> == <a class="local col5 ref" href="#875num_strides" title='num_strides' data-ref="875num_strides">num_strides</a> - <var>1</var>) {</td></tr>
+<tr><th id="237">237</th><td>        <b>for</b> (<em>int</em> <dfn class="local col8 decl" id="888k" title='k' data-type='int' data-ref="888k">k</dfn> = <var>0</var>; <a class="local col8 ref" href="#888k" title='k' data-ref="888k">k</a> &lt; <a class="member" href="cost_function.h.html#_ZNK5ceres12CostFunction13num_residualsEv" title='ceres::CostFunction::num_residuals' data-ref="_ZNK5ceres12CostFunction13num_residualsEv">num_residuals</a>(); ++<a class="local col8 ref" href="#888k" title='k' data-ref="888k">k</a>) {</td></tr>
+<tr><th id="238">238</th><td>          <a class="local col1 ref" href="#861residuals" title='residuals' data-ref="861residuals">residuals</a>[<a class="local col8 ref" href="#888k" title='k' data-ref="888k">k</a>] = <a class="local col6 ref" href="#866output_jets" title='output_jets' data-ref="866output_jets">output_jets</a>[<a class="local col8 ref" href="#888k" title='k' data-ref="888k">k</a>].a;</td></tr>
+<tr><th id="239">239</th><td>        }</td></tr>
+<tr><th id="240">240</th><td>      }</td></tr>
+<tr><th id="241">241</th><td>    }</td></tr>
+<tr><th id="242">242</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="243">243</th><td>  }</td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td> <b>private</b>:</td></tr>
+<tr><th id="246">246</th><td>  <span class="namespace">internal::</span><a class="type" href="internal/scoped_ptr.h.html#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;CostFunctor&gt; <dfn class="decl" id="ceres::DynamicAutoDiffCostFunction::functor_" title='ceres::DynamicAutoDiffCostFunction::functor_' data-ref="ceres::DynamicAutoDiffCostFunction::functor_">functor_</dfn>;</td></tr>
+<tr><th id="247">247</th><td>};</td></tr>
+<tr><th id="248">248</th><td></td></tr>
+<tr><th id="249">249</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td><u>#<span data-ppcond="32">endif</span>  // CERES_PUBLIC_DYNAMIC_AUTODIFF_COST_FUNCTION_H_</u></td></tr>
+<tr><th id="252">252</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/bundle_adjuster.cc.html'>ceres-solver/examples/bundle_adjuster.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,103 @@
+<dec f='opencv/modules/legacy/include/opencv2/legacy/legacy.hpp' l='170' type='CvEHMM * cvCreate2DHMM(int * stateNumber, int * numMix, int obsSize)'/>
+<doc f='opencv/modules/legacy/include/opencv2/legacy/legacy.hpp' l='169'>/* Creates 2D HMM */</doc>
+<def f='opencv/modules/legacy/src/hmm.cpp' l='1619' ll='1627' type='CvEHMM * cvCreate2DHMM(int * state_number, int * num_mix, int obs_size)'/>
+<doc f='opencv/modules/legacy/src/hmm.cpp' l='1518'>/*
+CvStatus icvLightingCorrection8uC1R( uchar* img, CvSize roi, int src_step )
+{
+    int i, j;
+    int width = roi.width;
+    int height = roi.height;
+
+    float x1, x2, y1, y2;
+    int f[3] = {0, 0, 0};
+    float a[3] = {0, 0, 0};
+
+    float h1;
+    float h2;
+
+    float c1,c2;
+
+    float min = FLT_MAX;
+    float max = -FLT_MAX;
+    float correction;
+
+    float* float_img = icvAlloc( width * height * sizeof(float) );
+
+    x1 = width * (width + 1) / 2.0f; // Sum (1, ... , width)
+    x2 = width * (width + 1 ) * (2 * width + 1) / 6.0f; // Sum (1^2, ... , width^2)
+    y1 = height * (height + 1)/2.0f; // Sum (1, ... , width)
+    y2 = height * (height + 1 ) * (2 * height + 1) / 6.0f; // Sum (1^2, ... , width^2)
+
+
+    // extract grayvalues
+    for (i = 0; i &lt; height; i++)
+    {
+        for (j = 0; j &lt; width; j++)
+        {
+            f[2] = f[2] + j * img[i*src_step + j];
+            f[1] = f[1] + i * img[i*src_step + j];
+            f[0] = f[0] +     img[i*src_step + j];
+        }
+    }
+
+    h1 = (float)f[0] * (float)x1 / (float)width;
+    h2 = (float)f[0] * (float)y1 / (float)height;
+
+    a[2] = ((float)f[2] - h1) / (float)(x2*height - x1*x1*height/(float)width);
+    a[1] = ((float)f[1] - h2) / (float)(y2*width - y1*y1*width/(float)height);
+    a[0] = (float)f[0]/(float)(width*height) - (float)y1*a[1]/(float)height -
+        (float)x1*a[2]/(float)width;
+
+    for (i = 0; i &lt; height; i++)
+    {
+        for (j = 0; j &lt; width; j++)
+        {
+
+            correction = a[0] + a[1]*(float)i + a[2]*(float)j;
+
+            float_img[i*width + j] = img[i*src_step + j] - correction;
+
+            if (float_img[i*width + j] &lt; min) min = float_img[i*width+j];
+            if (float_img[i*width + j] &gt; max) max = float_img[i*width+j];
+        }
+    }
+
+    //rescaling to the range 0:255
+    c2 = 0;
+    if (max == min)
+        c2 = 255.0f;
+    else
+        c2 = 255.0f/(float)(max - min);
+
+    c1 = (-(float)min)*c2;
+
+    for (i = 0; i &lt; height; i++)
+    {
+        for (j = 0; j &lt; width; j++)
+        {
+            int value = (int)floor(c2*float_img[i*width + j] + c1);
+            if (value &lt; 0) value = 0;
+            if (value &gt; 255) value = 255;
+            img[i*src_step + j] = (uchar)value;
+        }
+    }
+
+    cvFree( &amp;float_img );
+    return CV_NO_ERR;
+}
+
+
+CvStatus icvLightingCorrection( icvImage* img )
+{
+    CvSize roi;
+    if ( img-&gt;type != IPL_DEPTH_8U || img-&gt;channels != 1 )
+    return CV_BADFACTOR_ERR;
+
+    roi = _cvSize( img-&gt;roi.width, img-&gt;roi.height );
+
+    return _cvLightingCorrection8uC1R( img-&gt;data + img-&gt;roi.y * img-&gt;step + img-&gt;roi.x,
+                                        roi, img-&gt;step );
+
+}
+
+*/</doc>

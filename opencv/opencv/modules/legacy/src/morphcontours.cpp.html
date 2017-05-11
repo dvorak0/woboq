@@ -1,0 +1,875 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>morphcontours.cpp source code [opencv/modules/legacy/src/morphcontours.cpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="__CvWork "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/legacy/src/morphcontours.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>legacy</a>/<a href='./'>src</a>/<a href='morphcontours.cpp.html'>morphcontours.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                        Intel License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="15">15</th><td><i>//</i></td></tr>
+<tr><th id="16">16</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="17">17</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="18">18</th><td><i>//</i></td></tr>
+<tr><th id="19">19</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="20">20</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="21">21</th><td><i>//</i></td></tr>
+<tr><th id="22">22</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="23">23</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="24">24</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="25">25</th><td><i>//</i></td></tr>
+<tr><th id="26">26</th><td><i>//   * The name of Intel Corporation may not be used to endorse or promote products</i></td></tr>
+<tr><th id="27">27</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="30">30</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="31">31</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="32">32</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="33">33</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="34">34</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="35">35</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="36">36</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="37">37</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="38">38</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="39">39</th><td><i>//</i></td></tr>
+<tr><th id="40">40</th><td><i>//M*/</i></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><u>#define <dfn class="macro" id="_M/PATH_TO_E" data-ref="_M/PATH_TO_E">PATH_TO_E</dfn>       1</u></td></tr>
+<tr><th id="45">45</th><td><u>#define <dfn class="macro" id="_M/PATH_TO_SE" data-ref="_M/PATH_TO_SE">PATH_TO_SE</dfn>      2</u></td></tr>
+<tr><th id="46">46</th><td><u>#define <dfn class="macro" id="_M/PATH_TO_S" data-ref="_M/PATH_TO_S">PATH_TO_S</dfn>       3</u></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><u>#define <dfn class="macro" id="_M/K_S" data-ref="_M/K_S">K_S</dfn>         2</u></td></tr>
+<tr><th id="49">49</th><td><u>#define <dfn class="macro" id="_M/E_S" data-ref="_M/E_S">E_S</dfn>         2</u></td></tr>
+<tr><th id="50">50</th><td><u>#define <dfn class="macro" id="_M/C_S" data-ref="_M/C_S">C_S</dfn>         .01</u></td></tr>
+<tr><th id="51">51</th><td><u>#define <dfn class="macro" id="_M/K_Z" data-ref="_M/K_Z">K_Z</dfn>         5000</u></td></tr>
+<tr><th id="52">52</th><td><u>#define <dfn class="macro" id="_M/K_NM" data-ref="_M/K_NM">K_NM</dfn>        50000</u></td></tr>
+<tr><th id="53">53</th><td><u>#define <dfn class="macro" id="_M/K_B" data-ref="_M/K_B">K_B</dfn>         40</u></td></tr>
+<tr><th id="54">54</th><td><u>#define <dfn class="macro" id="_M/NULL_EDGE" data-ref="_M/NULL_EDGE">NULL_EDGE</dfn>   0.001f</u></td></tr>
+<tr><th id="55">55</th><td><u>#define <dfn class="macro" id="_M/inf" data-ref="_M/inf">inf</dfn>         DBL_MAX</u></td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="__CvWork" title='__CvWork' data-ref="__CvWork"><a class="type" href="#__CvWork" title='__CvWork' data-ref="__CvWork">__CvWork</a></dfn></td></tr>
+<tr><th id="58">58</th><td>{</td></tr>
+<tr><th id="59">59</th><td>    <em>double</em> <dfn class="tu decl" id="__CvWork::w_east" title='__CvWork::w_east' data-type='double' data-ref="__CvWork::w_east">w_east</dfn>;</td></tr>
+<tr><th id="60">60</th><td>    <em>double</em> <dfn class="tu decl" id="__CvWork::w_southeast" title='__CvWork::w_southeast' data-type='double' data-ref="__CvWork::w_southeast">w_southeast</dfn>;</td></tr>
+<tr><th id="61">61</th><td>    <em>double</em> <dfn class="tu decl" id="__CvWork::w_south" title='__CvWork::w_south' data-type='double' data-ref="__CvWork::w_south">w_south</dfn>;</td></tr>
+<tr><th id="62">62</th><td>    <em>char</em> <dfn class="tu decl" id="__CvWork::path_e" title='__CvWork::path_e' data-type='char' data-ref="__CvWork::path_e">path_e</dfn>;</td></tr>
+<tr><th id="63">63</th><td>    <em>char</em> <dfn class="tu decl" id="__CvWork::path_se" title='__CvWork::path_se' data-type='char' data-ref="__CvWork::path_se">path_se</dfn>;</td></tr>
+<tr><th id="64">64</th><td>    <em>char</em> <dfn class="tu decl" id="__CvWork::path_s" title='__CvWork::path_s' data-type='char' data-ref="__CvWork::path_s">path_s</dfn>;</td></tr>
+<tr><th id="65">65</th><td>}<dfn class="typedef" id="_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</dfn>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><em>double</em> <a class="decl" href="#_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</a>(  <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col1 decl" id="1B0" title='B0' data-type='CvPoint2D32f *' data-ref="1B0">B0</dfn>,</td></tr>
+<tr><th id="69">69</th><td>                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col2 decl" id="2F0" title='F0' data-type='CvPoint2D32f *' data-ref="2F0">F0</dfn>,</td></tr>
+<tr><th id="70">70</th><td>                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col3 decl" id="3B1" title='B1' data-type='CvPoint2D32f *' data-ref="3B1">B1</dfn>,</td></tr>
+<tr><th id="71">71</th><td>                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col4 decl" id="4F1" title='F1' data-type='CvPoint2D32f *' data-ref="4F1">F1</dfn><i>/*,</i></td></tr>
+<tr><th id="72">72</th><td><i>                        CvPoint* K */</i>);</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><em>double</em> <a class="decl" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col5 decl" id="5P1" title='P1' data-type='CvPoint2D32f *' data-ref="5P1">P1</dfn>,</td></tr>
+<tr><th id="75">75</th><td>                         <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col6 decl" id="6P2" title='P2' data-type='CvPoint2D32f *' data-ref="6P2">P2</dfn>);</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><em>void</em> <a class="decl" href="#_Z11_cvWorkEastiiPP8__CvWorkP12CvPoint2D32fS3_" title='_cvWorkEast' data-ref="_Z11_cvWorkEastiiPP8__CvWorkP12CvPoint2D32fS3_">_cvWorkEast</a>     (<em>int</em> <dfn class="local col7 decl" id="7i" title='i' data-type='int' data-ref="7i">i</dfn>, <em>int</em> <dfn class="local col8 decl" id="8j" title='j' data-type='int' data-ref="8j">j</dfn>, <a class="typedef" href="#_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</a>** <dfn class="local col9 decl" id="9W" title='W' data-type='_CvWork **' data-ref="9W">W</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col0 decl" id="10edges1" title='edges1' data-type='CvPoint2D32f *' data-ref="10edges1">edges1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col1 decl" id="11edges2" title='edges2' data-type='CvPoint2D32f *' data-ref="11edges2">edges2</dfn>);</td></tr>
+<tr><th id="78">78</th><td><em>void</em> <a class="decl" href="#_Z16_cvWorkSouthEastiiPP8__CvWorkP12CvPoint2D32fS3_" title='_cvWorkSouthEast' data-ref="_Z16_cvWorkSouthEastiiPP8__CvWorkP12CvPoint2D32fS3_">_cvWorkSouthEast</a>(<em>int</em> <dfn class="local col2 decl" id="12i" title='i' data-type='int' data-ref="12i">i</dfn>, <em>int</em> <dfn class="local col3 decl" id="13j" title='j' data-type='int' data-ref="13j">j</dfn>, <a class="typedef" href="#_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</a>** <dfn class="local col4 decl" id="14W" title='W' data-type='_CvWork **' data-ref="14W">W</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col5 decl" id="15edges1" title='edges1' data-type='CvPoint2D32f *' data-ref="15edges1">edges1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col6 decl" id="16edges2" title='edges2' data-type='CvPoint2D32f *' data-ref="16edges2">edges2</dfn>);</td></tr>
+<tr><th id="79">79</th><td><em>void</em> <a class="decl" href="#_Z12_cvWorkSouthiiPP8__CvWorkP12CvPoint2D32fS3_" title='_cvWorkSouth' data-ref="_Z12_cvWorkSouthiiPP8__CvWorkP12CvPoint2D32fS3_">_cvWorkSouth</a>    (<em>int</em> <dfn class="local col7 decl" id="17i" title='i' data-type='int' data-ref="17i">i</dfn>, <em>int</em> <dfn class="local col8 decl" id="18j" title='j' data-type='int' data-ref="18j">j</dfn>, <a class="typedef" href="#_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</a>** <dfn class="local col9 decl" id="19W" title='W' data-type='_CvWork **' data-ref="19W">W</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col0 decl" id="20edges1" title='edges1' data-type='CvPoint2D32f *' data-ref="20edges1">edges1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col1 decl" id="21edges2" title='edges2' data-type='CvPoint2D32f *' data-ref="21edges2">edges2</dfn>);</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td><em>static</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="tu decl def" id="null_edge" title='null_edge' data-type='CvPoint2D32f' data-ref="null_edge">null_edge</dfn> = {<var>0</var>,<var>0</var>};</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><em>double</em> <dfn class="decl def" id="_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col2 decl" id="22P1" title='P1' data-type='CvPoint2D32f *' data-ref="22P1">P1</dfn>,</td></tr>
+<tr><th id="84">84</th><td>                         <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col3 decl" id="23P2" title='P2' data-type='CvPoint2D32f *' data-ref="23P2">P2</dfn>)</td></tr>
+<tr><th id="85">85</th><td>{</td></tr>
+<tr><th id="86">86</th><td>    <em>double</em> <dfn class="local col4 decl" id="24L1" title='L1' data-type='double' data-ref="24L1">L1</dfn>,<dfn class="local col5 decl" id="25L2" title='L2' data-type='double' data-ref="25L2">L2</dfn>, <dfn class="local col6 decl" id="26L_min" title='L_min' data-type='double' data-ref="26L_min">L_min</dfn>, <dfn class="local col7 decl" id="27dL" title='dL' data-type='double' data-ref="27dL">dL</dfn>;</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td>    <a class="local col4 ref" href="#24L1" title='L1' data-ref="24L1">L1</a> = <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>( (<em>double</em>)<a class="local col2 ref" href="#22P1" title='P1' data-ref="22P1">P1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col2 ref" href="#22P1" title='P1' data-ref="22P1">P1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col2 ref" href="#22P1" title='P1' data-ref="22P1">P1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col2 ref" href="#22P1" title='P1' data-ref="22P1">P1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>);</td></tr>
+<tr><th id="89">89</th><td>    <a class="local col5 ref" href="#25L2" title='L2' data-ref="25L2">L2</a> = <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>( (<em>double</em>)<a class="local col3 ref" href="#23P2" title='P2' data-ref="23P2">P2</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col3 ref" href="#23P2" title='P2' data-ref="23P2">P2</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col3 ref" href="#23P2" title='P2' data-ref="23P2">P2</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col3 ref" href="#23P2" title='P2' data-ref="23P2">P2</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>);</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>    <a class="local col6 ref" href="#26L_min" title='L_min' data-ref="26L_min">L_min</a> = <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#296" title="((L1) &gt; (L2) ? (L2) : (L1))" data-ref="_M/MIN">MIN</a>(<a class="local col4 ref" href="#24L1" title='L1' data-ref="24L1">L1</a>, <a class="local col5 ref" href="#25L2" title='L2' data-ref="25L2">L2</a>);</td></tr>
+<tr><th id="92">92</th><td>    <a class="local col7 ref" href="#27dL" title='dL' data-ref="27dL">dL</a> = <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#181" title='fabs' data-ref="fabs">fabs</a>( <a class="local col4 ref" href="#24L1" title='L1' data-ref="24L1">L1</a> - <a class="local col5 ref" href="#25L2" title='L2' data-ref="25L2">L2</a> );</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>    <b>return</b> <a class="macro" href="#48" title="2" data-ref="_M/K_S">K_S</a> * <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#153" title='pow' data-ref="pow">pow</a>( <a class="local col7 ref" href="#27dL" title='dL' data-ref="27dL">dL</a>, <a class="macro" href="#49" title="2" data-ref="_M/E_S">E_S</a> ) / ( <a class="local col6 ref" href="#26L_min" title='L_min' data-ref="26L_min">L_min</a> + <a class="macro" href="#50" title=".01" data-ref="_M/C_S">C_S</a>*<a class="local col7 ref" href="#27dL" title='dL' data-ref="27dL">dL</a> );</td></tr>
+<tr><th id="95">95</th><td>}</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td><i>////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="99">99</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="decl" href="#_Z1Q12CvPoint2D32fS_S_d" title='Q' data-ref="_Z1Q12CvPoint2D32fS_S_d">Q</a>( <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col8 decl" id="28q0" title='q0' data-type='CvPoint2D32f' data-ref="28q0">q0</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col9 decl" id="29q1" title='q1' data-type='CvPoint2D32f' data-ref="29q1">q1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col0 decl" id="30q2" title='q2' data-type='CvPoint2D32f' data-ref="30q2">q2</dfn>, <em>double</em> <dfn class="local col1 decl" id="31t" title='t' data-type='double' data-ref="31t">t</dfn> );</td></tr>
+<tr><th id="100">100</th><td><em>double</em> <a class="decl" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>( <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col2 decl" id="32A" title='A' data-type='CvPoint2D32f' data-ref="32A">A</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col3 decl" id="33B" title='B' data-type='CvPoint2D32f' data-ref="33B">B</dfn> );</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td><em>double</em> <dfn class="decl def" id="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</dfn>(  <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col4 decl" id="34B0" title='B0' data-type='CvPoint2D32f *' data-ref="34B0">B0</dfn>,</td></tr>
+<tr><th id="103">103</th><td>                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col5 decl" id="35F0" title='F0' data-type='CvPoint2D32f *' data-ref="35F0">F0</dfn>,</td></tr>
+<tr><th id="104">104</th><td>                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col6 decl" id="36B1" title='B1' data-type='CvPoint2D32f *' data-ref="36B1">B1</dfn>,</td></tr>
+<tr><th id="105">105</th><td>                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col7 decl" id="37F1" title='F1' data-type='CvPoint2D32f *' data-ref="37F1">F1</dfn><i>/*,</i></td></tr>
+<tr><th id="106">106</th><td><i>                        CvPoint* K*/</i>)</td></tr>
+<tr><th id="107">107</th><td>{</td></tr>
+<tr><th id="108">108</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col8 decl" id="38Q0" title='Q0' data-type='CvPoint2D32f' data-ref="38Q0">Q0</dfn>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col9 decl" id="39Q1" title='Q1' data-type='CvPoint2D32f' data-ref="39Q1">Q1</dfn>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col0 decl" id="40Q2" title='Q2' data-type='CvPoint2D32f' data-ref="40Q2">Q2</dfn>;</td></tr>
+<tr><th id="109">109</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col1 decl" id="41Q1_nm" title='Q1_nm' data-type='CvPoint2D32f' data-ref="41Q1_nm">Q1_nm</dfn> = { <var>0</var>, <var>0</var> }, <dfn class="local col2 decl" id="42Q2_nm" title='Q2_nm' data-type='CvPoint2D32f' data-ref="42Q2_nm">Q2_nm</dfn> = { <var>0</var>, <var>0</var> };</td></tr>
+<tr><th id="110">110</th><td>    <em>double</em> <dfn class="local col3 decl" id="43d0" title='d0' data-type='double' data-ref="43d0">d0</dfn>, <dfn class="local col4 decl" id="44d1" title='d1' data-type='double' data-ref="44d1">d1</dfn>, <dfn class="local col5 decl" id="45d2" title='d2' data-type='double' data-ref="45d2">d2</dfn>, <dfn class="local col6 decl" id="46des" title='des' data-type='double' data-ref="46des">des</dfn>, <dfn class="local col7 decl" id="47t_zero" title='t_zero' data-type='double' data-ref="47t_zero">t_zero</dfn>;</td></tr>
+<tr><th id="111">111</th><td>    <em>double</em> <dfn class="local col8 decl" id="48k_zero" title='k_zero' data-type='double' data-ref="48k_zero">k_zero</dfn>, <dfn class="local col9 decl" id="49k_nonmon" title='k_nonmon' data-type='double' data-ref="49k_nonmon">k_nonmon</dfn>;</td></tr>
+<tr><th id="112">112</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col0 decl" id="50center" title='center' data-type='CvPoint2D32f' data-ref="50center">center</dfn>;</td></tr>
+<tr><th id="113">113</th><td>    <em>double</em> <dfn class="local col1 decl" id="51check01" title='check01' data-type='double' data-ref="51check01">check01</dfn>, <dfn class="local col2 decl" id="52check02" title='check02' data-type='double' data-ref="52check02">check02</dfn>;</td></tr>
+<tr><th id="114">114</th><td>    <em>char</em> <dfn class="local col3 decl" id="53check_origin" title='check_origin' data-type='char' data-ref="53check_origin">check_origin</dfn>;</td></tr>
+<tr><th id="115">115</th><td>    <em>double</em> <dfn class="local col4 decl" id="54d_angle" title='d_angle' data-type='double' data-ref="54d_angle">d_angle</dfn>, <dfn class="local col5 decl" id="55d_nm_angle" title='d_nm_angle' data-type='double' data-ref="55d_nm_angle">d_nm_angle</dfn>;</td></tr>
+<tr><th id="116">116</th><td><i>/*</i></td></tr>
+<tr><th id="117">117</th><td><i>    if( (B0-&gt;x==0) &amp;&amp; (B0-&gt;y==0) )</i></td></tr>
+<tr><th id="118">118</th><td><i>    {</i></td></tr>
+<tr><th id="119">119</th><td><i>        if( (F0-&gt;x==0) &amp;&amp; (F0-&gt;y==0) )</i></td></tr>
+<tr><th id="120">120</th><td><i>        {</i></td></tr>
+<tr><th id="121">121</th><td><i>            B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="122">122</th><td><i>            B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="123">123</th><td><i></i></td></tr>
+<tr><th id="124">124</th><td><i>            d_angle = acos( (B1-&gt;x*F1-&gt;x + B1-&gt;y*F1-&gt;y)/sqrt( (B1-&gt;x*B1-&gt;x + B1-&gt;y*B1-&gt;y)*(F1-&gt;x*F1-&gt;x + F1-&gt;y*F1-&gt;y) ) );</i></td></tr>
+<tr><th id="125">125</th><td><i>            d_angle = CV_PI - d_angle;</i></td></tr>
+<tr><th id="126">126</th><td><i></i></td></tr>
+<tr><th id="127">127</th><td><i>            B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="128">128</th><td><i>            B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="129">129</th><td><i></i></td></tr>
+<tr><th id="130">130</th><td><i>            //return d_angle*K_B;</i></td></tr>
+<tr><th id="131">131</th><td><i>            return 100;</i></td></tr>
+<tr><th id="132">132</th><td><i>        }</i></td></tr>
+<tr><th id="133">133</th><td><i>        K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="134">134</th><td><i>        K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="135">135</th><td><i>        B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="136">136</th><td><i>        B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="137">137</th><td><i></i></td></tr>
+<tr><th id="138">138</th><td><i>        d_angle = acos( (B1-&gt;x*F1-&gt;x + B1-&gt;y*F1-&gt;y)/sqrt( (B1-&gt;x*B1-&gt;x + B1-&gt;y*B1-&gt;y)*(F1-&gt;x*F1-&gt;x + F1-&gt;y*F1-&gt;y) ) );</i></td></tr>
+<tr><th id="139">139</th><td><i>        d_angle = d_angle - acos( (F0-&gt;x*K-&gt;x + F0-&gt;y*K-&gt;y)/sqrt( (F0-&gt;x*F0-&gt;x + F0-&gt;y*F0-&gt;y)*(K-&gt;x*K-&gt;x + K-&gt;y*K-&gt;y) ) );</i></td></tr>
+<tr><th id="140">140</th><td><i>        d_angle = d_angle - CV_PI*0.5;</i></td></tr>
+<tr><th id="141">141</th><td><i>        d_angle = fabs(d_angle);</i></td></tr>
+<tr><th id="142">142</th><td><i></i></td></tr>
+<tr><th id="143">143</th><td><i></i></td></tr>
+<tr><th id="144">144</th><td><i>        K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="145">145</th><td><i>        K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="146">146</th><td><i>        B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="147">147</th><td><i>        B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="148">148</th><td><i></i></td></tr>
+<tr><th id="149">149</th><td><i>        //return d_angle*K_B;</i></td></tr>
+<tr><th id="150">150</th><td><i>        return 100;</i></td></tr>
+<tr><th id="151">151</th><td><i>    }</i></td></tr>
+<tr><th id="152">152</th><td><i></i></td></tr>
+<tr><th id="153">153</th><td><i></i></td></tr>
+<tr><th id="154">154</th><td><i>    if( (F0-&gt;x==0) &amp;&amp; (F0-&gt;y==0) )</i></td></tr>
+<tr><th id="155">155</th><td><i>        {</i></td></tr>
+<tr><th id="156">156</th><td><i>            K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="157">157</th><td><i>            K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="158">158</th><td><i>            B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="159">159</th><td><i>            B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="160">160</th><td><i></i></td></tr>
+<tr><th id="161">161</th><td><i>            d_angle = acos( (B1-&gt;x*F1-&gt;x + B1-&gt;y*F1-&gt;y)/sqrt( (B1-&gt;x*B1-&gt;x + B1-&gt;y*B1-&gt;y)*(F1-&gt;x*F1-&gt;x + F1-&gt;y*F1-&gt;y) ) );</i></td></tr>
+<tr><th id="162">162</th><td><i>            d_angle = d_angle - acos( (B0-&gt;x*K-&gt;x + B0-&gt;y*K-&gt;y)/sqrt( (B0-&gt;x*B0-&gt;x + B0-&gt;y*B0-&gt;y)*(K-&gt;x*K-&gt;x + K-&gt;y*K-&gt;y) ) );</i></td></tr>
+<tr><th id="163">163</th><td><i>            d_angle = d_angle - CV_PI*0.5;</i></td></tr>
+<tr><th id="164">164</th><td><i>            d_angle = fabs(d_angle);</i></td></tr>
+<tr><th id="165">165</th><td><i></i></td></tr>
+<tr><th id="166">166</th><td><i>            K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="167">167</th><td><i>            K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="168">168</th><td><i>            B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="169">169</th><td><i>            B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="170">170</th><td><i></i></td></tr>
+<tr><th id="171">171</th><td><i>            //return d_angle*K_B;</i></td></tr>
+<tr><th id="172">172</th><td><i>            return 100;</i></td></tr>
+<tr><th id="173">173</th><td><i>        }</i></td></tr>
+<tr><th id="174">174</th><td><i>///////////////</i></td></tr>
+<tr><th id="175">175</th><td><i></i></td></tr>
+<tr><th id="176">176</th><td><i>    if( (B1-&gt;x==0) &amp;&amp; (B1-&gt;y==0) )</i></td></tr>
+<tr><th id="177">177</th><td><i>    {</i></td></tr>
+<tr><th id="178">178</th><td><i>        if( (F1-&gt;x==0) &amp;&amp; (F1-&gt;y==0) )</i></td></tr>
+<tr><th id="179">179</th><td><i>        {</i></td></tr>
+<tr><th id="180">180</th><td><i>            B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="181">181</th><td><i>            B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="182">182</th><td><i></i></td></tr>
+<tr><th id="183">183</th><td><i>            d_angle = acos( (B0-&gt;x*F0-&gt;x + B0-&gt;y*F0-&gt;y)/sqrt( (B0-&gt;x*B0-&gt;x + B0-&gt;y*B0-&gt;y)*(F0-&gt;x*F0-&gt;x + F0-&gt;y*F0-&gt;y) ) );</i></td></tr>
+<tr><th id="184">184</th><td><i>            d_angle = CV_PI - d_angle;</i></td></tr>
+<tr><th id="185">185</th><td><i></i></td></tr>
+<tr><th id="186">186</th><td><i>            B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="187">187</th><td><i>            B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="188">188</th><td><i></i></td></tr>
+<tr><th id="189">189</th><td><i>            //return d_angle*K_B;</i></td></tr>
+<tr><th id="190">190</th><td><i>            return 100;</i></td></tr>
+<tr><th id="191">191</th><td><i>        }</i></td></tr>
+<tr><th id="192">192</th><td><i>        K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="193">193</th><td><i>        K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="194">194</th><td><i>        B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="195">195</th><td><i>        B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="196">196</th><td><i></i></td></tr>
+<tr><th id="197">197</th><td><i>        d_angle = acos( (B0-&gt;x*F0-&gt;x + B0-&gt;y*F0-&gt;y)/sqrt( (B0-&gt;x*B0-&gt;x + B0-&gt;y*B0-&gt;y)*(F0-&gt;x*F0-&gt;x + F0-&gt;y*F0-&gt;y) ) );</i></td></tr>
+<tr><th id="198">198</th><td><i>        d_angle = d_angle - acos( (F1-&gt;x*K-&gt;x + F1-&gt;y*K-&gt;y)/sqrt( (F1-&gt;x*F1-&gt;x + F1-&gt;y*F1-&gt;y)*(K-&gt;x*K-&gt;x + K-&gt;y*K-&gt;y) ) );</i></td></tr>
+<tr><th id="199">199</th><td><i>        d_angle = d_angle - CV_PI*0.5;</i></td></tr>
+<tr><th id="200">200</th><td><i>        d_angle = fabs(d_angle);</i></td></tr>
+<tr><th id="201">201</th><td><i></i></td></tr>
+<tr><th id="202">202</th><td><i>        K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="203">203</th><td><i>        K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="204">204</th><td><i>        B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="205">205</th><td><i>        B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="206">206</th><td><i></i></td></tr>
+<tr><th id="207">207</th><td><i>        //return d_angle*K_B;</i></td></tr>
+<tr><th id="208">208</th><td><i>        return 100;</i></td></tr>
+<tr><th id="209">209</th><td><i>    }</i></td></tr>
+<tr><th id="210">210</th><td><i></i></td></tr>
+<tr><th id="211">211</th><td><i></i></td></tr>
+<tr><th id="212">212</th><td><i>    if( (F1-&gt;x==0) &amp;&amp; (F1-&gt;y==0) )</i></td></tr>
+<tr><th id="213">213</th><td><i>        {</i></td></tr>
+<tr><th id="214">214</th><td><i>            K-&gt;x = -K-&gt;x;</i></td></tr>
+<tr><th id="215">215</th><td><i>            K-&gt;y = -K-&gt;y;</i></td></tr>
+<tr><th id="216">216</th><td><i>            B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="217">217</th><td><i>            B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="218">218</th><td><i></i></td></tr>
+<tr><th id="219">219</th><td><i>            d_angle = acos( (B0-&gt;x*F0-&gt;x + B0-&gt;y*F0-&gt;y)/sqrt( (B0-&gt;x*B0-&gt;x + B0-&gt;y*B0-&gt;y)*(F0-&gt;x*F0-&gt;x + F0-&gt;y*F0-&gt;y) ) );</i></td></tr>
+<tr><th id="220">220</th><td><i>            d_angle = d_angle - acos( (B1-&gt;x*K-&gt;x + B1-&gt;y*K-&gt;y)/sqrt( (B1-&gt;x*B1-&gt;x + B1-&gt;y*B1-&gt;y)*(K-&gt;x*K-&gt;x + K-&gt;y*K-&gt;y) ) );</i></td></tr>
+<tr><th id="221">221</th><td><i>            d_angle = d_angle - CV_PI*0.5;</i></td></tr>
+<tr><th id="222">222</th><td><i>            d_angle = fabs(d_angle);</i></td></tr>
+<tr><th id="223">223</th><td><i></i></td></tr>
+<tr><th id="224">224</th><td><i>            K-&gt;x  = -K-&gt;x;</i></td></tr>
+<tr><th id="225">225</th><td><i>            K-&gt;y  = -K-&gt;y;</i></td></tr>
+<tr><th id="226">226</th><td><i>            B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="227">227</th><td><i>            B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="228">228</th><td><i></i></td></tr>
+<tr><th id="229">229</th><td><i>            //return d_angle*K_B;</i></td></tr>
+<tr><th id="230">230</th><td><i>            return 100;</i></td></tr>
+<tr><th id="231">231</th><td><i>        }</i></td></tr>
+<tr><th id="232">232</th><td><i></i></td></tr>
+<tr><th id="233">233</th><td><i>*/</i></td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td><i>/*</i></td></tr>
+<tr><th id="236">236</th><td><i>    B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="237">237</th><td><i>    B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="238">238</th><td><i>    B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="239">239</th><td><i>    B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="240">240</th><td><i>*/</i></td></tr>
+<tr><th id="241">241</th><td>    <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>) + <a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>);</td></tr>
+<tr><th id="242">242</th><td>    <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) - <a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="243">243</th><td></td></tr>
+<tr><th id="244">244</th><td>    <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <var>0.5f</var>*( (<a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>) + <a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)) + (<a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>) + <a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)) );</td></tr>
+<tr><th id="245">245</th><td>    <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <var>0.5f</var>*( (<a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) - <a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col4 ref" href="#34B0" title='B0' data-ref="34B0">B0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)) + (<a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) - <a class="local col5 ref" href="#35F0" title='F0' data-ref="35F0">F0</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)) );</td></tr>
+<tr><th id="246">246</th><td></td></tr>
+<tr><th id="247">247</th><td>    <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>) + <a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>);</td></tr>
+<tr><th id="248">248</th><td>    <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) - <a class="local col7 ref" href="#37F1" title='F1' data-ref="37F1">F1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * (-<a class="local col6 ref" href="#36B1" title='B1' data-ref="36B1">B1</a>-&gt;<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>    <a class="local col3 ref" href="#43d0" title='d0' data-ref="43d0">d0</a> = <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>;</td></tr>
+<tr><th id="251">251</th><td>    <a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a> = <var>0.5f</var>*(<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="252">252</th><td>    <a class="local col5 ref" href="#45d2" title='d2' data-ref="45d2">d2</a> = <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> * <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> * <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>;</td></tr>
+<tr><th id="253">253</th><td></td></tr>
+<tr><th id="254">254</th><td>    <i>// Check angles goes to zero</i></td></tr>
+<tr><th id="255">255</th><td>    <a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a> = <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>;</td></tr>
+<tr><th id="256">256</th><td></td></tr>
+<tr><th id="257">257</th><td>    <a class="local col8 ref" href="#48k_zero" title='k_zero' data-ref="48k_zero">k_zero</a> = <var>0</var>;</td></tr>
+<tr><th id="258">258</th><td></td></tr>
+<tr><th id="259">259</th><td>    <b>if</b>( <a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a> &gt;= <var>0</var> )</td></tr>
+<tr><th id="260">260</th><td>    {</td></tr>
+<tr><th id="261">261</th><td>        <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> = ( <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> + <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a>) )/( <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <var>2</var>*<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> + <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> );</td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td>        <b>if</b>( (<var>0</var> &lt; <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>) &amp;&amp; (<a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> &lt; <var>1</var>) &amp;&amp; ( <a class="ref" href="#_Z1Q12CvPoint2D32fS_S_d" title='Q' data-ref="_Z1Q12CvPoint2D32fS_S_d">Q</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>, <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>).<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> &gt; <var>0</var> ) )</td></tr>
+<tr><th id="264">264</th><td>        {</td></tr>
+<tr><th id="265">265</th><td>            <a class="local col8 ref" href="#48k_zero" title='k_zero' data-ref="48k_zero">k_zero</a> = <a class="macro" href="#55" title="1.7976931348623157e+308" data-ref="_M/inf">inf</a>;</td></tr>
+<tr><th id="266">266</th><td>        }</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td>        <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> = ( <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a>) )/( <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <var>2</var>*<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> + <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> );</td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td>        <b>if</b>( (<var>0</var> &lt; <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>) &amp;&amp; (<a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> &lt; <var>1</var>) &amp;&amp; ( <a class="ref" href="#_Z1Q12CvPoint2D32fS_S_d" title='Q' data-ref="_Z1Q12CvPoint2D32fS_S_d">Q</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>, <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>).<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> &gt; <var>0</var> ) )</td></tr>
+<tr><th id="271">271</th><td>        {</td></tr>
+<tr><th id="272">272</th><td>            <a class="local col8 ref" href="#48k_zero" title='k_zero' data-ref="48k_zero">k_zero</a> = <a class="macro" href="#55" title="1.7976931348623157e+308" data-ref="_M/inf">inf</a>;</td></tr>
+<tr><th id="273">273</th><td>        }</td></tr>
+<tr><th id="274">274</th><td>    }</td></tr>
+<tr><th id="275">275</th><td></td></tr>
+<tr><th id="276">276</th><td>    <i>// Check nonmonotonic</i></td></tr>
+<tr><th id="277">277</th><td>    <a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a> = <a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a>*<a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a> - <a class="local col3 ref" href="#43d0" title='d0' data-ref="43d0">d0</a>*<a class="local col5 ref" href="#45d2" title='d2' data-ref="45d2">d2</a>;</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>    <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> = <var>0</var>;</td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td>    <b>if</b>( <a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a> &gt;= <var>0</var> )</td></tr>
+<tr><th id="282">282</th><td>    {</td></tr>
+<tr><th id="283">283</th><td>        <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> = ( <a class="local col3 ref" href="#43d0" title='d0' data-ref="43d0">d0</a> - <a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a> - <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a>) )/( <a class="local col3 ref" href="#43d0" title='d0' data-ref="43d0">d0</a> - <var>2</var>*<a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a> + <a class="local col5 ref" href="#45d2" title='d2' data-ref="45d2">d2</a> );</td></tr>
+<tr><th id="284">284</th><td></td></tr>
+<tr><th id="285">285</th><td>        <b>if</b>( (<var>0</var> &lt; <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>) &amp;&amp; (<a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> &lt; <var>1</var>) )</td></tr>
+<tr><th id="286">286</th><td>        {</td></tr>
+<tr><th id="287">287</th><td>            <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> = <var>1</var>;</td></tr>
+<tr><th id="288">288</th><td>            <a class="local col1 ref" href="#41Q1_nm" title='Q1_nm' data-ref="41Q1_nm">Q1_nm</a> <a class="ref" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::operator=' data-ref="_ZN12CvPoint2D32faSERKS_">=</a> <a class="ref" href="#_Z1Q12CvPoint2D32fS_S_d" title='Q' data-ref="_Z1Q12CvPoint2D32fS_S_d">Q</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>, <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>);</td></tr>
+<tr><th id="289">289</th><td>        }</td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td>        <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> = ( <a class="local col3 ref" href="#43d0" title='d0' data-ref="43d0">d0</a> - <a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a> + <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="local col6 ref" href="#46des" title='des' data-ref="46des">des</a>) )/( <a class="local col3 ref" href="#43d0" title='d0' data-ref="43d0">d0</a> - <var>2</var>*<a class="local col4 ref" href="#44d1" title='d1' data-ref="44d1">d1</a> + <a class="local col5 ref" href="#45d2" title='d2' data-ref="45d2">d2</a> );</td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td>        <b>if</b>( (<var>0</var> &lt; <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>) &amp;&amp; (<a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a> &lt; <var>1</var>) )</td></tr>
+<tr><th id="294">294</th><td>        {</td></tr>
+<tr><th id="295">295</th><td>            <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> += <var>2</var>;</td></tr>
+<tr><th id="296">296</th><td>            <a class="local col2 ref" href="#42Q2_nm" title='Q2_nm' data-ref="42Q2_nm">Q2_nm</a> <a class="ref" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::operator=' data-ref="_ZN12CvPoint2D32faSERKS_">=</a> <a class="ref" href="#_Z1Q12CvPoint2D32fS_S_d" title='Q' data-ref="_Z1Q12CvPoint2D32fS_S_d">Q</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>, <a class="local col7 ref" href="#47t_zero" title='t_zero' data-ref="47t_zero">t_zero</a>);</td></tr>
+<tr><th id="297">297</th><td>        }</td></tr>
+<tr><th id="298">298</th><td>    }</td></tr>
+<tr><th id="299">299</th><td></td></tr>
+<tr><th id="300">300</th><td>    <i>// Finde origin lie in Q0Q1Q2</i></td></tr>
+<tr><th id="301">301</th><td>    <a class="local col3 ref" href="#53check_origin" title='check_origin' data-ref="53check_origin">check_origin</a> = <var>1</var>;</td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td>    <a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = (<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)/<var>3</var>;</td></tr>
+<tr><th id="304">304</th><td>    <a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = (<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> + <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> + <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)/<var>3</var>;</td></tr>
+<tr><th id="305">305</th><td></td></tr>
+<tr><th id="306">306</th><td>    <a class="local col1 ref" href="#51check01" title='check01' data-ref="51check01">check01</a> = (<a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)*(<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) + (<a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="307">307</th><td>    <a class="local col2 ref" href="#52check02" title='check02' data-ref="52check02">check02</a> = (-<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)*(<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) + (-<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="308">308</th><td>    <b>if</b>( <a class="local col1 ref" href="#51check01" title='check01' data-ref="51check01">check01</a>*<a class="local col2 ref" href="#52check02" title='check02' data-ref="52check02">check02</a> &gt; <var>0</var> )</td></tr>
+<tr><th id="309">309</th><td>    {</td></tr>
+<tr><th id="310">310</th><td>        <a class="local col1 ref" href="#51check01" title='check01' data-ref="51check01">check01</a> = (<a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)*(<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) + (<a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="311">311</th><td>        <a class="local col2 ref" href="#52check02" title='check02' data-ref="52check02">check02</a> = (-<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)*(<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) + (-<a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col9 ref" href="#39Q1" title='Q1' data-ref="39Q1">Q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="312">312</th><td>        <b>if</b>( <a class="local col1 ref" href="#51check01" title='check01' data-ref="51check01">check01</a>*<a class="local col2 ref" href="#52check02" title='check02' data-ref="52check02">check02</a> &gt; <var>0</var> )</td></tr>
+<tr><th id="313">313</th><td>        {</td></tr>
+<tr><th id="314">314</th><td>            <a class="local col1 ref" href="#51check01" title='check01' data-ref="51check01">check01</a> = (<a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)*(<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) + (<a class="local col0 ref" href="#50center" title='center' data-ref="50center">center</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="315">315</th><td>            <a class="local col2 ref" href="#52check02" title='check02' data-ref="52check02">check02</a> = (-<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>)*(<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> - <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) + (-<a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> - <a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>);</td></tr>
+<tr><th id="316">316</th><td>            <b>if</b>( <a class="local col1 ref" href="#51check01" title='check01' data-ref="51check01">check01</a>*<a class="local col2 ref" href="#52check02" title='check02' data-ref="52check02">check02</a> &gt; <var>0</var> )</td></tr>
+<tr><th id="317">317</th><td>            {</td></tr>
+<tr><th id="318">318</th><td>                <a class="local col3 ref" href="#53check_origin" title='check_origin' data-ref="53check_origin">check_origin</a> = <var>0</var>;</td></tr>
+<tr><th id="319">319</th><td>            }</td></tr>
+<tr><th id="320">320</th><td>        }</td></tr>
+<tr><th id="321">321</th><td>    }</td></tr>
+<tr><th id="322">322</th><td></td></tr>
+<tr><th id="323">323</th><td>    <i>// Calculate angle</i></td></tr>
+<tr><th id="324">324</th><td>    <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <var>0</var>;</td></tr>
+<tr><th id="325">325</th><td>    <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a> = <a class="ref" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>,<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>);</td></tr>
+<tr><th id="326">326</th><td>    <b>if</b>( <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> == <var>0</var> )</td></tr>
+<tr><th id="327">327</th><td>    {</td></tr>
+<tr><th id="328">328</th><td>        <b>if</b>( <a class="local col3 ref" href="#53check_origin" title='check_origin' data-ref="53check_origin">check_origin</a> == <var>0</var> )</td></tr>
+<tr><th id="329">329</th><td>        {</td></tr>
+<tr><th id="330">330</th><td>        }</td></tr>
+<tr><th id="331">331</th><td>        <b>else</b></td></tr>
+<tr><th id="332">332</th><td>        {</td></tr>
+<tr><th id="333">333</th><td>            <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a> = <var>2</var>*<a class="macro" href="../../core/include/opencv2/core/types_c.h.html#290" title="3.1415926535897932384626433832795" data-ref="_M/CV_PI">CV_PI</a> - <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>;</td></tr>
+<tr><th id="334">334</th><td>        }</td></tr>
+<tr><th id="335">335</th><td>    }</td></tr>
+<tr><th id="336">336</th><td>    <b>else</b></td></tr>
+<tr><th id="337">337</th><td>    {</td></tr>
+<tr><th id="338">338</th><td>        <b>if</b>( <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> == <var>1</var> )</td></tr>
+<tr><th id="339">339</th><td>        {</td></tr>
+<tr><th id="340">340</th><td>            <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="ref" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>,<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col1 ref" href="#41Q1_nm" title='Q1_nm' data-ref="41Q1_nm">Q1_nm</a>);</td></tr>
+<tr><th id="341">341</th><td>            <b>if</b>(<a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> &gt; <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>)</td></tr>
+<tr><th id="342">342</th><td>            {</td></tr>
+<tr><th id="343">343</th><td>                <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> - <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>;</td></tr>
+<tr><th id="344">344</th><td>            }</td></tr>
+<tr><th id="345">345</th><td>        }</td></tr>
+<tr><th id="346">346</th><td></td></tr>
+<tr><th id="347">347</th><td>        <b>if</b>( <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> == <var>2</var> )</td></tr>
+<tr><th id="348">348</th><td>        {</td></tr>
+<tr><th id="349">349</th><td>            <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="ref" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>,<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col2 ref" href="#42Q2_nm" title='Q2_nm' data-ref="42Q2_nm">Q2_nm</a>);</td></tr>
+<tr><th id="350">350</th><td>            <b>if</b>(<a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> &gt; <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>)</td></tr>
+<tr><th id="351">351</th><td>            {</td></tr>
+<tr><th id="352">352</th><td>                <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> - <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>;</td></tr>
+<tr><th id="353">353</th><td>            }</td></tr>
+<tr><th id="354">354</th><td>        }</td></tr>
+<tr><th id="355">355</th><td></td></tr>
+<tr><th id="356">356</th><td>        <b>if</b>( <a class="local col9 ref" href="#49k_nonmon" title='k_nonmon' data-ref="49k_nonmon">k_nonmon</a> == <var>3</var> )</td></tr>
+<tr><th id="357">357</th><td>        {</td></tr>
+<tr><th id="358">358</th><td>            <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="ref" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>,<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col1 ref" href="#41Q1_nm" title='Q1_nm' data-ref="41Q1_nm">Q1_nm</a>);</td></tr>
+<tr><th id="359">359</th><td>            <b>if</b>(<a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> &gt; <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>)</td></tr>
+<tr><th id="360">360</th><td>            {</td></tr>
+<tr><th id="361">361</th><td>                <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> - <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>;</td></tr>
+<tr><th id="362">362</th><td>                <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> + <a class="ref" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col8 ref" href="#38Q0" title='Q0' data-ref="38Q0">Q0</a>, <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col2 ref" href="#42Q2_nm" title='Q2_nm' data-ref="42Q2_nm">Q2_nm</a>);</td></tr>
+<tr><th id="363">363</th><td>            }</td></tr>
+<tr><th id="364">364</th><td>            <b>else</b></td></tr>
+<tr><th id="365">365</th><td>            {</td></tr>
+<tr><th id="366">366</th><td>                <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> = <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a> + <a class="ref" href="#_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</a>(<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col0 ref" href="#40Q2" title='Q2' data-ref="40Q2">Q2</a>,<a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1ERKS_"></a><a class="local col2 ref" href="#42Q2_nm" title='Q2_nm' data-ref="42Q2_nm">Q2_nm</a>);</td></tr>
+<tr><th id="367">367</th><td>            }</td></tr>
+<tr><th id="368">368</th><td>        }</td></tr>
+<tr><th id="369">369</th><td>    }</td></tr>
+<tr><th id="370">370</th><td><i>/*</i></td></tr>
+<tr><th id="371">371</th><td><i>    B0-&gt;x = -B0-&gt;x;</i></td></tr>
+<tr><th id="372">372</th><td><i>    B0-&gt;y = -B0-&gt;y;</i></td></tr>
+<tr><th id="373">373</th><td><i>    B1-&gt;x = -B1-&gt;x;</i></td></tr>
+<tr><th id="374">374</th><td><i>    B1-&gt;y = -B1-&gt;y;</i></td></tr>
+<tr><th id="375">375</th><td><i>*/</i></td></tr>
+<tr><th id="376">376</th><td>    <b>return</b> <a class="local col4 ref" href="#54d_angle" title='d_angle' data-ref="54d_angle">d_angle</a>*<a class="macro" href="#53" title="40" data-ref="_M/K_B">K_B</a> + <a class="local col5 ref" href="#55d_nm_angle" title='d_nm_angle' data-ref="55d_nm_angle">d_nm_angle</a>*<a class="macro" href="#52" title="50000" data-ref="_M/K_NM">K_NM</a> + <a class="local col8 ref" href="#48k_zero" title='k_zero' data-ref="48k_zero">k_zero</a>*<a class="macro" href="#51" title="5000" data-ref="_M/K_Z">K_Z</a>;</td></tr>
+<tr><th id="377">377</th><td>    <i>//return 0;</i></td></tr>
+<tr><th id="378">378</th><td>}</td></tr>
+<tr><th id="379">379</th><td></td></tr>
+<tr><th id="380">380</th><td></td></tr>
+<tr><th id="381">381</th><td><i>/////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="382">382</th><td><em>void</em> <dfn class="decl def" id="_Z11_cvWorkEastiiPP8__CvWorkP12CvPoint2D32fS3_" title='_cvWorkEast' data-ref="_Z11_cvWorkEastiiPP8__CvWorkP12CvPoint2D32fS3_">_cvWorkEast</dfn>(<em>int</em> <dfn class="local col6 decl" id="56i" title='i' data-type='int' data-ref="56i">i</dfn>, <em>int</em> <dfn class="local col7 decl" id="57j" title='j' data-type='int' data-ref="57j">j</dfn>, <a class="typedef" href="#_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</a>** <dfn class="local col8 decl" id="58W" title='W' data-type='_CvWork **' data-ref="58W">W</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col9 decl" id="59edges1" title='edges1' data-type='CvPoint2D32f *' data-ref="59edges1">edges1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col0 decl" id="60edges2" title='edges2' data-type='CvPoint2D32f *' data-ref="60edges2">edges2</dfn>)</td></tr>
+<tr><th id="383">383</th><td>{</td></tr>
+<tr><th id="384">384</th><td>    <em>double</em> <dfn class="local col1 decl" id="61w1" title='w1' data-type='double' data-ref="61w1">w1</dfn>,<dfn class="local col2 decl" id="62w2" title='w2' data-type='double' data-ref="62w2">w2</dfn>;</td></tr>
+<tr><th id="385">385</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col3 decl" id="63small_edge" title='small_edge' data-type='CvPoint2D32f' data-ref="63small_edge">small_edge</dfn>;</td></tr>
+<tr><th id="386">386</th><td></td></tr>
+<tr><th id="387">387</th><td>    <i>//W[i,j].w_east</i></td></tr>
+<tr><th id="388">388</th><td>    <a class="local col1 ref" href="#61w1" title='w1' data-ref="61w1">w1</a> = <a class="local col8 ref" href="#58W" title='W' data-ref="58W">W</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>][<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>].<a class="tu ref" href="#__CvWork::w_east" title='__CvWork::w_east' data-use='r' data-ref="__CvWork::w_east">w_east</a> <i>/*+ _cvBendingWork(   &amp;edges1[i-2],</i></td></tr>
+<tr><th id="389">389</th><td><i>                                            &amp;edges1[i-1],</i></td></tr>
+<tr><th id="390">390</th><td><i>                                            &amp;null_edge ,</i></td></tr>
+<tr><th id="391">391</th><td><i>                                            &amp;null_edge,</i></td></tr>
+<tr><th id="392">392</th><td><i>                                            NULL)*/</i>;</td></tr>
+<tr><th id="393">393</th><td></td></tr>
+<tr><th id="394">394</th><td>    <a class="local col3 ref" href="#63small_edge" title='small_edge' data-ref="63small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col9 ref" href="#59edges1" title='edges1' data-ref="59edges1">edges1</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>;</td></tr>
+<tr><th id="395">395</th><td>    <a class="local col3 ref" href="#63small_edge" title='small_edge' data-ref="63small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col9 ref" href="#59edges1" title='edges1' data-ref="59edges1">edges1</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>;</td></tr>
+<tr><th id="396">396</th><td></td></tr>
+<tr><th id="397">397</th><td>    <a class="local col2 ref" href="#62w2" title='w2' data-ref="62w2">w2</a> = <a class="local col8 ref" href="#58W" title='W' data-ref="58W">W</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>][<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='r' data-ref="__CvWork::w_southeast">w_southeast</a> + <a class="ref" href="#_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</a>(&amp;<a class="local col9 ref" href="#59edges1" title='edges1' data-ref="59edges1">edges1</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>2</var>],</td></tr>
+<tr><th id="398">398</th><td>                                                &amp;<a class="local col9 ref" href="#59edges1" title='edges1' data-ref="59edges1">edges1</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>],</td></tr>
+<tr><th id="399">399</th><td>                                                &amp;<a class="local col0 ref" href="#60edges2" title='edges2' data-ref="60edges2">edges2</a>[<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>-<var>1</var>],</td></tr>
+<tr><th id="400">400</th><td>                                                <i>/*&amp;null_edge*/</i>&amp;<a class="local col3 ref" href="#63small_edge" title='small_edge' data-ref="63small_edge">small_edge</a><i>/*,</i></td></tr>
+<tr><th id="401">401</th><td><i>                                                &amp;edges2[j]*/</i>);</td></tr>
+<tr><th id="402">402</th><td></td></tr>
+<tr><th id="403">403</th><td>    <b>if</b>(<a class="local col1 ref" href="#61w1" title='w1' data-ref="61w1">w1</a>&lt;<a class="local col2 ref" href="#62w2" title='w2' data-ref="62w2">w2</a>)</td></tr>
+<tr><th id="404">404</th><td>    {</td></tr>
+<tr><th id="405">405</th><td>        <a class="local col8 ref" href="#58W" title='W' data-ref="58W">W</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>][<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>].<a class="tu ref" href="#__CvWork::w_east" title='__CvWork::w_east' data-use='w' data-ref="__CvWork::w_east">w_east</a> = <a class="local col1 ref" href="#61w1" title='w1' data-ref="61w1">w1</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="local col9 ref" href="#59edges1" title='edges1' data-ref="59edges1">edges1</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>], &amp;<a class="tu ref" href="#null_edge" title='null_edge' data-use='a' data-ref="null_edge">null_edge</a> );</td></tr>
+<tr><th id="406">406</th><td>        <a class="local col8 ref" href="#58W" title='W' data-ref="58W">W</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>][<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>].<a class="tu ref" href="#__CvWork::path_e" title='__CvWork::path_e' data-use='w' data-ref="__CvWork::path_e">path_e</a> = <a class="macro" href="#44" title="1" data-ref="_M/PATH_TO_E">PATH_TO_E</a>;</td></tr>
+<tr><th id="407">407</th><td>    }</td></tr>
+<tr><th id="408">408</th><td>    <b>else</b></td></tr>
+<tr><th id="409">409</th><td>    {</td></tr>
+<tr><th id="410">410</th><td>        <a class="local col8 ref" href="#58W" title='W' data-ref="58W">W</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>][<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>].<a class="tu ref" href="#__CvWork::w_east" title='__CvWork::w_east' data-use='w' data-ref="__CvWork::w_east">w_east</a> = <a class="local col2 ref" href="#62w2" title='w2' data-ref="62w2">w2</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="local col9 ref" href="#59edges1" title='edges1' data-ref="59edges1">edges1</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>-<var>1</var>], &amp;<a class="tu ref" href="#null_edge" title='null_edge' data-use='a' data-ref="null_edge">null_edge</a> );</td></tr>
+<tr><th id="411">411</th><td>        <a class="local col8 ref" href="#58W" title='W' data-ref="58W">W</a>[<a class="local col6 ref" href="#56i" title='i' data-ref="56i">i</a>][<a class="local col7 ref" href="#57j" title='j' data-ref="57j">j</a>].<a class="tu ref" href="#__CvWork::path_e" title='__CvWork::path_e' data-use='w' data-ref="__CvWork::path_e">path_e</a> = <a class="macro" href="#45" title="2" data-ref="_M/PATH_TO_SE">PATH_TO_SE</a>;</td></tr>
+<tr><th id="412">412</th><td>    }</td></tr>
+<tr><th id="413">413</th><td>}</td></tr>
+<tr><th id="414">414</th><td></td></tr>
+<tr><th id="415">415</th><td></td></tr>
+<tr><th id="416">416</th><td></td></tr>
+<tr><th id="417">417</th><td></td></tr>
+<tr><th id="418">418</th><td></td></tr>
+<tr><th id="419">419</th><td><i>////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="420">420</th><td><em>void</em> <dfn class="decl def" id="_Z16_cvWorkSouthEastiiPP8__CvWorkP12CvPoint2D32fS3_" title='_cvWorkSouthEast' data-ref="_Z16_cvWorkSouthEastiiPP8__CvWorkP12CvPoint2D32fS3_">_cvWorkSouthEast</dfn>(<em>int</em> <dfn class="local col4 decl" id="64i" title='i' data-type='int' data-ref="64i">i</dfn>, <em>int</em> <dfn class="local col5 decl" id="65j" title='j' data-type='int' data-ref="65j">j</dfn>, <a class="typedef" href="#_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</a>** <dfn class="local col6 decl" id="66W" title='W' data-type='_CvWork **' data-ref="66W">W</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col7 decl" id="67edges1" title='edges1' data-type='CvPoint2D32f *' data-ref="67edges1">edges1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col8 decl" id="68edges2" title='edges2' data-type='CvPoint2D32f *' data-ref="68edges2">edges2</dfn>)</td></tr>
+<tr><th id="421">421</th><td>{</td></tr>
+<tr><th id="422">422</th><td>    <em>double</em> <dfn class="local col9 decl" id="69w1" title='w1' data-type='double' data-ref="69w1">w1</dfn>,<dfn class="local col0 decl" id="70w2" title='w2' data-type='double' data-ref="70w2">w2</dfn>,<dfn class="local col1 decl" id="71w3" title='w3' data-type='double' data-ref="71w3">w3</dfn>;</td></tr>
+<tr><th id="423">423</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col2 decl" id="72small_edge" title='small_edge' data-type='CvPoint2D32f' data-ref="72small_edge">small_edge</dfn>;</td></tr>
+<tr><th id="424">424</th><td></td></tr>
+<tr><th id="425">425</th><td>    <i>//W[i,j].w_southeast</i></td></tr>
+<tr><th id="426">426</th><td>    <a class="local col2 ref" href="#72small_edge" title='small_edge' data-ref="72small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>2</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>;</td></tr>
+<tr><th id="427">427</th><td>    <a class="local col2 ref" href="#72small_edge" title='small_edge' data-ref="72small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>2</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>;</td></tr>
+<tr><th id="428">428</th><td></td></tr>
+<tr><th id="429">429</th><td>    <a class="local col9 ref" href="#69w1" title='w1' data-ref="69w1">w1</a> = <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>].<a class="tu ref" href="#__CvWork::w_east" title='__CvWork::w_east' data-use='r' data-ref="__CvWork::w_east">w_east</a> + <a class="ref" href="#_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</a>(&amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>2</var>],</td></tr>
+<tr><th id="430">430</th><td>                                            &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>],</td></tr>
+<tr><th id="431">431</th><td>                                            <i>/*&amp;null_edge*/</i>&amp;<a class="local col2 ref" href="#72small_edge" title='small_edge' data-ref="72small_edge">small_edge</a>,</td></tr>
+<tr><th id="432">432</th><td>                                            &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>]<i>/*,</i></td></tr>
+<tr><th id="433">433</th><td><i>                                            &amp;edges2[j-2]*/</i>);</td></tr>
+<tr><th id="434">434</th><td></td></tr>
+<tr><th id="435">435</th><td>    <a class="local col0 ref" href="#70w2" title='w2' data-ref="70w2">w2</a> = <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='r' data-ref="__CvWork::w_southeast">w_southeast</a> + <a class="ref" href="#_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</a>(  &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>2</var>],</td></tr>
+<tr><th id="436">436</th><td>                                                    &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>],</td></tr>
+<tr><th id="437">437</th><td>                                                    &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>2</var>],</td></tr>
+<tr><th id="438">438</th><td>                                                    &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>]<i>/*,</i></td></tr>
+<tr><th id="439">439</th><td><i>                                                    NULL*/</i>);</td></tr>
+<tr><th id="440">440</th><td></td></tr>
+<tr><th id="441">441</th><td>    <a class="local col2 ref" href="#72small_edge" title='small_edge' data-ref="72small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>2</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>;</td></tr>
+<tr><th id="442">442</th><td>    <a class="local col2 ref" href="#72small_edge" title='small_edge' data-ref="72small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>2</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>;</td></tr>
+<tr><th id="443">443</th><td></td></tr>
+<tr><th id="444">444</th><td>    <a class="local col1 ref" href="#71w3" title='w3' data-ref="71w3">w3</a> = <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>].<a class="tu ref" href="#__CvWork::w_south" title='__CvWork::w_south' data-use='r' data-ref="__CvWork::w_south">w_south</a> + <a class="ref" href="#_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</a>(  <i>/*&amp;null_edge*/</i>&amp;<a class="local col2 ref" href="#72small_edge" title='small_edge' data-ref="72small_edge">small_edge</a>,</td></tr>
+<tr><th id="445">445</th><td>                                                &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>],</td></tr>
+<tr><th id="446">446</th><td>                                                &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>2</var>],</td></tr>
+<tr><th id="447">447</th><td>                                                &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>]<i>/*,</i></td></tr>
+<tr><th id="448">448</th><td><i>                                                &amp;edges1[i-2]*/</i>);</td></tr>
+<tr><th id="449">449</th><td></td></tr>
+<tr><th id="450">450</th><td>    <b>if</b>( <a class="local col9 ref" href="#69w1" title='w1' data-ref="69w1">w1</a>&lt;<a class="local col0 ref" href="#70w2" title='w2' data-ref="70w2">w2</a> )</td></tr>
+<tr><th id="451">451</th><td>    {</td></tr>
+<tr><th id="452">452</th><td>        <b>if</b>(<a class="local col9 ref" href="#69w1" title='w1' data-ref="69w1">w1</a>&lt;<a class="local col1 ref" href="#71w3" title='w3' data-ref="71w3">w3</a>)</td></tr>
+<tr><th id="453">453</th><td>        {</td></tr>
+<tr><th id="454">454</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='w' data-ref="__CvWork::w_southeast">w_southeast</a> = <a class="local col9 ref" href="#69w1" title='w1' data-ref="69w1">w1</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>], &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>] );</td></tr>
+<tr><th id="455">455</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::path_se" title='__CvWork::path_se' data-use='w' data-ref="__CvWork::path_se">path_se</a> = <a class="macro" href="#44" title="1" data-ref="_M/PATH_TO_E">PATH_TO_E</a>;</td></tr>
+<tr><th id="456">456</th><td>        }</td></tr>
+<tr><th id="457">457</th><td>        <b>else</b></td></tr>
+<tr><th id="458">458</th><td>        {</td></tr>
+<tr><th id="459">459</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='w' data-ref="__CvWork::w_southeast">w_southeast</a> = <a class="local col1 ref" href="#71w3" title='w3' data-ref="71w3">w3</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>], &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>] );</td></tr>
+<tr><th id="460">460</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::path_se" title='__CvWork::path_se' data-use='w' data-ref="__CvWork::path_se">path_se</a> = <var>3</var>;</td></tr>
+<tr><th id="461">461</th><td>        }</td></tr>
+<tr><th id="462">462</th><td>    }</td></tr>
+<tr><th id="463">463</th><td>    <b>else</b></td></tr>
+<tr><th id="464">464</th><td>    {</td></tr>
+<tr><th id="465">465</th><td>        <b>if</b>( <a class="local col0 ref" href="#70w2" title='w2' data-ref="70w2">w2</a>&lt;<a class="local col1 ref" href="#71w3" title='w3' data-ref="71w3">w3</a>)</td></tr>
+<tr><th id="466">466</th><td>        {</td></tr>
+<tr><th id="467">467</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='w' data-ref="__CvWork::w_southeast">w_southeast</a> = <a class="local col0 ref" href="#70w2" title='w2' data-ref="70w2">w2</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>], &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>] );</td></tr>
+<tr><th id="468">468</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::path_se" title='__CvWork::path_se' data-use='w' data-ref="__CvWork::path_se">path_se</a> = <a class="macro" href="#45" title="2" data-ref="_M/PATH_TO_SE">PATH_TO_SE</a>;</td></tr>
+<tr><th id="469">469</th><td>        }</td></tr>
+<tr><th id="470">470</th><td>        <b>else</b></td></tr>
+<tr><th id="471">471</th><td>        {</td></tr>
+<tr><th id="472">472</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='w' data-ref="__CvWork::w_southeast">w_southeast</a> = <a class="local col1 ref" href="#71w3" title='w3' data-ref="71w3">w3</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="local col7 ref" href="#67edges1" title='edges1' data-ref="67edges1">edges1</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>-<var>1</var>], &amp;<a class="local col8 ref" href="#68edges2" title='edges2' data-ref="68edges2">edges2</a>[<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>-<var>1</var>] );</td></tr>
+<tr><th id="473">473</th><td>            <a class="local col6 ref" href="#66W" title='W' data-ref="66W">W</a>[<a class="local col4 ref" href="#64i" title='i' data-ref="64i">i</a>][<a class="local col5 ref" href="#65j" title='j' data-ref="65j">j</a>].<a class="tu ref" href="#__CvWork::path_se" title='__CvWork::path_se' data-use='w' data-ref="__CvWork::path_se">path_se</a> = <var>3</var>;</td></tr>
+<tr><th id="474">474</th><td>        }</td></tr>
+<tr><th id="475">475</th><td>    }</td></tr>
+<tr><th id="476">476</th><td>}</td></tr>
+<tr><th id="477">477</th><td></td></tr>
+<tr><th id="478">478</th><td></td></tr>
+<tr><th id="479">479</th><td><i>//////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="480">480</th><td><em>void</em> <dfn class="decl def" id="_Z12_cvWorkSouthiiPP8__CvWorkP12CvPoint2D32fS3_" title='_cvWorkSouth' data-ref="_Z12_cvWorkSouthiiPP8__CvWorkP12CvPoint2D32fS3_">_cvWorkSouth</dfn>(<em>int</em> <dfn class="local col3 decl" id="73i" title='i' data-type='int' data-ref="73i">i</dfn>, <em>int</em> <dfn class="local col4 decl" id="74j" title='j' data-type='int' data-ref="74j">j</dfn>, <a class="typedef" href="#_CvWork" title='_CvWork' data-type='struct __CvWork' data-ref="_CvWork">_CvWork</a>** <dfn class="local col5 decl" id="75W" title='W' data-type='_CvWork **' data-ref="75W">W</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col6 decl" id="76edges1" title='edges1' data-type='CvPoint2D32f *' data-ref="76edges1">edges1</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a>* <dfn class="local col7 decl" id="77edges2" title='edges2' data-type='CvPoint2D32f *' data-ref="77edges2">edges2</dfn>)</td></tr>
+<tr><th id="481">481</th><td>{</td></tr>
+<tr><th id="482">482</th><td>    <em>double</em> <dfn class="local col8 decl" id="78w1" title='w1' data-type='double' data-ref="78w1">w1</dfn>,<dfn class="local col9 decl" id="79w2" title='w2' data-type='double' data-ref="79w2">w2</dfn>;</td></tr>
+<tr><th id="483">483</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col0 decl" id="80small_edge" title='small_edge' data-type='CvPoint2D32f' data-ref="80small_edge">small_edge</dfn>;</td></tr>
+<tr><th id="484">484</th><td></td></tr>
+<tr><th id="485">485</th><td>    <i>//W[i,j].w_south</i></td></tr>
+<tr><th id="486">486</th><td></td></tr>
+<tr><th id="487">487</th><td>    <a class="local col0 ref" href="#80small_edge" title='small_edge' data-ref="80small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col7 ref" href="#77edges2" title='edges2' data-ref="77edges2">edges2</a>[<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>;</td></tr>
+<tr><th id="488">488</th><td>    <a class="local col0 ref" href="#80small_edge" title='small_edge' data-ref="80small_edge">small_edge</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = <a class="macro" href="#54" title="0.001f" data-ref="_M/NULL_EDGE">NULL_EDGE</a>*<a class="local col7 ref" href="#77edges2" title='edges2' data-ref="77edges2">edges2</a>[<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>].<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>;</td></tr>
+<tr><th id="489">489</th><td></td></tr>
+<tr><th id="490">490</th><td>    <a class="local col8 ref" href="#78w1" title='w1' data-ref="78w1">w1</a> = <a class="local col5 ref" href="#75W" title='W' data-ref="75W">W</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>][<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>].<a class="tu ref" href="#__CvWork::w_southeast" title='__CvWork::w_southeast' data-use='r' data-ref="__CvWork::w_southeast">w_southeast</a> + <a class="ref" href="#_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_" title='_cvBendingWork' data-ref="_Z14_cvBendingWorkP12CvPoint2D32fS0_S0_S0_">_cvBendingWork</a>(&amp;<a class="local col6 ref" href="#76edges1" title='edges1' data-ref="76edges1">edges1</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>-<var>1</var>],</td></tr>
+<tr><th id="491">491</th><td>                                                <i>/*&amp;null_edge*/</i>&amp;<a class="local col0 ref" href="#80small_edge" title='small_edge' data-ref="80small_edge">small_edge</a>,</td></tr>
+<tr><th id="492">492</th><td>                                                &amp;<a class="local col7 ref" href="#77edges2" title='edges2' data-ref="77edges2">edges2</a>[<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>2</var>],</td></tr>
+<tr><th id="493">493</th><td>                                                &amp;<a class="local col7 ref" href="#77edges2" title='edges2' data-ref="77edges2">edges2</a>[<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>]<i>/*,</i></td></tr>
+<tr><th id="494">494</th><td><i>                                                &amp;edges1[i]*/</i>);</td></tr>
+<tr><th id="495">495</th><td></td></tr>
+<tr><th id="496">496</th><td>    <a class="local col9 ref" href="#79w2" title='w2' data-ref="79w2">w2</a> = <a class="local col5 ref" href="#75W" title='W' data-ref="75W">W</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>][<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>].<a class="tu ref" href="#__CvWork::w_south" title='__CvWork::w_south' data-use='r' data-ref="__CvWork::w_south">w_south</a> <i>/*+ _cvBendingWork(  &amp;null_edge ,</i></td></tr>
+<tr><th id="497">497</th><td><i>                                            &amp;null_edge,</i></td></tr>
+<tr><th id="498">498</th><td><i>                                            &amp;edges2[j-2],</i></td></tr>
+<tr><th id="499">499</th><td><i>                                            &amp;edges2[j-1],</i></td></tr>
+<tr><th id="500">500</th><td><i>                                            NULL)*/</i>;</td></tr>
+<tr><th id="501">501</th><td></td></tr>
+<tr><th id="502">502</th><td>    <b>if</b>( <a class="local col8 ref" href="#78w1" title='w1' data-ref="78w1">w1</a>&lt;<a class="local col9 ref" href="#79w2" title='w2' data-ref="79w2">w2</a> )</td></tr>
+<tr><th id="503">503</th><td>    {</td></tr>
+<tr><th id="504">504</th><td>        <a class="local col5 ref" href="#75W" title='W' data-ref="75W">W</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>][<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>].<a class="tu ref" href="#__CvWork::w_south" title='__CvWork::w_south' data-use='w' data-ref="__CvWork::w_south">w_south</a> = <a class="local col8 ref" href="#78w1" title='w1' data-ref="78w1">w1</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="tu ref" href="#null_edge" title='null_edge' data-use='a' data-ref="null_edge">null_edge</a>, &amp;<a class="local col7 ref" href="#77edges2" title='edges2' data-ref="77edges2">edges2</a>[<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>] );</td></tr>
+<tr><th id="505">505</th><td>        <a class="local col5 ref" href="#75W" title='W' data-ref="75W">W</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>][<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>].<a class="tu ref" href="#__CvWork::path_s" title='__CvWork::path_s' data-use='w' data-ref="__CvWork::path_s">path_s</a> = <a class="macro" href="#45" title="2" data-ref="_M/PATH_TO_SE">PATH_TO_SE</a>;</td></tr>
+<tr><th id="506">506</th><td>    }</td></tr>
+<tr><th id="507">507</th><td>    <b>else</b></td></tr>
+<tr><th id="508">508</th><td>    {</td></tr>
+<tr><th id="509">509</th><td>        <a class="local col5 ref" href="#75W" title='W' data-ref="75W">W</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>][<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>].<a class="tu ref" href="#__CvWork::w_south" title='__CvWork::w_south' data-use='w' data-ref="__CvWork::w_south">w_south</a> = <a class="local col9 ref" href="#79w2" title='w2' data-ref="79w2">w2</a> + <a class="ref" href="#_Z17_cvStretchingWorkP12CvPoint2D32fS0_" title='_cvStretchingWork' data-ref="_Z17_cvStretchingWorkP12CvPoint2D32fS0_">_cvStretchingWork</a>( &amp;<a class="tu ref" href="#null_edge" title='null_edge' data-use='a' data-ref="null_edge">null_edge</a>, &amp;<a class="local col7 ref" href="#77edges2" title='edges2' data-ref="77edges2">edges2</a>[<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>-<var>1</var>] );</td></tr>
+<tr><th id="510">510</th><td>        <a class="local col5 ref" href="#75W" title='W' data-ref="75W">W</a>[<a class="local col3 ref" href="#73i" title='i' data-ref="73i">i</a>][<a class="local col4 ref" href="#74j" title='j' data-ref="74j">j</a>].<a class="tu ref" href="#__CvWork::path_s" title='__CvWork::path_s' data-use='w' data-ref="__CvWork::path_s">path_s</a> = <var>3</var>;</td></tr>
+<tr><th id="511">511</th><td>    }</td></tr>
+<tr><th id="512">512</th><td>}</td></tr>
+<tr><th id="513">513</th><td></td></tr>
+<tr><th id="514">514</th><td></td></tr>
+<tr><th id="515">515</th><td><i>//===================================================</i></td></tr>
+<tr><th id="516">516</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="decl def" id="_Z1Q12CvPoint2D32fS_S_d" title='Q' data-ref="_Z1Q12CvPoint2D32fS_S_d">Q</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col1 decl" id="81q0" title='q0' data-type='CvPoint2D32f' data-ref="81q0">q0</dfn>,<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col2 decl" id="82q1" title='q1' data-type='CvPoint2D32f' data-ref="82q1">q1</dfn>,<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col3 decl" id="83q2" title='q2' data-type='CvPoint2D32f' data-ref="83q2">q2</dfn>,<em>double</em> <dfn class="local col4 decl" id="84t" title='t' data-type='double' data-ref="84t">t</dfn>)</td></tr>
+<tr><th id="517">517</th><td>{</td></tr>
+<tr><th id="518">518</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <a class="ref fake" href="../../core/include/opencv2/core/types_c.h.html#1076" title='CvPoint2D32f::CvPoint2D32f' data-ref="_ZN12CvPoint2D32fC1Ev"></a><dfn class="local col5 decl" id="85q" title='q' data-type='CvPoint2D32f' data-ref="85q">q</dfn>;</td></tr>
+<tr><th id="519">519</th><td></td></tr>
+<tr><th id="520">520</th><td>    <a class="local col5 ref" href="#85q" title='q' data-ref="85q">q</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> = (<em>float</em>)(<a class="local col1 ref" href="#81q0" title='q0' data-ref="81q0">q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*(<var>1</var>-<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>)*(<var>1</var>-<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>) + <var>2</var>*<a class="local col2 ref" href="#82q1" title='q1' data-ref="82q1">q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>*(<var>1</var>-<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>) + <a class="local col3 ref" href="#83q2" title='q2' data-ref="83q2">q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>*<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>);</td></tr>
+<tr><th id="521">521</th><td>    <a class="local col5 ref" href="#85q" title='q' data-ref="85q">q</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a> = (<em>float</em>)(<a class="local col1 ref" href="#81q0" title='q0' data-ref="81q0">q0</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*(<var>1</var>-<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>)*(<var>1</var>-<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>) + <var>2</var>*<a class="local col2 ref" href="#82q1" title='q1' data-ref="82q1">q1</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>*(<var>1</var>-<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>) + <a class="local col3 ref" href="#83q2" title='q2' data-ref="83q2">q2</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>*<a class="local col4 ref" href="#84t" title='t' data-ref="84t">t</a>);</td></tr>
+<tr><th id="522">522</th><td></td></tr>
+<tr><th id="523">523</th><td>    <b>return</b> <a class="local col5 ref" href="#85q" title='q' data-ref="85q">q</a>;</td></tr>
+<tr><th id="524">524</th><td>}</td></tr>
+<tr><th id="525">525</th><td></td></tr>
+<tr><th id="526">526</th><td><em>double</em> <dfn class="decl def" id="_Z5angle12CvPoint2D32fS_" title='angle' data-ref="_Z5angle12CvPoint2D32fS_">angle</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col6 decl" id="86A" title='A' data-type='CvPoint2D32f' data-ref="86A">A</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f" title='CvPoint2D32f' data-type='struct CvPoint2D32f' data-ref="CvPoint2D32f">CvPoint2D32f</a> <dfn class="local col7 decl" id="87B" title='B' data-type='CvPoint2D32f' data-ref="87B">B</dfn>)</td></tr>
+<tr><th id="527">527</th><td>{</td></tr>
+<tr><th id="528">528</th><td>    <b>return</b> <a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#54" title='acos' data-ref="acos">acos</a>( (<a class="local col6 ref" href="#86A" title='A' data-ref="86A">A</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col7 ref" href="#87B" title='B' data-ref="87B">B</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col6 ref" href="#86A" title='A' data-ref="86A">A</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col7 ref" href="#87B" title='B' data-ref="87B">B</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)/<a class="ref" href="../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>( (<em>double</em>)(<a class="local col6 ref" href="#86A" title='A' data-ref="86A">A</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col6 ref" href="#86A" title='A' data-ref="86A">A</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col6 ref" href="#86A" title='A' data-ref="86A">A</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col6 ref" href="#86A" title='A' data-ref="86A">A</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>)*(<a class="local col7 ref" href="#87B" title='B' data-ref="87B">B</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a>*<a class="local col7 ref" href="#87B" title='B' data-ref="87B">B</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::x" title='CvPoint2D32f::x' data-ref="CvPoint2D32f::x">x</a> + <a class="local col7 ref" href="#87B" title='B' data-ref="87B">B</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>*<a class="local col7 ref" href="#87B" title='B' data-ref="87B">B</a>.<a class="ref" href="../../core/include/opencv2/core/types_c.h.html#CvPoint2D32f::y" title='CvPoint2D32f::y' data-ref="CvPoint2D32f::y">y</a>) ) );</td></tr>
+<tr><th id="529">529</th><td>}</td></tr>
+<tr><th id="530">530</th><td><u>#<span data-ppcond="530">if</span> 0</u></td></tr>
+<tr><th id="531">531</th><td><i>/***************************************************************************************\</i></td></tr>
+<tr><th id="532">532</th><td><i>*</i></td></tr>
+<tr><th id="533">533</th><td><i>*   This function compute intermediate polygon between contour1 and contour2</i></td></tr>
+<tr><th id="534">534</th><td><i>*</i></td></tr>
+<tr><th id="535">535</th><td><i>*   Correspondence between points of contours specify by corr</i></td></tr>
+<tr><th id="536">536</th><td><i>*</i></td></tr>
+<tr><th id="537">537</th><td><i>*   param = [0,1];  0 correspondence to contour1, 1 - contour2</i></td></tr>
+<tr><th id="538">538</th><td><i>*</i></td></tr>
+<tr><th id="539">539</th><td><i>\***************************************************************************************/</i></td></tr>
+<tr><th id="540">540</th><td><em>static</em> CvSeq* icvBlendContours(CvSeq* contour1,</td></tr>
+<tr><th id="541">541</th><td>                        CvSeq* contour2,</td></tr>
+<tr><th id="542">542</th><td>                        CvSeq* corr,</td></tr>
+<tr><th id="543">543</th><td>                        <em>double</em> param,</td></tr>
+<tr><th id="544">544</th><td>                        CvMemStorage* storage)</td></tr>
+<tr><th id="545">545</th><td>{</td></tr>
+<tr><th id="546">546</th><td>    <em>int</em> j;</td></tr>
+<tr><th id="547">547</th><td></td></tr>
+<tr><th id="548">548</th><td>    CvSeqWriter writer01;</td></tr>
+<tr><th id="549">549</th><td>    CvSeqReader reader01;</td></tr>
+<tr><th id="550">550</th><td></td></tr>
+<tr><th id="551">551</th><td>    <em>int</em> Ni,Nj;              <i>// size of contours</i></td></tr>
+<tr><th id="552">552</th><td>    <em>int</em> i;                  <i>// counter</i></td></tr>
+<tr><th id="553">553</th><td></td></tr>
+<tr><th id="554">554</th><td>    CvPoint* point1;        <i>// array of first contour point</i></td></tr>
+<tr><th id="555">555</th><td>    CvPoint* point2;        <i>// array of second contour point</i></td></tr>
+<tr><th id="556">556</th><td></td></tr>
+<tr><th id="557">557</th><td>    CvPoint point_output;   <i>// intermediate storage of ouput point</i></td></tr>
+<tr><th id="558">558</th><td></td></tr>
+<tr><th id="559">559</th><td>    <em>int</em> corr_point;</td></tr>
+<tr><th id="560">560</th><td></td></tr>
+<tr><th id="561">561</th><td>    <i>// Create output sequence.</i></td></tr>
+<tr><th id="562">562</th><td>    CvSeq* output = cvCreateSeq(<var>0</var>,</td></tr>
+<tr><th id="563">563</th><td>                                <b>sizeof</b>(CvSeq),</td></tr>
+<tr><th id="564">564</th><td>                                <b>sizeof</b>(CvPoint),</td></tr>
+<tr><th id="565">565</th><td>                                storage );</td></tr>
+<tr><th id="566">566</th><td></td></tr>
+<tr><th id="567">567</th><td>    <i>// Find size of contours.</i></td></tr>
+<tr><th id="568">568</th><td>    Ni = contour1-&gt;total + <var>1</var>;</td></tr>
+<tr><th id="569">569</th><td>    Nj = contour2-&gt;total + <var>1</var>;</td></tr>
+<tr><th id="570">570</th><td></td></tr>
+<tr><th id="571">571</th><td>    point1 = (CvPoint* )malloc( Ni*<b>sizeof</b>(CvPoint) );</td></tr>
+<tr><th id="572">572</th><td>    point2 = (CvPoint* )malloc( Nj*<b>sizeof</b>(CvPoint) );</td></tr>
+<tr><th id="573">573</th><td></td></tr>
+<tr><th id="574">574</th><td>    <i>// Initialize arrays of point</i></td></tr>
+<tr><th id="575">575</th><td>    cvCvtSeqToArray( contour1, point1, CV_WHOLE_SEQ );</td></tr>
+<tr><th id="576">576</th><td>    cvCvtSeqToArray( contour2, point2, CV_WHOLE_SEQ );</td></tr>
+<tr><th id="577">577</th><td></td></tr>
+<tr><th id="578">578</th><td>    <i>// First and last point mast be equal.</i></td></tr>
+<tr><th id="579">579</th><td>    point1[Ni-<var>1</var>] = point1[<var>0</var>];</td></tr>
+<tr><th id="580">580</th><td>    point2[Nj-<var>1</var>] = point2[<var>0</var>];</td></tr>
+<tr><th id="581">581</th><td></td></tr>
+<tr><th id="582">582</th><td>    <i>// Initializes process of writing to sequence.</i></td></tr>
+<tr><th id="583">583</th><td>    cvStartAppendToSeq( output, &amp;writer01);</td></tr>
+<tr><th id="584">584</th><td></td></tr>
+<tr><th id="585">585</th><td>    i = Ni-<var>1</var>; <i>//correspondence to points of contour1</i></td></tr>
+<tr><th id="586">586</th><td>    <b>for</b>( ; corr; corr = corr-&gt;h_next )</td></tr>
+<tr><th id="587">587</th><td>    {</td></tr>
+<tr><th id="588">588</th><td>        <i>//Initializes process of sequential reading from sequence</i></td></tr>
+<tr><th id="589">589</th><td>        cvStartReadSeq( corr, &amp;reader01, <var>0</var> );</td></tr>
+<tr><th id="590">590</th><td></td></tr>
+<tr><th id="591">591</th><td>        <b>for</b>(j=<var>0</var>; j &lt; corr-&gt;total; j++)</td></tr>
+<tr><th id="592">592</th><td>        {</td></tr>
+<tr><th id="593">593</th><td>            <i>// Read element from sequence.</i></td></tr>
+<tr><th id="594">594</th><td>            CV_READ_SEQ_ELEM( corr_point, reader01 );</td></tr>
+<tr><th id="595">595</th><td></td></tr>
+<tr><th id="596">596</th><td>            <i>// Compute point of intermediate polygon.</i></td></tr>
+<tr><th id="597">597</th><td>            point_output.x = cvRound(point1[i].x + param*( point2[corr_point].x - point1[i].x ));</td></tr>
+<tr><th id="598">598</th><td>            point_output.y = cvRound(point1[i].y + param*( point2[corr_point].y - point1[i].y ));</td></tr>
+<tr><th id="599">599</th><td></td></tr>
+<tr><th id="600">600</th><td>            <i>// Write element to sequence.</i></td></tr>
+<tr><th id="601">601</th><td>            CV_WRITE_SEQ_ELEM( point_output, writer01 );</td></tr>
+<tr><th id="602">602</th><td>        }</td></tr>
+<tr><th id="603">603</th><td>        i--;</td></tr>
+<tr><th id="604">604</th><td>    }</td></tr>
+<tr><th id="605">605</th><td>    <i>// Updates sequence header.</i></td></tr>
+<tr><th id="606">606</th><td>    cvFlushSeqWriter( &amp;writer01 );</td></tr>
+<tr><th id="607">607</th><td></td></tr>
+<tr><th id="608">608</th><td>    <b>return</b> output;</td></tr>
+<tr><th id="609">609</th><td>}</td></tr>
+<tr><th id="610">610</th><td></td></tr>
+<tr><th id="611">611</th><td><i>/**************************************************************************************************</i></td></tr>
+<tr><th id="612">612</th><td><i>*</i></td></tr>
+<tr><th id="613">613</th><td><i>*</i></td></tr>
+<tr><th id="614">614</th><td><i>*</i></td></tr>
+<tr><th id="615">615</th><td><i>*</i></td></tr>
+<tr><th id="616">616</th><td><i>*</i></td></tr>
+<tr><th id="617">617</th><td><i>*</i></td></tr>
+<tr><th id="618">618</th><td><i>*</i></td></tr>
+<tr><th id="619">619</th><td><i>*</i></td></tr>
+<tr><th id="620">620</th><td><i>*</i></td></tr>
+<tr><th id="621">621</th><td><i>*</i></td></tr>
+<tr><th id="622">622</th><td><i>**************************************************************************************************/</i></td></tr>
+<tr><th id="623">623</th><td></td></tr>
+<tr><th id="624">624</th><td></td></tr>
+<tr><th id="625">625</th><td><em>static</em> <em>void</em> icvCalcContoursCorrespondence(CvSeq* contour1,</td></tr>
+<tr><th id="626">626</th><td>                                   CvSeq* contour2,</td></tr>
+<tr><th id="627">627</th><td>                                   CvSeq** corr,</td></tr>
+<tr><th id="628">628</th><td>                                   CvMemStorage* storage)</td></tr>
+<tr><th id="629">629</th><td>{</td></tr>
+<tr><th id="630">630</th><td>    <em>int</em> i,j;                    <i>// counter of cycles</i></td></tr>
+<tr><th id="631">631</th><td>    <em>int</em> Ni,Nj;                  <i>// size of contours</i></td></tr>
+<tr><th id="632">632</th><td>    _CvWork** W;                <i>// graph for search minimum of work</i></td></tr>
+<tr><th id="633">633</th><td></td></tr>
+<tr><th id="634">634</th><td>    CvPoint* point1;            <i>// array of first contour point</i></td></tr>
+<tr><th id="635">635</th><td>    CvPoint* point2;            <i>// array of second contour point</i></td></tr>
+<tr><th id="636">636</th><td>    CvPoint2D32f* edges1;       <i>// array of first contour edge</i></td></tr>
+<tr><th id="637">637</th><td>    CvPoint2D32f* edges2;       <i>// array of second contour edge</i></td></tr>
+<tr><th id="638">638</th><td></td></tr>
+<tr><th id="639">639</th><td>    <i>//CvPoint null_edge = {0,0};    //</i></td></tr>
+<tr><th id="640">640</th><td>    CvPoint2D32f small_edge;</td></tr>
+<tr><th id="641">641</th><td>    <i>//double inf;                   // infinity</i></td></tr>
+<tr><th id="642">642</th><td></td></tr>
+<tr><th id="643">643</th><td>    CvSeq* corr01;</td></tr>
+<tr><th id="644">644</th><td>    CvSeqWriter writer;</td></tr>
+<tr><th id="645">645</th><td></td></tr>
+<tr><th id="646">646</th><td>    <em>char</em> path;                  <i>//</i></td></tr>
+<tr><th id="647">647</th><td></td></tr>
+<tr><th id="648">648</th><td>    <i>// Find size of contours</i></td></tr>
+<tr><th id="649">649</th><td>    Ni = contour1-&gt;total + <var>1</var>;</td></tr>
+<tr><th id="650">650</th><td>    Nj = contour2-&gt;total + <var>1</var>;</td></tr>
+<tr><th id="651">651</th><td></td></tr>
+<tr><th id="652">652</th><td>    <i>// Create arrays</i></td></tr>
+<tr><th id="653">653</th><td>    W = (_CvWork**)malloc(<b>sizeof</b>(_CvWork*)*Ni);</td></tr>
+<tr><th id="654">654</th><td>    <b>for</b>(i=<var>0</var>; i&lt;Ni; i++)</td></tr>
+<tr><th id="655">655</th><td>    {</td></tr>
+<tr><th id="656">656</th><td>        W[i] = (_CvWork*)malloc(<b>sizeof</b>(_CvWork)*Nj);</td></tr>
+<tr><th id="657">657</th><td>    }</td></tr>
+<tr><th id="658">658</th><td></td></tr>
+<tr><th id="659">659</th><td>    point1 = (CvPoint* )malloc( Ni*<b>sizeof</b>(CvPoint) );</td></tr>
+<tr><th id="660">660</th><td>    point2 = (CvPoint* )malloc( Nj*<b>sizeof</b>(CvPoint) );</td></tr>
+<tr><th id="661">661</th><td>    edges1 = (CvPoint2D32f* )malloc( (Ni-<var>1</var>)*<b>sizeof</b>(CvPoint2D32f) );</td></tr>
+<tr><th id="662">662</th><td>    edges2 = (CvPoint2D32f* )malloc( (Nj-<var>1</var>)*<b>sizeof</b>(CvPoint2D32f) );</td></tr>
+<tr><th id="663">663</th><td></td></tr>
+<tr><th id="664">664</th><td>    <i>// Initialize arrays of point</i></td></tr>
+<tr><th id="665">665</th><td>    cvCvtSeqToArray( contour1, point1, CV_WHOLE_SEQ );</td></tr>
+<tr><th id="666">666</th><td>    cvCvtSeqToArray( contour2, point2, CV_WHOLE_SEQ );</td></tr>
+<tr><th id="667">667</th><td></td></tr>
+<tr><th id="668">668</th><td>    point1[Ni-<var>1</var>] = point1[<var>0</var>];</td></tr>
+<tr><th id="669">669</th><td>    point2[Nj-<var>1</var>] = point2[<var>0</var>];</td></tr>
+<tr><th id="670">670</th><td></td></tr>
+<tr><th id="671">671</th><td>    <b>for</b>(i=<var>0</var>;i&lt;Ni-<var>1</var>;i++)</td></tr>
+<tr><th id="672">672</th><td>    {</td></tr>
+<tr><th id="673">673</th><td>        edges1[i].x = (<em>float</em>)( point1[i+<var>1</var>].x - point1[i].x );</td></tr>
+<tr><th id="674">674</th><td>        edges1[i].y = (<em>float</em>)( point1[i+<var>1</var>].y - point1[i].y );</td></tr>
+<tr><th id="675">675</th><td>    };</td></tr>
+<tr><th id="676">676</th><td></td></tr>
+<tr><th id="677">677</th><td>    <b>for</b>(i=<var>0</var>;i&lt;Nj-<var>1</var>;i++)</td></tr>
+<tr><th id="678">678</th><td>    {</td></tr>
+<tr><th id="679">679</th><td>        edges2[i].x = (<em>float</em>)( point2[i+<var>1</var>].x - point2[i].x );</td></tr>
+<tr><th id="680">680</th><td>        edges2[i].y = (<em>float</em>)( point2[i+<var>1</var>].y - point2[i].y );</td></tr>
+<tr><th id="681">681</th><td>    };</td></tr>
+<tr><th id="682">682</th><td></td></tr>
+<tr><th id="683">683</th><td>    <i>// Find infinity constant</i></td></tr>
+<tr><th id="684">684</th><td><i>    //inf=1;</i></td></tr>
+<tr><th id="685">685</th><td><i>/////////////</i></td></tr>
+<tr><th id="686">686</th><td><i></i></td></tr>
+<tr><th id="687">687</th><td><i>//Find min path in graph</i></td></tr>
+<tr><th id="688">688</th><td><i></i></td></tr>
+<tr><th id="689">689</th><td><i>/////////////</i></td></tr>
+<tr><th id="690">690</th><td>    W[<var>0</var>][<var>0</var>].w_east      = <var>0</var>;</td></tr>
+<tr><th id="691">691</th><td>    W[<var>0</var>][<var>0</var>].w_south     = <var>0</var>;</td></tr>
+<tr><th id="692">692</th><td>    W[<var>0</var>][<var>0</var>].w_southeast = <var>0</var>;</td></tr>
+<tr><th id="693">693</th><td></td></tr>
+<tr><th id="694">694</th><td>    W[<var>1</var>][<var>1</var>].w_southeast = _cvStretchingWork( &amp;edges1[<var>0</var>], &amp;edges2[<var>0</var>] );</td></tr>
+<tr><th id="695">695</th><td>    W[<var>1</var>][<var>1</var>].w_east = inf;</td></tr>
+<tr><th id="696">696</th><td>    W[<var>1</var>][<var>1</var>].w_south = inf;</td></tr>
+<tr><th id="697">697</th><td>    W[<var>1</var>][<var>1</var>].path_se = PATH_TO_SE;</td></tr>
+<tr><th id="698">698</th><td></td></tr>
+<tr><th id="699">699</th><td>    W[<var>0</var>][<var>1</var>].w_south =  _cvStretchingWork( &amp;null_edge, &amp;edges2[<var>0</var>] );</td></tr>
+<tr><th id="700">700</th><td>    W[<var>0</var>][<var>1</var>].path_s = <var>3</var>;</td></tr>
+<tr><th id="701">701</th><td>    W[<var>1</var>][<var>0</var>].w_east =  _cvStretchingWork( &amp;edges2[<var>0</var>], &amp;null_edge );</td></tr>
+<tr><th id="702">702</th><td>    W[<var>1</var>][<var>0</var>].path_e = PATH_TO_E;</td></tr>
+<tr><th id="703">703</th><td></td></tr>
+<tr><th id="704">704</th><td>    <b>for</b>( i=<var>1</var>; i&lt;Ni; i++ )</td></tr>
+<tr><th id="705">705</th><td>    {</td></tr>
+<tr><th id="706">706</th><td>        W[i][<var>0</var>].w_south     = inf;</td></tr>
+<tr><th id="707">707</th><td>        W[i][<var>0</var>].w_southeast = inf;</td></tr>
+<tr><th id="708">708</th><td>    }</td></tr>
+<tr><th id="709">709</th><td></td></tr>
+<tr><th id="710">710</th><td>    <b>for</b>(j=<var>1</var>; j&lt;Nj; j++)</td></tr>
+<tr><th id="711">711</th><td>    {</td></tr>
+<tr><th id="712">712</th><td>        W[<var>0</var>][j].w_east      = inf;</td></tr>
+<tr><th id="713">713</th><td>        W[<var>0</var>][j].w_southeast = inf;</td></tr>
+<tr><th id="714">714</th><td>    }</td></tr>
+<tr><th id="715">715</th><td></td></tr>
+<tr><th id="716">716</th><td>    <b>for</b>(i=<var>2</var>; i&lt;Ni; i++)</td></tr>
+<tr><th id="717">717</th><td>    {</td></tr>
+<tr><th id="718">718</th><td>        j=<var>0</var>;<i>/////////</i></td></tr>
+<tr><th id="719">719</th><td>        W[i][j].w_east = W[i-<var>1</var>][j].w_east;</td></tr>
+<tr><th id="720">720</th><td>        W[i][j].w_east = W[i][j].w_east <i>/*+</i></td></tr>
+<tr><th id="721">721</th><td><i>            _cvBendingWork( &amp;edges1[i-2], &amp;edges1[i-1], &amp;null_edge, &amp;null_edge, NULL )*/</i>;</td></tr>
+<tr><th id="722">722</th><td>        W[i][j].w_east = W[i][j].w_east + _cvStretchingWork( &amp;edges2[i-<var>1</var>], &amp;null_edge );</td></tr>
+<tr><th id="723">723</th><td>        W[i][j].path_e = PATH_TO_E;</td></tr>
+<tr><th id="724">724</th><td></td></tr>
+<tr><th id="725">725</th><td>        j=<var>1</var>;<i>//////////</i></td></tr>
+<tr><th id="726">726</th><td>        W[i][j].w_south = inf;</td></tr>
+<tr><th id="727">727</th><td></td></tr>
+<tr><th id="728">728</th><td>        _cvWorkEast (i, j, W, edges1, edges2);</td></tr>
+<tr><th id="729">729</th><td></td></tr>
+<tr><th id="730">730</th><td>        W[i][j].w_southeast = W[i-<var>1</var>][j-<var>1</var>].w_east;</td></tr>
+<tr><th id="731">731</th><td>        W[i][j].w_southeast = W[i][j].w_southeast + _cvStretchingWork( &amp;edges1[i-<var>1</var>], &amp;edges2[j-<var>1</var>] );</td></tr>
+<tr><th id="732">732</th><td></td></tr>
+<tr><th id="733">733</th><td>        small_edge.x = NULL_EDGE*edges1[i-<var>2</var>].x;</td></tr>
+<tr><th id="734">734</th><td>        small_edge.y = NULL_EDGE*edges1[i-<var>2</var>].y;</td></tr>
+<tr><th id="735">735</th><td></td></tr>
+<tr><th id="736">736</th><td>        W[i][j].w_southeast = W[i][j].w_southeast +</td></tr>
+<tr><th id="737">737</th><td>            _cvBendingWork( &amp;edges1[i-<var>2</var>], &amp;edges1[i-<var>1</var>], <i>/*&amp;null_edge*/</i>&amp;small_edge, &amp;edges2[j-<var>1</var>]<i>/*, &amp;edges2[Nj-2]*/</i>);</td></tr>
+<tr><th id="738">738</th><td></td></tr>
+<tr><th id="739">739</th><td>        W[i][j].path_se = PATH_TO_E;</td></tr>
+<tr><th id="740">740</th><td>    }</td></tr>
+<tr><th id="741">741</th><td></td></tr>
+<tr><th id="742">742</th><td>    <b>for</b>(j=<var>2</var>; j&lt;Nj; j++)</td></tr>
+<tr><th id="743">743</th><td>    {</td></tr>
+<tr><th id="744">744</th><td>        i=<var>0</var>;<i>//////////</i></td></tr>
+<tr><th id="745">745</th><td>        W[i][j].w_south = W[i][j-<var>1</var>].w_south;</td></tr>
+<tr><th id="746">746</th><td>        W[i][j].w_south = W[i][j].w_south + _cvStretchingWork( &amp;null_edge, &amp;edges2[j-<var>1</var>] );</td></tr>
+<tr><th id="747">747</th><td>        W[i][j].w_south = W[i][j].w_south <i>/*+</i></td></tr>
+<tr><th id="748">748</th><td><i>            _cvBendingWork( &amp;null_edge, &amp;null_edge, &amp;edges2[j-2], &amp;edges2[j-1], NULL )*/</i>;</td></tr>
+<tr><th id="749">749</th><td>        W[i][j].path_s = <var>3</var>;</td></tr>
+<tr><th id="750">750</th><td></td></tr>
+<tr><th id="751">751</th><td>        i=<var>1</var>;<i>///////////</i></td></tr>
+<tr><th id="752">752</th><td>        W[i][j].w_east= inf;</td></tr>
+<tr><th id="753">753</th><td></td></tr>
+<tr><th id="754">754</th><td>        _cvWorkSouth(i, j, W, edges1, edges2);</td></tr>
+<tr><th id="755">755</th><td></td></tr>
+<tr><th id="756">756</th><td>        W[i][j].w_southeast = W[i-<var>1</var>][j-<var>1</var>].w_south;</td></tr>
+<tr><th id="757">757</th><td>        W[i][j].w_southeast = W[i][j].w_southeast + _cvStretchingWork( &amp;edges1[i-<var>1</var>], &amp;edges2[j-<var>1</var>] );</td></tr>
+<tr><th id="758">758</th><td></td></tr>
+<tr><th id="759">759</th><td>        small_edge.x = NULL_EDGE*edges2[j-<var>2</var>].x;</td></tr>
+<tr><th id="760">760</th><td>        small_edge.y = NULL_EDGE*edges2[j-<var>2</var>].y;</td></tr>
+<tr><th id="761">761</th><td></td></tr>
+<tr><th id="762">762</th><td>        W[i][j].w_southeast = W[i][j].w_southeast +</td></tr>
+<tr><th id="763">763</th><td>            _cvBendingWork( <i>/*&amp;null_edge*/</i>&amp;small_edge, &amp;edges1[i-<var>1</var>], &amp;edges2[j-<var>2</var>], &amp;edges2[j-<var>1</var>]<i>/*, &amp;edges1[Ni-2]*/</i>);</td></tr>
+<tr><th id="764">764</th><td>        W[i][j].path_se = <var>3</var>;</td></tr>
+<tr><th id="765">765</th><td>    }</td></tr>
+<tr><th id="766">766</th><td></td></tr>
+<tr><th id="767">767</th><td>    <b>for</b>(i=<var>2</var>; i&lt;Ni; i++)</td></tr>
+<tr><th id="768">768</th><td>        <b>for</b>(j=<var>2</var>; j&lt;Nj; j++)</td></tr>
+<tr><th id="769">769</th><td>        {</td></tr>
+<tr><th id="770">770</th><td>            _cvWorkEast     (i, j, W, edges1, edges2);</td></tr>
+<tr><th id="771">771</th><td>            _cvWorkSouthEast(i, j, W, edges1, edges2);</td></tr>
+<tr><th id="772">772</th><td>            _cvWorkSouth    (i, j, W, edges1, edges2);</td></tr>
+<tr><th id="773">773</th><td>        }</td></tr>
+<tr><th id="774">774</th><td></td></tr>
+<tr><th id="775">775</th><td>    i=Ni-<var>1</var>;j=Nj-<var>1</var>;</td></tr>
+<tr><th id="776">776</th><td></td></tr>
+<tr><th id="777">777</th><td>    *corr = cvCreateSeq(<var>0</var>,</td></tr>
+<tr><th id="778">778</th><td>                        <b>sizeof</b>(CvSeq),</td></tr>
+<tr><th id="779">779</th><td>                        <b>sizeof</b>(<em>int</em>),</td></tr>
+<tr><th id="780">780</th><td>                        storage );</td></tr>
+<tr><th id="781">781</th><td></td></tr>
+<tr><th id="782">782</th><td>    corr01 = *corr;</td></tr>
+<tr><th id="783">783</th><td>    cvStartAppendToSeq( corr01, &amp;writer );</td></tr>
+<tr><th id="784">784</th><td>    <b>if</b>( W[i][j].w_east &gt; W[i][j].w_southeast )</td></tr>
+<tr><th id="785">785</th><td>        {</td></tr>
+<tr><th id="786">786</th><td>            <b>if</b>( W[i][j].w_southeast &gt; W[i][j].w_south )</td></tr>
+<tr><th id="787">787</th><td>            {</td></tr>
+<tr><th id="788">788</th><td>                path = <var>3</var>;</td></tr>
+<tr><th id="789">789</th><td>            }</td></tr>
+<tr><th id="790">790</th><td>            <b>else</b></td></tr>
+<tr><th id="791">791</th><td>            {</td></tr>
+<tr><th id="792">792</th><td>                path = PATH_TO_SE;</td></tr>
+<tr><th id="793">793</th><td>            }</td></tr>
+<tr><th id="794">794</th><td>        }</td></tr>
+<tr><th id="795">795</th><td>        <b>else</b></td></tr>
+<tr><th id="796">796</th><td>        {</td></tr>
+<tr><th id="797">797</th><td>            <b>if</b>( W[i][j].w_east &lt; W[i][j].w_south )</td></tr>
+<tr><th id="798">798</th><td>            {</td></tr>
+<tr><th id="799">799</th><td>                path = PATH_TO_E;</td></tr>
+<tr><th id="800">800</th><td>            }</td></tr>
+<tr><th id="801">801</th><td>            <b>else</b></td></tr>
+<tr><th id="802">802</th><td>            {</td></tr>
+<tr><th id="803">803</th><td>                path = <var>3</var>;</td></tr>
+<tr><th id="804">804</th><td>            }</td></tr>
+<tr><th id="805">805</th><td>        }</td></tr>
+<tr><th id="806">806</th><td>    <b>do</b></td></tr>
+<tr><th id="807">807</th><td>    {</td></tr>
+<tr><th id="808">808</th><td>        CV_WRITE_SEQ_ELEM( j, writer );</td></tr>
+<tr><th id="809">809</th><td></td></tr>
+<tr><th id="810">810</th><td>        <b>switch</b>( path )</td></tr>
+<tr><th id="811">811</th><td>        {</td></tr>
+<tr><th id="812">812</th><td>        <b>case</b> PATH_TO_E:</td></tr>
+<tr><th id="813">813</th><td>            path = W[i][j].path_e;</td></tr>
+<tr><th id="814">814</th><td>            i--;</td></tr>
+<tr><th id="815">815</th><td>            cvFlushSeqWriter( &amp;writer );</td></tr>
+<tr><th id="816">816</th><td>            corr01-&gt;h_next = cvCreateSeq(   <var>0</var>,</td></tr>
+<tr><th id="817">817</th><td>                                            <b>sizeof</b>(CvSeq),</td></tr>
+<tr><th id="818">818</th><td>                                            <b>sizeof</b>(<em>int</em>),</td></tr>
+<tr><th id="819">819</th><td>                                            storage );</td></tr>
+<tr><th id="820">820</th><td>            corr01 = corr01-&gt;h_next;</td></tr>
+<tr><th id="821">821</th><td>            cvStartAppendToSeq( corr01, &amp;writer );</td></tr>
+<tr><th id="822">822</th><td>            <b>break</b>;</td></tr>
+<tr><th id="823">823</th><td></td></tr>
+<tr><th id="824">824</th><td>        <b>case</b> PATH_TO_SE:</td></tr>
+<tr><th id="825">825</th><td>            path = W[i][j].path_se;</td></tr>
+<tr><th id="826">826</th><td>            j--; i--;</td></tr>
+<tr><th id="827">827</th><td>            cvFlushSeqWriter( &amp;writer );</td></tr>
+<tr><th id="828">828</th><td>            corr01-&gt;h_next = cvCreateSeq(   <var>0</var>,</td></tr>
+<tr><th id="829">829</th><td>                                            <b>sizeof</b>(CvSeq),</td></tr>
+<tr><th id="830">830</th><td>                                            <b>sizeof</b>(<em>int</em>),</td></tr>
+<tr><th id="831">831</th><td>                                            storage );</td></tr>
+<tr><th id="832">832</th><td>            corr01 = corr01-&gt;h_next;</td></tr>
+<tr><th id="833">833</th><td>            cvStartAppendToSeq( corr01, &amp;writer );</td></tr>
+<tr><th id="834">834</th><td>            <b>break</b>;</td></tr>
+<tr><th id="835">835</th><td></td></tr>
+<tr><th id="836">836</th><td>        <b>case</b> <var>3</var>:</td></tr>
+<tr><th id="837">837</th><td>            path = W[i][j].path_s;</td></tr>
+<tr><th id="838">838</th><td>            j--;</td></tr>
+<tr><th id="839">839</th><td>            <b>break</b>;</td></tr>
+<tr><th id="840">840</th><td>        }</td></tr>
+<tr><th id="841">841</th><td></td></tr>
+<tr><th id="842">842</th><td>    } <b>while</b>( (i&gt;=<var>0</var>) &amp;&amp; (j&gt;=<var>0</var>) );</td></tr>
+<tr><th id="843">843</th><td>    cvFlushSeqWriter( &amp;writer );</td></tr>
+<tr><th id="844">844</th><td></td></tr>
+<tr><th id="845">845</th><td>    <i>// Free memory</i></td></tr>
+<tr><th id="846">846</th><td>    <b>for</b>(i=<var>1</var>;i&lt;Ni;i++)</td></tr>
+<tr><th id="847">847</th><td>    {</td></tr>
+<tr><th id="848">848</th><td>        free(W[i]);</td></tr>
+<tr><th id="849">849</th><td>    }</td></tr>
+<tr><th id="850">850</th><td>    free(W);</td></tr>
+<tr><th id="851">851</th><td>    free(point1);</td></tr>
+<tr><th id="852">852</th><td>    free(point2);</td></tr>
+<tr><th id="853">853</th><td>    free(edges1);</td></tr>
+<tr><th id="854">854</th><td>    free(edges2);</td></tr>
+<tr><th id="855">855</th><td>}</td></tr>
+<tr><th id="856">856</th><td><u>#<span data-ppcond="530">endif</span></u></td></tr>
+<tr><th id="857">857</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,383 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>gradient_problem_solver.h source code [ceres-solver/include/ceres/gradient_problem_solver.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::GradientProblemSolver "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/include/ceres/gradient_problem_solver.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>include</a>/<a href='./'>ceres</a>/<a href='gradient_problem_solver.h.html'>gradient_problem_solver.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_PUBLIC_GRADIENT_PROBLEM_SOLVER_H_">CERES_PUBLIC_GRADIENT_PROBLEM_SOLVER_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_PUBLIC_GRADIENT_PROBLEM_SOLVER_H_" data-ref="_M/CERES_PUBLIC_GRADIENT_PROBLEM_SOLVER_H_">CERES_PUBLIC_GRADIENT_PROBLEM_SOLVER_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="internal/macros.h.html">"ceres/internal/macros.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="iteration_callback.h.html">"ceres/iteration_callback.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="internal/disable_warnings.h.html">"ceres/internal/disable_warnings.h"</a></u></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><b>class</b> <a class="type" href="gradient_problem.h.html#ceres::GradientProblem" title='ceres::GradientProblem' data-ref="ceres::GradientProblem" id="ceres::GradientProblem">GradientProblem</a>;</td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><b>class</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</dfn> {</td></tr>
+<tr><th id="48">48</th><td> <b>public</b>:</td></tr>
+<tr><th id="49">49</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres21GradientProblemSolverD1Ev" title='ceres::GradientProblemSolver::~GradientProblemSolver' data-ref="_ZN5ceres21GradientProblemSolverD1Ev">~</dfn>GradientProblemSolver();</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td>  <i>// The options structure contains, not surprisingly, options that control how</i></td></tr>
+<tr><th id="52">52</th><td><i>  // the solver operates. The defaults should be suitable for a wide range of</i></td></tr>
+<tr><th id="53">53</th><td><i>  // problems; however, better performance is often obtainable with tweaking.</i></td></tr>
+<tr><th id="54">54</th><td><i>  //</i></td></tr>
+<tr><th id="55">55</th><td><i>  // The constants are defined inside types.h</i></td></tr>
+<tr><th id="56">56</th><td>  <b>struct</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::GradientProblemSolver::Options" title='ceres::GradientProblemSolver::Options' data-ref="ceres::GradientProblemSolver::Options">Options</dfn> {</td></tr>
+<tr><th id="57">57</th><td>    <i>// Default constructor that sets up a generic sparse problem.</i></td></tr>
+<tr><th id="58">58</th><td>    <dfn class="decl def" id="_ZN5ceres21GradientProblemSolver7OptionsC1Ev" title='ceres::GradientProblemSolver::Options::Options' data-ref="_ZN5ceres21GradientProblemSolver7OptionsC1Ev">Options</dfn>() {</td></tr>
+<tr><th id="59">59</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::line_search_direction_type" title='ceres::GradientProblemSolver::Options::line_search_direction_type' data-ref="ceres::GradientProblemSolver::Options::line_search_direction_type">line_search_direction_type</a> = <a class="enum" href="types.h.html#ceres::LineSearchDirectionType::LBFGS" title='ceres::LineSearchDirectionType::LBFGS' data-ref="ceres::LineSearchDirectionType::LBFGS">LBFGS</a>;</td></tr>
+<tr><th id="60">60</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::line_search_type" title='ceres::GradientProblemSolver::Options::line_search_type' data-ref="ceres::GradientProblemSolver::Options::line_search_type">line_search_type</a> = <a class="enum" href="types.h.html#ceres::LineSearchType::WOLFE" title='ceres::LineSearchType::WOLFE' data-ref="ceres::LineSearchType::WOLFE">WOLFE</a>;</td></tr>
+<tr><th id="61">61</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::nonlinear_conjugate_gradient_type" title='ceres::GradientProblemSolver::Options::nonlinear_conjugate_gradient_type' data-ref="ceres::GradientProblemSolver::Options::nonlinear_conjugate_gradient_type">nonlinear_conjugate_gradient_type</a> = <a class="enum" href="types.h.html#ceres::NonlinearConjugateGradientType::FLETCHER_REEVES" title='ceres::NonlinearConjugateGradientType::FLETCHER_REEVES' data-ref="ceres::NonlinearConjugateGradientType::FLETCHER_REEVES">FLETCHER_REEVES</a>;</td></tr>
+<tr><th id="62">62</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_lbfgs_rank" title='ceres::GradientProblemSolver::Options::max_lbfgs_rank' data-ref="ceres::GradientProblemSolver::Options::max_lbfgs_rank">max_lbfgs_rank</a> = <var>20</var>;</td></tr>
+<tr><th id="63">63</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::use_approximate_eigenvalue_bfgs_scaling" title='ceres::GradientProblemSolver::Options::use_approximate_eigenvalue_bfgs_scaling' data-ref="ceres::GradientProblemSolver::Options::use_approximate_eigenvalue_bfgs_scaling">use_approximate_eigenvalue_bfgs_scaling</a> = <b>false</b>;</td></tr>
+<tr><th id="64">64</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::line_search_interpolation_type" title='ceres::GradientProblemSolver::Options::line_search_interpolation_type' data-ref="ceres::GradientProblemSolver::Options::line_search_interpolation_type">line_search_interpolation_type</a> = <a class="enum" href="types.h.html#ceres::LineSearchInterpolationType::CUBIC" title='ceres::LineSearchInterpolationType::CUBIC' data-ref="ceres::LineSearchInterpolationType::CUBIC">CUBIC</a>;</td></tr>
+<tr><th id="65">65</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::min_line_search_step_size" title='ceres::GradientProblemSolver::Options::min_line_search_step_size' data-ref="ceres::GradientProblemSolver::Options::min_line_search_step_size">min_line_search_step_size</a> = <var>1e-9</var>;</td></tr>
+<tr><th id="66">66</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::line_search_sufficient_function_decrease" title='ceres::GradientProblemSolver::Options::line_search_sufficient_function_decrease' data-ref="ceres::GradientProblemSolver::Options::line_search_sufficient_function_decrease">line_search_sufficient_function_decrease</a> = <var>1e-4</var>;</td></tr>
+<tr><th id="67">67</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_line_search_step_contraction" title='ceres::GradientProblemSolver::Options::max_line_search_step_contraction' data-ref="ceres::GradientProblemSolver::Options::max_line_search_step_contraction">max_line_search_step_contraction</a> = <var>1e-3</var>;</td></tr>
+<tr><th id="68">68</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::min_line_search_step_contraction" title='ceres::GradientProblemSolver::Options::min_line_search_step_contraction' data-ref="ceres::GradientProblemSolver::Options::min_line_search_step_contraction">min_line_search_step_contraction</a> = <var>0.6</var>;</td></tr>
+<tr><th id="69">69</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_num_line_search_step_size_iterations" title='ceres::GradientProblemSolver::Options::max_num_line_search_step_size_iterations' data-ref="ceres::GradientProblemSolver::Options::max_num_line_search_step_size_iterations">max_num_line_search_step_size_iterations</a> = <var>20</var>;</td></tr>
+<tr><th id="70">70</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_num_line_search_direction_restarts" title='ceres::GradientProblemSolver::Options::max_num_line_search_direction_restarts' data-ref="ceres::GradientProblemSolver::Options::max_num_line_search_direction_restarts">max_num_line_search_direction_restarts</a> = <var>5</var>;</td></tr>
+<tr><th id="71">71</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::line_search_sufficient_curvature_decrease" title='ceres::GradientProblemSolver::Options::line_search_sufficient_curvature_decrease' data-ref="ceres::GradientProblemSolver::Options::line_search_sufficient_curvature_decrease">line_search_sufficient_curvature_decrease</a> = <var>0.9</var>;</td></tr>
+<tr><th id="72">72</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_line_search_step_expansion" title='ceres::GradientProblemSolver::Options::max_line_search_step_expansion' data-ref="ceres::GradientProblemSolver::Options::max_line_search_step_expansion">max_line_search_step_expansion</a> = <var>10.0</var>;</td></tr>
+<tr><th id="73">73</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_num_iterations" title='ceres::GradientProblemSolver::Options::max_num_iterations' data-ref="ceres::GradientProblemSolver::Options::max_num_iterations">max_num_iterations</a> = <var>50</var>;</td></tr>
+<tr><th id="74">74</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::max_solver_time_in_seconds" title='ceres::GradientProblemSolver::Options::max_solver_time_in_seconds' data-ref="ceres::GradientProblemSolver::Options::max_solver_time_in_seconds">max_solver_time_in_seconds</a> = <var>1e9</var>;</td></tr>
+<tr><th id="75">75</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::function_tolerance" title='ceres::GradientProblemSolver::Options::function_tolerance' data-ref="ceres::GradientProblemSolver::Options::function_tolerance">function_tolerance</a> = <var>1e-6</var>;</td></tr>
+<tr><th id="76">76</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::gradient_tolerance" title='ceres::GradientProblemSolver::Options::gradient_tolerance' data-ref="ceres::GradientProblemSolver::Options::gradient_tolerance">gradient_tolerance</a> = <var>1e-10</var>;</td></tr>
+<tr><th id="77">77</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::parameter_tolerance" title='ceres::GradientProblemSolver::Options::parameter_tolerance' data-ref="ceres::GradientProblemSolver::Options::parameter_tolerance">parameter_tolerance</a> = <var>1e-8</var>;</td></tr>
+<tr><th id="78">78</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::logging_type" title='ceres::GradientProblemSolver::Options::logging_type' data-ref="ceres::GradientProblemSolver::Options::logging_type">logging_type</a> = <a class="enum" href="types.h.html#ceres::LoggingType::PER_MINIMIZER_ITERATION" title='ceres::LoggingType::PER_MINIMIZER_ITERATION' data-ref="ceres::LoggingType::PER_MINIMIZER_ITERATION">PER_MINIMIZER_ITERATION</a>;</td></tr>
+<tr><th id="79">79</th><td>      <a class="member" href="#ceres::GradientProblemSolver::Options::minimizer_progress_to_stdout" title='ceres::GradientProblemSolver::Options::minimizer_progress_to_stdout' data-ref="ceres::GradientProblemSolver::Options::minimizer_progress_to_stdout">minimizer_progress_to_stdout</a> = <b>false</b>;</td></tr>
+<tr><th id="80">80</th><td>    }</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>    <i>// Returns true if the options struct has a valid</i></td></tr>
+<tr><th id="83">83</th><td><i>    // configuration. Returns false otherwise, and fills in *error</i></td></tr>
+<tr><th id="84">84</th><td><i>    // with a message describing the problem.</i></td></tr>
+<tr><th id="85">85</th><td>    <em>bool</em> <dfn class="decl" id="_ZNK5ceres21GradientProblemSolver7Options7IsValidEPSs" title='ceres::GradientProblemSolver::Options::IsValid' data-ref="_ZNK5ceres21GradientProblemSolver7Options7IsValidEPSs">IsValid</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>* <dfn class="local col9 decl" id="2909error" title='error' data-type='std::string *' data-ref="2909error">error</dfn>) <em>const</em>;</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>    <i>// Minimizer options ----------------------------------------</i></td></tr>
+<tr><th id="88">88</th><td>    <a class="type" href="types.h.html#ceres::LineSearchDirectionType" title='ceres::LineSearchDirectionType' data-ref="ceres::LineSearchDirectionType">LineSearchDirectionType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Options::line_search_direction_type" title='ceres::GradientProblemSolver::Options::line_search_direction_type' data-ref="ceres::GradientProblemSolver::Options::line_search_direction_type">line_search_direction_type</dfn>;</td></tr>
+<tr><th id="89">89</th><td>    <a class="type" href="types.h.html#ceres::LineSearchType" title='ceres::LineSearchType' data-ref="ceres::LineSearchType">LineSearchType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Options::line_search_type" title='ceres::GradientProblemSolver::Options::line_search_type' data-ref="ceres::GradientProblemSolver::Options::line_search_type">line_search_type</dfn>;</td></tr>
+<tr><th id="90">90</th><td>    <a class="type" href="types.h.html#ceres::NonlinearConjugateGradientType" title='ceres::NonlinearConjugateGradientType' data-ref="ceres::NonlinearConjugateGradientType">NonlinearConjugateGradientType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Options::nonlinear_conjugate_gradient_type" title='ceres::GradientProblemSolver::Options::nonlinear_conjugate_gradient_type' data-ref="ceres::GradientProblemSolver::Options::nonlinear_conjugate_gradient_type">nonlinear_conjugate_gradient_type</dfn>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <i>// The LBFGS hessian approximation is a low rank approximation to</i></td></tr>
+<tr><th id="93">93</th><td><i>    // the inverse of the Hessian matrix. The rank of the</i></td></tr>
+<tr><th id="94">94</th><td><i>    // approximation determines (linearly) the space and time</i></td></tr>
+<tr><th id="95">95</th><td><i>    // complexity of using the approximation. Higher the rank, the</i></td></tr>
+<tr><th id="96">96</th><td><i>    // better is the quality of the approximation. The increase in</i></td></tr>
+<tr><th id="97">97</th><td><i>    // quality is however is bounded for a number of reasons.</i></td></tr>
+<tr><th id="98">98</th><td><i>    //</i></td></tr>
+<tr><th id="99">99</th><td><i>    // 1. The method only uses secant information and not actual</i></td></tr>
+<tr><th id="100">100</th><td><i>    // derivatives.</i></td></tr>
+<tr><th id="101">101</th><td><i>    //</i></td></tr>
+<tr><th id="102">102</th><td><i>    // 2. The Hessian approximation is constrained to be positive</i></td></tr>
+<tr><th id="103">103</th><td><i>    // definite.</i></td></tr>
+<tr><th id="104">104</th><td><i>    //</i></td></tr>
+<tr><th id="105">105</th><td><i>    // So increasing this rank to a large number will cost time and</i></td></tr>
+<tr><th id="106">106</th><td><i>    // space complexity without the corresponding increase in solution</i></td></tr>
+<tr><th id="107">107</th><td><i>    // quality. There are no hard and fast rules for choosing the</i></td></tr>
+<tr><th id="108">108</th><td><i>    // maximum rank. The best choice usually requires some problem</i></td></tr>
+<tr><th id="109">109</th><td><i>    // specific experimentation.</i></td></tr>
+<tr><th id="110">110</th><td><i>    //</i></td></tr>
+<tr><th id="111">111</th><td><i>    // For more theoretical and implementation details of the LBFGS</i></td></tr>
+<tr><th id="112">112</th><td><i>    // method, please see:</i></td></tr>
+<tr><th id="113">113</th><td><i>    //</i></td></tr>
+<tr><th id="114">114</th><td><i>    // Nocedal, J. (1980). "Updating Quasi-Newton Matrices with</i></td></tr>
+<tr><th id="115">115</th><td><i>    // Limited Storage". Mathematics of Computation 35 (151): 773–782.</i></td></tr>
+<tr><th id="116">116</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_lbfgs_rank" title='ceres::GradientProblemSolver::Options::max_lbfgs_rank' data-ref="ceres::GradientProblemSolver::Options::max_lbfgs_rank">max_lbfgs_rank</dfn>;</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>    <i>// As part of the (L)BFGS update step (BFGS) / right-multiply step (L-BFGS),</i></td></tr>
+<tr><th id="119">119</th><td><i>    // the initial inverse Hessian approximation is taken to be the Identity.</i></td></tr>
+<tr><th id="120">120</th><td><i>    // However, Oren showed that using instead I * \gamma, where \gamma is</i></td></tr>
+<tr><th id="121">121</th><td><i>    // chosen to approximate an eigenvalue of the true inverse Hessian can</i></td></tr>
+<tr><th id="122">122</th><td><i>    // result in improved convergence in a wide variety of cases. Setting</i></td></tr>
+<tr><th id="123">123</th><td><i>    // use_approximate_eigenvalue_bfgs_scaling to true enables this scaling.</i></td></tr>
+<tr><th id="124">124</th><td><i>    //</i></td></tr>
+<tr><th id="125">125</th><td><i>    // It is important to note that approximate eigenvalue scaling does not</i></td></tr>
+<tr><th id="126">126</th><td><i>    // always improve convergence, and that it can in fact significantly degrade</i></td></tr>
+<tr><th id="127">127</th><td><i>    // performance for certain classes of problem, which is why it is disabled</i></td></tr>
+<tr><th id="128">128</th><td><i>    // by default.  In particular it can degrade performance when the</i></td></tr>
+<tr><th id="129">129</th><td><i>    // sensitivity of the problem to different parameters varies significantly,</i></td></tr>
+<tr><th id="130">130</th><td><i>    // as in this case a single scalar factor fails to capture this variation</i></td></tr>
+<tr><th id="131">131</th><td><i>    // and detrimentally downscales parts of the jacobian approximation which</i></td></tr>
+<tr><th id="132">132</th><td><i>    // correspond to low-sensitivity parameters. It can also reduce the</i></td></tr>
+<tr><th id="133">133</th><td><i>    // robustness of the solution to errors in the jacobians.</i></td></tr>
+<tr><th id="134">134</th><td><i>    //</i></td></tr>
+<tr><th id="135">135</th><td><i>    // Oren S.S., Self-scaling variable metric (SSVM) algorithms</i></td></tr>
+<tr><th id="136">136</th><td><i>    // Part II: Implementation and experiments, Management Science,</i></td></tr>
+<tr><th id="137">137</th><td><i>    // 20(5), 863-874, 1974.</i></td></tr>
+<tr><th id="138">138</th><td>    <em>bool</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::use_approximate_eigenvalue_bfgs_scaling" title='ceres::GradientProblemSolver::Options::use_approximate_eigenvalue_bfgs_scaling' data-ref="ceres::GradientProblemSolver::Options::use_approximate_eigenvalue_bfgs_scaling">use_approximate_eigenvalue_bfgs_scaling</dfn>;</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td>    <i>// Degree of the polynomial used to approximate the objective</i></td></tr>
+<tr><th id="141">141</th><td><i>    // function. Valid values are BISECTION, QUADRATIC and CUBIC.</i></td></tr>
+<tr><th id="142">142</th><td><i>    //</i></td></tr>
+<tr><th id="143">143</th><td><i>    // BISECTION corresponds to pure backtracking search with no</i></td></tr>
+<tr><th id="144">144</th><td><i>    // interpolation.</i></td></tr>
+<tr><th id="145">145</th><td>    <a class="type" href="types.h.html#ceres::LineSearchInterpolationType" title='ceres::LineSearchInterpolationType' data-ref="ceres::LineSearchInterpolationType">LineSearchInterpolationType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Options::line_search_interpolation_type" title='ceres::GradientProblemSolver::Options::line_search_interpolation_type' data-ref="ceres::GradientProblemSolver::Options::line_search_interpolation_type">line_search_interpolation_type</dfn>;</td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>    <i>// If during the line search, the step_size falls below this</i></td></tr>
+<tr><th id="148">148</th><td><i>    // value, it is truncated to zero.</i></td></tr>
+<tr><th id="149">149</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::min_line_search_step_size" title='ceres::GradientProblemSolver::Options::min_line_search_step_size' data-ref="ceres::GradientProblemSolver::Options::min_line_search_step_size">min_line_search_step_size</dfn>;</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>    <i>// Line search parameters.</i></td></tr>
+<tr><th id="152">152</th><td><i></i></td></tr>
+<tr><th id="153">153</th><td><i>    // Solving the line search problem exactly is computationally</i></td></tr>
+<tr><th id="154">154</th><td><i>    // prohibitive. Fortunately, line search based optimization</i></td></tr>
+<tr><th id="155">155</th><td><i>    // algorithms can still guarantee convergence if instead of an</i></td></tr>
+<tr><th id="156">156</th><td><i>    // exact solution, the line search algorithm returns a solution</i></td></tr>
+<tr><th id="157">157</th><td><i>    // which decreases the value of the objective function</i></td></tr>
+<tr><th id="158">158</th><td><i>    // sufficiently. More precisely, we are looking for a step_size</i></td></tr>
+<tr><th id="159">159</th><td><i>    // s.t.</i></td></tr>
+<tr><th id="160">160</th><td><i>    //</i></td></tr>
+<tr><th id="161">161</th><td><i>    //   f(step_size) &lt;= f(0) + sufficient_decrease * f'(0) * step_size</i></td></tr>
+<tr><th id="162">162</th><td><i>    //</i></td></tr>
+<tr><th id="163">163</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::line_search_sufficient_function_decrease" title='ceres::GradientProblemSolver::Options::line_search_sufficient_function_decrease' data-ref="ceres::GradientProblemSolver::Options::line_search_sufficient_function_decrease">line_search_sufficient_function_decrease</dfn>;</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>    <i>// In each iteration of the line search,</i></td></tr>
+<tr><th id="166">166</th><td><i>    //</i></td></tr>
+<tr><th id="167">167</th><td><i>    //  new_step_size &gt;= max_line_search_step_contraction * step_size</i></td></tr>
+<tr><th id="168">168</th><td><i>    //</i></td></tr>
+<tr><th id="169">169</th><td><i>    // Note that by definition, for contraction:</i></td></tr>
+<tr><th id="170">170</th><td><i>    //</i></td></tr>
+<tr><th id="171">171</th><td><i>    //  0 &lt; max_step_contraction &lt; min_step_contraction &lt; 1</i></td></tr>
+<tr><th id="172">172</th><td><i>    //</i></td></tr>
+<tr><th id="173">173</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_line_search_step_contraction" title='ceres::GradientProblemSolver::Options::max_line_search_step_contraction' data-ref="ceres::GradientProblemSolver::Options::max_line_search_step_contraction">max_line_search_step_contraction</dfn>;</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>    <i>// In each iteration of the line search,</i></td></tr>
+<tr><th id="176">176</th><td><i>    //</i></td></tr>
+<tr><th id="177">177</th><td><i>    //  new_step_size &lt;= min_line_search_step_contraction * step_size</i></td></tr>
+<tr><th id="178">178</th><td><i>    //</i></td></tr>
+<tr><th id="179">179</th><td><i>    // Note that by definition, for contraction:</i></td></tr>
+<tr><th id="180">180</th><td><i>    //</i></td></tr>
+<tr><th id="181">181</th><td><i>    //  0 &lt; max_step_contraction &lt; min_step_contraction &lt; 1</i></td></tr>
+<tr><th id="182">182</th><td><i>    //</i></td></tr>
+<tr><th id="183">183</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::min_line_search_step_contraction" title='ceres::GradientProblemSolver::Options::min_line_search_step_contraction' data-ref="ceres::GradientProblemSolver::Options::min_line_search_step_contraction">min_line_search_step_contraction</dfn>;</td></tr>
+<tr><th id="184">184</th><td></td></tr>
+<tr><th id="185">185</th><td>    <i>// Maximum number of trial step size iterations during each line search,</i></td></tr>
+<tr><th id="186">186</th><td><i>    // if a step size satisfying the search conditions cannot be found within</i></td></tr>
+<tr><th id="187">187</th><td><i>    // this number of trials, the line search will terminate.</i></td></tr>
+<tr><th id="188">188</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_num_line_search_step_size_iterations" title='ceres::GradientProblemSolver::Options::max_num_line_search_step_size_iterations' data-ref="ceres::GradientProblemSolver::Options::max_num_line_search_step_size_iterations">max_num_line_search_step_size_iterations</dfn>;</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>    <i>// Maximum number of restarts of the line search direction algorithm before</i></td></tr>
+<tr><th id="191">191</th><td><i>    // terminating the optimization. Restarts of the line search direction</i></td></tr>
+<tr><th id="192">192</th><td><i>    // algorithm occur when the current algorithm fails to produce a new descent</i></td></tr>
+<tr><th id="193">193</th><td><i>    // direction. This typically indicates a numerical failure, or a breakdown</i></td></tr>
+<tr><th id="194">194</th><td><i>    // in the validity of the approximations used.</i></td></tr>
+<tr><th id="195">195</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_num_line_search_direction_restarts" title='ceres::GradientProblemSolver::Options::max_num_line_search_direction_restarts' data-ref="ceres::GradientProblemSolver::Options::max_num_line_search_direction_restarts">max_num_line_search_direction_restarts</dfn>;</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>    <i>// The strong Wolfe conditions consist of the Armijo sufficient</i></td></tr>
+<tr><th id="198">198</th><td><i>    // decrease condition, and an additional requirement that the</i></td></tr>
+<tr><th id="199">199</th><td><i>    // step-size be chosen s.t. the _magnitude_ ('strong' Wolfe</i></td></tr>
+<tr><th id="200">200</th><td><i>    // conditions) of the gradient along the search direction</i></td></tr>
+<tr><th id="201">201</th><td><i>    // decreases sufficiently. Precisely, this second condition</i></td></tr>
+<tr><th id="202">202</th><td><i>    // is that we seek a step_size s.t.</i></td></tr>
+<tr><th id="203">203</th><td><i>    //</i></td></tr>
+<tr><th id="204">204</th><td><i>    //   |f'(step_size)| &lt;= sufficient_curvature_decrease * |f'(0)|</i></td></tr>
+<tr><th id="205">205</th><td><i>    //</i></td></tr>
+<tr><th id="206">206</th><td><i>    // Where f() is the line search objective and f'() is the derivative</i></td></tr>
+<tr><th id="207">207</th><td><i>    // of f w.r.t step_size (d f / d step_size).</i></td></tr>
+<tr><th id="208">208</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::line_search_sufficient_curvature_decrease" title='ceres::GradientProblemSolver::Options::line_search_sufficient_curvature_decrease' data-ref="ceres::GradientProblemSolver::Options::line_search_sufficient_curvature_decrease">line_search_sufficient_curvature_decrease</dfn>;</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>    <i>// During the bracketing phase of the Wolfe search, the step size is</i></td></tr>
+<tr><th id="211">211</th><td><i>    // increased until either a point satisfying the Wolfe conditions is</i></td></tr>
+<tr><th id="212">212</th><td><i>    // found, or an upper bound for a bracket containing a point satisfying</i></td></tr>
+<tr><th id="213">213</th><td><i>    // the conditions is found.  Precisely, at each iteration of the</i></td></tr>
+<tr><th id="214">214</th><td><i>    // expansion:</i></td></tr>
+<tr><th id="215">215</th><td><i>    //</i></td></tr>
+<tr><th id="216">216</th><td><i>    //   new_step_size &lt;= max_step_expansion * step_size.</i></td></tr>
+<tr><th id="217">217</th><td><i>    //</i></td></tr>
+<tr><th id="218">218</th><td><i>    // By definition for expansion, max_step_expansion &gt; 1.0.</i></td></tr>
+<tr><th id="219">219</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_line_search_step_expansion" title='ceres::GradientProblemSolver::Options::max_line_search_step_expansion' data-ref="ceres::GradientProblemSolver::Options::max_line_search_step_expansion">max_line_search_step_expansion</dfn>;</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td>    <i>// Maximum number of iterations for the minimizer to run for.</i></td></tr>
+<tr><th id="222">222</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_num_iterations" title='ceres::GradientProblemSolver::Options::max_num_iterations' data-ref="ceres::GradientProblemSolver::Options::max_num_iterations">max_num_iterations</dfn>;</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td>    <i>// Maximum time for which the minimizer should run for.</i></td></tr>
+<tr><th id="225">225</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::max_solver_time_in_seconds" title='ceres::GradientProblemSolver::Options::max_solver_time_in_seconds' data-ref="ceres::GradientProblemSolver::Options::max_solver_time_in_seconds">max_solver_time_in_seconds</dfn>;</td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>    <i>// Minimizer terminates when</i></td></tr>
+<tr><th id="228">228</th><td><i>    //</i></td></tr>
+<tr><th id="229">229</th><td><i>    //   (new_cost - old_cost) &lt; function_tolerance * old_cost;</i></td></tr>
+<tr><th id="230">230</th><td><i>    //</i></td></tr>
+<tr><th id="231">231</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::function_tolerance" title='ceres::GradientProblemSolver::Options::function_tolerance' data-ref="ceres::GradientProblemSolver::Options::function_tolerance">function_tolerance</dfn>;</td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td>    <i>// Minimizer terminates when</i></td></tr>
+<tr><th id="234">234</th><td><i>    //</i></td></tr>
+<tr><th id="235">235</th><td><i>    //   max_i |x - Project(Plus(x, -g(x))| &lt; gradient_tolerance</i></td></tr>
+<tr><th id="236">236</th><td><i>    //</i></td></tr>
+<tr><th id="237">237</th><td><i>    // This value should typically be 1e-4 * function_tolerance.</i></td></tr>
+<tr><th id="238">238</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::gradient_tolerance" title='ceres::GradientProblemSolver::Options::gradient_tolerance' data-ref="ceres::GradientProblemSolver::Options::gradient_tolerance">gradient_tolerance</dfn>;</td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td>    <i>// Minimizer terminates when</i></td></tr>
+<tr><th id="241">241</th><td><i>    //</i></td></tr>
+<tr><th id="242">242</th><td><i>    //   |step|_2 &lt;= parameter_tolerance * ( |x|_2 +  parameter_tolerance)</i></td></tr>
+<tr><th id="243">243</th><td><i>    //</i></td></tr>
+<tr><th id="244">244</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::parameter_tolerance" title='ceres::GradientProblemSolver::Options::parameter_tolerance' data-ref="ceres::GradientProblemSolver::Options::parameter_tolerance">parameter_tolerance</dfn>;</td></tr>
+<tr><th id="245">245</th><td></td></tr>
+<tr><th id="246">246</th><td>    <i>// Logging options ---------------------------------------------------------</i></td></tr>
+<tr><th id="247">247</th><td></td></tr>
+<tr><th id="248">248</th><td>    <a class="type" href="types.h.html#ceres::LoggingType" title='ceres::LoggingType' data-ref="ceres::LoggingType">LoggingType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Options::logging_type" title='ceres::GradientProblemSolver::Options::logging_type' data-ref="ceres::GradientProblemSolver::Options::logging_type">logging_type</dfn>;</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>    <i>// By default the Minimizer progress is logged to VLOG(1), which</i></td></tr>
+<tr><th id="251">251</th><td><i>    // is sent to STDERR depending on the vlog level. If this flag is</i></td></tr>
+<tr><th id="252">252</th><td><i>    // set to true, and logging_type is not SILENT, the logging output</i></td></tr>
+<tr><th id="253">253</th><td><i>    // is sent to STDOUT.</i></td></tr>
+<tr><th id="254">254</th><td>    <em>bool</em> <dfn class="decl" id="ceres::GradientProblemSolver::Options::minimizer_progress_to_stdout" title='ceres::GradientProblemSolver::Options::minimizer_progress_to_stdout' data-ref="ceres::GradientProblemSolver::Options::minimizer_progress_to_stdout">minimizer_progress_to_stdout</dfn>;</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td>    <i>// Callbacks that are executed at the end of each iteration of the</i></td></tr>
+<tr><th id="257">257</th><td><i>    // Minimizer. An iteration may terminate midway, either due to</i></td></tr>
+<tr><th id="258">258</th><td><i>    // numerical failures or because one of the convergence tests has</i></td></tr>
+<tr><th id="259">259</th><td><i>    // been satisfied. In this case none of the callbacks are</i></td></tr>
+<tr><th id="260">260</th><td><i>    // executed.</i></td></tr>
+<tr><th id="261">261</th><td><i></i></td></tr>
+<tr><th id="262">262</th><td><i>    // Callbacks are executed in the order that they are specified in</i></td></tr>
+<tr><th id="263">263</th><td><i>    // this vector. By default, parameter blocks are updated only at</i></td></tr>
+<tr><th id="264">264</th><td><i>    // the end of the optimization, i.e when the Minimizer</i></td></tr>
+<tr><th id="265">265</th><td><i>    // terminates. This behaviour is controlled by</i></td></tr>
+<tr><th id="266">266</th><td><i>    // update_state_every_variable. If the user wishes to have access</i></td></tr>
+<tr><th id="267">267</th><td><i>    // to the update parameter blocks when his/her callbacks are</i></td></tr>
+<tr><th id="268">268</th><td><i>    // executed, then set update_state_every_iteration to true.</i></td></tr>
+<tr><th id="269">269</th><td><i>    //</i></td></tr>
+<tr><th id="270">270</th><td><i>    // The solver does NOT take ownership of these pointers.</i></td></tr>
+<tr><th id="271">271</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="iteration_callback.h.html#ceres::IterationCallback" title='ceres::IterationCallback' data-ref="ceres::IterationCallback">IterationCallback</a>*&gt; <dfn class="decl" id="ceres::GradientProblemSolver::Options::callbacks" title='ceres::GradientProblemSolver::Options::callbacks' data-ref="ceres::GradientProblemSolver::Options::callbacks">callbacks</dfn>;</td></tr>
+<tr><th id="272">272</th><td>  };</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td>  <b>struct</b> <a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <dfn class="type def" id="ceres::GradientProblemSolver::Summary" title='ceres::GradientProblemSolver::Summary' data-ref="ceres::GradientProblemSolver::Summary">Summary</dfn> {</td></tr>
+<tr><th id="275">275</th><td>    <dfn class="decl" id="_ZN5ceres21GradientProblemSolver7SummaryC1Ev" title='ceres::GradientProblemSolver::Summary::Summary' data-ref="_ZN5ceres21GradientProblemSolver7SummaryC1Ev">Summary</dfn>();</td></tr>
+<tr><th id="276">276</th><td></td></tr>
+<tr><th id="277">277</th><td>    <i>// A brief one line description of the state of the solver after</i></td></tr>
+<tr><th id="278">278</th><td><i>    // termination.</i></td></tr>
+<tr><th id="279">279</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl" id="_ZNK5ceres21GradientProblemSolver7Summary11BriefReportEv" title='ceres::GradientProblemSolver::Summary::BriefReport' data-ref="_ZNK5ceres21GradientProblemSolver7Summary11BriefReportEv">BriefReport</dfn>() <em>const</em>;</td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td>    <i>// A full multiline description of the state of the solver after</i></td></tr>
+<tr><th id="282">282</th><td><i>    // termination.</i></td></tr>
+<tr><th id="283">283</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl" id="_ZNK5ceres21GradientProblemSolver7Summary10FullReportEv" title='ceres::GradientProblemSolver::Summary::FullReport' data-ref="_ZNK5ceres21GradientProblemSolver7Summary10FullReportEv">FullReport</dfn>() <em>const</em>;</td></tr>
+<tr><th id="284">284</th><td></td></tr>
+<tr><th id="285">285</th><td>    <em>bool</em> <dfn class="decl" id="_ZNK5ceres21GradientProblemSolver7Summary16IsSolutionUsableEv" title='ceres::GradientProblemSolver::Summary::IsSolutionUsable' data-ref="_ZNK5ceres21GradientProblemSolver7Summary16IsSolutionUsableEv">IsSolutionUsable</dfn>() <em>const</em>;</td></tr>
+<tr><th id="286">286</th><td></td></tr>
+<tr><th id="287">287</th><td>    <i>// Minimizer summary -------------------------------------------------</i></td></tr>
+<tr><th id="288">288</th><td>    <a class="type" href="types.h.html#ceres::TerminationType" title='ceres::TerminationType' data-ref="ceres::TerminationType">TerminationType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::termination_type" title='ceres::GradientProblemSolver::Summary::termination_type' data-ref="ceres::GradientProblemSolver::Summary::termination_type">termination_type</dfn>;</td></tr>
+<tr><th id="289">289</th><td></td></tr>
+<tr><th id="290">290</th><td>    <i>// Reason why the solver terminated.</i></td></tr>
+<tr><th id="291">291</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::message" title='ceres::GradientProblemSolver::Summary::message' data-ref="ceres::GradientProblemSolver::Summary::message">message</dfn>;</td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td>    <i>// Cost of the problem (value of the objective function) before</i></td></tr>
+<tr><th id="294">294</th><td><i>    // the optimization.</i></td></tr>
+<tr><th id="295">295</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::initial_cost" title='ceres::GradientProblemSolver::Summary::initial_cost' data-ref="ceres::GradientProblemSolver::Summary::initial_cost">initial_cost</dfn>;</td></tr>
+<tr><th id="296">296</th><td></td></tr>
+<tr><th id="297">297</th><td>    <i>// Cost of the problem (value of the objective function) after the</i></td></tr>
+<tr><th id="298">298</th><td><i>    // optimization.</i></td></tr>
+<tr><th id="299">299</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::final_cost" title='ceres::GradientProblemSolver::Summary::final_cost' data-ref="ceres::GradientProblemSolver::Summary::final_cost">final_cost</dfn>;</td></tr>
+<tr><th id="300">300</th><td></td></tr>
+<tr><th id="301">301</th><td>    <i>// IterationSummary for each minimizer iteration in order.</i></td></tr>
+<tr><th id="302">302</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="iteration_callback.h.html#ceres::IterationSummary" title='ceres::IterationSummary' data-ref="ceres::IterationSummary">IterationSummary</a>&gt; <dfn class="decl" id="ceres::GradientProblemSolver::Summary::iterations" title='ceres::GradientProblemSolver::Summary::iterations' data-ref="ceres::GradientProblemSolver::Summary::iterations">iterations</dfn>;</td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td>    <i>// Sum total of all time spent inside Ceres when Solve is called.</i></td></tr>
+<tr><th id="305">305</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::total_time_in_seconds" title='ceres::GradientProblemSolver::Summary::total_time_in_seconds' data-ref="ceres::GradientProblemSolver::Summary::total_time_in_seconds">total_time_in_seconds</dfn>;</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td>    <i>// Time (in seconds) spent evaluating the cost.</i></td></tr>
+<tr><th id="308">308</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::cost_evaluation_time_in_seconds" title='ceres::GradientProblemSolver::Summary::cost_evaluation_time_in_seconds' data-ref="ceres::GradientProblemSolver::Summary::cost_evaluation_time_in_seconds">cost_evaluation_time_in_seconds</dfn>;</td></tr>
+<tr><th id="309">309</th><td></td></tr>
+<tr><th id="310">310</th><td>    <i>// Time (in seconds) spent evaluating the gradient.</i></td></tr>
+<tr><th id="311">311</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::gradient_evaluation_time_in_seconds" title='ceres::GradientProblemSolver::Summary::gradient_evaluation_time_in_seconds' data-ref="ceres::GradientProblemSolver::Summary::gradient_evaluation_time_in_seconds">gradient_evaluation_time_in_seconds</dfn>;</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td>    <i>// Time (in seconds) spent minimizing the interpolating polynomial</i></td></tr>
+<tr><th id="314">314</th><td><i>    // to compute the next candidate step size as part of a line search.</i></td></tr>
+<tr><th id="315">315</th><td>    <em>double</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::line_search_polynomial_minimization_time_in_seconds" title='ceres::GradientProblemSolver::Summary::line_search_polynomial_minimization_time_in_seconds' data-ref="ceres::GradientProblemSolver::Summary::line_search_polynomial_minimization_time_in_seconds">line_search_polynomial_minimization_time_in_seconds</dfn>;</td></tr>
+<tr><th id="316">316</th><td></td></tr>
+<tr><th id="317">317</th><td>    <i>// Number of parameters in the probem.</i></td></tr>
+<tr><th id="318">318</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::num_parameters" title='ceres::GradientProblemSolver::Summary::num_parameters' data-ref="ceres::GradientProblemSolver::Summary::num_parameters">num_parameters</dfn>;</td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td>    <i>// Dimension of the tangent space of the problem.</i></td></tr>
+<tr><th id="321">321</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::num_local_parameters" title='ceres::GradientProblemSolver::Summary::num_local_parameters' data-ref="ceres::GradientProblemSolver::Summary::num_local_parameters">num_local_parameters</dfn>;</td></tr>
+<tr><th id="322">322</th><td></td></tr>
+<tr><th id="323">323</th><td>    <i>// Type of line search direction used.</i></td></tr>
+<tr><th id="324">324</th><td>    <a class="type" href="types.h.html#ceres::LineSearchDirectionType" title='ceres::LineSearchDirectionType' data-ref="ceres::LineSearchDirectionType">LineSearchDirectionType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::line_search_direction_type" title='ceres::GradientProblemSolver::Summary::line_search_direction_type' data-ref="ceres::GradientProblemSolver::Summary::line_search_direction_type">line_search_direction_type</dfn>;</td></tr>
+<tr><th id="325">325</th><td></td></tr>
+<tr><th id="326">326</th><td>    <i>// Type of the line search algorithm used.</i></td></tr>
+<tr><th id="327">327</th><td>    <a class="type" href="types.h.html#ceres::LineSearchType" title='ceres::LineSearchType' data-ref="ceres::LineSearchType">LineSearchType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::line_search_type" title='ceres::GradientProblemSolver::Summary::line_search_type' data-ref="ceres::GradientProblemSolver::Summary::line_search_type">line_search_type</dfn>;</td></tr>
+<tr><th id="328">328</th><td></td></tr>
+<tr><th id="329">329</th><td>    <i>//  When performing line search, the degree of the polynomial used</i></td></tr>
+<tr><th id="330">330</th><td><i>    //  to approximate the objective function.</i></td></tr>
+<tr><th id="331">331</th><td>    <a class="type" href="types.h.html#ceres::LineSearchInterpolationType" title='ceres::LineSearchInterpolationType' data-ref="ceres::LineSearchInterpolationType">LineSearchInterpolationType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::line_search_interpolation_type" title='ceres::GradientProblemSolver::Summary::line_search_interpolation_type' data-ref="ceres::GradientProblemSolver::Summary::line_search_interpolation_type">line_search_interpolation_type</dfn>;</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td>    <i>// If the line search direction is NONLINEAR_CONJUGATE_GRADIENT,</i></td></tr>
+<tr><th id="334">334</th><td><i>    // then this indicates the particular variant of non-linear</i></td></tr>
+<tr><th id="335">335</th><td><i>    // conjugate gradient used.</i></td></tr>
+<tr><th id="336">336</th><td>    <a class="type" href="types.h.html#ceres::NonlinearConjugateGradientType" title='ceres::NonlinearConjugateGradientType' data-ref="ceres::NonlinearConjugateGradientType">NonlinearConjugateGradientType</a> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::nonlinear_conjugate_gradient_type" title='ceres::GradientProblemSolver::Summary::nonlinear_conjugate_gradient_type' data-ref="ceres::GradientProblemSolver::Summary::nonlinear_conjugate_gradient_type">nonlinear_conjugate_gradient_type</dfn>;</td></tr>
+<tr><th id="337">337</th><td></td></tr>
+<tr><th id="338">338</th><td>    <i>// If the type of the line search direction is LBFGS, then this</i></td></tr>
+<tr><th id="339">339</th><td><i>    // indicates the rank of the Hessian approximation.</i></td></tr>
+<tr><th id="340">340</th><td>    <em>int</em> <dfn class="decl" id="ceres::GradientProblemSolver::Summary::max_lbfgs_rank" title='ceres::GradientProblemSolver::Summary::max_lbfgs_rank' data-ref="ceres::GradientProblemSolver::Summary::max_lbfgs_rank">max_lbfgs_rank</dfn>;</td></tr>
+<tr><th id="341">341</th><td>  };</td></tr>
+<tr><th id="342">342</th><td></td></tr>
+<tr><th id="343">343</th><td>  <i>// Once a least squares problem has been built, this function takes</i></td></tr>
+<tr><th id="344">344</th><td><i>  // the problem and optimizes it based on the values of the options</i></td></tr>
+<tr><th id="345">345</th><td><i>  // parameters. Upon return, a detailed summary of the work performed</i></td></tr>
+<tr><th id="346">346</th><td><i>  // by the preprocessor, the non-linear minmizer and the linear</i></td></tr>
+<tr><th id="347">347</th><td><i>  // solver are reported in the summary object.</i></td></tr>
+<tr><th id="348">348</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres21GradientProblemSolver5SolveERKNS0_7OptionsERKNS_15GradientProblemEPdPNS0_7SummaryE" title='ceres::GradientProblemSolver::Solve' data-ref="_ZN5ceres21GradientProblemSolver5SolveERKNS0_7OptionsERKNS_15GradientProblemEPdPNS0_7SummaryE">Solve</dfn>(<em>const</em> <a class="type" href="#ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</a>::<a class="type" href="#ceres::GradientProblemSolver::Options" title='ceres::GradientProblemSolver::Options' data-ref="ceres::GradientProblemSolver::Options">Options</a>&amp; <dfn class="local col0 decl" id="2910options" title='options' data-type='const GradientProblemSolver::Options &amp;' data-ref="2910options">options</dfn>,</td></tr>
+<tr><th id="349">349</th><td>                     <em>const</em> <a class="type" href="gradient_problem.h.html#ceres::GradientProblem" title='ceres::GradientProblem' data-ref="ceres::GradientProblem">GradientProblem</a>&amp; <dfn class="local col1 decl" id="2911problem" title='problem' data-type='const ceres::GradientProblem &amp;' data-ref="2911problem">problem</dfn>,</td></tr>
+<tr><th id="350">350</th><td>                     <em>double</em>* <dfn class="local col2 decl" id="2912parameters" title='parameters' data-type='double *' data-ref="2912parameters">parameters</dfn>,</td></tr>
+<tr><th id="351">351</th><td>                     <a class="type" href="#ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</a>::<a class="type" href="#ceres::GradientProblemSolver::Summary" title='ceres::GradientProblemSolver::Summary' data-ref="ceres::GradientProblemSolver::Summary">Summary</a>* <dfn class="local col3 decl" id="2913summary" title='summary' data-type='GradientProblemSolver::Summary *' data-ref="2913summary">summary</dfn>);</td></tr>
+<tr><th id="352">352</th><td>};</td></tr>
+<tr><th id="353">353</th><td></td></tr>
+<tr><th id="354">354</th><td><i>// Helper function which avoids going through the interface.</i></td></tr>
+<tr><th id="355">355</th><td><a class="macro" href="internal/port.h.html#95" title="" data-ref="_M/CERES_EXPORT">CERES_EXPORT</a> <em>void</em> <dfn class="decl" id="_ZN5ceres5SolveERKNS_21GradientProblemSolver7OptionsERKNS_15GradientProblemEPdPNS0_7SummaryE" title='ceres::Solve' data-ref="_ZN5ceres5SolveERKNS_21GradientProblemSolver7OptionsERKNS_15GradientProblemEPdPNS0_7SummaryE">Solve</dfn>(<em>const</em> <a class="type" href="#ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</a>::<a class="type" href="#ceres::GradientProblemSolver::Options" title='ceres::GradientProblemSolver::Options' data-ref="ceres::GradientProblemSolver::Options">Options</a>&amp; <dfn class="local col4 decl" id="2914options" title='options' data-type='const GradientProblemSolver::Options &amp;' data-ref="2914options">options</dfn>,</td></tr>
+<tr><th id="356">356</th><td>                        <em>const</em> <a class="type" href="gradient_problem.h.html#ceres::GradientProblem" title='ceres::GradientProblem' data-ref="ceres::GradientProblem">GradientProblem</a>&amp; <dfn class="local col5 decl" id="2915problem" title='problem' data-type='const ceres::GradientProblem &amp;' data-ref="2915problem">problem</dfn>,</td></tr>
+<tr><th id="357">357</th><td>                        <em>double</em>* <dfn class="local col6 decl" id="2916parameters" title='parameters' data-type='double *' data-ref="2916parameters">parameters</dfn>,</td></tr>
+<tr><th id="358">358</th><td>                        <a class="type" href="#ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</a>::<a class="type" href="#ceres::GradientProblemSolver::Summary" title='ceres::GradientProblemSolver::Summary' data-ref="ceres::GradientProblemSolver::Summary">Summary</a>* <dfn class="local col7 decl" id="2917summary" title='summary' data-type='GradientProblemSolver::Summary *' data-ref="2917summary">summary</dfn>);</td></tr>
+<tr><th id="359">359</th><td></td></tr>
+<tr><th id="360">360</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="361">361</th><td></td></tr>
+<tr><th id="362">362</th><td><u>#include <a href="internal/reenable_warnings.h.html">"ceres/internal/reenable_warnings.h"</a></u></td></tr>
+<tr><th id="363">363</th><td></td></tr>
+<tr><th id="364">364</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_PUBLIC_GRADIENT_PROBLEM_SOLVER_H_</u></td></tr>
+<tr><th id="365">365</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/bundle_adjuster.cc.html'>ceres-solver/examples/bundle_adjuster.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

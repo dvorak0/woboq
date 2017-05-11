@@ -1,0 +1,394 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Core source code [include/eigen3/Eigen/Core] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/eigen3/Eigen/Core'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>include</a>/<a href='..'>eigen3</a>/<a href='./'>Eigen</a>/<a href='Core.html'>Core</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2008 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2007-2011 Benoit Jacob &lt;jacob.benoit.1@gmail.com&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>//</i></td></tr>
+<tr><th id="7">7</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="8">8</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="9">9</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifndef</span> <span class="macro" data-ref="_M/EIGEN_CORE_H">EIGEN_CORE_H</span></u></td></tr>
+<tr><th id="12">12</th><td><u>#define <dfn class="macro" id="_M/EIGEN_CORE_H" data-ref="_M/EIGEN_CORE_H">EIGEN_CORE_H</dfn></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><i>// first thing Eigen does: stop the compiler from committing suicide</i></td></tr>
+<tr><th id="15">15</th><td><u>#include <a href="src/Core/util/DisableStupidWarnings.h.html">"src/Core/util/DisableStupidWarnings.h"</a></u></td></tr>
+<tr><th id="16">16</th><td></td></tr>
+<tr><th id="17">17</th><td><i>// then include this file where all our macros are defined. It's really important to do it first because</i></td></tr>
+<tr><th id="18">18</th><td><i>// it's where we do all the alignment settings (platform detection and honoring the user's will if he</i></td></tr>
+<tr><th id="19">19</th><td><i>// defined e.g. EIGEN_DONT_ALIGN) so it needs to be done before we do anything with vectorization.</i></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="src/Core/util/Macros.h.html">"src/Core/util/Macros.h"</a></u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><i>// Disable the ipa-cp-clone optimization flag with MinGW 6.x or newer (enabled by default with -O3)</i></td></tr>
+<tr><th id="23">23</th><td><i>// See <a href="http://eigen.tuxfamily.org/bz/show_bug.cgi?id=556">http://eigen.tuxfamily.org/bz/show_bug.cgi?id=556</a> for details.</i></td></tr>
+<tr><th id="24">24</th><td><u>#<span data-ppcond="24">if</span> defined(<span class="macro" data-ref="_M/__MINGW32__">__MINGW32__</span>) &amp;&amp; <a class="macro" href="src/Core/util/Macros.h.html#22" title="((4==4 &amp;&amp; 2&gt;=6) || 4&gt;4)" data-ref="_M/EIGEN_GNUC_AT_LEAST">EIGEN_GNUC_AT_LEAST</a>(4,6)</u></td></tr>
+<tr><th id="25">25</th><td>  <u>#pragma GCC optimize ("-fno-ipa-cp-clone")</u></td></tr>
+<tr><th id="26">26</th><td><u>#<span data-ppcond="24">endif</span></u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../../c++/4.8/complex.html">&lt;complex&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><i>// this include file manages BLAS and MKL related macros</i></td></tr>
+<tr><th id="31">31</th><td><i>// and inclusion of their respective header files</i></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="src/Core/util/MKL_support.h.html">"src/Core/util/MKL_support.h"</a></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><i>// if alignment is disabled, then disable vectorization. Note: EIGEN_ALIGN is the proper check, it takes into</i></td></tr>
+<tr><th id="35">35</th><td><i>// account both the user's will (EIGEN_DONT_ALIGN) and our own platform checks</i></td></tr>
+<tr><th id="36">36</th><td><u>#<span data-ppcond="36">if</span> !<a class="macro" href="src/Core/util/Macros.h.html#75" title="1" data-ref="_M/EIGEN_ALIGN">EIGEN_ALIGN</a></u></td></tr>
+<tr><th id="37">37</th><td>  <u>#ifndef EIGEN_DONT_VECTORIZE</u></td></tr>
+<tr><th id="38">38</th><td>    <u>#define EIGEN_DONT_VECTORIZE</u></td></tr>
+<tr><th id="39">39</th><td>  <u>#endif</u></td></tr>
+<tr><th id="40">40</th><td><u>#<span data-ppcond="36">endif</span></u></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><u>#<span data-ppcond="42">ifdef</span> <span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span></u></td></tr>
+<tr><th id="43">43</th><td>  <u>#include &lt;malloc.h&gt; // for _aligned_malloc -- need it regardless of whether vectorization is enabled</u></td></tr>
+<tr><th id="44">44</th><td>  <u>#if (_MSC_VER &gt;= 1500) // 2008 or later</u></td></tr>
+<tr><th id="45">45</th><td>    <i>// Remember that usage of defined() in a #define is undefined by the standard.</i></td></tr>
+<tr><th id="46">46</th><td><i>    // a user reported that in 64-bit mode, MSVC doesn't care to define _M_IX86_FP.</i></td></tr>
+<tr><th id="47">47</th><td>    <u>#if (defined(_M_IX86_FP) &amp;&amp; (_M_IX86_FP &gt;= 2)) || defined(_M_X64)</u></td></tr>
+<tr><th id="48">48</th><td>      <u>#define EIGEN_SSE2_ON_MSVC_2008_OR_LATER</u></td></tr>
+<tr><th id="49">49</th><td>    <u>#endif</u></td></tr>
+<tr><th id="50">50</th><td>  <u>#endif</u></td></tr>
+<tr><th id="51">51</th><td><u>#<span data-ppcond="42">else</span></u></td></tr>
+<tr><th id="52">52</th><td>  <i>// Remember that usage of defined() in a #define is undefined by the standard</i></td></tr>
+<tr><th id="53">53</th><td>  <u>#<span data-ppcond="53">if</span> (defined <span class="macro" data-ref="_M/__SSE2__">__SSE2__</span>) &amp;&amp; ( (!defined <span class="macro" data-ref="_M/__GNUC__">__GNUC__</span>) || (defined <span class="macro" data-ref="_M/__INTEL_COMPILER">__INTEL_COMPILER</span>) || <a class="macro" href="src/Core/util/Macros.h.html#22" title="((4==4 &amp;&amp; 2&gt;=2) || 4&gt;4)" data-ref="_M/EIGEN_GNUC_AT_LEAST">EIGEN_GNUC_AT_LEAST</a>(4,2) )</u></td></tr>
+<tr><th id="54">54</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_SSE2_ON_NON_MSVC_BUT_NOT_OLD_GCC" data-ref="_M/EIGEN_SSE2_ON_NON_MSVC_BUT_NOT_OLD_GCC">EIGEN_SSE2_ON_NON_MSVC_BUT_NOT_OLD_GCC</dfn></u></td></tr>
+<tr><th id="55">55</th><td>  <u>#<span data-ppcond="53">endif</span></u></td></tr>
+<tr><th id="56">56</th><td><u>#<span data-ppcond="42">endif</span></u></td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><u>#<span data-ppcond="58">ifndef</span> <span class="macro" data-ref="_M/EIGEN_DONT_VECTORIZE">EIGEN_DONT_VECTORIZE</span></u></td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <u>#<span data-ppcond="60">if</span> defined (<a class="macro" href="#54" data-ref="_M/EIGEN_SSE2_ON_NON_MSVC_BUT_NOT_OLD_GCC">EIGEN_SSE2_ON_NON_MSVC_BUT_NOT_OLD_GCC</a>) || defined(<span class="macro" data-ref="_M/EIGEN_SSE2_ON_MSVC_2008_OR_LATER">EIGEN_SSE2_ON_MSVC_2008_OR_LATER</span>)</u></td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>    <i>// Defines symbols for compile-time detection of which instructions are</i></td></tr>
+<tr><th id="63">63</th><td><i>    // used.</i></td></tr>
+<tr><th id="64">64</th><td><i>    // EIGEN_VECTORIZE_YY is defined if and only if the instruction set YY is used</i></td></tr>
+<tr><th id="65">65</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_VECTORIZE" data-ref="_M/EIGEN_VECTORIZE">EIGEN_VECTORIZE</dfn></u></td></tr>
+<tr><th id="66">66</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_VECTORIZE_SSE" data-ref="_M/EIGEN_VECTORIZE_SSE">EIGEN_VECTORIZE_SSE</dfn></u></td></tr>
+<tr><th id="67">67</th><td>    <u>#define <dfn class="macro" id="_M/EIGEN_VECTORIZE_SSE2" data-ref="_M/EIGEN_VECTORIZE_SSE2">EIGEN_VECTORIZE_SSE2</dfn></u></td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>    <i>// Detect sse3/ssse3/sse4:</i></td></tr>
+<tr><th id="70">70</th><td><i>    // gcc and icc defines __SSE3__, ...</i></td></tr>
+<tr><th id="71">71</th><td><i>    // there is no way to know about this on msvc. You can define EIGEN_VECTORIZE_SSE* if you</i></td></tr>
+<tr><th id="72">72</th><td><i>    // want to force the use of those instructions with msvc.</i></td></tr>
+<tr><th id="73">73</th><td>    <u>#<span data-ppcond="73">ifdef</span> <span class="macro" data-ref="_M/__SSE3__">__SSE3__</span></u></td></tr>
+<tr><th id="74">74</th><td>      <u>#define <dfn class="macro" id="_M/EIGEN_VECTORIZE_SSE3" data-ref="_M/EIGEN_VECTORIZE_SSE3">EIGEN_VECTORIZE_SSE3</dfn></u></td></tr>
+<tr><th id="75">75</th><td>    <u>#<span data-ppcond="73">endif</span></u></td></tr>
+<tr><th id="76">76</th><td>    <u>#<span data-ppcond="76">ifdef</span> <span class="macro" data-ref="_M/__SSSE3__">__SSSE3__</span></u></td></tr>
+<tr><th id="77">77</th><td>      <u>#define EIGEN_VECTORIZE_SSSE3</u></td></tr>
+<tr><th id="78">78</th><td>    <u>#<span data-ppcond="76">endif</span></u></td></tr>
+<tr><th id="79">79</th><td>    <u>#<span data-ppcond="79">ifdef</span> <span class="macro" data-ref="_M/__SSE4_1__">__SSE4_1__</span></u></td></tr>
+<tr><th id="80">80</th><td>      <u>#define EIGEN_VECTORIZE_SSE4_1</u></td></tr>
+<tr><th id="81">81</th><td>    <u>#<span data-ppcond="79">endif</span></u></td></tr>
+<tr><th id="82">82</th><td>    <u>#<span data-ppcond="82">ifdef</span> <span class="macro" data-ref="_M/__SSE4_2__">__SSE4_2__</span></u></td></tr>
+<tr><th id="83">83</th><td>      <u>#define EIGEN_VECTORIZE_SSE4_2</u></td></tr>
+<tr><th id="84">84</th><td>    <u>#<span data-ppcond="82">endif</span></u></td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td>    <i>// include files</i></td></tr>
+<tr><th id="87">87</th><td><i></i></td></tr>
+<tr><th id="88">88</th><td><i>    // This extern "C" works around a MINGW-w64 compilation issue</i></td></tr>
+<tr><th id="89">89</th><td><i>    // <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=3018394&group_id=202880&atid=983354">https://sourceforge.net/tracker/index.php?func=detail&amp;aid=3018394&amp;group_id=202880&amp;atid=983354</a></i></td></tr>
+<tr><th id="90">90</th><td><i>    // In essence, intrin.h is included by windows.h and also declares intrinsics (just as emmintrin.h etc. below do).</i></td></tr>
+<tr><th id="91">91</th><td><i>    // However, intrin.h uses an extern "C" declaration, and g++ thus complains of duplicate declarations</i></td></tr>
+<tr><th id="92">92</th><td><i>    // with conflicting linkage.  The linkage for intrinsics doesn't matter, but at that stage the compiler doesn't know;</i></td></tr>
+<tr><th id="93">93</th><td><i>    // so, to avoid compile errors when windows.h is included after Eigen/Core, ensure intrinsics are extern "C" here too.</i></td></tr>
+<tr><th id="94">94</th><td><i>    // notice that since these are C headers, the extern "C" is theoretically needed anyways.</i></td></tr>
+<tr><th id="95">95</th><td>    <b>extern</b> <q>"C"</q> {</td></tr>
+<tr><th id="96">96</th><td>      <i>// In theory we should only include immintrin.h and not the other *mmintrin.h header files directly.</i></td></tr>
+<tr><th id="97">97</th><td><i>      // Doing so triggers some issues with ICC. However old gcc versions seems to not have this file, thus:</i></td></tr>
+<tr><th id="98">98</th><td>      <u>#<span data-ppcond="98">ifdef</span> <span class="macro" data-ref="_M/__INTEL_COMPILER">__INTEL_COMPILER</span></u></td></tr>
+<tr><th id="99">99</th><td>        <u>#include &lt;immintrin.h&gt;</u></td></tr>
+<tr><th id="100">100</th><td>      <u>#<span data-ppcond="98">else</span></u></td></tr>
+<tr><th id="101">101</th><td>        <u>#include &lt;emmintrin.h&gt;</u></td></tr>
+<tr><th id="102">102</th><td>        <u>#include &lt;xmmintrin.h&gt;</u></td></tr>
+<tr><th id="103">103</th><td>        <u>#<span data-ppcond="103">ifdef</span>  <a class="macro" href="#74" data-ref="_M/EIGEN_VECTORIZE_SSE3">EIGEN_VECTORIZE_SSE3</a></u></td></tr>
+<tr><th id="104">104</th><td>        <u>#include &lt;pmmintrin.h&gt;</u></td></tr>
+<tr><th id="105">105</th><td>        <u>#<span data-ppcond="103">endif</span></u></td></tr>
+<tr><th id="106">106</th><td>        <u>#<span data-ppcond="106">ifdef</span> <span class="macro" data-ref="_M/EIGEN_VECTORIZE_SSSE3">EIGEN_VECTORIZE_SSSE3</span></u></td></tr>
+<tr><th id="107">107</th><td>        <u>#include &lt;tmmintrin.h&gt;</u></td></tr>
+<tr><th id="108">108</th><td>        <u>#<span data-ppcond="106">endif</span></u></td></tr>
+<tr><th id="109">109</th><td>        <u>#<span data-ppcond="109">ifdef</span> <span class="macro" data-ref="_M/EIGEN_VECTORIZE_SSE4_1">EIGEN_VECTORIZE_SSE4_1</span></u></td></tr>
+<tr><th id="110">110</th><td>        <u>#include &lt;smmintrin.h&gt;</u></td></tr>
+<tr><th id="111">111</th><td>        <u>#<span data-ppcond="109">endif</span></u></td></tr>
+<tr><th id="112">112</th><td>        <u>#<span data-ppcond="112">ifdef</span> <span class="macro" data-ref="_M/EIGEN_VECTORIZE_SSE4_2">EIGEN_VECTORIZE_SSE4_2</span></u></td></tr>
+<tr><th id="113">113</th><td>        <u>#include &lt;nmmintrin.h&gt;</u></td></tr>
+<tr><th id="114">114</th><td>        <u>#<span data-ppcond="112">endif</span></u></td></tr>
+<tr><th id="115">115</th><td>      <u>#<span data-ppcond="98">endif</span></u></td></tr>
+<tr><th id="116">116</th><td>    } <i>// end extern "C"</i></td></tr>
+<tr><th id="117">117</th><td>  <u>#<span data-ppcond="60">elif</span> defined __ALTIVEC__</u></td></tr>
+<tr><th id="118">118</th><td>    <u>#define EIGEN_VECTORIZE</u></td></tr>
+<tr><th id="119">119</th><td>    <u>#define EIGEN_VECTORIZE_ALTIVEC</u></td></tr>
+<tr><th id="120">120</th><td>    <u>#include &lt;altivec.h&gt;</u></td></tr>
+<tr><th id="121">121</th><td>    <i>// We need to #undef all these ugly tokens defined in &lt;altivec.h&gt;</i></td></tr>
+<tr><th id="122">122</th><td><i>    // =&gt; use __vector instead of vector</i></td></tr>
+<tr><th id="123">123</th><td>    <u>#undef bool</u></td></tr>
+<tr><th id="124">124</th><td>    <u>#undef vector</u></td></tr>
+<tr><th id="125">125</th><td>    <u>#undef pixel</u></td></tr>
+<tr><th id="126">126</th><td>  <u>#elif defined  __ARM_NEON__</u></td></tr>
+<tr><th id="127">127</th><td>    <u>#define EIGEN_VECTORIZE</u></td></tr>
+<tr><th id="128">128</th><td>    <u>#define EIGEN_VECTORIZE_NEON</u></td></tr>
+<tr><th id="129">129</th><td>    <u>#include &lt;arm_neon.h&gt;</u></td></tr>
+<tr><th id="130">130</th><td>  <u>#<span data-ppcond="60">endif</span></u></td></tr>
+<tr><th id="131">131</th><td><u>#<span data-ppcond="58">endif</span></u></td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><u>#<span data-ppcond="133">if</span> (defined <span class="macro" data-ref="_M/_OPENMP">_OPENMP</span>) &amp;&amp; (!defined <span class="macro" data-ref="_M/EIGEN_DONT_PARALLELIZE">EIGEN_DONT_PARALLELIZE</span>)</u></td></tr>
+<tr><th id="134">134</th><td>  <u>#define EIGEN_HAS_OPENMP</u></td></tr>
+<tr><th id="135">135</th><td><u>#<span data-ppcond="133">endif</span></u></td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td><u>#<span data-ppcond="137">ifdef</span> <span class="macro" data-ref="_M/EIGEN_HAS_OPENMP">EIGEN_HAS_OPENMP</span></u></td></tr>
+<tr><th id="138">138</th><td><u>#include &lt;omp.h&gt;</u></td></tr>
+<tr><th id="139">139</th><td><u>#<span data-ppcond="137">endif</span></u></td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td><i>// MSVC for windows mobile does not have the errno.h file</i></td></tr>
+<tr><th id="142">142</th><td><u>#<span data-ppcond="142">if</span> !(defined(<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/_WIN32_WCE">_WIN32_WCE</span>)) &amp;&amp; !defined(<span class="macro" data-ref="_M/__ARMCC_VERSION">__ARMCC_VERSION</span>)</u></td></tr>
+<tr><th id="143">143</th><td><u>#define <dfn class="macro" id="_M/EIGEN_HAS_ERRNO" data-ref="_M/EIGEN_HAS_ERRNO">EIGEN_HAS_ERRNO</dfn></u></td></tr>
+<tr><th id="144">144</th><td><u>#<span data-ppcond="142">endif</span></u></td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td><u>#<span data-ppcond="146">ifdef</span> <a class="macro" href="#143" data-ref="_M/EIGEN_HAS_ERRNO">EIGEN_HAS_ERRNO</a></u></td></tr>
+<tr><th id="147">147</th><td><u>#include <a href="../../c++/4.8/cerrno.html">&lt;cerrno&gt;</a></u></td></tr>
+<tr><th id="148">148</th><td><u>#<span data-ppcond="146">endif</span></u></td></tr>
+<tr><th id="149">149</th><td><u>#include <a href="../../c++/4.8/cstddef.html">&lt;cstddef&gt;</a></u></td></tr>
+<tr><th id="150">150</th><td><u>#include <a href="../../c++/4.8/cstdlib.html">&lt;cstdlib&gt;</a></u></td></tr>
+<tr><th id="151">151</th><td><u>#include <a href="../../c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="152">152</th><td><u>#include <a href="../../c++/4.8/cassert.html">&lt;cassert&gt;</a></u></td></tr>
+<tr><th id="153">153</th><td><u>#include <a href="../../c++/4.8/functional.html">&lt;functional&gt;</a></u></td></tr>
+<tr><th id="154">154</th><td><u>#include <a href="../../c++/4.8/iosfwd.html">&lt;iosfwd&gt;</a></u></td></tr>
+<tr><th id="155">155</th><td><u>#include <a href="../../c++/4.8/cstring.html">&lt;cstring&gt;</a></u></td></tr>
+<tr><th id="156">156</th><td><u>#include <a href="../../c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="157">157</th><td><u>#include <a href="../../c++/4.8/limits.html">&lt;limits&gt;</a></u></td></tr>
+<tr><th id="158">158</th><td><u>#include <a href="../../c++/4.8/climits.html">&lt;climits&gt;</a> // for CHAR_BIT</u></td></tr>
+<tr><th id="159">159</th><td><i>// for min/max:</i></td></tr>
+<tr><th id="160">160</th><td><u>#include <a href="../../c++/4.8/algorithm.html">&lt;algorithm&gt;</a></u></td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><i>// for outputting debug info</i></td></tr>
+<tr><th id="163">163</th><td><u>#<span data-ppcond="163">ifdef</span> <span class="macro" data-ref="_M/EIGEN_DEBUG_ASSIGN">EIGEN_DEBUG_ASSIGN</span></u></td></tr>
+<tr><th id="164">164</th><td><u>#include &lt;iostream&gt;</u></td></tr>
+<tr><th id="165">165</th><td><u>#<span data-ppcond="163">endif</span></u></td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td><i>// required for __cpuid, needs to be included after cmath</i></td></tr>
+<tr><th id="168">168</th><td><u>#<span data-ppcond="168">if</span> defined(<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>) &amp;&amp; (defined(<span class="macro" data-ref="_M/_M_IX86">_M_IX86</span>)||defined(<span class="macro" data-ref="_M/_M_X64">_M_X64</span>))</u></td></tr>
+<tr><th id="169">169</th><td>  <u>#include &lt;intrin.h&gt;</u></td></tr>
+<tr><th id="170">170</th><td><u>#<span data-ppcond="168">endif</span></u></td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td><u>#<span data-ppcond="172">if</span> defined(<span class="macro" data-ref="_M/_CPPUNWIND">_CPPUNWIND</span>) || defined(<span class="macro" data-ref="_M/__EXCEPTIONS">__EXCEPTIONS</span>)</u></td></tr>
+<tr><th id="173">173</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN_EXCEPTIONS" data-ref="_M/EIGEN_EXCEPTIONS">EIGEN_EXCEPTIONS</dfn></u></td></tr>
+<tr><th id="174">174</th><td><u>#<span data-ppcond="172">endif</span></u></td></tr>
+<tr><th id="175">175</th><td></td></tr>
+<tr><th id="176">176</th><td><u>#<span data-ppcond="176">ifdef</span> <a class="macro" href="#173" data-ref="_M/EIGEN_EXCEPTIONS">EIGEN_EXCEPTIONS</a></u></td></tr>
+<tr><th id="177">177</th><td>  <u>#include <a href="../../c++/4.8/new.html">&lt;new&gt;</a></u></td></tr>
+<tr><th id="178">178</th><td><u>#<span data-ppcond="176">endif</span></u></td></tr>
+<tr><th id="179">179</th><td></td></tr>
+<tr><th id="180">180</th><td><i class="doc">/** <span class="command">\brief</span> Namespace containing all symbols from the %Eigen library. */</i></td></tr>
+<tr><th id="181">181</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="182">182</th><td></td></tr>
+<tr><th id="183">183</th><td><b>inline</b> <em>static</em> <em>const</em> <em>char</em> *<dfn class="decl def" id="_ZN5EigenL24SimdInstructionSetsInUseEv" title='Eigen::SimdInstructionSetsInUse' data-ref="_ZN5EigenL24SimdInstructionSetsInUseEv">SimdInstructionSetsInUse</dfn>(<em>void</em>) {</td></tr>
+<tr><th id="184">184</th><td><u>#<span data-ppcond="184">if</span> defined(<span class="macro" data-ref="_M/EIGEN_VECTORIZE_SSE4_2">EIGEN_VECTORIZE_SSE4_2</span>)</u></td></tr>
+<tr><th id="185">185</th><td>  <b>return</b> <q>"SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2"</q>;</td></tr>
+<tr><th id="186">186</th><td><u>#elif defined(<span class="macro" data-ref="_M/EIGEN_VECTORIZE_SSE4_1">EIGEN_VECTORIZE_SSE4_1</span>)</u></td></tr>
+<tr><th id="187">187</th><td>  <b>return</b> <q>"SSE, SSE2, SSE3, SSSE3, SSE4.1"</q>;</td></tr>
+<tr><th id="188">188</th><td><u>#elif defined(<span class="macro" data-ref="_M/EIGEN_VECTORIZE_SSSE3">EIGEN_VECTORIZE_SSSE3</span>)</u></td></tr>
+<tr><th id="189">189</th><td>  <b>return</b> <q>"SSE, SSE2, SSE3, SSSE3"</q>;</td></tr>
+<tr><th id="190">190</th><td><u>#<span data-ppcond="184">elif</span> defined(<a class="macro" href="#74" data-ref="_M/EIGEN_VECTORIZE_SSE3">EIGEN_VECTORIZE_SSE3</a>)</u></td></tr>
+<tr><th id="191">191</th><td>  <b>return</b> <q>"SSE, SSE2, SSE3"</q>;</td></tr>
+<tr><th id="192">192</th><td><u>#<span data-ppcond="184">elif</span> defined(EIGEN_VECTORIZE_SSE2)</u></td></tr>
+<tr><th id="193">193</th><td>  <b>return</b> <q>"SSE, SSE2"</q>;</td></tr>
+<tr><th id="194">194</th><td><u>#elif defined(EIGEN_VECTORIZE_ALTIVEC)</u></td></tr>
+<tr><th id="195">195</th><td>  <b>return</b> <q>"AltiVec"</q>;</td></tr>
+<tr><th id="196">196</th><td><u>#elif defined(EIGEN_VECTORIZE_NEON)</u></td></tr>
+<tr><th id="197">197</th><td>  <b>return</b> <q>"ARM NEON"</q>;</td></tr>
+<tr><th id="198">198</th><td><u>#else</u></td></tr>
+<tr><th id="199">199</th><td>  <b>return</b> <q>"None"</q>;</td></tr>
+<tr><th id="200">200</th><td><u>#<span data-ppcond="184">endif</span></u></td></tr>
+<tr><th id="201">201</th><td>}</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="204">204</th><td></td></tr>
+<tr><th id="205">205</th><td><u>#define <dfn class="macro" id="_M/STAGE10_FULL_EIGEN2_API" data-ref="_M/STAGE10_FULL_EIGEN2_API">STAGE10_FULL_EIGEN2_API</dfn>             10</u></td></tr>
+<tr><th id="206">206</th><td><u>#define <dfn class="macro" id="_M/STAGE20_RESOLVE_API_CONFLICTS" data-ref="_M/STAGE20_RESOLVE_API_CONFLICTS">STAGE20_RESOLVE_API_CONFLICTS</dfn>       20</u></td></tr>
+<tr><th id="207">207</th><td><u>#define <dfn class="macro" id="_M/STAGE30_FULL_EIGEN3_API" data-ref="_M/STAGE30_FULL_EIGEN3_API">STAGE30_FULL_EIGEN3_API</dfn>             30</u></td></tr>
+<tr><th id="208">208</th><td><u>#define <dfn class="macro" id="_M/STAGE40_FULL_EIGEN3_STRICTNESS" data-ref="_M/STAGE40_FULL_EIGEN3_STRICTNESS">STAGE40_FULL_EIGEN3_STRICTNESS</dfn>      40</u></td></tr>
+<tr><th id="209">209</th><td><u>#define <dfn class="macro" id="_M/STAGE99_NO_EIGEN2_SUPPORT" data-ref="_M/STAGE99_NO_EIGEN2_SUPPORT">STAGE99_NO_EIGEN2_SUPPORT</dfn>           99</u></td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td><u>#<span data-ppcond="211">if</span>   defined <span class="macro" data-ref="_M/EIGEN2_SUPPORT_STAGE40_FULL_EIGEN3_STRICTNESS">EIGEN2_SUPPORT_STAGE40_FULL_EIGEN3_STRICTNESS</span></u></td></tr>
+<tr><th id="212">212</th><td>  <u>#define EIGEN2_SUPPORT</u></td></tr>
+<tr><th id="213">213</th><td>  <u>#define EIGEN2_SUPPORT_STAGE STAGE40_FULL_EIGEN3_STRICTNESS</u></td></tr>
+<tr><th id="214">214</th><td><u>#elif defined <span class="macro" data-ref="_M/EIGEN2_SUPPORT_STAGE30_FULL_EIGEN3_API">EIGEN2_SUPPORT_STAGE30_FULL_EIGEN3_API</span></u></td></tr>
+<tr><th id="215">215</th><td>  <u>#define EIGEN2_SUPPORT</u></td></tr>
+<tr><th id="216">216</th><td>  <u>#define EIGEN2_SUPPORT_STAGE STAGE30_FULL_EIGEN3_API</u></td></tr>
+<tr><th id="217">217</th><td><u>#elif defined <span class="macro" data-ref="_M/EIGEN2_SUPPORT_STAGE20_RESOLVE_API_CONFLICTS">EIGEN2_SUPPORT_STAGE20_RESOLVE_API_CONFLICTS</span></u></td></tr>
+<tr><th id="218">218</th><td>  <u>#define EIGEN2_SUPPORT</u></td></tr>
+<tr><th id="219">219</th><td>  <u>#define EIGEN2_SUPPORT_STAGE STAGE20_RESOLVE_API_CONFLICTS</u></td></tr>
+<tr><th id="220">220</th><td><u>#elif defined <span class="macro" data-ref="_M/EIGEN2_SUPPORT_STAGE10_FULL_EIGEN2_API">EIGEN2_SUPPORT_STAGE10_FULL_EIGEN2_API</span></u></td></tr>
+<tr><th id="221">221</th><td>  <u>#define EIGEN2_SUPPORT</u></td></tr>
+<tr><th id="222">222</th><td>  <u>#define EIGEN2_SUPPORT_STAGE STAGE10_FULL_EIGEN2_API</u></td></tr>
+<tr><th id="223">223</th><td><u>#elif defined <span class="macro" data-ref="_M/EIGEN2_SUPPORT">EIGEN2_SUPPORT</span></u></td></tr>
+<tr><th id="224">224</th><td>  <i>// default to stage 3, that's what it's always meant</i></td></tr>
+<tr><th id="225">225</th><td>  <u>#define EIGEN2_SUPPORT_STAGE30_FULL_EIGEN3_API</u></td></tr>
+<tr><th id="226">226</th><td>  <u>#define EIGEN2_SUPPORT_STAGE STAGE30_FULL_EIGEN3_API</u></td></tr>
+<tr><th id="227">227</th><td><u>#<span data-ppcond="211">else</span></u></td></tr>
+<tr><th id="228">228</th><td>  <u>#define <dfn class="macro" id="_M/EIGEN2_SUPPORT_STAGE" data-ref="_M/EIGEN2_SUPPORT_STAGE">EIGEN2_SUPPORT_STAGE</dfn> STAGE99_NO_EIGEN2_SUPPORT</u></td></tr>
+<tr><th id="229">229</th><td><u>#<span data-ppcond="211">endif</span></u></td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td><u>#<span data-ppcond="231">ifdef</span> <span class="macro" data-ref="_M/EIGEN2_SUPPORT">EIGEN2_SUPPORT</span></u></td></tr>
+<tr><th id="232">232</th><td><u>#undef minor</u></td></tr>
+<tr><th id="233">233</th><td><u>#<span data-ppcond="231">endif</span></u></td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td><i>// we use size_t frequently and we'll never remember to prepend it with std:: everytime just to</i></td></tr>
+<tr><th id="236">236</th><td><i>// ensure QNX/QCC support</i></td></tr>
+<tr><th id="237">237</th><td><b>using</b> <span class="namespace">std::</span>size_t;</td></tr>
+<tr><th id="238">238</th><td><i>// gcc 4.6.0 wants std:: for ptrdiff_t </i></td></tr>
+<tr><th id="239">239</th><td><b>using</b> <span class="namespace">std::</span>ptrdiff_t;</td></tr>
+<tr><th id="240">240</th><td></td></tr>
+<tr><th id="241">241</th><td><i class="doc">/** <span class="command">\defgroup</span> <span class="verb">Core_Module Core module</span></i></td></tr>
+<tr><th id="242">242</th><td><i class="doc">  * This is the main module of Eigen providing dense matrix and vector support</i></td></tr>
+<tr><th id="243">243</th><td><i class="doc">  * (both fixed and dynamic size) with all the features corresponding to a BLAS library</i></td></tr>
+<tr><th id="244">244</th><td><i class="doc">  * and much more...</i></td></tr>
+<tr><th id="245">245</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="246">246</th><td><i class="doc">  * <span class="command">\code</span></i></td></tr>
+<tr><th id="247">247</th><td><i class="doc">  *<span class="verb"> #include &lt;Eigen/Core&gt;</span></i></td></tr>
+<tr><th id="248">248</th><td><i class="doc"><span class="verb"></span>  * \endcode</i></td></tr>
+<tr><th id="249">249</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td><u>#include <a href="src/Core/util/Constants.h.html">"src/Core/util/Constants.h"</a></u></td></tr>
+<tr><th id="252">252</th><td><u>#include <a href="src/Core/util/ForwardDeclarations.h.html">"src/Core/util/ForwardDeclarations.h"</a></u></td></tr>
+<tr><th id="253">253</th><td><u>#include <a href="src/Core/util/Meta.h.html">"src/Core/util/Meta.h"</a></u></td></tr>
+<tr><th id="254">254</th><td><u>#include <a href="src/Core/util/StaticAssert.h.html">"src/Core/util/StaticAssert.h"</a></u></td></tr>
+<tr><th id="255">255</th><td><u>#include <a href="src/Core/util/XprHelper.h.html">"src/Core/util/XprHelper.h"</a></u></td></tr>
+<tr><th id="256">256</th><td><u>#include <a href="src/Core/util/Memory.h.html">"src/Core/util/Memory.h"</a></u></td></tr>
+<tr><th id="257">257</th><td></td></tr>
+<tr><th id="258">258</th><td><u>#include <a href="src/Core/NumTraits.h.html">"src/Core/NumTraits.h"</a></u></td></tr>
+<tr><th id="259">259</th><td><u>#include <a href="src/Core/MathFunctions.h.html">"src/Core/MathFunctions.h"</a></u></td></tr>
+<tr><th id="260">260</th><td><u>#include <a href="src/Core/GenericPacketMath.h.html">"src/Core/GenericPacketMath.h"</a></u></td></tr>
+<tr><th id="261">261</th><td></td></tr>
+<tr><th id="262">262</th><td><u>#<span data-ppcond="262">if</span> defined <a class="macro" href="#66" data-ref="_M/EIGEN_VECTORIZE_SSE">EIGEN_VECTORIZE_SSE</a></u></td></tr>
+<tr><th id="263">263</th><td>  <u>#include <a href="src/Core/arch/SSE/PacketMath.h.html">"src/Core/arch/SSE/PacketMath.h"</a></u></td></tr>
+<tr><th id="264">264</th><td>  <u>#include <a href="src/Core/arch/SSE/MathFunctions.h.html">"src/Core/arch/SSE/MathFunctions.h"</a></u></td></tr>
+<tr><th id="265">265</th><td>  <u>#include <a href="src/Core/arch/SSE/Complex.h.html">"src/Core/arch/SSE/Complex.h"</a></u></td></tr>
+<tr><th id="266">266</th><td><u>#<span data-ppcond="262">elif</span> defined EIGEN_VECTORIZE_ALTIVEC</u></td></tr>
+<tr><th id="267">267</th><td>  <u>#include "src/Core/arch/AltiVec/PacketMath.h"</u></td></tr>
+<tr><th id="268">268</th><td>  <u>#include "src/Core/arch/AltiVec/Complex.h"</u></td></tr>
+<tr><th id="269">269</th><td><u>#elif defined EIGEN_VECTORIZE_NEON</u></td></tr>
+<tr><th id="270">270</th><td>  <u>#include "src/Core/arch/NEON/PacketMath.h"</u></td></tr>
+<tr><th id="271">271</th><td>  <u>#include "src/Core/arch/NEON/Complex.h"</u></td></tr>
+<tr><th id="272">272</th><td><u>#<span data-ppcond="262">endif</span></u></td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td><u>#include <a href="src/Core/arch/Default/Settings.h.html">"src/Core/arch/Default/Settings.h"</a></u></td></tr>
+<tr><th id="275">275</th><td></td></tr>
+<tr><th id="276">276</th><td><u>#include <a href="src/Core/Functors.h.html">"src/Core/Functors.h"</a></u></td></tr>
+<tr><th id="277">277</th><td><u>#include <a href="src/Core/DenseCoeffsBase.h.html">"src/Core/DenseCoeffsBase.h"</a></u></td></tr>
+<tr><th id="278">278</th><td><u>#include <a href="src/Core/DenseBase.h.html">"src/Core/DenseBase.h"</a></u></td></tr>
+<tr><th id="279">279</th><td><u>#include <a href="src/Core/MatrixBase.h.html">"src/Core/MatrixBase.h"</a></u></td></tr>
+<tr><th id="280">280</th><td><u>#include <a href="src/Core/EigenBase.h.html">"src/Core/EigenBase.h"</a></u></td></tr>
+<tr><th id="281">281</th><td></td></tr>
+<tr><th id="282">282</th><td><u>#<span data-ppcond="282">ifndef</span> <span class="macro" data-ref="_M/EIGEN_PARSED_BY_DOXYGEN">EIGEN_PARSED_BY_DOXYGEN</span> // work around Doxygen bug triggered by Assign.h r814874</u></td></tr>
+<tr><th id="283">283</th><td>                                <i>// at least confirmed with Doxygen 1.5.5 and 1.5.6</i></td></tr>
+<tr><th id="284">284</th><td>  <u>#include <a href="src/Core/Assign.h.html">"src/Core/Assign.h"</a></u></td></tr>
+<tr><th id="285">285</th><td><u>#<span data-ppcond="282">endif</span></u></td></tr>
+<tr><th id="286">286</th><td></td></tr>
+<tr><th id="287">287</th><td><u>#include <a href="src/Core/util/BlasUtil.h.html">"src/Core/util/BlasUtil.h"</a></u></td></tr>
+<tr><th id="288">288</th><td><u>#include <a href="src/Core/DenseStorage.h.html">"src/Core/DenseStorage.h"</a></u></td></tr>
+<tr><th id="289">289</th><td><u>#include <a href="src/Core/NestByValue.h.html">"src/Core/NestByValue.h"</a></u></td></tr>
+<tr><th id="290">290</th><td><u>#include <a href="src/Core/ForceAlignedAccess.h.html">"src/Core/ForceAlignedAccess.h"</a></u></td></tr>
+<tr><th id="291">291</th><td><u>#include <a href="src/Core/ReturnByValue.h.html">"src/Core/ReturnByValue.h"</a></u></td></tr>
+<tr><th id="292">292</th><td><u>#include <a href="src/Core/NoAlias.h.html">"src/Core/NoAlias.h"</a></u></td></tr>
+<tr><th id="293">293</th><td><u>#include <a href="src/Core/PlainObjectBase.h.html">"src/Core/PlainObjectBase.h"</a></u></td></tr>
+<tr><th id="294">294</th><td><u>#include <a href="src/Core/Matrix.h.html">"src/Core/Matrix.h"</a></u></td></tr>
+<tr><th id="295">295</th><td><u>#include <a href="src/Core/Array.h.html">"src/Core/Array.h"</a></u></td></tr>
+<tr><th id="296">296</th><td><u>#include <a href="src/Core/CwiseBinaryOp.h.html">"src/Core/CwiseBinaryOp.h"</a></u></td></tr>
+<tr><th id="297">297</th><td><u>#include <a href="src/Core/CwiseUnaryOp.h.html">"src/Core/CwiseUnaryOp.h"</a></u></td></tr>
+<tr><th id="298">298</th><td><u>#include <a href="src/Core/CwiseNullaryOp.h.html">"src/Core/CwiseNullaryOp.h"</a></u></td></tr>
+<tr><th id="299">299</th><td><u>#include <a href="src/Core/CwiseUnaryView.h.html">"src/Core/CwiseUnaryView.h"</a></u></td></tr>
+<tr><th id="300">300</th><td><u>#include <a href="src/Core/SelfCwiseBinaryOp.h.html">"src/Core/SelfCwiseBinaryOp.h"</a></u></td></tr>
+<tr><th id="301">301</th><td><u>#include <a href="src/Core/Dot.h.html">"src/Core/Dot.h"</a></u></td></tr>
+<tr><th id="302">302</th><td><u>#include <a href="src/Core/StableNorm.h.html">"src/Core/StableNorm.h"</a></u></td></tr>
+<tr><th id="303">303</th><td><u>#include <a href="src/Core/MapBase.h.html">"src/Core/MapBase.h"</a></u></td></tr>
+<tr><th id="304">304</th><td><u>#include <a href="src/Core/Stride.h.html">"src/Core/Stride.h"</a></u></td></tr>
+<tr><th id="305">305</th><td><u>#include <a href="src/Core/Map.h.html">"src/Core/Map.h"</a></u></td></tr>
+<tr><th id="306">306</th><td><u>#include <a href="src/Core/Block.h.html">"src/Core/Block.h"</a></u></td></tr>
+<tr><th id="307">307</th><td><u>#include <a href="src/Core/VectorBlock.h.html">"src/Core/VectorBlock.h"</a></u></td></tr>
+<tr><th id="308">308</th><td><u>#include <a href="src/Core/Ref.h.html">"src/Core/Ref.h"</a></u></td></tr>
+<tr><th id="309">309</th><td><u>#include <a href="src/Core/Transpose.h.html">"src/Core/Transpose.h"</a></u></td></tr>
+<tr><th id="310">310</th><td><u>#include <a href="src/Core/DiagonalMatrix.h.html">"src/Core/DiagonalMatrix.h"</a></u></td></tr>
+<tr><th id="311">311</th><td><u>#include <a href="src/Core/Diagonal.h.html">"src/Core/Diagonal.h"</a></u></td></tr>
+<tr><th id="312">312</th><td><u>#include <a href="src/Core/DiagonalProduct.h.html">"src/Core/DiagonalProduct.h"</a></u></td></tr>
+<tr><th id="313">313</th><td><u>#include <a href="src/Core/PermutationMatrix.h.html">"src/Core/PermutationMatrix.h"</a></u></td></tr>
+<tr><th id="314">314</th><td><u>#include <a href="src/Core/Transpositions.h.html">"src/Core/Transpositions.h"</a></u></td></tr>
+<tr><th id="315">315</th><td><u>#include <a href="src/Core/Redux.h.html">"src/Core/Redux.h"</a></u></td></tr>
+<tr><th id="316">316</th><td><u>#include <a href="src/Core/Visitor.h.html">"src/Core/Visitor.h"</a></u></td></tr>
+<tr><th id="317">317</th><td><u>#include <a href="src/Core/Fuzzy.h.html">"src/Core/Fuzzy.h"</a></u></td></tr>
+<tr><th id="318">318</th><td><u>#include <a href="src/Core/IO.h.html">"src/Core/IO.h"</a></u></td></tr>
+<tr><th id="319">319</th><td><u>#include <a href="src/Core/Swap.h.html">"src/Core/Swap.h"</a></u></td></tr>
+<tr><th id="320">320</th><td><u>#include <a href="src/Core/CommaInitializer.h.html">"src/Core/CommaInitializer.h"</a></u></td></tr>
+<tr><th id="321">321</th><td><u>#include <a href="src/Core/Flagged.h.html">"src/Core/Flagged.h"</a></u></td></tr>
+<tr><th id="322">322</th><td><u>#include <a href="src/Core/ProductBase.h.html">"src/Core/ProductBase.h"</a></u></td></tr>
+<tr><th id="323">323</th><td><u>#include <a href="src/Core/GeneralProduct.h.html">"src/Core/GeneralProduct.h"</a></u></td></tr>
+<tr><th id="324">324</th><td><u>#include <a href="src/Core/TriangularMatrix.h.html">"src/Core/TriangularMatrix.h"</a></u></td></tr>
+<tr><th id="325">325</th><td><u>#include <a href="src/Core/SelfAdjointView.h.html">"src/Core/SelfAdjointView.h"</a></u></td></tr>
+<tr><th id="326">326</th><td><u>#include <a href="src/Core/products/GeneralBlockPanelKernel.h.html">"src/Core/products/GeneralBlockPanelKernel.h"</a></u></td></tr>
+<tr><th id="327">327</th><td><u>#include <a href="src/Core/products/Parallelizer.h.html">"src/Core/products/Parallelizer.h"</a></u></td></tr>
+<tr><th id="328">328</th><td><u>#include <a href="src/Core/products/CoeffBasedProduct.h.html">"src/Core/products/CoeffBasedProduct.h"</a></u></td></tr>
+<tr><th id="329">329</th><td><u>#include <a href="src/Core/products/GeneralMatrixVector.h.html">"src/Core/products/GeneralMatrixVector.h"</a></u></td></tr>
+<tr><th id="330">330</th><td><u>#include <a href="src/Core/products/GeneralMatrixMatrix.h.html">"src/Core/products/GeneralMatrixMatrix.h"</a></u></td></tr>
+<tr><th id="331">331</th><td><u>#include <a href="src/Core/SolveTriangular.h.html">"src/Core/SolveTriangular.h"</a></u></td></tr>
+<tr><th id="332">332</th><td><u>#include <a href="src/Core/products/GeneralMatrixMatrixTriangular.h.html">"src/Core/products/GeneralMatrixMatrixTriangular.h"</a></u></td></tr>
+<tr><th id="333">333</th><td><u>#include <a href="src/Core/products/SelfadjointMatrixVector.h.html">"src/Core/products/SelfadjointMatrixVector.h"</a></u></td></tr>
+<tr><th id="334">334</th><td><u>#include <a href="src/Core/products/SelfadjointMatrixMatrix.h.html">"src/Core/products/SelfadjointMatrixMatrix.h"</a></u></td></tr>
+<tr><th id="335">335</th><td><u>#include <a href="src/Core/products/SelfadjointProduct.h.html">"src/Core/products/SelfadjointProduct.h"</a></u></td></tr>
+<tr><th id="336">336</th><td><u>#include <a href="src/Core/products/SelfadjointRank2Update.h.html">"src/Core/products/SelfadjointRank2Update.h"</a></u></td></tr>
+<tr><th id="337">337</th><td><u>#include <a href="src/Core/products/TriangularMatrixVector.h.html">"src/Core/products/TriangularMatrixVector.h"</a></u></td></tr>
+<tr><th id="338">338</th><td><u>#include <a href="src/Core/products/TriangularMatrixMatrix.h.html">"src/Core/products/TriangularMatrixMatrix.h"</a></u></td></tr>
+<tr><th id="339">339</th><td><u>#include <a href="src/Core/products/TriangularSolverMatrix.h.html">"src/Core/products/TriangularSolverMatrix.h"</a></u></td></tr>
+<tr><th id="340">340</th><td><u>#include <a href="src/Core/products/TriangularSolverVector.h.html">"src/Core/products/TriangularSolverVector.h"</a></u></td></tr>
+<tr><th id="341">341</th><td><u>#include <a href="src/Core/BandMatrix.h.html">"src/Core/BandMatrix.h"</a></u></td></tr>
+<tr><th id="342">342</th><td><u>#include <a href="src/Core/CoreIterators.h.html">"src/Core/CoreIterators.h"</a></u></td></tr>
+<tr><th id="343">343</th><td></td></tr>
+<tr><th id="344">344</th><td><u>#include <a href="src/Core/BooleanRedux.h.html">"src/Core/BooleanRedux.h"</a></u></td></tr>
+<tr><th id="345">345</th><td><u>#include <a href="src/Core/Select.h.html">"src/Core/Select.h"</a></u></td></tr>
+<tr><th id="346">346</th><td><u>#include <a href="src/Core/VectorwiseOp.h.html">"src/Core/VectorwiseOp.h"</a></u></td></tr>
+<tr><th id="347">347</th><td><u>#include <a href="src/Core/Random.h.html">"src/Core/Random.h"</a></u></td></tr>
+<tr><th id="348">348</th><td><u>#include <a href="src/Core/Replicate.h.html">"src/Core/Replicate.h"</a></u></td></tr>
+<tr><th id="349">349</th><td><u>#include <a href="src/Core/Reverse.h.html">"src/Core/Reverse.h"</a></u></td></tr>
+<tr><th id="350">350</th><td><u>#include <a href="src/Core/ArrayBase.h.html">"src/Core/ArrayBase.h"</a></u></td></tr>
+<tr><th id="351">351</th><td><u>#include <a href="src/Core/ArrayWrapper.h.html">"src/Core/ArrayWrapper.h"</a></u></td></tr>
+<tr><th id="352">352</th><td></td></tr>
+<tr><th id="353">353</th><td><u>#<span data-ppcond="353">ifdef</span> <span class="macro" data-ref="_M/EIGEN_USE_BLAS">EIGEN_USE_BLAS</span></u></td></tr>
+<tr><th id="354">354</th><td><u>#include "src/Core/products/GeneralMatrixMatrix_MKL.h"</u></td></tr>
+<tr><th id="355">355</th><td><u>#include "src/Core/products/GeneralMatrixVector_MKL.h"</u></td></tr>
+<tr><th id="356">356</th><td><u>#include "src/Core/products/GeneralMatrixMatrixTriangular_MKL.h"</u></td></tr>
+<tr><th id="357">357</th><td><u>#include "src/Core/products/SelfadjointMatrixMatrix_MKL.h"</u></td></tr>
+<tr><th id="358">358</th><td><u>#include "src/Core/products/SelfadjointMatrixVector_MKL.h"</u></td></tr>
+<tr><th id="359">359</th><td><u>#include "src/Core/products/TriangularMatrixMatrix_MKL.h"</u></td></tr>
+<tr><th id="360">360</th><td><u>#include "src/Core/products/TriangularMatrixVector_MKL.h"</u></td></tr>
+<tr><th id="361">361</th><td><u>#include "src/Core/products/TriangularSolverMatrix_MKL.h"</u></td></tr>
+<tr><th id="362">362</th><td><u>#<span data-ppcond="353">endif</span> // EIGEN_USE_BLAS</u></td></tr>
+<tr><th id="363">363</th><td></td></tr>
+<tr><th id="364">364</th><td><u>#<span data-ppcond="364">ifdef</span> <span class="macro" data-ref="_M/EIGEN_USE_MKL_VML">EIGEN_USE_MKL_VML</span></u></td></tr>
+<tr><th id="365">365</th><td><u>#include "src/Core/Assign_MKL.h"</u></td></tr>
+<tr><th id="366">366</th><td><u>#<span data-ppcond="364">endif</span></u></td></tr>
+<tr><th id="367">367</th><td></td></tr>
+<tr><th id="368">368</th><td><u>#include <a href="src/Core/GlobalFunctions.h.html">"src/Core/GlobalFunctions.h"</a></u></td></tr>
+<tr><th id="369">369</th><td></td></tr>
+<tr><th id="370">370</th><td><u>#include <a href="src/Core/util/ReenableStupidWarnings.h.html">"src/Core/util/ReenableStupidWarnings.h"</a></u></td></tr>
+<tr><th id="371">371</th><td></td></tr>
+<tr><th id="372">372</th><td><u>#<span data-ppcond="372">ifdef</span> <span class="macro" data-ref="_M/EIGEN2_SUPPORT">EIGEN2_SUPPORT</span></u></td></tr>
+<tr><th id="373">373</th><td><u>#include "Eigen2Support"</u></td></tr>
+<tr><th id="374">374</th><td><u>#<span data-ppcond="372">endif</span></u></td></tr>
+<tr><th id="375">375</th><td></td></tr>
+<tr><th id="376">376</th><td><u>#<span data-ppcond="11">endif</span> // EIGEN_CORE_H</u></td></tr>
+<tr><th id="377">377</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../opencv/modules/calib3d/src/calibinit.cpp.html'>opencv/modules/calib3d/src/calibinit.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

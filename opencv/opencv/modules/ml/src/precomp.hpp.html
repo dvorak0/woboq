@@ -1,0 +1,391 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>precomp.hpp source code [opencv/modules/ml/src/precomp.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="CvSparseVecElem32f,cv::DTreeBestSplitFinder,cv::ForestTreeBestSplitFinder "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/ml/src/precomp.hpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>ml</a>/<a href='./'>src</a>/<a href='precomp.hpp.html'>precomp.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                        Intel License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//</i></td></tr>
+<tr><th id="12">12</th><td><i>// Copyright (C) 2000, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="13">13</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="14">14</th><td><i>//</i></td></tr>
+<tr><th id="15">15</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="16">16</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="17">17</th><td><i>//</i></td></tr>
+<tr><th id="18">18</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="19">19</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="20">20</th><td><i>//</i></td></tr>
+<tr><th id="21">21</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="22">22</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="23">23</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="24">24</th><td><i>//</i></td></tr>
+<tr><th id="25">25</th><td><i>//   * The name of Intel Corporation may not be used to endorse or promote products</i></td></tr>
+<tr><th id="26">26</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="27">27</th><td><i>//</i></td></tr>
+<tr><th id="28">28</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="29">29</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="30">30</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="31">31</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="32">32</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="33">33</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="34">34</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="35">35</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="36">36</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="37">37</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="38">38</th><td><i>//</i></td></tr>
+<tr><th id="39">39</th><td><i>//M*/</i></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><u>#<span data-ppcond="41">ifndef</span> <span class="macro" data-ref="_M/__OPENCV_PRECOMP_H__">__OPENCV_PRECOMP_H__</span></u></td></tr>
+<tr><th id="42">42</th><td><u>#define <dfn class="macro" id="_M/__OPENCV_PRECOMP_H__" data-ref="_M/__OPENCV_PRECOMP_H__">__OPENCV_PRECOMP_H__</dfn></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="../../../cvconfig.h.html">"cvconfig.h"</a></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><u>#include <a href="../include/opencv2/ml/ml.hpp.html">"opencv2/ml/ml.hpp"</a></u></td></tr>
+<tr><th id="47">47</th><td><u>#include <a href="../../core/include/opencv2/core/core_c.h.html">"opencv2/core/core_c.h"</a></u></td></tr>
+<tr><th id="48">48</th><td><u>#include <a href="../../core/include/opencv2/core/internal.hpp.html">"opencv2/core/internal.hpp"</a></u></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><u>#include <a href="../../../../include/assert.h.html">&lt;assert.h&gt;</a></u></td></tr>
+<tr><th id="51">51</th><td><u>#include &lt;float.h&gt;</u></td></tr>
+<tr><th id="52">52</th><td><u>#include &lt;limits.h&gt;</u></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="../../../../include/math.h.html">&lt;math.h&gt;</a></u></td></tr>
+<tr><th id="54">54</th><td><u>#include <a href="../../../../include/stdlib.h.html">&lt;stdlib.h&gt;</a></u></td></tr>
+<tr><th id="55">55</th><td><u>#include <a href="../../../../include/stdio.h.html">&lt;stdio.h&gt;</a></u></td></tr>
+<tr><th id="56">56</th><td><u>#include <a href="../../../../include/string.h.html">&lt;string.h&gt;</a></u></td></tr>
+<tr><th id="57">57</th><td><u>#include <a href="../../../../include/time.h.html">&lt;time.h&gt;</a></u></td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><u>#define <dfn class="macro" id="_M/ML_IMPL" data-ref="_M/ML_IMPL">ML_IMPL</dfn> CV_IMPL</u></td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td><u>#define <dfn class="macro" id="_M/CV_MAT_ELEM_FLAG" data-ref="_M/CV_MAT_ELEM_FLAG">CV_MAT_ELEM_FLAG</dfn>( mat, type, comp, vect, tflag )    \</u></td></tr>
+<tr><th id="62">62</th><td><u>    (( tflag == CV_ROW_SAMPLE )                             \</u></td></tr>
+<tr><th id="63">63</th><td><u>    ? (CV_MAT_ELEM( mat, type, comp, vect ))                \</u></td></tr>
+<tr><th id="64">64</th><td><u>    : (CV_MAT_ELEM( mat, type, vect, comp )))</u></td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td><i>/* Convert matrix to vector */</i></td></tr>
+<tr><th id="67">67</th><td><u>#define <dfn class="macro" id="_M/ICV_MAT2VEC" data-ref="_M/ICV_MAT2VEC">ICV_MAT2VEC</dfn>( mat, vdata, vstep, num )      \</u></td></tr>
+<tr><th id="68">68</th><td><u>    if( MIN( (mat).rows, (mat).cols ) != 1 )       \</u></td></tr>
+<tr><th id="69">69</th><td><u>        CV_ERROR( CV_StsBadArg, "" );              \</u></td></tr>
+<tr><th id="70">70</th><td><u>    (vdata) = ((mat).data.ptr);                    \</u></td></tr>
+<tr><th id="71">71</th><td><u>    if( (mat).rows == 1 )                          \</u></td></tr>
+<tr><th id="72">72</th><td><u>    {                                              \</u></td></tr>
+<tr><th id="73">73</th><td><u>        (vstep) = CV_ELEM_SIZE( (mat).type );      \</u></td></tr>
+<tr><th id="74">74</th><td><u>        (num) = (mat).cols;                        \</u></td></tr>
+<tr><th id="75">75</th><td><u>    }                                              \</u></td></tr>
+<tr><th id="76">76</th><td><u>    else                                           \</u></td></tr>
+<tr><th id="77">77</th><td><u>    {                                              \</u></td></tr>
+<tr><th id="78">78</th><td><u>        (vstep) = (mat).step;                      \</u></td></tr>
+<tr><th id="79">79</th><td><u>        (num) = (mat).rows;                        \</u></td></tr>
+<tr><th id="80">80</th><td><u>    }</u></td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><i>/* get raw data */</i></td></tr>
+<tr><th id="83">83</th><td><u>#define <dfn class="macro" id="_M/ICV_RAWDATA" data-ref="_M/ICV_RAWDATA">ICV_RAWDATA</dfn>( mat, flags, rdata, sstep, cstep, m, n )         \</u></td></tr>
+<tr><th id="84">84</th><td><u>    (rdata) = (mat).data.ptr;                                        \</u></td></tr>
+<tr><th id="85">85</th><td><u>    if( CV_IS_ROW_SAMPLE( flags ) )                                  \</u></td></tr>
+<tr><th id="86">86</th><td><u>    {                                                                \</u></td></tr>
+<tr><th id="87">87</th><td><u>        (sstep) = (mat).step;                                        \</u></td></tr>
+<tr><th id="88">88</th><td><u>        (cstep) = CV_ELEM_SIZE( (mat).type );                        \</u></td></tr>
+<tr><th id="89">89</th><td><u>        (m) = (mat).rows;                                            \</u></td></tr>
+<tr><th id="90">90</th><td><u>        (n) = (mat).cols;                                            \</u></td></tr>
+<tr><th id="91">91</th><td><u>    }                                                                \</u></td></tr>
+<tr><th id="92">92</th><td><u>    else                                                             \</u></td></tr>
+<tr><th id="93">93</th><td><u>    {                                                                \</u></td></tr>
+<tr><th id="94">94</th><td><u>        (cstep) = (mat).step;                                        \</u></td></tr>
+<tr><th id="95">95</th><td><u>        (sstep) = CV_ELEM_SIZE( (mat).type );                        \</u></td></tr>
+<tr><th id="96">96</th><td><u>        (n) = (mat).rows;                                            \</u></td></tr>
+<tr><th id="97">97</th><td><u>        (m) = (mat).cols;                                            \</u></td></tr>
+<tr><th id="98">98</th><td><u>    }</u></td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td><u>#define <dfn class="macro" id="_M/ICV_IS_MAT_OF_TYPE" data-ref="_M/ICV_IS_MAT_OF_TYPE">ICV_IS_MAT_OF_TYPE</dfn>( mat, mat_type) \</u></td></tr>
+<tr><th id="101">101</th><td><u>    (CV_IS_MAT( mat ) &amp;&amp; CV_MAT_TYPE( mat-&gt;type ) == (mat_type) &amp;&amp;   \</u></td></tr>
+<tr><th id="102">102</th><td><u>    (mat)-&gt;cols &gt; 0 &amp;&amp; (mat)-&gt;rows &gt; 0)</u></td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td><i>/*</i></td></tr>
+<tr><th id="105">105</th><td><i>    uchar* data; int sstep, cstep;      - trainData-&gt;data</i></td></tr>
+<tr><th id="106">106</th><td><i>    uchar* classes; int clstep; int ncl;- trainClasses</i></td></tr>
+<tr><th id="107">107</th><td><i>    uchar* tmask; int tmstep; int ntm;  - typeMask</i></td></tr>
+<tr><th id="108">108</th><td><i>    uchar* missed;int msstep, mcstep;   -missedMeasurements...</i></td></tr>
+<tr><th id="109">109</th><td><i>    int mm, mn;                         == m,n == size,dim</i></td></tr>
+<tr><th id="110">110</th><td><i>    uchar* sidx;int sistep;             - sampleIdx</i></td></tr>
+<tr><th id="111">111</th><td><i>    uchar* cidx;int cistep;             - compIdx</i></td></tr>
+<tr><th id="112">112</th><td><i>    int k, l;                           == n,m == dim,size (length of cidx, sidx)</i></td></tr>
+<tr><th id="113">113</th><td><i>    int m, n;                           == size,dim</i></td></tr>
+<tr><th id="114">114</th><td><i>*/</i></td></tr>
+<tr><th id="115">115</th><td><u>#define <dfn class="macro" id="_M/ICV_DECLARE_TRAIN_ARGS" data-ref="_M/ICV_DECLARE_TRAIN_ARGS">ICV_DECLARE_TRAIN_ARGS</dfn>()                                                    \</u></td></tr>
+<tr><th id="116">116</th><td><u>    uchar* data;                                                                    \</u></td></tr>
+<tr><th id="117">117</th><td><u>    int sstep, cstep;                                                               \</u></td></tr>
+<tr><th id="118">118</th><td><u>    uchar* classes;                                                                 \</u></td></tr>
+<tr><th id="119">119</th><td><u>    int clstep;                                                                     \</u></td></tr>
+<tr><th id="120">120</th><td><u>    int ncl;                                                                        \</u></td></tr>
+<tr><th id="121">121</th><td><u>    uchar* tmask;                                                                   \</u></td></tr>
+<tr><th id="122">122</th><td><u>    int tmstep;                                                                     \</u></td></tr>
+<tr><th id="123">123</th><td><u>    int ntm;                                                                        \</u></td></tr>
+<tr><th id="124">124</th><td><u>    uchar* missed;                                                                  \</u></td></tr>
+<tr><th id="125">125</th><td><u>    int msstep, mcstep;                                                             \</u></td></tr>
+<tr><th id="126">126</th><td><u>    int mm, mn;                                                                     \</u></td></tr>
+<tr><th id="127">127</th><td><u>    uchar* sidx;                                                                    \</u></td></tr>
+<tr><th id="128">128</th><td><u>    int sistep;                                                                     \</u></td></tr>
+<tr><th id="129">129</th><td><u>    uchar* cidx;                                                                    \</u></td></tr>
+<tr><th id="130">130</th><td><u>    int cistep;                                                                     \</u></td></tr>
+<tr><th id="131">131</th><td><u>    int k, l;                                                                       \</u></td></tr>
+<tr><th id="132">132</th><td><u>    int m, n;                                                                       \</u></td></tr>
+<tr><th id="133">133</th><td><u>                                                                                    \</u></td></tr>
+<tr><th id="134">134</th><td><u>    data = classes = tmask = missed = sidx = cidx = NULL;                           \</u></td></tr>
+<tr><th id="135">135</th><td><u>    sstep = cstep = clstep = ncl = tmstep = ntm = msstep = mcstep = mm = mn = 0;    \</u></td></tr>
+<tr><th id="136">136</th><td><u>    sistep = cistep = k = l = m = n = 0;</u></td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td><u>#define <dfn class="macro" id="_M/ICV_TRAIN_DATA_REQUIRED" data-ref="_M/ICV_TRAIN_DATA_REQUIRED">ICV_TRAIN_DATA_REQUIRED</dfn>( param, flags )                                     \</u></td></tr>
+<tr><th id="139">139</th><td><u>    if( !ICV_IS_MAT_OF_TYPE( (param), CV_32FC1 ) )                                  \</u></td></tr>
+<tr><th id="140">140</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="141">141</th><td><u>        CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );                   \</u></td></tr>
+<tr><th id="142">142</th><td><u>    }                                                                               \</u></td></tr>
+<tr><th id="143">143</th><td><u>    else                                                                            \</u></td></tr>
+<tr><th id="144">144</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="145">145</th><td><u>        ICV_RAWDATA( *(param), (flags), data, sstep, cstep, m, n );                 \</u></td></tr>
+<tr><th id="146">146</th><td><u>        k = n;                                                                      \</u></td></tr>
+<tr><th id="147">147</th><td><u>        l = m;                                                                      \</u></td></tr>
+<tr><th id="148">148</th><td><u>    }</u></td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><u>#define <dfn class="macro" id="_M/ICV_TRAIN_CLASSES_REQUIRED" data-ref="_M/ICV_TRAIN_CLASSES_REQUIRED">ICV_TRAIN_CLASSES_REQUIRED</dfn>( param )                                         \</u></td></tr>
+<tr><th id="151">151</th><td><u>    if( !ICV_IS_MAT_OF_TYPE( (param), CV_32FC1 ) )                                  \</u></td></tr>
+<tr><th id="152">152</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="153">153</th><td><u>        CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );                   \</u></td></tr>
+<tr><th id="154">154</th><td><u>    }                                                                               \</u></td></tr>
+<tr><th id="155">155</th><td><u>    else                                                                            \</u></td></tr>
+<tr><th id="156">156</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="157">157</th><td><u>        ICV_MAT2VEC( *(param), classes, clstep, ncl );                              \</u></td></tr>
+<tr><th id="158">158</th><td><u>        if( m != ncl )                                                              \</u></td></tr>
+<tr><th id="159">159</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="160">160</th><td><u>            CV_ERROR( CV_StsBadArg, "Unmatched sizes" );                            \</u></td></tr>
+<tr><th id="161">161</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="162">162</th><td><u>    }</u></td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td><u>#define <dfn class="macro" id="_M/ICV_ARG_NULL" data-ref="_M/ICV_ARG_NULL">ICV_ARG_NULL</dfn>( param )                                                       \</u></td></tr>
+<tr><th id="165">165</th><td><u>    if( (param) != NULL )                                                           \</u></td></tr>
+<tr><th id="166">166</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="167">167</th><td><u>        CV_ERROR( CV_StsBadArg, #param " parameter must be NULL" );                 \</u></td></tr>
+<tr><th id="168">168</th><td><u>    }</u></td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><u>#define <dfn class="macro" id="_M/ICV_MISSED_MEASUREMENTS_OPTIONAL" data-ref="_M/ICV_MISSED_MEASUREMENTS_OPTIONAL">ICV_MISSED_MEASUREMENTS_OPTIONAL</dfn>( param, flags )                            \</u></td></tr>
+<tr><th id="171">171</th><td><u>    if( param )                                                                     \</u></td></tr>
+<tr><th id="172">172</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="173">173</th><td><u>        if( !ICV_IS_MAT_OF_TYPE( param, CV_8UC1 ) )                                 \</u></td></tr>
+<tr><th id="174">174</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="175">175</th><td><u>            CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );               \</u></td></tr>
+<tr><th id="176">176</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="177">177</th><td><u>        else                                                                        \</u></td></tr>
+<tr><th id="178">178</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="179">179</th><td><u>            ICV_RAWDATA( *(param), (flags), missed, msstep, mcstep, mm, mn );       \</u></td></tr>
+<tr><th id="180">180</th><td><u>            if( mm != m || mn != n )                                                \</u></td></tr>
+<tr><th id="181">181</th><td><u>            {                                                                       \</u></td></tr>
+<tr><th id="182">182</th><td><u>                CV_ERROR( CV_StsBadArg, "Unmatched sizes" );                        \</u></td></tr>
+<tr><th id="183">183</th><td><u>            }                                                                       \</u></td></tr>
+<tr><th id="184">184</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="185">185</th><td><u>    }</u></td></tr>
+<tr><th id="186">186</th><td></td></tr>
+<tr><th id="187">187</th><td><u>#define <dfn class="macro" id="_M/ICV_COMP_IDX_OPTIONAL" data-ref="_M/ICV_COMP_IDX_OPTIONAL">ICV_COMP_IDX_OPTIONAL</dfn>( param )                                              \</u></td></tr>
+<tr><th id="188">188</th><td><u>    if( param )                                                                     \</u></td></tr>
+<tr><th id="189">189</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="190">190</th><td><u>        if( !ICV_IS_MAT_OF_TYPE( param, CV_32SC1 ) )                                \</u></td></tr>
+<tr><th id="191">191</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="192">192</th><td><u>            CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );               \</u></td></tr>
+<tr><th id="193">193</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="194">194</th><td><u>        else                                                                        \</u></td></tr>
+<tr><th id="195">195</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="196">196</th><td><u>            ICV_MAT2VEC( *(param), cidx, cistep, k );                               \</u></td></tr>
+<tr><th id="197">197</th><td><u>            if( k &gt; n )                                                             \</u></td></tr>
+<tr><th id="198">198</th><td><u>                CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );           \</u></td></tr>
+<tr><th id="199">199</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="200">200</th><td><u>    }</u></td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td><u>#define <dfn class="macro" id="_M/ICV_SAMPLE_IDX_OPTIONAL" data-ref="_M/ICV_SAMPLE_IDX_OPTIONAL">ICV_SAMPLE_IDX_OPTIONAL</dfn>( param )                                            \</u></td></tr>
+<tr><th id="203">203</th><td><u>    if( param )                                                                     \</u></td></tr>
+<tr><th id="204">204</th><td><u>    {                                                                               \</u></td></tr>
+<tr><th id="205">205</th><td><u>        if( !ICV_IS_MAT_OF_TYPE( param, CV_32SC1 ) )                                \</u></td></tr>
+<tr><th id="206">206</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="207">207</th><td><u>            CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );               \</u></td></tr>
+<tr><th id="208">208</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="209">209</th><td><u>        else                                                                        \</u></td></tr>
+<tr><th id="210">210</th><td><u>        {                                                                           \</u></td></tr>
+<tr><th id="211">211</th><td><u>            ICV_MAT2VEC( *sampleIdx, sidx, sistep, l );                             \</u></td></tr>
+<tr><th id="212">212</th><td><u>            if( l &gt; m )                                                             \</u></td></tr>
+<tr><th id="213">213</th><td><u>                CV_ERROR( CV_StsBadArg, "Invalid " #param " parameter" );           \</u></td></tr>
+<tr><th id="214">214</th><td><u>        }                                                                           \</u></td></tr>
+<tr><th id="215">215</th><td><u>    }</u></td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td><i>/****************************************************************************************/</i></td></tr>
+<tr><th id="218">218</th><td><u>#define <dfn class="macro" id="_M/ICV_CONVERT_FLOAT_ARRAY_TO_MATRICE" data-ref="_M/ICV_CONVERT_FLOAT_ARRAY_TO_MATRICE">ICV_CONVERT_FLOAT_ARRAY_TO_MATRICE</dfn>( array, matrice )        \</u></td></tr>
+<tr><th id="219">219</th><td><u>{                                                                   \</u></td></tr>
+<tr><th id="220">220</th><td><u>    CvMat a, b;                                                     \</u></td></tr>
+<tr><th id="221">221</th><td><u>    int dims = (matrice)-&gt;cols;                                     \</u></td></tr>
+<tr><th id="222">222</th><td><u>    int nsamples = (matrice)-&gt;rows;                                 \</u></td></tr>
+<tr><th id="223">223</th><td><u>    int type = CV_MAT_TYPE((matrice)-&gt;type);                        \</u></td></tr>
+<tr><th id="224">224</th><td><u>    int i, offset = dims;                                           \</u></td></tr>
+<tr><th id="225">225</th><td><u>                                                                    \</u></td></tr>
+<tr><th id="226">226</th><td><u>    CV_ASSERT( type == CV_32FC1 || type == CV_64FC1 );              \</u></td></tr>
+<tr><th id="227">227</th><td><u>    offset *= ((type == CV_32FC1) ? sizeof(float) : sizeof(double));\</u></td></tr>
+<tr><th id="228">228</th><td><u>                                                                    \</u></td></tr>
+<tr><th id="229">229</th><td><u>    b = cvMat( 1, dims, CV_32FC1 );                                 \</u></td></tr>
+<tr><th id="230">230</th><td><u>    cvGetRow( matrice, &amp;a, 0 );                                     \</u></td></tr>
+<tr><th id="231">231</th><td><u>    for( i = 0; i &lt; nsamples; i++, a.data.ptr += offset )           \</u></td></tr>
+<tr><th id="232">232</th><td><u>    {                                                               \</u></td></tr>
+<tr><th id="233">233</th><td><u>        b.data.fl = (float*)array[i];                               \</u></td></tr>
+<tr><th id="234">234</th><td><u>        CV_CALL( cvConvert( &amp;b, &amp;a ) );                             \</u></td></tr>
+<tr><th id="235">235</th><td><u>    }                                                               \</u></td></tr>
+<tr><th id="236">236</th><td><u>}</u></td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td><i>/****************************************************************************************\</i></td></tr>
+<tr><th id="239">239</th><td><i>*                       Auxiliary functions declarations                                 *</i></td></tr>
+<tr><th id="240">240</th><td><i>\****************************************************************************************/</i></td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td><i>/* Generates a set of classes centers in quantity &lt;num_of_clusters&gt; that are generated as</i></td></tr>
+<tr><th id="243">243</th><td><i>   uniform random vectors in parallelepiped, where &lt;data&gt; is concentrated. Vectors in</i></td></tr>
+<tr><th id="244">244</th><td><i>   &lt;data&gt; should have horizontal orientation. If &lt;centers&gt; != NULL, the function doesn't</i></td></tr>
+<tr><th id="245">245</th><td><i>   allocate any memory and stores generated centers in &lt;centers&gt;, returns &lt;centers&gt;.</i></td></tr>
+<tr><th id="246">246</th><td><i>   If &lt;centers&gt; == NULL, the function allocates memory and creates the matrice. Centers</i></td></tr>
+<tr><th id="247">247</th><td><i>   are supposed to be oriented horizontally. */</i></td></tr>
+<tr><th id="248">248</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="decl" id="_Z31icvGenerateRandomClusterCentersiPK5CvMatiPS_" title='icvGenerateRandomClusterCenters' data-ref="_Z31icvGenerateRandomClusterCentersiPK5CvMatiPS_">icvGenerateRandomClusterCenters</dfn>( <em>int</em> <dfn class="local col1 decl" id="1seed" title='seed' data-type='int' data-ref="1seed">seed</dfn>,</td></tr>
+<tr><th id="249">249</th><td>                                        <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="2data" title='data' data-type='const CvMat *' data-ref="2data">data</dfn>,</td></tr>
+<tr><th id="250">250</th><td>                                        <em>int</em> <dfn class="local col3 decl" id="3num_of_clusters" title='num_of_clusters' data-type='int' data-ref="3num_of_clusters">num_of_clusters</dfn>,</td></tr>
+<tr><th id="251">251</th><td>                                        <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="4centers" title='centers' data-type='CvMat *' data-ref="4centers">centers</dfn> <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>));</td></tr>
+<tr><th id="252">252</th><td></td></tr>
+<tr><th id="253">253</th><td><i>/* Fills the &lt;labels&gt; using &lt;probs&gt; by choosing the maximal probability. Outliers are</i></td></tr>
+<tr><th id="254">254</th><td><i>   fixed by &lt;oulier_tresh&gt; and have cluster label (-1). Function also controls that there</i></td></tr>
+<tr><th id="255">255</th><td><i>   weren't "empty" clusters by filling empty clusters with the maximal probability vector.</i></td></tr>
+<tr><th id="256">256</th><td><i>   If probs_sums != NULL, filles it with the sums of probabilities for each sample (it is</i></td></tr>
+<tr><th id="257">257</th><td><i>   useful for normalizing probabilities' matrice of FCM) */</i></td></tr>
+<tr><th id="258">258</th><td><em>void</em> <dfn class="decl" id="_Z20icvFindClusterLabelsPK5CvMatffS1_" title='icvFindClusterLabels' data-ref="_Z20icvFindClusterLabelsPK5CvMatffS1_">icvFindClusterLabels</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="5probs" title='probs' data-type='const CvMat *' data-ref="5probs">probs</dfn>, <em>float</em> <dfn class="local col6 decl" id="6outlier_thresh" title='outlier_thresh' data-type='float' data-ref="6outlier_thresh">outlier_thresh</dfn>, <em>float</em> <dfn class="local col7 decl" id="7r" title='r' data-type='float' data-ref="7r">r</dfn>,</td></tr>
+<tr><th id="259">259</th><td>                           <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="8labels" title='labels' data-type='const CvMat *' data-ref="8labels">labels</dfn> );</td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvSparseVecElem32f" title='CvSparseVecElem32f' data-ref="CvSparseVecElem32f"><a class="type" href="#CvSparseVecElem32f" title='CvSparseVecElem32f' data-ref="CvSparseVecElem32f">CvSparseVecElem32f</a></dfn></td></tr>
+<tr><th id="262">262</th><td>{</td></tr>
+<tr><th id="263">263</th><td>    <em>int</em> <dfn class="decl" id="CvSparseVecElem32f::idx" title='CvSparseVecElem32f::idx' data-ref="CvSparseVecElem32f::idx">idx</dfn>;</td></tr>
+<tr><th id="264">264</th><td>    <em>float</em> <dfn class="decl" id="CvSparseVecElem32f::val" title='CvSparseVecElem32f::val' data-ref="CvSparseVecElem32f::val">val</dfn>;</td></tr>
+<tr><th id="265">265</th><td>}</td></tr>
+<tr><th id="266">266</th><td><dfn class="typedef" id="CvSparseVecElem32f" title='CvSparseVecElem32f' data-type='struct CvSparseVecElem32f' data-ref="CvSparseVecElem32f">CvSparseVecElem32f</dfn>;</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td><i>/* Prepare training data and related parameters */</i></td></tr>
+<tr><th id="269">269</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_DEFRAGMENT_TRAIN_DATA" data-ref="_M/CV_TRAIN_STATMODEL_DEFRAGMENT_TRAIN_DATA">CV_TRAIN_STATMODEL_DEFRAGMENT_TRAIN_DATA</dfn>    1</u></td></tr>
+<tr><th id="270">270</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_SAMPLES_AS_ROWS" data-ref="_M/CV_TRAIN_STATMODEL_SAMPLES_AS_ROWS">CV_TRAIN_STATMODEL_SAMPLES_AS_ROWS</dfn>          2</u></td></tr>
+<tr><th id="271">271</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_SAMPLES_AS_COLUMNS" data-ref="_M/CV_TRAIN_STATMODEL_SAMPLES_AS_COLUMNS">CV_TRAIN_STATMODEL_SAMPLES_AS_COLUMNS</dfn>       4</u></td></tr>
+<tr><th id="272">272</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_CATEGORICAL_RESPONSE" data-ref="_M/CV_TRAIN_STATMODEL_CATEGORICAL_RESPONSE">CV_TRAIN_STATMODEL_CATEGORICAL_RESPONSE</dfn>     8</u></td></tr>
+<tr><th id="273">273</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_ORDERED_RESPONSE" data-ref="_M/CV_TRAIN_STATMODEL_ORDERED_RESPONSE">CV_TRAIN_STATMODEL_ORDERED_RESPONSE</dfn>         16</u></td></tr>
+<tr><th id="274">274</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_RESPONSES_ON_OUTPUT" data-ref="_M/CV_TRAIN_STATMODEL_RESPONSES_ON_OUTPUT">CV_TRAIN_STATMODEL_RESPONSES_ON_OUTPUT</dfn>      32</u></td></tr>
+<tr><th id="275">275</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_ALWAYS_COPY_TRAIN_DATA" data-ref="_M/CV_TRAIN_STATMODEL_ALWAYS_COPY_TRAIN_DATA">CV_TRAIN_STATMODEL_ALWAYS_COPY_TRAIN_DATA</dfn>   64</u></td></tr>
+<tr><th id="276">276</th><td><u>#define <dfn class="macro" id="_M/CV_TRAIN_STATMODEL_SPARSE_AS_SPARSE" data-ref="_M/CV_TRAIN_STATMODEL_SPARSE_AS_SPARSE">CV_TRAIN_STATMODEL_SPARSE_AS_SPARSE</dfn>         128</u></td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td><em>int</em></td></tr>
+<tr><th id="279">279</th><td><dfn class="decl" id="_Z18cvPrepareTrainDataPKcPK5CvMatiS3_iS3_S3_bPPPKfPiS8_S8_PPS1_SA_SA_SA_" title='cvPrepareTrainData' data-ref="_Z18cvPrepareTrainDataPKcPK5CvMatiS3_iS3_S3_bPPPKfPiS8_S8_PPS1_SA_SA_SA_">cvPrepareTrainData</dfn>( <em>const</em> <em>char</em>* <i>/*funcname*/</i>,</td></tr>
+<tr><th id="280">280</th><td>                    <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="9train_data" title='train_data' data-type='const CvMat *' data-ref="9train_data">train_data</dfn>, <em>int</em> <dfn class="local col0 decl" id="10tflag" title='tflag' data-type='int' data-ref="10tflag">tflag</dfn>,</td></tr>
+<tr><th id="281">281</th><td>                    <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="11responses" title='responses' data-type='const CvMat *' data-ref="11responses">responses</dfn>, <em>int</em> <dfn class="local col2 decl" id="12response_type" title='response_type' data-type='int' data-ref="12response_type">response_type</dfn>,</td></tr>
+<tr><th id="282">282</th><td>                    <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="13var_idx" title='var_idx' data-type='const CvMat *' data-ref="13var_idx">var_idx</dfn>,</td></tr>
+<tr><th id="283">283</th><td>                    <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="14sample_idx" title='sample_idx' data-type='const CvMat *' data-ref="14sample_idx">sample_idx</dfn>,</td></tr>
+<tr><th id="284">284</th><td>                    <em>bool</em> <dfn class="local col5 decl" id="15always_copy_data" title='always_copy_data' data-type='bool' data-ref="15always_copy_data">always_copy_data</dfn>,</td></tr>
+<tr><th id="285">285</th><td>                    <em>const</em> <em>float</em>*** <dfn class="local col6 decl" id="16out_train_samples" title='out_train_samples' data-type='const float ***' data-ref="16out_train_samples">out_train_samples</dfn>,</td></tr>
+<tr><th id="286">286</th><td>                    <em>int</em>* <dfn class="local col7 decl" id="17_sample_count" title='_sample_count' data-type='int *' data-ref="17_sample_count">_sample_count</dfn>,</td></tr>
+<tr><th id="287">287</th><td>                    <em>int</em>* <dfn class="local col8 decl" id="18_var_count" title='_var_count' data-type='int *' data-ref="18_var_count">_var_count</dfn>,</td></tr>
+<tr><th id="288">288</th><td>                    <em>int</em>* <dfn class="local col9 decl" id="19_var_all" title='_var_all' data-type='int *' data-ref="19_var_all">_var_all</dfn>,</td></tr>
+<tr><th id="289">289</th><td>                    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col0 decl" id="20out_responses" title='out_responses' data-type='CvMat **' data-ref="20out_responses">out_responses</dfn>,</td></tr>
+<tr><th id="290">290</th><td>                    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col1 decl" id="21out_response_map" title='out_response_map' data-type='CvMat **' data-ref="21out_response_map">out_response_map</dfn>,</td></tr>
+<tr><th id="291">291</th><td>                    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col2 decl" id="22out_var_idx" title='out_var_idx' data-type='CvMat **' data-ref="22out_var_idx">out_var_idx</dfn>,</td></tr>
+<tr><th id="292">292</th><td>                    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col3 decl" id="23out_sample_idx" title='out_sample_idx' data-type='CvMat **' data-ref="23out_sample_idx">out_sample_idx</dfn>=<var>0</var> );</td></tr>
+<tr><th id="293">293</th><td></td></tr>
+<tr><th id="294">294</th><td><em>void</em></td></tr>
+<tr><th id="295">295</th><td><dfn class="decl" id="_Z22cvSortSamplesByClassesPPKfPK5CvMatPiPPKh" title='cvSortSamplesByClasses' data-ref="_Z22cvSortSamplesByClassesPPKfPK5CvMatPiPPKh">cvSortSamplesByClasses</dfn>( <em>const</em> <em>float</em>** <dfn class="local col4 decl" id="24samples" title='samples' data-type='const float **' data-ref="24samples">samples</dfn>, <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="25classes" title='classes' data-type='const CvMat *' data-ref="25classes">classes</dfn>,</td></tr>
+<tr><th id="296">296</th><td>                        <em>int</em>* <dfn class="local col6 decl" id="26class_ranges" title='class_ranges' data-type='int *' data-ref="26class_ranges">class_ranges</dfn>, <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>** <dfn class="local col7 decl" id="27mask" title='mask' data-type='const uchar **' data-ref="27mask">mask</dfn> <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>) );</td></tr>
+<tr><th id="297">297</th><td></td></tr>
+<tr><th id="298">298</th><td><em>void</em></td></tr>
+<tr><th id="299">299</th><td><dfn class="decl" id="_Z21cvCombineResponseMapsP5CvMatPKS_S0_PS0_" title='cvCombineResponseMaps' data-ref="_Z21cvCombineResponseMapsP5CvMatPKS_S0_PS0_">cvCombineResponseMaps</dfn> (<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*  <dfn class="local col8 decl" id="28_responses" title='_responses' data-type='CvMat *' data-ref="28_responses">_responses</dfn>,</td></tr>
+<tr><th id="300">300</th><td>                 <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*  <dfn class="local col9 decl" id="29old_response_map" title='old_response_map' data-type='const CvMat *' data-ref="29old_response_map">old_response_map</dfn>,</td></tr>
+<tr><th id="301">301</th><td>                       <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*  <dfn class="local col0 decl" id="30new_response_map" title='new_response_map' data-type='CvMat *' data-ref="30new_response_map">new_response_map</dfn>,</td></tr>
+<tr><th id="302">302</th><td>                       <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col1 decl" id="31out_response_map" title='out_response_map' data-type='CvMat **' data-ref="31out_response_map">out_response_map</dfn>);</td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td><em>void</em></td></tr>
+<tr><th id="305">305</th><td><dfn class="decl" id="_Z20cvPreparePredictDataPKviPK5CvMatiS3_PPfi" title='cvPreparePredictData' data-ref="_Z20cvPreparePredictDataPKviPK5CvMatiS3_PPfi">cvPreparePredictData</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvArr" title='CvArr' data-type='void' data-ref="CvArr">CvArr</a>* <dfn class="local col2 decl" id="32sample" title='sample' data-type='const CvArr *' data-ref="32sample">sample</dfn>, <em>int</em> <dfn class="local col3 decl" id="33dims_all" title='dims_all' data-type='int' data-ref="33dims_all">dims_all</dfn>, <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="34comp_idx" title='comp_idx' data-type='const CvMat *' data-ref="34comp_idx">comp_idx</dfn>,</td></tr>
+<tr><th id="306">306</th><td>                      <em>int</em> <dfn class="local col5 decl" id="35class_count" title='class_count' data-type='int' data-ref="35class_count">class_count</dfn>, <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="36prob" title='prob' data-type='const CvMat *' data-ref="36prob">prob</dfn>, <em>float</em>** <dfn class="local col7 decl" id="37row_sample" title='row_sample' data-type='float **' data-ref="37row_sample">row_sample</dfn>,</td></tr>
+<tr><th id="307">307</th><td>                      <em>int</em> <dfn class="local col8 decl" id="38as_sparse" title='as_sparse' data-type='int' data-ref="38as_sparse">as_sparse</dfn> <a class="macro" href="../../core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>) );</td></tr>
+<tr><th id="308">308</th><td></td></tr>
+<tr><th id="309">309</th><td><i>/* copies clustering [or batch "predict"] results</i></td></tr>
+<tr><th id="310">310</th><td><i>   (labels and/or centers and/or probs) back to the output arrays */</i></td></tr>
+<tr><th id="311">311</th><td><em>void</em></td></tr>
+<tr><th id="312">312</th><td><dfn class="decl" id="_Z17cvWritebackLabelsPK5CvMatPS_S1_S2_S1_S2_S1_iS1_i" title='cvWritebackLabels' data-ref="_Z17cvWritebackLabelsPK5CvMatPS_S1_S2_S1_S2_S1_iS1_i">cvWritebackLabels</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="39labels" title='labels' data-type='const CvMat *' data-ref="39labels">labels</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col0 decl" id="40dst_labels" title='dst_labels' data-type='CvMat *' data-ref="40dst_labels">dst_labels</dfn>,</td></tr>
+<tr><th id="313">313</th><td>                   <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="41centers" title='centers' data-type='const CvMat *' data-ref="41centers">centers</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="42dst_centers" title='dst_centers' data-type='CvMat *' data-ref="42dst_centers">dst_centers</dfn>,</td></tr>
+<tr><th id="314">314</th><td>                   <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="43probs" title='probs' data-type='const CvMat *' data-ref="43probs">probs</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="44dst_probs" title='dst_probs' data-type='CvMat *' data-ref="44dst_probs">dst_probs</dfn>,</td></tr>
+<tr><th id="315">315</th><td>                   <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="45sample_idx" title='sample_idx' data-type='const CvMat *' data-ref="45sample_idx">sample_idx</dfn>, <em>int</em> <dfn class="local col6 decl" id="46samples_all" title='samples_all' data-type='int' data-ref="46samples_all">samples_all</dfn>,</td></tr>
+<tr><th id="316">316</th><td>                   <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col7 decl" id="47comp_idx" title='comp_idx' data-type='const CvMat *' data-ref="47comp_idx">comp_idx</dfn>, <em>int</em> <dfn class="local col8 decl" id="48dims_all" title='dims_all' data-type='int' data-ref="48dims_all">dims_all</dfn> );</td></tr>
+<tr><th id="317">317</th><td><u>#define <dfn class="macro" id="_M/cvWritebackResponses" data-ref="_M/cvWritebackResponses">cvWritebackResponses</dfn> cvWritebackLabels</u></td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td><u>#define <dfn class="macro" id="_M/XML_FIELD_NAME" data-ref="_M/XML_FIELD_NAME">XML_FIELD_NAME</dfn> "_name"</u></td></tr>
+<tr><th id="320">320</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvFileNode" title='CvFileNode' data-type='struct CvFileNode' data-ref="CvFileNode">CvFileNode</a>* <dfn class="decl" id="_Z19icvFileNodeGetChildP10CvFileNodePKc" title='icvFileNodeGetChild' data-ref="_Z19icvFileNodeGetChildP10CvFileNodePKc">icvFileNodeGetChild</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvFileNode" title='CvFileNode' data-type='struct CvFileNode' data-ref="CvFileNode">CvFileNode</a>* <dfn class="local col9 decl" id="49father" title='father' data-type='CvFileNode *' data-ref="49father">father</dfn>, <em>const</em> <em>char</em>* <dfn class="local col0 decl" id="50name" title='name' data-type='const char *' data-ref="50name">name</dfn>);</td></tr>
+<tr><th id="321">321</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvFileNode" title='CvFileNode' data-type='struct CvFileNode' data-ref="CvFileNode">CvFileNode</a>* <dfn class="decl" id="_Z28icvFileNodeGetChildArrayElemP10CvFileNodePKci" title='icvFileNodeGetChildArrayElem' data-ref="_Z28icvFileNodeGetChildArrayElemP10CvFileNodePKci">icvFileNodeGetChildArrayElem</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvFileNode" title='CvFileNode' data-type='struct CvFileNode' data-ref="CvFileNode">CvFileNode</a>* <dfn class="local col1 decl" id="51father" title='father' data-type='CvFileNode *' data-ref="51father">father</dfn>, <em>const</em> <em>char</em>* <dfn class="local col2 decl" id="52name" title='name' data-type='const char *' data-ref="52name">name</dfn>,<em>int</em> <dfn class="local col3 decl" id="53index" title='index' data-type='int' data-ref="53index">index</dfn>);</td></tr>
+<tr><th id="322">322</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvFileNode" title='CvFileNode' data-type='struct CvFileNode' data-ref="CvFileNode">CvFileNode</a>* <dfn class="decl" id="_Z18icvFileNodeGetNextP10CvFileNodePKc" title='icvFileNodeGetNext' data-ref="_Z18icvFileNodeGetNextP10CvFileNodePKc">icvFileNodeGetNext</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvFileNode" title='CvFileNode' data-type='struct CvFileNode' data-ref="CvFileNode">CvFileNode</a>* <dfn class="local col4 decl" id="54n" title='n' data-type='CvFileNode *' data-ref="54n">n</dfn>, <em>const</em> <em>char</em>* <dfn class="local col5 decl" id="55name" title='name' data-type='const char *' data-ref="55name">name</dfn>);</td></tr>
+<tr><th id="323">323</th><td></td></tr>
+<tr><th id="324">324</th><td></td></tr>
+<tr><th id="325">325</th><td><em>void</em> <dfn class="decl" id="_Z16cvCheckTrainDataPK5CvMatiS1_PiS2_" title='cvCheckTrainData' data-ref="_Z16cvCheckTrainDataPK5CvMatiS1_PiS2_">cvCheckTrainData</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="56train_data" title='train_data' data-type='const CvMat *' data-ref="56train_data">train_data</dfn>, <em>int</em> <dfn class="local col7 decl" id="57tflag" title='tflag' data-type='int' data-ref="57tflag">tflag</dfn>,</td></tr>
+<tr><th id="326">326</th><td>                       <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="58missing_mask" title='missing_mask' data-type='const CvMat *' data-ref="58missing_mask">missing_mask</dfn>,</td></tr>
+<tr><th id="327">327</th><td>                       <em>int</em>* <dfn class="local col9 decl" id="59var_all" title='var_all' data-type='int *' data-ref="59var_all">var_all</dfn>, <em>int</em>* <dfn class="local col0 decl" id="60sample_all" title='sample_all' data-type='int *' data-ref="60sample_all">sample_all</dfn> );</td></tr>
+<tr><th id="328">328</th><td></td></tr>
+<tr><th id="329">329</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="decl" id="_Z22cvPreprocessIndexArrayPK5CvMatib" title='cvPreprocessIndexArray' data-ref="_Z22cvPreprocessIndexArrayPK5CvMatib">cvPreprocessIndexArray</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="61idx_arr" title='idx_arr' data-type='const CvMat *' data-ref="61idx_arr">idx_arr</dfn>, <em>int</em> <dfn class="local col2 decl" id="62data_arr_size" title='data_arr_size' data-type='int' data-ref="62data_arr_size">data_arr_size</dfn>, <em>bool</em> <dfn class="local col3 decl" id="63check_for_duplicates" title='check_for_duplicates' data-type='bool' data-ref="63check_for_duplicates">check_for_duplicates</dfn>=<b>false</b> );</td></tr>
+<tr><th id="330">330</th><td></td></tr>
+<tr><th id="331">331</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="decl" id="_Z19cvPreprocessVarTypePK5CvMatS1_iPi" title='cvPreprocessVarType' data-ref="_Z19cvPreprocessVarTypePK5CvMatS1_iPi">cvPreprocessVarType</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="64type_mask" title='type_mask' data-type='const CvMat *' data-ref="64type_mask">type_mask</dfn>, <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="65var_idx" title='var_idx' data-type='const CvMat *' data-ref="65var_idx">var_idx</dfn>,</td></tr>
+<tr><th id="332">332</th><td>                            <em>int</em> <dfn class="local col6 decl" id="66var_all" title='var_all' data-type='int' data-ref="66var_all">var_all</dfn>, <em>int</em>* <dfn class="local col7 decl" id="67response_type" title='response_type' data-type='int *' data-ref="67response_type">response_type</dfn> );</td></tr>
+<tr><th id="333">333</th><td></td></tr>
+<tr><th id="334">334</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="decl" id="_Z28cvPreprocessOrderedResponsesPK5CvMatS1_i" title='cvPreprocessOrderedResponses' data-ref="_Z28cvPreprocessOrderedResponsesPK5CvMatS1_i">cvPreprocessOrderedResponses</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="68responses" title='responses' data-type='const CvMat *' data-ref="68responses">responses</dfn>,</td></tr>
+<tr><th id="335">335</th><td>                <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="69sample_idx" title='sample_idx' data-type='const CvMat *' data-ref="69sample_idx">sample_idx</dfn>, <em>int</em> <dfn class="local col0 decl" id="70sample_all" title='sample_all' data-type='int' data-ref="70sample_all">sample_all</dfn> );</td></tr>
+<tr><th id="336">336</th><td></td></tr>
+<tr><th id="337">337</th><td><a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="decl" id="_Z32cvPreprocessCategoricalResponsesPK5CvMatS1_iPPS_S3_" title='cvPreprocessCategoricalResponses' data-ref="_Z32cvPreprocessCategoricalResponsesPK5CvMatS1_iPPS_S3_">cvPreprocessCategoricalResponses</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="71responses" title='responses' data-type='const CvMat *' data-ref="71responses">responses</dfn>,</td></tr>
+<tr><th id="338">338</th><td>                <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="72sample_idx" title='sample_idx' data-type='const CvMat *' data-ref="72sample_idx">sample_idx</dfn>, <em>int</em> <dfn class="local col3 decl" id="73sample_all" title='sample_all' data-type='int' data-ref="73sample_all">sample_all</dfn>,</td></tr>
+<tr><th id="339">339</th><td>                <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col4 decl" id="74out_response_map" title='out_response_map' data-type='CvMat **' data-ref="74out_response_map">out_response_map</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col5 decl" id="75class_counts" title='class_counts' data-type='CvMat **' data-ref="75class_counts">class_counts</dfn>=<var>0</var> );</td></tr>
+<tr><th id="340">340</th><td></td></tr>
+<tr><th id="341">341</th><td><em>const</em> <em>float</em>** <dfn class="decl" id="_Z17cvGetTrainSamplesPK5CvMatiS1_S1_PiS2_b" title='cvGetTrainSamples' data-ref="_Z17cvGetTrainSamplesPK5CvMatiS1_S1_PiS2_b">cvGetTrainSamples</dfn>( <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="76train_data" title='train_data' data-type='const CvMat *' data-ref="76train_data">train_data</dfn>, <em>int</em> <dfn class="local col7 decl" id="77tflag" title='tflag' data-type='int' data-ref="77tflag">tflag</dfn>,</td></tr>
+<tr><th id="342">342</th><td>                   <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="78var_idx" title='var_idx' data-type='const CvMat *' data-ref="78var_idx">var_idx</dfn>, <em>const</em> <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="79sample_idx" title='sample_idx' data-type='const CvMat *' data-ref="79sample_idx">sample_idx</dfn>,</td></tr>
+<tr><th id="343">343</th><td>                   <em>int</em>* <dfn class="local col0 decl" id="80_var_count" title='_var_count' data-type='int *' data-ref="80_var_count">_var_count</dfn>, <em>int</em>* <dfn class="local col1 decl" id="81_sample_count" title='_sample_count' data-type='int *' data-ref="81_sample_count">_sample_count</dfn>,</td></tr>
+<tr><th id="344">344</th><td>                   <em>bool</em> <dfn class="local col2 decl" id="82always_copy_data" title='always_copy_data' data-type='bool' data-ref="82always_copy_data">always_copy_data</dfn>=<b>false</b> );</td></tr>
+<tr><th id="345">345</th><td></td></tr>
+<tr><th id="346">346</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="347">347</th><td>{</td></tr>
+<tr><th id="348">348</th><td>    <b>struct</b> <dfn class="type def" id="cv::DTreeBestSplitFinder" title='cv::DTreeBestSplitFinder' data-ref="cv::DTreeBestSplitFinder">DTreeBestSplitFinder</dfn></td></tr>
+<tr><th id="349">349</th><td>    {</td></tr>
+<tr><th id="350">350</th><td>        <dfn class="decl def" id="_ZN2cv20DTreeBestSplitFinderC1Ev" title='cv::DTreeBestSplitFinder::DTreeBestSplitFinder' data-ref="_ZN2cv20DTreeBestSplitFinderC1Ev">DTreeBestSplitFinder</dfn>(){ <a class="member" href="#cv::DTreeBestSplitFinder::tree" title='cv::DTreeBestSplitFinder::tree' data-ref="cv::DTreeBestSplitFinder::tree">tree</a> = <var>0</var>; <a class="member" href="#cv::DTreeBestSplitFinder::node" title='cv::DTreeBestSplitFinder::node' data-ref="cv::DTreeBestSplitFinder::node">node</a> = <var>0</var>; }</td></tr>
+<tr><th id="351">351</th><td>        <dfn class="decl" id="_ZN2cv20DTreeBestSplitFinderC1EP7CvDTreeP11CvDTreeNode" title='cv::DTreeBestSplitFinder::DTreeBestSplitFinder' data-ref="_ZN2cv20DTreeBestSplitFinderC1EP7CvDTreeP11CvDTreeNode">DTreeBestSplitFinder</dfn>( <a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTree" title='CvDTree' data-ref="CvDTree">CvDTree</a>* <dfn class="local col3 decl" id="83_tree" title='_tree' data-type='CvDTree *' data-ref="83_tree">_tree</dfn>, <a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTreeNode" title='CvDTreeNode' data-ref="CvDTreeNode">CvDTreeNode</a>* <dfn class="local col4 decl" id="84_node" title='_node' data-type='CvDTreeNode *' data-ref="84_node">_node</dfn>);</td></tr>
+<tr><th id="352">352</th><td>        <dfn class="decl" id="_ZN2cv20DTreeBestSplitFinderC1ERKS0_NS_5SplitE" title='cv::DTreeBestSplitFinder::DTreeBestSplitFinder' data-ref="_ZN2cv20DTreeBestSplitFinderC1ERKS0_NS_5SplitE">DTreeBestSplitFinder</dfn>( <em>const</em> <a class="type" href="#cv::DTreeBestSplitFinder" title='cv::DTreeBestSplitFinder' data-ref="cv::DTreeBestSplitFinder">DTreeBestSplitFinder</a>&amp; <dfn class="local col5 decl" id="85finder" title='finder' data-type='const cv::DTreeBestSplitFinder &amp;' data-ref="85finder">finder</dfn>, <a class="type" href="../../core/include/opencv2/core/internal.hpp.html#cv::Split" title='cv::Split' data-ref="cv::Split">Split</a> );</td></tr>
+<tr><th id="353">353</th><td>        <b>virtual</b> <dfn class="virtual decl def" id="_ZN2cv20DTreeBestSplitFinderD1Ev" title='cv::DTreeBestSplitFinder::~DTreeBestSplitFinder' data-ref="_ZN2cv20DTreeBestSplitFinderD1Ev">~</dfn>DTreeBestSplitFinder() {}</td></tr>
+<tr><th id="354">354</th><td>        <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN2cv20DTreeBestSplitFinderclERKNS_12BlockedRangeE" title='cv::DTreeBestSplitFinder::operator()' data-ref="_ZN2cv20DTreeBestSplitFinderclERKNS_12BlockedRangeE"><b>operator</b>()</dfn>(<em>const</em> <a class="type" href="../../core/include/opencv2/core/internal.hpp.html#cv::BlockedRange" title='cv::BlockedRange' data-ref="cv::BlockedRange">BlockedRange</a>&amp; <dfn class="local col6 decl" id="86range" title='range' data-type='const cv::BlockedRange &amp;' data-ref="86range">range</dfn>);</td></tr>
+<tr><th id="355">355</th><td>        <em>void</em> <dfn class="decl" id="_ZN2cv20DTreeBestSplitFinder4joinERS0_" title='cv::DTreeBestSplitFinder::join' data-ref="_ZN2cv20DTreeBestSplitFinder4joinERS0_">join</dfn>( <a class="type" href="#cv::DTreeBestSplitFinder" title='cv::DTreeBestSplitFinder' data-ref="cv::DTreeBestSplitFinder">DTreeBestSplitFinder</a>&amp; <dfn class="local col7 decl" id="87rhs" title='rhs' data-type='cv::DTreeBestSplitFinder &amp;' data-ref="87rhs">rhs</dfn> );</td></tr>
+<tr><th id="356">356</th><td>        <a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Ptr" title='cv::Ptr' data-ref="cv::Ptr">Ptr</a>&lt;<a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTreeSplit" title='CvDTreeSplit' data-ref="CvDTreeSplit">CvDTreeSplit</a>&gt; <dfn class="decl" id="cv::DTreeBestSplitFinder::bestSplit" title='cv::DTreeBestSplitFinder::bestSplit' data-ref="cv::DTreeBestSplitFinder::bestSplit">bestSplit</dfn>;</td></tr>
+<tr><th id="357">357</th><td>        <a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Ptr" title='cv::Ptr' data-ref="cv::Ptr">Ptr</a>&lt;<a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTreeSplit" title='CvDTreeSplit' data-ref="CvDTreeSplit">CvDTreeSplit</a>&gt; <dfn class="decl" id="cv::DTreeBestSplitFinder::split" title='cv::DTreeBestSplitFinder::split' data-ref="cv::DTreeBestSplitFinder::split">split</dfn>;</td></tr>
+<tr><th id="358">358</th><td>        <em>int</em> <dfn class="decl" id="cv::DTreeBestSplitFinder::splitSize" title='cv::DTreeBestSplitFinder::splitSize' data-ref="cv::DTreeBestSplitFinder::splitSize">splitSize</dfn>;</td></tr>
+<tr><th id="359">359</th><td>        <a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTree" title='CvDTree' data-ref="CvDTree">CvDTree</a>* <dfn class="decl" id="cv::DTreeBestSplitFinder::tree" title='cv::DTreeBestSplitFinder::tree' data-ref="cv::DTreeBestSplitFinder::tree">tree</dfn>;</td></tr>
+<tr><th id="360">360</th><td>        <a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTreeNode" title='CvDTreeNode' data-ref="CvDTreeNode">CvDTreeNode</a>* <dfn class="decl" id="cv::DTreeBestSplitFinder::node" title='cv::DTreeBestSplitFinder::node' data-ref="cv::DTreeBestSplitFinder::node">node</dfn>;</td></tr>
+<tr><th id="361">361</th><td>    };</td></tr>
+<tr><th id="362">362</th><td></td></tr>
+<tr><th id="363">363</th><td>    <b>struct</b> <dfn class="type def" id="cv::ForestTreeBestSplitFinder" title='cv::ForestTreeBestSplitFinder' data-ref="cv::ForestTreeBestSplitFinder">ForestTreeBestSplitFinder</dfn> : <a class="type" href="#cv::DTreeBestSplitFinder" title='cv::DTreeBestSplitFinder' data-ref="cv::DTreeBestSplitFinder">DTreeBestSplitFinder</a></td></tr>
+<tr><th id="364">364</th><td>    {</td></tr>
+<tr><th id="365">365</th><td>        <dfn class="decl def" id="_ZN2cv25ForestTreeBestSplitFinderC1Ev" title='cv::ForestTreeBestSplitFinder::ForestTreeBestSplitFinder' data-ref="_ZN2cv25ForestTreeBestSplitFinderC1Ev">ForestTreeBestSplitFinder</dfn>() : <a class="type" href="#cv::DTreeBestSplitFinder" title='cv::DTreeBestSplitFinder' data-ref="cv::DTreeBestSplitFinder">DTreeBestSplitFinder</a><a class="ref" href="#_ZN2cv20DTreeBestSplitFinderC1Ev" title='cv::DTreeBestSplitFinder::DTreeBestSplitFinder' data-ref="_ZN2cv20DTreeBestSplitFinderC1Ev">(</a>) {}</td></tr>
+<tr><th id="366">366</th><td>        <dfn class="decl" id="_ZN2cv25ForestTreeBestSplitFinderC1EP12CvForestTreeP11CvDTreeNode" title='cv::ForestTreeBestSplitFinder::ForestTreeBestSplitFinder' data-ref="_ZN2cv25ForestTreeBestSplitFinderC1EP12CvForestTreeP11CvDTreeNode">ForestTreeBestSplitFinder</dfn>( <a class="type" href="../include/opencv2/ml/ml.hpp.html#CvForestTree" title='CvForestTree' data-ref="CvForestTree">CvForestTree</a>* <dfn class="local col8 decl" id="88_tree" title='_tree' data-type='CvForestTree *' data-ref="88_tree">_tree</dfn>, <a class="type" href="../include/opencv2/ml/ml.hpp.html#CvDTreeNode" title='CvDTreeNode' data-ref="CvDTreeNode">CvDTreeNode</a>* <dfn class="local col9 decl" id="89_node" title='_node' data-type='CvDTreeNode *' data-ref="89_node">_node</dfn> );</td></tr>
+<tr><th id="367">367</th><td>        <dfn class="decl" id="_ZN2cv25ForestTreeBestSplitFinderC1ERKS0_NS_5SplitE" title='cv::ForestTreeBestSplitFinder::ForestTreeBestSplitFinder' data-ref="_ZN2cv25ForestTreeBestSplitFinderC1ERKS0_NS_5SplitE">ForestTreeBestSplitFinder</dfn>( <em>const</em> <a class="type" href="#cv::ForestTreeBestSplitFinder" title='cv::ForestTreeBestSplitFinder' data-ref="cv::ForestTreeBestSplitFinder">ForestTreeBestSplitFinder</a>&amp; <dfn class="local col0 decl" id="90finder" title='finder' data-type='const cv::ForestTreeBestSplitFinder &amp;' data-ref="90finder">finder</dfn>, <a class="type" href="../../core/include/opencv2/core/internal.hpp.html#cv::Split" title='cv::Split' data-ref="cv::Split">Split</a> );</td></tr>
+<tr><th id="368">368</th><td>        <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN2cv25ForestTreeBestSplitFinderclERKNS_12BlockedRangeE" title='cv::ForestTreeBestSplitFinder::operator()' data-ref="_ZN2cv25ForestTreeBestSplitFinderclERKNS_12BlockedRangeE"><b>operator</b>()</dfn>(<em>const</em> <a class="type" href="../../core/include/opencv2/core/internal.hpp.html#cv::BlockedRange" title='cv::BlockedRange' data-ref="cv::BlockedRange">BlockedRange</a>&amp; <dfn class="local col1 decl" id="91range" title='range' data-type='const cv::BlockedRange &amp;' data-ref="91range">range</dfn>);</td></tr>
+<tr><th id="369">369</th><td>    };</td></tr>
+<tr><th id="370">370</th><td>}</td></tr>
+<tr><th id="371">371</th><td></td></tr>
+<tr><th id="372">372</th><td><u>#<span data-ppcond="41">endif</span> /* __ML_H__ */</u></td></tr>
+<tr><th id="373">373</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='ann_mlp.cpp.html'>opencv/modules/ml/src/ann_mlp.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

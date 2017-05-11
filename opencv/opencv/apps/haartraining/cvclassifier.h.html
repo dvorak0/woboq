@@ -1,0 +1,746 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>cvclassifier.h source code [opencv/apps/haartraining/cvclassifier.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="CvBoostType,CvBtClassifier,CvBtClassifierTrainParams,CvCARTClassifier,CvCARTTrainParams,CvClassifier,CvClassifierTrainParams,CvMTStumpTrainParams,CvStumpClassifier,CvStumpError,CvStumpTrainParams,CvStumpType "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/apps/haartraining/cvclassifier.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>opencv</a>/<a href='..'>apps</a>/<a href='./'>haartraining</a>/<a href='cvclassifier.h.html'>cvclassifier.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                        Intel License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="15">15</th><td><i>//</i></td></tr>
+<tr><th id="16">16</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="17">17</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="18">18</th><td><i>//</i></td></tr>
+<tr><th id="19">19</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="20">20</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="21">21</th><td><i>//</i></td></tr>
+<tr><th id="22">22</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="23">23</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="24">24</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="25">25</th><td><i>//</i></td></tr>
+<tr><th id="26">26</th><td><i>//   * The name of Intel Corporation may not be used to endorse or promote products</i></td></tr>
+<tr><th id="27">27</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="30">30</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="31">31</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="32">32</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="33">33</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="34">34</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="35">35</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="36">36</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="37">37</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="38">38</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="39">39</th><td><i>//</i></td></tr>
+<tr><th id="40">40</th><td><i>//M*/</i></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><i>/*</i></td></tr>
+<tr><th id="43">43</th><td><i> * File cvclassifier.h</i></td></tr>
+<tr><th id="44">44</th><td><i> *</i></td></tr>
+<tr><th id="45">45</th><td><i> * Classifier types</i></td></tr>
+<tr><th id="46">46</th><td><i> */</i></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><u>#<span data-ppcond="48">ifndef</span> <span class="macro" data-ref="_M/_CVCLASSIFIER_H_">_CVCLASSIFIER_H_</span></u></td></tr>
+<tr><th id="49">49</th><td><u>#define <dfn class="macro" id="_M/_CVCLASSIFIER_H_" data-ref="_M/_CVCLASSIFIER_H_">_CVCLASSIFIER_H_</dfn></u></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><u>#include <a href="../../../include/c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="52">52</th><td><u>#include <a href="../../include/opencv/cxcore.h.html">"cxcore.h"</a></u></td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><u>#define <dfn class="macro" id="_M/CV_BOOST_API" data-ref="_M/CV_BOOST_API">CV_BOOST_API</dfn></u></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><i>/* Convert matrix to vector */</i></td></tr>
+<tr><th id="57">57</th><td><u>#define <dfn class="macro" id="_M/CV_MAT2VEC" data-ref="_M/CV_MAT2VEC">CV_MAT2VEC</dfn>( mat, vdata, vstep, num )       \</u></td></tr>
+<tr><th id="58">58</th><td><u>    assert( (mat).rows == 1 || (mat).cols == 1 );  \</u></td></tr>
+<tr><th id="59">59</th><td><u>    (vdata) = ((mat).data.ptr);                    \</u></td></tr>
+<tr><th id="60">60</th><td><u>    if( (mat).rows == 1 )                          \</u></td></tr>
+<tr><th id="61">61</th><td><u>    {                                              \</u></td></tr>
+<tr><th id="62">62</th><td><u>        (vstep) = CV_ELEM_SIZE( (mat).type );      \</u></td></tr>
+<tr><th id="63">63</th><td><u>        (num) = (mat).cols;                        \</u></td></tr>
+<tr><th id="64">64</th><td><u>    }                                              \</u></td></tr>
+<tr><th id="65">65</th><td><u>    else                                           \</u></td></tr>
+<tr><th id="66">66</th><td><u>    {                                              \</u></td></tr>
+<tr><th id="67">67</th><td><u>        (vstep) = (mat).step;                      \</u></td></tr>
+<tr><th id="68">68</th><td><u>        (num) = (mat).rows;                        \</u></td></tr>
+<tr><th id="69">69</th><td><u>    }</u></td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td><i>/* Set up &lt;sample&gt; matrix header to be &lt;num&gt; sample of &lt;trainData&gt; samples matrix */</i></td></tr>
+<tr><th id="72">72</th><td><u>#define <dfn class="macro" id="_M/CV_GET_SAMPLE" data-ref="_M/CV_GET_SAMPLE">CV_GET_SAMPLE</dfn>( trainData, tdflags, num, sample )                                 \</u></td></tr>
+<tr><th id="73">73</th><td><u>if( CV_IS_ROW_SAMPLE( tdflags ) )                                                        \</u></td></tr>
+<tr><th id="74">74</th><td><u>{                                                                                        \</u></td></tr>
+<tr><th id="75">75</th><td><u>    cvInitMatHeader( &amp;(sample), 1, (trainData).cols,                                     \</u></td></tr>
+<tr><th id="76">76</th><td><u>                     CV_MAT_TYPE( (trainData).type ),                                    \</u></td></tr>
+<tr><th id="77">77</th><td><u>                     ((trainData).data.ptr + (num) * (trainData).step),                  \</u></td></tr>
+<tr><th id="78">78</th><td><u>                     (trainData).step );                                                 \</u></td></tr>
+<tr><th id="79">79</th><td><u>}                                                                                        \</u></td></tr>
+<tr><th id="80">80</th><td><u>else                                                                                     \</u></td></tr>
+<tr><th id="81">81</th><td><u>{                                                                                        \</u></td></tr>
+<tr><th id="82">82</th><td><u>    cvInitMatHeader( &amp;(sample), (trainData).rows, 1,                                     \</u></td></tr>
+<tr><th id="83">83</th><td><u>                     CV_MAT_TYPE( (trainData).type ),                                    \</u></td></tr>
+<tr><th id="84">84</th><td><u>                     ((trainData).data.ptr + (num) * CV_ELEM_SIZE( (trainData).type )),  \</u></td></tr>
+<tr><th id="85">85</th><td><u>                     (trainData).step );                                                 \</u></td></tr>
+<tr><th id="86">86</th><td><u>}</u></td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td><u>#define <dfn class="macro" id="_M/CV_GET_SAMPLE_STEP" data-ref="_M/CV_GET_SAMPLE_STEP">CV_GET_SAMPLE_STEP</dfn>( trainData, tdflags, sstep )                                  \</u></td></tr>
+<tr><th id="89">89</th><td><u>(sstep) = ( ( CV_IS_ROW_SAMPLE( tdflags ) )                                              \</u></td></tr>
+<tr><th id="90">90</th><td><u>           ? (trainData).step : CV_ELEM_SIZE( (trainData).type ) );</u></td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td><u>#define <dfn class="macro" id="_M/CV_LOGRATIO_THRESHOLD" data-ref="_M/CV_LOGRATIO_THRESHOLD">CV_LOGRATIO_THRESHOLD</dfn> 0.00001F</u></td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td><i>/* log( val / (1 - val ) ) */</i></td></tr>
+<tr><th id="96">96</th><td><a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#148" title="inline" data-ref="_M/CV_INLINE">CV_INLINE</a> <em>float</em> <a class="decl" href="#_Z10cvLogRatiof" title='cvLogRatio' data-ref="_Z10cvLogRatiof">cvLogRatio</a>( <em>float</em> <dfn class="local col1 decl" id="1val" title='val' data-type='float' data-ref="1val">val</dfn> );</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td><a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#148" title="inline" data-ref="_M/CV_INLINE">CV_INLINE</a> <em>float</em> <dfn class="decl def" id="_Z10cvLogRatiof" title='cvLogRatio' data-ref="_Z10cvLogRatiof">cvLogRatio</dfn>( <em>float</em> <dfn class="local col2 decl" id="2val" title='val' data-type='float' data-ref="2val">val</dfn> )</td></tr>
+<tr><th id="99">99</th><td>{</td></tr>
+<tr><th id="100">100</th><td>    <em>float</em> <dfn class="local col3 decl" id="3tval" title='tval' data-type='float' data-ref="3tval">tval</dfn>;</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <a class="local col3 ref" href="#3tval" title='tval' data-ref="3tval">tval</a> = <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#300" title="((0.00001F) &lt; (((1.0F - 0.00001F) &gt; ((val)) ? ((val)) : (1.0F - 0.00001F))) ? (((1.0F - 0.00001F) &gt; ((val)) ? ((val)) : (1.0F - 0.00001F))) : (0.00001F))" data-ref="_M/MAX">MAX</a>(<a class="macro" href="#93" title="0.00001F" data-ref="_M/CV_LOGRATIO_THRESHOLD">CV_LOGRATIO_THRESHOLD</a>, <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#296" title="((1.0F - 0.00001F) &gt; ((val)) ? ((val)) : (1.0F - 0.00001F))" data-ref="_M/MIN">MIN</a>( <var>1.0F</var> - <a class="macro" href="#93" title="0.00001F" data-ref="_M/CV_LOGRATIO_THRESHOLD">CV_LOGRATIO_THRESHOLD</a>, (<a class="local col2 ref" href="#2val" title='val' data-ref="2val">val</a>) ));</td></tr>
+<tr><th id="103">103</th><td>    <b>return</b> <a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#109" title='logf' data-ref="logf">logf</a>( <a class="local col3 ref" href="#3tval" title='tval' data-ref="3tval">tval</a> / (<var>1.0F</var> - <a class="local col3 ref" href="#3tval" title='tval' data-ref="3tval">tval</a>) );</td></tr>
+<tr><th id="104">104</th><td>}</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td><i>/* flags values for classifier consturctor flags parameter */</i></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td><i>/* each trainData matrix column is a sample */</i></td></tr>
+<tr><th id="110">110</th><td><u>#define <dfn class="macro" id="_M/CV_COL_SAMPLE" data-ref="_M/CV_COL_SAMPLE">CV_COL_SAMPLE</dfn> 0</u></td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td><i>/* each trainData matrix row is a sample */</i></td></tr>
+<tr><th id="113">113</th><td><u>#define <dfn class="macro" id="_M/CV_ROW_SAMPLE" data-ref="_M/CV_ROW_SAMPLE">CV_ROW_SAMPLE</dfn> 1</u></td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td><u>#define <dfn class="macro" id="_M/CV_IS_ROW_SAMPLE" data-ref="_M/CV_IS_ROW_SAMPLE">CV_IS_ROW_SAMPLE</dfn>( flags ) ( ( flags ) &amp; CV_ROW_SAMPLE )</u></td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td><i>/* Classifier supports tune function */</i></td></tr>
+<tr><th id="118">118</th><td><u>#define <dfn class="macro" id="_M/CV_TUNABLE" data-ref="_M/CV_TUNABLE">CV_TUNABLE</dfn>    (1 &lt;&lt; 1)</u></td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td><u>#define <dfn class="macro" id="_M/CV_IS_TUNABLE" data-ref="_M/CV_IS_TUNABLE">CV_IS_TUNABLE</dfn>( flags ) ( (flags) &amp; CV_TUNABLE )</u></td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td><i>/* classifier fields common to all classifiers */</i></td></tr>
+<tr><th id="124">124</th><td><u>#define <dfn class="macro" id="_M/CV_CLASSIFIER_FIELDS" data-ref="_M/CV_CLASSIFIER_FIELDS">CV_CLASSIFIER_FIELDS</dfn>()                                                           \</u></td></tr>
+<tr><th id="125">125</th><td><u>    int <dfn class="decl" id="CvClassifier::flags" title='CvClassifier::flags' data-ref="CvClassifier::flags"><dfn class="decl" id="CvStumpClassifier::flags" title='CvStumpClassifier::flags' data-ref="CvStumpClassifier::flags"><dfn class="decl" id="CvCARTClassifier::flags" title='CvCARTClassifier::flags' data-ref="CvCARTClassifier::flags"><dfn class="decl" id="CvBtClassifier::flags" title='CvBtClassifier::flags' data-ref="CvBtClassifier::flags">flags</dfn></dfn></dfn></dfn>;                                                                           \</u></td></tr>
+<tr><th id="126">126</th><td><u>    float(*<dfn class="decl" id="CvClassifier::eval" title='CvClassifier::eval' data-ref="CvClassifier::eval"><dfn class="decl" id="CvStumpClassifier::eval" title='CvStumpClassifier::eval' data-ref="CvStumpClassifier::eval"><dfn class="decl" id="CvCARTClassifier::eval" title='CvCARTClassifier::eval' data-ref="CvCARTClassifier::eval"><dfn class="decl" id="CvBtClassifier::eval" title='CvBtClassifier::eval' data-ref="CvBtClassifier::eval">eval</dfn></dfn></dfn></dfn>)( struct <a class="type" href="#CvClassifier" title='CvClassifier' data-ref="CvClassifier">CvClassifier</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* );                                        \</u></td></tr>
+<tr><th id="127">127</th><td><u>    void (*<dfn class="decl" id="CvClassifier::tune" title='CvClassifier::tune' data-ref="CvClassifier::tune"><dfn class="decl" id="CvStumpClassifier::tune" title='CvStumpClassifier::tune' data-ref="CvStumpClassifier::tune"><dfn class="decl" id="CvCARTClassifier::tune" title='CvCARTClassifier::tune' data-ref="CvCARTClassifier::tune"><dfn class="decl" id="CvBtClassifier::tune" title='CvBtClassifier::tune' data-ref="CvBtClassifier::tune">tune</dfn></dfn></dfn></dfn>)( struct <a class="type" href="#CvClassifier" title='CvClassifier' data-ref="CvClassifier">CvClassifier</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, int <dfn class="local col4 decl" id="4flags" title='flags' data-type='int' data-ref="4flags"><dfn class="local col2 decl" id="12flags" title='flags' data-type='int' data-ref="12flags"><dfn class="local col0 decl" id="20flags" title='flags' data-type='int' data-ref="20flags"><dfn class="local col9 decl" id="69flags" title='flags' data-type='int' data-ref="69flags">flags</dfn></dfn></dfn></dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*,       \</u></td></tr>
+<tr><th id="128">128</th><td><u>                  <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* );                                                      \</u></td></tr>
+<tr><th id="129">129</th><td><u>    int  (*<dfn class="decl" id="CvClassifier::save" title='CvClassifier::save' data-ref="CvClassifier::save"><dfn class="decl" id="CvStumpClassifier::save" title='CvStumpClassifier::save' data-ref="CvStumpClassifier::save"><dfn class="decl" id="CvCARTClassifier::save" title='CvCARTClassifier::save' data-ref="CvCARTClassifier::save"><dfn class="decl" id="CvBtClassifier::save" title='CvBtClassifier::save' data-ref="CvBtClassifier::save">save</dfn></dfn></dfn></dfn>)( struct <a class="type" href="#CvClassifier" title='CvClassifier' data-ref="CvClassifier">CvClassifier</a>*, const char* <dfn class="local col5 decl" id="5file_name" title='file_name' data-type='const char *' data-ref="5file_name"><dfn class="local col3 decl" id="13file_name" title='file_name' data-type='const char *' data-ref="13file_name"><dfn class="local col1 decl" id="21file_name" title='file_name' data-type='const char *' data-ref="21file_name"><dfn class="local col0 decl" id="70file_name" title='file_name' data-type='const char *' data-ref="70file_name">file_name</dfn></dfn></dfn></dfn> );                         \</u></td></tr>
+<tr><th id="130">130</th><td><u>    void (*<dfn class="decl" id="CvClassifier::release" title='CvClassifier::release' data-ref="CvClassifier::release"><dfn class="decl" id="CvStumpClassifier::release" title='CvStumpClassifier::release' data-ref="CvStumpClassifier::release"><dfn class="decl" id="CvCARTClassifier::release" title='CvCARTClassifier::release' data-ref="CvCARTClassifier::release"><dfn class="decl" id="CvBtClassifier::release" title='CvBtClassifier::release' data-ref="CvBtClassifier::release">release</dfn></dfn></dfn></dfn>)( struct <a class="type" href="#CvClassifier" title='CvClassifier' data-ref="CvClassifier">CvClassifier</a>** );</u></td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvClassifier" title='CvClassifier' data-ref="CvClassifier"><a class="type" href="#CvClassifier" title='CvClassifier' data-ref="CvClassifier">CvClassifier</a></dfn></td></tr>
+<tr><th id="133">133</th><td>{</td></tr>
+<tr><th id="134">134</th><td>    <a class="macro" href="#124" title="int flags; float(*eval)( struct CvClassifier*, CvMat* ); void (*tune)( struct CvClassifier*, CvMat*, int flags, CvMat*, CvMat*, CvMat*, CvMat*, CvMat* ); int (*save)( struct CvClassifier*, const char* file_name ); void (*release)( struct CvClassifier** );" data-ref="_M/CV_CLASSIFIER_FIELDS">CV_CLASSIFIER_FIELDS</a>()</td></tr>
+<tr><th id="135">135</th><td>} <dfn class="typedef" id="CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</dfn>;</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td><u>#define <dfn class="macro" id="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS" data-ref="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS">CV_CLASSIFIER_TRAIN_PARAM_FIELDS</dfn>()</u></td></tr>
+<tr><th id="138">138</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvClassifierTrainParams" title='CvClassifierTrainParams' data-ref="CvClassifierTrainParams"><a class="type" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a></dfn></td></tr>
+<tr><th id="139">139</th><td>{</td></tr>
+<tr><th id="140">140</th><td>    <a class="macro" href="#137" title="" data-ref="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS">CV_CLASSIFIER_TRAIN_PARAM_FIELDS</a>()</td></tr>
+<tr><th id="141">141</th><td>} <dfn class="typedef" id="CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</dfn>;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><i>/*</i></td></tr>
+<tr><th id="145">145</th><td><i> Common classifier constructor:</i></td></tr>
+<tr><th id="146">146</th><td><i> CvClassifier* cvCreateMyClassifier( CvMat* trainData,</i></td></tr>
+<tr><th id="147">147</th><td><i>                     int flags,</i></td></tr>
+<tr><th id="148">148</th><td><i>                     CvMat* trainClasses,</i></td></tr>
+<tr><th id="149">149</th><td><i>                     CvMat* typeMask,</i></td></tr>
+<tr><th id="150">150</th><td><i>                      CvMat* missedMeasurementsMask CV_DEFAULT(0),</i></td></tr>
+<tr><th id="151">151</th><td><i>                      CvCompIdx* compIdx CV_DEFAULT(0),</i></td></tr>
+<tr><th id="152">152</th><td><i>                      CvMat* sampleIdx CV_DEFAULT(0),</i></td></tr>
+<tr><th id="153">153</th><td><i>                      CvMat* weights CV_DEFAULT(0),</i></td></tr>
+<tr><th id="154">154</th><td><i>                      CvClassifierTrainParams* trainParams CV_DEFAULT(0)</i></td></tr>
+<tr><th id="155">155</th><td><i>                    )</i></td></tr>
+<tr><th id="156">156</th><td><i></i></td></tr>
+<tr><th id="157">157</th><td><i> */</i></td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td><b>typedef</b> <a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* (*<dfn class="typedef" id="CvClassifierConstructor" title='CvClassifierConstructor' data-type='CvClassifier *(*)(CvMat *, int, CvMat *, CvMat *, CvMat *, CvMat *, CvMat *, CvMat *, CvClassifierTrainParams *)' data-ref="CvClassifierConstructor">CvClassifierConstructor</dfn>)( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <em>int</em>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*,</td></tr>
+<tr><th id="160">160</th><td>                                                  <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>*,</td></tr>
+<tr><th id="161">161</th><td>                                                  <a class="typedef" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a>* );</td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td><b>typedef</b> <b>enum</b> <dfn class="type def" id="CvStumpType" title='CvStumpType' data-ref="CvStumpType"><a class="type" href="#CvStumpType" title='CvStumpType' data-ref="CvStumpType">CvStumpType</a></dfn></td></tr>
+<tr><th id="164">164</th><td>{</td></tr>
+<tr><th id="165">165</th><td>    <dfn class="enum" id="CvStumpType::CV_CLASSIFICATION" title='CvStumpType::CV_CLASSIFICATION' data-ref="CvStumpType::CV_CLASSIFICATION">CV_CLASSIFICATION</dfn>       = <var>0</var>,</td></tr>
+<tr><th id="166">166</th><td>    <dfn class="enum" id="CvStumpType::CV_CLASSIFICATION_CLASS" title='CvStumpType::CV_CLASSIFICATION_CLASS' data-ref="CvStumpType::CV_CLASSIFICATION_CLASS">CV_CLASSIFICATION_CLASS</dfn> = <var>1</var>,</td></tr>
+<tr><th id="167">167</th><td>    <dfn class="enum" id="CvStumpType::CV_REGRESSION" title='CvStumpType::CV_REGRESSION' data-ref="CvStumpType::CV_REGRESSION">CV_REGRESSION</dfn>           = <var>2</var></td></tr>
+<tr><th id="168">168</th><td>} <dfn class="typedef" id="CvStumpType" title='CvStumpType' data-type='enum CvStumpType' data-ref="CvStumpType">CvStumpType</dfn>;</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><b>typedef</b> <b>enum</b> <dfn class="type def" id="CvStumpError" title='CvStumpError' data-ref="CvStumpError"><a class="type" href="#CvStumpError" title='CvStumpError' data-ref="CvStumpError">CvStumpError</a></dfn></td></tr>
+<tr><th id="171">171</th><td>{</td></tr>
+<tr><th id="172">172</th><td>    <dfn class="enum" id="CvStumpError::CV_MISCLASSIFICATION" title='CvStumpError::CV_MISCLASSIFICATION' data-ref="CvStumpError::CV_MISCLASSIFICATION">CV_MISCLASSIFICATION</dfn> = <var>0</var>,</td></tr>
+<tr><th id="173">173</th><td>    <dfn class="enum" id="CvStumpError::CV_GINI" title='CvStumpError::CV_GINI' data-ref="CvStumpError::CV_GINI">CV_GINI</dfn>              = <var>1</var>,</td></tr>
+<tr><th id="174">174</th><td>    <dfn class="enum" id="CvStumpError::CV_ENTROPY" title='CvStumpError::CV_ENTROPY' data-ref="CvStumpError::CV_ENTROPY">CV_ENTROPY</dfn>           = <var>2</var>,</td></tr>
+<tr><th id="175">175</th><td>    <dfn class="enum" id="CvStumpError::CV_SQUARE" title='CvStumpError::CV_SQUARE' data-ref="CvStumpError::CV_SQUARE">CV_SQUARE</dfn>            = <var>3</var></td></tr>
+<tr><th id="176">176</th><td>} <dfn class="typedef" id="CvStumpError" title='CvStumpError' data-type='enum CvStumpError' data-ref="CvStumpError">CvStumpError</dfn>;</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvStumpTrainParams" title='CvStumpTrainParams' data-ref="CvStumpTrainParams"><a class="type" href="#CvStumpTrainParams" title='CvStumpTrainParams' data-ref="CvStumpTrainParams">CvStumpTrainParams</a></dfn></td></tr>
+<tr><th id="180">180</th><td>{</td></tr>
+<tr><th id="181">181</th><td>    <a class="macro" href="#137" title="" data-ref="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS">CV_CLASSIFIER_TRAIN_PARAM_FIELDS</a>()</td></tr>
+<tr><th id="182">182</th><td>    <a class="typedef" href="#CvStumpType" title='CvStumpType' data-type='enum CvStumpType' data-ref="CvStumpType">CvStumpType</a>  <dfn class="decl" id="CvStumpTrainParams::type" title='CvStumpTrainParams::type' data-ref="CvStumpTrainParams::type">type</dfn>;</td></tr>
+<tr><th id="183">183</th><td>    <a class="typedef" href="#CvStumpError" title='CvStumpError' data-type='enum CvStumpError' data-ref="CvStumpError">CvStumpError</a> <dfn class="decl" id="CvStumpTrainParams::error" title='CvStumpTrainParams::error' data-ref="CvStumpTrainParams::error">error</dfn>;</td></tr>
+<tr><th id="184">184</th><td>} <dfn class="typedef" id="CvStumpTrainParams" title='CvStumpTrainParams' data-type='struct CvStumpTrainParams' data-ref="CvStumpTrainParams">CvStumpTrainParams</dfn>;</td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvMTStumpTrainParams" title='CvMTStumpTrainParams' data-ref="CvMTStumpTrainParams"><a class="type" href="#CvMTStumpTrainParams" title='CvMTStumpTrainParams' data-ref="CvMTStumpTrainParams">CvMTStumpTrainParams</a></dfn></td></tr>
+<tr><th id="187">187</th><td>{</td></tr>
+<tr><th id="188">188</th><td>    <a class="macro" href="#137" title="" data-ref="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS">CV_CLASSIFIER_TRAIN_PARAM_FIELDS</a>()</td></tr>
+<tr><th id="189">189</th><td>    <a class="typedef" href="#CvStumpType" title='CvStumpType' data-type='enum CvStumpType' data-ref="CvStumpType">CvStumpType</a>  <dfn class="decl" id="CvMTStumpTrainParams::type" title='CvMTStumpTrainParams::type' data-ref="CvMTStumpTrainParams::type">type</dfn>;</td></tr>
+<tr><th id="190">190</th><td>    <a class="typedef" href="#CvStumpError" title='CvStumpError' data-type='enum CvStumpError' data-ref="CvStumpError">CvStumpError</a> <dfn class="decl" id="CvMTStumpTrainParams::error" title='CvMTStumpTrainParams::error' data-ref="CvMTStumpTrainParams::error">error</dfn>;</td></tr>
+<tr><th id="191">191</th><td>    <em>int</em> <dfn class="decl" id="CvMTStumpTrainParams::portion" title='CvMTStumpTrainParams::portion' data-ref="CvMTStumpTrainParams::portion">portion</dfn>; <i>/* number of components calculated in each thread */</i></td></tr>
+<tr><th id="192">192</th><td>    <em>int</em> <dfn class="decl" id="CvMTStumpTrainParams::numcomp" title='CvMTStumpTrainParams::numcomp' data-ref="CvMTStumpTrainParams::numcomp">numcomp</dfn>; <i>/* total number of components */</i></td></tr>
+<tr><th id="193">193</th><td></td></tr>
+<tr><th id="194">194</th><td>    <i>/* callback which fills &lt;mat&gt; with components [first, first+num[ */</i></td></tr>
+<tr><th id="195">195</th><td>    <em>void</em> (*<dfn class="decl" id="CvMTStumpTrainParams::getTrainData" title='CvMTStumpTrainParams::getTrainData' data-ref="CvMTStumpTrainParams::getTrainData">getTrainData</dfn>)( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="6mat" title='mat' data-type='CvMat *' data-ref="6mat">mat</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col7 decl" id="7sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="7sampleIdx">sampleIdx</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="8compIdx" title='compIdx' data-type='CvMat *' data-ref="8compIdx">compIdx</dfn>,</td></tr>
+<tr><th id="196">196</th><td>                          <em>int</em> <dfn class="local col9 decl" id="9first" title='first' data-type='int' data-ref="9first">first</dfn>, <em>int</em> <dfn class="local col0 decl" id="10num" title='num' data-type='int' data-ref="10num">num</dfn>, <em>void</em>* <dfn class="local col1 decl" id="11userdata" title='userdata' data-type='void *' data-ref="11userdata">userdata</dfn> );</td></tr>
+<tr><th id="197">197</th><td>    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="decl" id="CvMTStumpTrainParams::sortedIdx" title='CvMTStumpTrainParams::sortedIdx' data-ref="CvMTStumpTrainParams::sortedIdx">sortedIdx</dfn>; <i>/* presorted samples indices */</i></td></tr>
+<tr><th id="198">198</th><td>    <em>void</em>* <dfn class="decl" id="CvMTStumpTrainParams::userdata" title='CvMTStumpTrainParams::userdata' data-ref="CvMTStumpTrainParams::userdata">userdata</dfn>; <i>/* passed to callback */</i></td></tr>
+<tr><th id="199">199</th><td>} <dfn class="typedef" id="CvMTStumpTrainParams" title='CvMTStumpTrainParams' data-type='struct CvMTStumpTrainParams' data-ref="CvMTStumpTrainParams">CvMTStumpTrainParams</dfn>;</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvStumpClassifier" title='CvStumpClassifier' data-ref="CvStumpClassifier"><a class="type" href="#CvStumpClassifier" title='CvStumpClassifier' data-ref="CvStumpClassifier">CvStumpClassifier</a></dfn></td></tr>
+<tr><th id="202">202</th><td>{</td></tr>
+<tr><th id="203">203</th><td>    <a class="macro" href="#124" title="int flags; float(*eval)( struct CvClassifier*, CvMat* ); void (*tune)( struct CvClassifier*, CvMat*, int flags, CvMat*, CvMat*, CvMat*, CvMat*, CvMat* ); int (*save)( struct CvClassifier*, const char* file_name ); void (*release)( struct CvClassifier** );" data-ref="_M/CV_CLASSIFIER_FIELDS">CV_CLASSIFIER_FIELDS</a>()</td></tr>
+<tr><th id="204">204</th><td>    <em>int</em> <dfn class="decl" id="CvStumpClassifier::compidx" title='CvStumpClassifier::compidx' data-ref="CvStumpClassifier::compidx">compidx</dfn>;</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>    <em>float</em> <dfn class="decl" id="CvStumpClassifier::lerror" title='CvStumpClassifier::lerror' data-ref="CvStumpClassifier::lerror">lerror</dfn>; <i>/* impurity of the right node */</i></td></tr>
+<tr><th id="207">207</th><td>    <em>float</em> <dfn class="decl" id="CvStumpClassifier::rerror" title='CvStumpClassifier::rerror' data-ref="CvStumpClassifier::rerror">rerror</dfn>; <i>/* impurity of the left  node */</i></td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>    <em>float</em> <dfn class="decl" id="CvStumpClassifier::threshold" title='CvStumpClassifier::threshold' data-ref="CvStumpClassifier::threshold">threshold</dfn>;</td></tr>
+<tr><th id="210">210</th><td>    <em>float</em> <dfn class="decl" id="CvStumpClassifier::left" title='CvStumpClassifier::left' data-ref="CvStumpClassifier::left">left</dfn>;</td></tr>
+<tr><th id="211">211</th><td>    <em>float</em> <dfn class="decl" id="CvStumpClassifier::right" title='CvStumpClassifier::right' data-ref="CvStumpClassifier::right">right</dfn>;</td></tr>
+<tr><th id="212">212</th><td>} <dfn class="typedef" id="CvStumpClassifier" title='CvStumpClassifier' data-type='struct CvStumpClassifier' data-ref="CvStumpClassifier">CvStumpClassifier</dfn>;</td></tr>
+<tr><th id="213">213</th><td></td></tr>
+<tr><th id="214">214</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvCARTTrainParams" title='CvCARTTrainParams' data-ref="CvCARTTrainParams"><a class="type" href="#CvCARTTrainParams" title='CvCARTTrainParams' data-ref="CvCARTTrainParams">CvCARTTrainParams</a></dfn></td></tr>
+<tr><th id="215">215</th><td>{</td></tr>
+<tr><th id="216">216</th><td>    <a class="macro" href="#137" title="" data-ref="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS">CV_CLASSIFIER_TRAIN_PARAM_FIELDS</a>()</td></tr>
+<tr><th id="217">217</th><td>    <i>/* desired number of internal nodes */</i></td></tr>
+<tr><th id="218">218</th><td>    <em>int</em> <dfn class="decl" id="CvCARTTrainParams::count" title='CvCARTTrainParams::count' data-ref="CvCARTTrainParams::count">count</dfn>;</td></tr>
+<tr><th id="219">219</th><td>    <a class="typedef" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a>* <dfn class="decl" id="CvCARTTrainParams::stumpTrainParams" title='CvCARTTrainParams::stumpTrainParams' data-ref="CvCARTTrainParams::stumpTrainParams">stumpTrainParams</dfn>;</td></tr>
+<tr><th id="220">220</th><td>    <a class="typedef" href="#CvClassifierConstructor" title='CvClassifierConstructor' data-type='CvClassifier *(*)(CvMat *, int, CvMat *, CvMat *, CvMat *, CvMat *, CvMat *, CvMat *, CvClassifierTrainParams *)' data-ref="CvClassifierConstructor">CvClassifierConstructor</a>  <dfn class="decl" id="CvCARTTrainParams::stumpConstructor" title='CvCARTTrainParams::stumpConstructor' data-ref="CvCARTTrainParams::stumpConstructor">stumpConstructor</dfn>;</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>    <i>/*</i></td></tr>
+<tr><th id="223">223</th><td><i>     * Split sample indices &lt;idx&gt;</i></td></tr>
+<tr><th id="224">224</th><td><i>     * on the "left" indices &lt;left&gt; and "right" indices &lt;right&gt;</i></td></tr>
+<tr><th id="225">225</th><td><i>     * according to samples components &lt;compidx&gt; values and &lt;threshold&gt;.</i></td></tr>
+<tr><th id="226">226</th><td><i>     *</i></td></tr>
+<tr><th id="227">227</th><td><i>     * NOTE: Matrices &lt;left&gt; and &lt;right&gt; must be allocated using cvCreateMat function</i></td></tr>
+<tr><th id="228">228</th><td><i>     *   since they are freed using cvReleaseMat function</i></td></tr>
+<tr><th id="229">229</th><td><i>     *</i></td></tr>
+<tr><th id="230">230</th><td><i>     * If it is NULL then the default implementation which evaluates training</i></td></tr>
+<tr><th id="231">231</th><td><i>     * samples from &lt;trainData&gt; passed to classifier constructor is used</i></td></tr>
+<tr><th id="232">232</th><td><i>     */</i></td></tr>
+<tr><th id="233">233</th><td>    <em>void</em> (*<dfn class="decl" id="CvCARTTrainParams::splitIdx" title='CvCARTTrainParams::splitIdx' data-ref="CvCARTTrainParams::splitIdx">splitIdx</dfn>)( <em>int</em> <dfn class="local col4 decl" id="14compidx" title='compidx' data-type='int' data-ref="14compidx">compidx</dfn>, <em>float</em> <dfn class="local col5 decl" id="15threshold" title='threshold' data-type='float' data-ref="15threshold">threshold</dfn>,</td></tr>
+<tr><th id="234">234</th><td>                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="16idx" title='idx' data-type='CvMat *' data-ref="16idx">idx</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col7 decl" id="17left" title='left' data-type='CvMat **' data-ref="17left">left</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col8 decl" id="18right" title='right' data-type='CvMat **' data-ref="18right">right</dfn>,</td></tr>
+<tr><th id="235">235</th><td>                      <em>void</em>* <dfn class="local col9 decl" id="19userdata" title='userdata' data-type='void *' data-ref="19userdata">userdata</dfn> );</td></tr>
+<tr><th id="236">236</th><td>    <em>void</em>* <dfn class="decl" id="CvCARTTrainParams::userdata" title='CvCARTTrainParams::userdata' data-ref="CvCARTTrainParams::userdata">userdata</dfn>;</td></tr>
+<tr><th id="237">237</th><td>} <dfn class="typedef" id="CvCARTTrainParams" title='CvCARTTrainParams' data-type='struct CvCARTTrainParams' data-ref="CvCARTTrainParams">CvCARTTrainParams</dfn>;</td></tr>
+<tr><th id="238">238</th><td></td></tr>
+<tr><th id="239">239</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvCARTClassifier" title='CvCARTClassifier' data-ref="CvCARTClassifier"><a class="type" href="#CvCARTClassifier" title='CvCARTClassifier' data-ref="CvCARTClassifier">CvCARTClassifier</a></dfn></td></tr>
+<tr><th id="240">240</th><td>{</td></tr>
+<tr><th id="241">241</th><td>    <a class="macro" href="#124" title="int flags; float(*eval)( struct CvClassifier*, CvMat* ); void (*tune)( struct CvClassifier*, CvMat*, int flags, CvMat*, CvMat*, CvMat*, CvMat*, CvMat* ); int (*save)( struct CvClassifier*, const char* file_name ); void (*release)( struct CvClassifier** );" data-ref="_M/CV_CLASSIFIER_FIELDS">CV_CLASSIFIER_FIELDS</a>()</td></tr>
+<tr><th id="242">242</th><td>    <i>/* number of internal nodes */</i></td></tr>
+<tr><th id="243">243</th><td>    <em>int</em> <dfn class="decl" id="CvCARTClassifier::count" title='CvCARTClassifier::count' data-ref="CvCARTClassifier::count">count</dfn>;</td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td>    <i>/* internal nodes (each array of &lt;count&gt; elements) */</i></td></tr>
+<tr><th id="246">246</th><td>    <em>int</em>* <dfn class="decl" id="CvCARTClassifier::compidx" title='CvCARTClassifier::compidx' data-ref="CvCARTClassifier::compidx">compidx</dfn>;</td></tr>
+<tr><th id="247">247</th><td>    <em>float</em>* <dfn class="decl" id="CvCARTClassifier::threshold" title='CvCARTClassifier::threshold' data-ref="CvCARTClassifier::threshold">threshold</dfn>;</td></tr>
+<tr><th id="248">248</th><td>    <em>int</em>* <dfn class="decl" id="CvCARTClassifier::left" title='CvCARTClassifier::left' data-ref="CvCARTClassifier::left">left</dfn>;</td></tr>
+<tr><th id="249">249</th><td>    <em>int</em>* <dfn class="decl" id="CvCARTClassifier::right" title='CvCARTClassifier::right' data-ref="CvCARTClassifier::right">right</dfn>;</td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td>    <i>/* leaves (array of &lt;count&gt;+1 elements) */</i></td></tr>
+<tr><th id="252">252</th><td>    <em>float</em>* <dfn class="decl" id="CvCARTClassifier::val" title='CvCARTClassifier::val' data-ref="CvCARTClassifier::val">val</dfn>;</td></tr>
+<tr><th id="253">253</th><td>} <dfn class="typedef" id="CvCARTClassifier" title='CvCARTClassifier' data-type='struct CvCARTClassifier' data-ref="CvCARTClassifier">CvCARTClassifier</dfn>;</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="256">256</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z18cvGetSortedIndicesP5CvMatS0_i" title='cvGetSortedIndices' data-ref="_Z18cvGetSortedIndicesP5CvMatS0_i" id="_Z18cvGetSortedIndicesP5CvMatS0_i">cvGetSortedIndices</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="22val" title='val' data-type='CvMat *' data-ref="22val">val</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="23idx" title='idx' data-type='CvMat *' data-ref="23idx">idx</dfn>, <em>int</em> <dfn class="local col4 decl" id="24sortcols" title='sortcols' data-type='int' data-ref="24sortcols">sortcols</dfn> <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>( <var>0</var> ) );</td></tr>
+<tr><th id="257">257</th><td></td></tr>
+<tr><th id="258">258</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="259">259</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z24cvReleaseStumpClassifierPP12CvClassifier" title='cvReleaseStumpClassifier' data-ref="_Z24cvReleaseStumpClassifierPP12CvClassifier" id="_Z24cvReleaseStumpClassifierPP12CvClassifier">cvReleaseStumpClassifier</a>( <a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>** <dfn class="local col5 decl" id="25classifier" title='classifier' data-type='CvClassifier **' data-ref="25classifier">classifier</dfn> );</td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="262">262</th><td><em>float</em> <a class="decl" href="cvboost.cpp.html#_Z21cvEvalStumpClassifierP12CvClassifierP5CvMat" title='cvEvalStumpClassifier' data-ref="_Z21cvEvalStumpClassifierP12CvClassifierP5CvMat" id="_Z21cvEvalStumpClassifierP12CvClassifierP5CvMat">cvEvalStumpClassifier</a>( <a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <dfn class="local col6 decl" id="26classifier" title='classifier' data-type='CvClassifier *' data-ref="26classifier">classifier</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col7 decl" id="27sample" title='sample' data-type='CvMat *' data-ref="27sample">sample</dfn> );</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="265">265</th><td><a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <a class="decl" href="cvboost.cpp.html#_Z23cvCreateStumpClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" title='cvCreateStumpClassifier' data-ref="_Z23cvCreateStumpClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" id="_Z23cvCreateStumpClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams">cvCreateStumpClassifier</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="28trainData" title='trainData' data-type='CvMat *' data-ref="28trainData">trainData</dfn>,</td></tr>
+<tr><th id="266">266</th><td>                                       <em>int</em> <dfn class="local col9 decl" id="29flags" title='flags' data-type='int' data-ref="29flags">flags</dfn>,</td></tr>
+<tr><th id="267">267</th><td>                                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col0 decl" id="30trainClasses" title='trainClasses' data-type='CvMat *' data-ref="30trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="268">268</th><td>                                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="31typeMask" title='typeMask' data-type='CvMat *' data-ref="31typeMask">typeMask</dfn>,</td></tr>
+<tr><th id="269">269</th><td>                                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="32missedMeasurementsMask" title='missedMeasurementsMask' data-type='CvMat *' data-ref="32missedMeasurementsMask">missedMeasurementsMask</dfn> <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>),</td></tr>
+<tr><th id="270">270</th><td>                                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="33compIdx" title='compIdx' data-type='CvMat *' data-ref="33compIdx">compIdx</dfn> <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>),</td></tr>
+<tr><th id="271">271</th><td>                                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="34sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="34sampleIdx">sampleIdx</dfn> <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>),</td></tr>
+<tr><th id="272">272</th><td>                                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="35weights" title='weights' data-type='CvMat *' data-ref="35weights">weights</dfn> <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>),</td></tr>
+<tr><th id="273">273</th><td>                                       <a class="typedef" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a>* <dfn class="local col6 decl" id="36trainParams" title='trainParams' data-type='CvClassifierTrainParams *' data-ref="36trainParams">trainParams</dfn> <a class="macro" href="../../modules/core/include/opencv2/core/types_c.h.html#131" title="= 0" data-ref="_M/CV_DEFAULT">CV_DEFAULT</a>(<var>0</var>) );</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td><i>/*</i></td></tr>
+<tr><th id="276">276</th><td><i> * cvCreateMTStumpClassifier</i></td></tr>
+<tr><th id="277">277</th><td><i> *</i></td></tr>
+<tr><th id="278">278</th><td><i> * Multithreaded stump classifier constructor</i></td></tr>
+<tr><th id="279">279</th><td><i> * Includes huge train data support through callback function</i></td></tr>
+<tr><th id="280">280</th><td><i> */</i></td></tr>
+<tr><th id="281">281</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="282">282</th><td><a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <a class="decl" href="cvboost.cpp.html#_Z25cvCreateMTStumpClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" title='cvCreateMTStumpClassifier' data-ref="_Z25cvCreateMTStumpClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" id="_Z25cvCreateMTStumpClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams">cvCreateMTStumpClassifier</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col7 decl" id="37trainData" title='trainData' data-type='CvMat *' data-ref="37trainData">trainData</dfn>,</td></tr>
+<tr><th id="283">283</th><td>                                         <em>int</em> <dfn class="local col8 decl" id="38flags" title='flags' data-type='int' data-ref="38flags">flags</dfn>,</td></tr>
+<tr><th id="284">284</th><td>                                         <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="39trainClasses" title='trainClasses' data-type='CvMat *' data-ref="39trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="285">285</th><td>                                         <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col0 decl" id="40typeMask" title='typeMask' data-type='CvMat *' data-ref="40typeMask">typeMask</dfn>,</td></tr>
+<tr><th id="286">286</th><td>                                         <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="41missedMeasurementsMask" title='missedMeasurementsMask' data-type='CvMat *' data-ref="41missedMeasurementsMask">missedMeasurementsMask</dfn>,</td></tr>
+<tr><th id="287">287</th><td>                                         <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="42compIdx" title='compIdx' data-type='CvMat *' data-ref="42compIdx">compIdx</dfn>,</td></tr>
+<tr><th id="288">288</th><td>                                         <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="43sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="43sampleIdx">sampleIdx</dfn>,</td></tr>
+<tr><th id="289">289</th><td>                                         <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="44weights" title='weights' data-type='CvMat *' data-ref="44weights">weights</dfn>,</td></tr>
+<tr><th id="290">290</th><td>                                         <a class="typedef" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a>* <dfn class="local col5 decl" id="45trainParams" title='trainParams' data-type='CvClassifierTrainParams *' data-ref="45trainParams">trainParams</dfn> );</td></tr>
+<tr><th id="291">291</th><td></td></tr>
+<tr><th id="292">292</th><td><i>/*</i></td></tr>
+<tr><th id="293">293</th><td><i> * cvCreateCARTClassifier</i></td></tr>
+<tr><th id="294">294</th><td><i> *</i></td></tr>
+<tr><th id="295">295</th><td><i> * CART classifier constructor</i></td></tr>
+<tr><th id="296">296</th><td><i> */</i></td></tr>
+<tr><th id="297">297</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="298">298</th><td><a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <a class="decl" href="cvboost.cpp.html#_Z22cvCreateCARTClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" title='cvCreateCARTClassifier' data-ref="_Z22cvCreateCARTClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" id="_Z22cvCreateCARTClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams">cvCreateCARTClassifier</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="46trainData" title='trainData' data-type='CvMat *' data-ref="46trainData">trainData</dfn>,</td></tr>
+<tr><th id="299">299</th><td>                                      <em>int</em> <dfn class="local col7 decl" id="47flags" title='flags' data-type='int' data-ref="47flags">flags</dfn>,</td></tr>
+<tr><th id="300">300</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="48trainClasses" title='trainClasses' data-type='CvMat *' data-ref="48trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="301">301</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="49typeMask" title='typeMask' data-type='CvMat *' data-ref="49typeMask">typeMask</dfn>,</td></tr>
+<tr><th id="302">302</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col0 decl" id="50missedMeasurementsMask" title='missedMeasurementsMask' data-type='CvMat *' data-ref="50missedMeasurementsMask">missedMeasurementsMask</dfn>,</td></tr>
+<tr><th id="303">303</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="51compIdx" title='compIdx' data-type='CvMat *' data-ref="51compIdx">compIdx</dfn>,</td></tr>
+<tr><th id="304">304</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="52sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="52sampleIdx">sampleIdx</dfn>,</td></tr>
+<tr><th id="305">305</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="53weights" title='weights' data-type='CvMat *' data-ref="53weights">weights</dfn>,</td></tr>
+<tr><th id="306">306</th><td>                                      <a class="typedef" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a>* <dfn class="local col4 decl" id="54trainParams" title='trainParams' data-type='CvClassifierTrainParams *' data-ref="54trainParams">trainParams</dfn> );</td></tr>
+<tr><th id="307">307</th><td></td></tr>
+<tr><th id="308">308</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="309">309</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z23cvReleaseCARTClassifierPP12CvClassifier" title='cvReleaseCARTClassifier' data-ref="_Z23cvReleaseCARTClassifierPP12CvClassifier" id="_Z23cvReleaseCARTClassifierPP12CvClassifier">cvReleaseCARTClassifier</a>( <a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>** <dfn class="local col5 decl" id="55classifier" title='classifier' data-type='CvClassifier **' data-ref="55classifier">classifier</dfn> );</td></tr>
+<tr><th id="310">310</th><td></td></tr>
+<tr><th id="311">311</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="312">312</th><td><em>float</em> <a class="decl" href="cvboost.cpp.html#_Z20cvEvalCARTClassifierP12CvClassifierP5CvMat" title='cvEvalCARTClassifier' data-ref="_Z20cvEvalCARTClassifierP12CvClassifierP5CvMat" id="_Z20cvEvalCARTClassifierP12CvClassifierP5CvMat">cvEvalCARTClassifier</a>( <a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <dfn class="local col6 decl" id="56classifier" title='classifier' data-type='CvClassifier *' data-ref="56classifier">classifier</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col7 decl" id="57sample" title='sample' data-type='CvMat *' data-ref="57sample">sample</dfn> );</td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td><i>/****************************************************************************************\</i></td></tr>
+<tr><th id="315">315</th><td><i>*                                        Boosting                                        *</i></td></tr>
+<tr><th id="316">316</th><td><i>\****************************************************************************************/</i></td></tr>
+<tr><th id="317">317</th><td></td></tr>
+<tr><th id="318">318</th><td><i>/*</i></td></tr>
+<tr><th id="319">319</th><td><i> * CvBoostType</i></td></tr>
+<tr><th id="320">320</th><td><i> *</i></td></tr>
+<tr><th id="321">321</th><td><i> * The CvBoostType enumeration specifies the boosting type.</i></td></tr>
+<tr><th id="322">322</th><td><i> *</i></td></tr>
+<tr><th id="323">323</th><td><i> * Remarks</i></td></tr>
+<tr><th id="324">324</th><td><i> *   Four different boosting variants for 2 class classification problems are supported:</i></td></tr>
+<tr><th id="325">325</th><td><i> *   Discrete AdaBoost, Real AdaBoost, LogitBoost and Gentle AdaBoost.</i></td></tr>
+<tr><th id="326">326</th><td><i> *   The L2 (2 class classification problems) and LK (K class classification problems)</i></td></tr>
+<tr><th id="327">327</th><td><i> *   algorithms are close to LogitBoost but more numerically stable than last one.</i></td></tr>
+<tr><th id="328">328</th><td><i> *   For regression three different loss functions are supported:</i></td></tr>
+<tr><th id="329">329</th><td><i> *   Least square, least absolute deviation and huber loss.</i></td></tr>
+<tr><th id="330">330</th><td><i> */</i></td></tr>
+<tr><th id="331">331</th><td><b>typedef</b> <b>enum</b> <dfn class="type def" id="CvBoostType" title='CvBoostType' data-ref="CvBoostType"><a class="type" href="#CvBoostType" title='CvBoostType' data-ref="CvBoostType">CvBoostType</a></dfn></td></tr>
+<tr><th id="332">332</th><td>{</td></tr>
+<tr><th id="333">333</th><td>    <dfn class="enum" id="CvBoostType::CV_DABCLASS" title='CvBoostType::CV_DABCLASS' data-ref="CvBoostType::CV_DABCLASS">CV_DABCLASS</dfn> = <var>0</var>, <i>/* 2 class Discrete AdaBoost           */</i></td></tr>
+<tr><th id="334">334</th><td>    <dfn class="enum" id="CvBoostType::CV_RABCLASS" title='CvBoostType::CV_RABCLASS' data-ref="CvBoostType::CV_RABCLASS">CV_RABCLASS</dfn> = <var>1</var>, <i>/* 2 class Real AdaBoost               */</i></td></tr>
+<tr><th id="335">335</th><td>    <dfn class="enum" id="CvBoostType::CV_LBCLASS" title='CvBoostType::CV_LBCLASS' data-ref="CvBoostType::CV_LBCLASS">CV_LBCLASS</dfn>  = <var>2</var>, <i>/* 2 class LogitBoost                  */</i></td></tr>
+<tr><th id="336">336</th><td>    <dfn class="enum" id="CvBoostType::CV_GABCLASS" title='CvBoostType::CV_GABCLASS' data-ref="CvBoostType::CV_GABCLASS">CV_GABCLASS</dfn> = <var>3</var>, <i>/* 2 class Gentle AdaBoost             */</i></td></tr>
+<tr><th id="337">337</th><td>    <dfn class="enum" id="CvBoostType::CV_L2CLASS" title='CvBoostType::CV_L2CLASS' data-ref="CvBoostType::CV_L2CLASS">CV_L2CLASS</dfn>  = <var>4</var>, <i>/* classification (2 class problem)    */</i></td></tr>
+<tr><th id="338">338</th><td>    <dfn class="enum" id="CvBoostType::CV_LKCLASS" title='CvBoostType::CV_LKCLASS' data-ref="CvBoostType::CV_LKCLASS">CV_LKCLASS</dfn>  = <var>5</var>, <i>/* classification (K class problem)    */</i></td></tr>
+<tr><th id="339">339</th><td>    <dfn class="enum" id="CvBoostType::CV_LSREG" title='CvBoostType::CV_LSREG' data-ref="CvBoostType::CV_LSREG">CV_LSREG</dfn>    = <var>6</var>, <i>/* least squares regression            */</i></td></tr>
+<tr><th id="340">340</th><td>    <dfn class="enum" id="CvBoostType::CV_LADREG" title='CvBoostType::CV_LADREG' data-ref="CvBoostType::CV_LADREG">CV_LADREG</dfn>   = <var>7</var>, <i>/* least absolute deviation regression */</i></td></tr>
+<tr><th id="341">341</th><td>    <dfn class="enum" id="CvBoostType::CV_MREG" title='CvBoostType::CV_MREG' data-ref="CvBoostType::CV_MREG">CV_MREG</dfn>     = <var>8</var>  <i>/* M-regression (Huber loss)           */</i></td></tr>
+<tr><th id="342">342</th><td>} <dfn class="typedef" id="CvBoostType" title='CvBoostType' data-type='enum CvBoostType' data-ref="CvBoostType">CvBoostType</dfn>;</td></tr>
+<tr><th id="343">343</th><td></td></tr>
+<tr><th id="344">344</th><td><i>/****************************************************************************************\</i></td></tr>
+<tr><th id="345">345</th><td><i>*                             Iterative training functions                               *</i></td></tr>
+<tr><th id="346">346</th><td><i>\****************************************************************************************/</i></td></tr>
+<tr><th id="347">347</th><td></td></tr>
+<tr><th id="348">348</th><td><i>/*</i></td></tr>
+<tr><th id="349">349</th><td><i> * CvBoostTrainer</i></td></tr>
+<tr><th id="350">350</th><td><i> *</i></td></tr>
+<tr><th id="351">351</th><td><i> * The CvBoostTrainer structure represents internal boosting trainer.</i></td></tr>
+<tr><th id="352">352</th><td><i> */</i></td></tr>
+<tr><th id="353">353</th><td><b>typedef</b> <b>struct</b> <a class="type" href="cvboost.cpp.html#CvBoostTrainer" title='CvBoostTrainer' data-ref="CvBoostTrainer" id="CvBoostTrainer"><a class="type" href="cvboost.cpp.html#CvBoostTrainer" title='CvBoostTrainer' data-ref="CvBoostTrainer">CvBoostTrainer</a></a> <dfn class="typedef" id="CvBoostTrainer" title='CvBoostTrainer' data-type='struct CvBoostTrainer' data-ref="CvBoostTrainer">CvBoostTrainer</dfn>;</td></tr>
+<tr><th id="354">354</th><td></td></tr>
+<tr><th id="355">355</th><td><i>/*</i></td></tr>
+<tr><th id="356">356</th><td><i> * cvBoostStartTraining</i></td></tr>
+<tr><th id="357">357</th><td><i> *</i></td></tr>
+<tr><th id="358">358</th><td><i> * The cvBoostStartTraining function starts training process and calculates</i></td></tr>
+<tr><th id="359">359</th><td><i> * response values and weights for the first weak classifier training.</i></td></tr>
+<tr><th id="360">360</th><td><i> *</i></td></tr>
+<tr><th id="361">361</th><td><i> * Parameters</i></td></tr>
+<tr><th id="362">362</th><td><i> *   trainClasses</i></td></tr>
+<tr><th id="363">363</th><td><i> *     Vector of classes of training samples classes. Each element must be 0 or 1 and</i></td></tr>
+<tr><th id="364">364</th><td><i> *     of type CV_32FC1.</i></td></tr>
+<tr><th id="365">365</th><td><i> *   weakTrainVals</i></td></tr>
+<tr><th id="366">366</th><td><i> *     Vector of response values for the first trained weak classifier.</i></td></tr>
+<tr><th id="367">367</th><td><i> *     Must be of type CV_32FC1.</i></td></tr>
+<tr><th id="368">368</th><td><i> *   weights</i></td></tr>
+<tr><th id="369">369</th><td><i> *     Weight vector of training samples for the first trained weak classifier.</i></td></tr>
+<tr><th id="370">370</th><td><i> *     Must be of type CV_32FC1.</i></td></tr>
+<tr><th id="371">371</th><td><i> *   type</i></td></tr>
+<tr><th id="372">372</th><td><i> *     Boosting type. CV_DABCLASS, CV_RABCLASS, CV_LBCLASS, CV_GABCLASS</i></td></tr>
+<tr><th id="373">373</th><td><i> *     types are supported.</i></td></tr>
+<tr><th id="374">374</th><td><i> *</i></td></tr>
+<tr><th id="375">375</th><td><i> * Return Values</i></td></tr>
+<tr><th id="376">376</th><td><i> *   The return value is a pointer to internal trainer structure which is used</i></td></tr>
+<tr><th id="377">377</th><td><i> *   to perform next training iterations.</i></td></tr>
+<tr><th id="378">378</th><td><i> *</i></td></tr>
+<tr><th id="379">379</th><td><i> * Remarks</i></td></tr>
+<tr><th id="380">380</th><td><i> *   weakTrainVals and weights must be allocated before calling the function</i></td></tr>
+<tr><th id="381">381</th><td><i> *   and of the same size as trainingClasses. Usually weights should be initialized</i></td></tr>
+<tr><th id="382">382</th><td><i> *   with 1.0 value.</i></td></tr>
+<tr><th id="383">383</th><td><i> *   The function calculates response values and weights for the first weak</i></td></tr>
+<tr><th id="384">384</th><td><i> *   classifier training and stores them into weakTrainVals and weights</i></td></tr>
+<tr><th id="385">385</th><td><i> *   respectively.</i></td></tr>
+<tr><th id="386">386</th><td><i> *   Note, the training of the weak classifier using weakTrainVals, weight,</i></td></tr>
+<tr><th id="387">387</th><td><i> *   trainingData is outside of this function.</i></td></tr>
+<tr><th id="388">388</th><td><i> */</i></td></tr>
+<tr><th id="389">389</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="390">390</th><td><a class="typedef" href="#CvBoostTrainer" title='CvBoostTrainer' data-type='struct CvBoostTrainer' data-ref="CvBoostTrainer">CvBoostTrainer</a>* <a class="decl" href="cvboost.cpp.html#_Z20cvBoostStartTrainingP5CvMatS0_S0_S0_11CvBoostType" title='cvBoostStartTraining' data-ref="_Z20cvBoostStartTrainingP5CvMatS0_S0_S0_11CvBoostType" id="_Z20cvBoostStartTrainingP5CvMatS0_S0_S0_11CvBoostType">cvBoostStartTraining</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="58trainClasses" title='trainClasses' data-type='CvMat *' data-ref="58trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="391">391</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col9 decl" id="59weakTrainVals" title='weakTrainVals' data-type='CvMat *' data-ref="59weakTrainVals">weakTrainVals</dfn>,</td></tr>
+<tr><th id="392">392</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col0 decl" id="60weights" title='weights' data-type='CvMat *' data-ref="60weights">weights</dfn>,</td></tr>
+<tr><th id="393">393</th><td>                                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="61sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="61sampleIdx">sampleIdx</dfn>,</td></tr>
+<tr><th id="394">394</th><td>                                      <a class="typedef" href="#CvBoostType" title='CvBoostType' data-type='enum CvBoostType' data-ref="CvBoostType">CvBoostType</a> <dfn class="local col2 decl" id="62type" title='type' data-type='CvBoostType' data-ref="62type">type</dfn> );</td></tr>
+<tr><th id="395">395</th><td><i>/*</i></td></tr>
+<tr><th id="396">396</th><td><i> * cvBoostNextWeakClassifier</i></td></tr>
+<tr><th id="397">397</th><td><i> *</i></td></tr>
+<tr><th id="398">398</th><td><i> * The cvBoostNextWeakClassifier function performs next training</i></td></tr>
+<tr><th id="399">399</th><td><i> * iteration and caluclates response values and weights for the next weak</i></td></tr>
+<tr><th id="400">400</th><td><i> * classifier training.</i></td></tr>
+<tr><th id="401">401</th><td><i> *</i></td></tr>
+<tr><th id="402">402</th><td><i> * Parameters</i></td></tr>
+<tr><th id="403">403</th><td><i> *   weakEvalVals</i></td></tr>
+<tr><th id="404">404</th><td><i> *     Vector of values obtained by evaluation of each sample with</i></td></tr>
+<tr><th id="405">405</th><td><i> *     the last trained weak classifier (iteration i). Must be of CV_32FC1 type.</i></td></tr>
+<tr><th id="406">406</th><td><i> *   trainClasses</i></td></tr>
+<tr><th id="407">407</th><td><i> *     Vector of classes of training samples. Each element must be 0 or 1,</i></td></tr>
+<tr><th id="408">408</th><td><i> *     and of type CV_32FC1.</i></td></tr>
+<tr><th id="409">409</th><td><i> *   weakTrainVals</i></td></tr>
+<tr><th id="410">410</th><td><i> *     Vector of response values for the next weak classifier training</i></td></tr>
+<tr><th id="411">411</th><td><i> *     (iteration i+1). Must be of type CV_32FC1.</i></td></tr>
+<tr><th id="412">412</th><td><i> *   weights</i></td></tr>
+<tr><th id="413">413</th><td><i> *     Weight vector of training samples for the next weak classifier training</i></td></tr>
+<tr><th id="414">414</th><td><i> *     (iteration i+1). Must be of type CV_32FC1.</i></td></tr>
+<tr><th id="415">415</th><td><i> *   trainer</i></td></tr>
+<tr><th id="416">416</th><td><i> *     A pointer to internal trainer returned by the cvBoostStartTraining</i></td></tr>
+<tr><th id="417">417</th><td><i> *     function call.</i></td></tr>
+<tr><th id="418">418</th><td><i> *</i></td></tr>
+<tr><th id="419">419</th><td><i> * Return Values</i></td></tr>
+<tr><th id="420">420</th><td><i> *   The return value is the coefficient for the last trained weak classifier.</i></td></tr>
+<tr><th id="421">421</th><td><i> *</i></td></tr>
+<tr><th id="422">422</th><td><i> * Remarks</i></td></tr>
+<tr><th id="423">423</th><td><i> *   weakTrainVals and weights must be exactly the same vectors as used in</i></td></tr>
+<tr><th id="424">424</th><td><i> *   the cvBoostStartTraining function call and should not be modified.</i></td></tr>
+<tr><th id="425">425</th><td><i> *   The function calculates response values and weights for the next weak</i></td></tr>
+<tr><th id="426">426</th><td><i> *   classifier training and stores them into weakTrainVals and weights</i></td></tr>
+<tr><th id="427">427</th><td><i> *   respectively.</i></td></tr>
+<tr><th id="428">428</th><td><i> *   Note, the training of the weak classifier of iteration i+1 using</i></td></tr>
+<tr><th id="429">429</th><td><i> *   weakTrainVals, weight, trainingData is outside of this function.</i></td></tr>
+<tr><th id="430">430</th><td><i> */</i></td></tr>
+<tr><th id="431">431</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="432">432</th><td><em>float</em> <a class="decl" href="cvboost.cpp.html#_Z25cvBoostNextWeakClassifierP5CvMatS0_S0_S0_P14CvBoostTrainer" title='cvBoostNextWeakClassifier' data-ref="_Z25cvBoostNextWeakClassifierP5CvMatS0_S0_S0_P14CvBoostTrainer" id="_Z25cvBoostNextWeakClassifierP5CvMatS0_S0_S0_P14CvBoostTrainer">cvBoostNextWeakClassifier</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="63weakEvalVals" title='weakEvalVals' data-type='CvMat *' data-ref="63weakEvalVals">weakEvalVals</dfn>,</td></tr>
+<tr><th id="433">433</th><td>                                 <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="64trainClasses" title='trainClasses' data-type='CvMat *' data-ref="64trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="434">434</th><td>                                 <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="65weakTrainVals" title='weakTrainVals' data-type='CvMat *' data-ref="65weakTrainVals">weakTrainVals</dfn>,</td></tr>
+<tr><th id="435">435</th><td>                                 <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="66weights" title='weights' data-type='CvMat *' data-ref="66weights">weights</dfn>,</td></tr>
+<tr><th id="436">436</th><td>                                 <a class="typedef" href="#CvBoostTrainer" title='CvBoostTrainer' data-type='struct CvBoostTrainer' data-ref="CvBoostTrainer">CvBoostTrainer</a>* <dfn class="local col7 decl" id="67trainer" title='trainer' data-type='CvBoostTrainer *' data-ref="67trainer">trainer</dfn> );</td></tr>
+<tr><th id="437">437</th><td></td></tr>
+<tr><th id="438">438</th><td><i>/*</i></td></tr>
+<tr><th id="439">439</th><td><i> * cvBoostEndTraining</i></td></tr>
+<tr><th id="440">440</th><td><i> *</i></td></tr>
+<tr><th id="441">441</th><td><i> * The cvBoostEndTraining function finishes training process and releases</i></td></tr>
+<tr><th id="442">442</th><td><i> * internally allocated memory.</i></td></tr>
+<tr><th id="443">443</th><td><i> *</i></td></tr>
+<tr><th id="444">444</th><td><i> * Parameters</i></td></tr>
+<tr><th id="445">445</th><td><i> *   trainer</i></td></tr>
+<tr><th id="446">446</th><td><i> *     A pointer to a pointer to internal trainer returned by the cvBoostStartTraining</i></td></tr>
+<tr><th id="447">447</th><td><i> *     function call.</i></td></tr>
+<tr><th id="448">448</th><td><i> */</i></td></tr>
+<tr><th id="449">449</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="450">450</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z18cvBoostEndTrainingPP14CvBoostTrainer" title='cvBoostEndTraining' data-ref="_Z18cvBoostEndTrainingPP14CvBoostTrainer" id="_Z18cvBoostEndTrainingPP14CvBoostTrainer">cvBoostEndTraining</a>( <a class="typedef" href="#CvBoostTrainer" title='CvBoostTrainer' data-type='struct CvBoostTrainer' data-ref="CvBoostTrainer">CvBoostTrainer</a>** <dfn class="local col8 decl" id="68trainer" title='trainer' data-type='CvBoostTrainer **' data-ref="68trainer">trainer</dfn> );</td></tr>
+<tr><th id="451">451</th><td></td></tr>
+<tr><th id="452">452</th><td><i>/****************************************************************************************\</i></td></tr>
+<tr><th id="453">453</th><td><i>*                                    Boosted tree models                                 *</i></td></tr>
+<tr><th id="454">454</th><td><i>\****************************************************************************************/</i></td></tr>
+<tr><th id="455">455</th><td></td></tr>
+<tr><th id="456">456</th><td><i>/*</i></td></tr>
+<tr><th id="457">457</th><td><i> * CvBtClassifier</i></td></tr>
+<tr><th id="458">458</th><td><i> *</i></td></tr>
+<tr><th id="459">459</th><td><i> * The CvBtClassifier structure represents boosted tree model.</i></td></tr>
+<tr><th id="460">460</th><td><i> *</i></td></tr>
+<tr><th id="461">461</th><td><i> * Members</i></td></tr>
+<tr><th id="462">462</th><td><i> *   flags</i></td></tr>
+<tr><th id="463">463</th><td><i> *     Flags. If CV_IS_TUNABLE( flags ) != 0 then the model supports tuning.</i></td></tr>
+<tr><th id="464">464</th><td><i> *   eval</i></td></tr>
+<tr><th id="465">465</th><td><i> *     Evaluation function. Returns sample predicted class (0, 1, etc.)</i></td></tr>
+<tr><th id="466">466</th><td><i> *     for classification or predicted value for regression.</i></td></tr>
+<tr><th id="467">467</th><td><i> *   tune</i></td></tr>
+<tr><th id="468">468</th><td><i> *     Tune function. If the model supports tuning then tune call performs</i></td></tr>
+<tr><th id="469">469</th><td><i> *     one more boosting iteration if passed to the function flags parameter</i></td></tr>
+<tr><th id="470">470</th><td><i> *     is CV_TUNABLE otherwise releases internally allocated for tuning memory</i></td></tr>
+<tr><th id="471">471</th><td><i> *     and makes the model untunable.</i></td></tr>
+<tr><th id="472">472</th><td><i> *     NOTE: Since tuning uses the pointers to parameters,</i></td></tr>
+<tr><th id="473">473</th><td><i> *     passed to the cvCreateBtClassifier function, they should not be modified</i></td></tr>
+<tr><th id="474">474</th><td><i> *     or released between tune calls.</i></td></tr>
+<tr><th id="475">475</th><td><i> *   save</i></td></tr>
+<tr><th id="476">476</th><td><i> *     This function stores the model into given file.</i></td></tr>
+<tr><th id="477">477</th><td><i> *   release</i></td></tr>
+<tr><th id="478">478</th><td><i> *     This function releases the model.</i></td></tr>
+<tr><th id="479">479</th><td><i> *   type</i></td></tr>
+<tr><th id="480">480</th><td><i> *     Boosted tree model type.</i></td></tr>
+<tr><th id="481">481</th><td><i> *   numclasses</i></td></tr>
+<tr><th id="482">482</th><td><i> *     Number of classes for CV_LKCLASS type or 1 for all other types.</i></td></tr>
+<tr><th id="483">483</th><td><i> *   numiter</i></td></tr>
+<tr><th id="484">484</th><td><i> *     Number of iterations. Number of weak classifiers is equal to number</i></td></tr>
+<tr><th id="485">485</th><td><i> *     of iterations for all types except CV_LKCLASS. For CV_LKCLASS type</i></td></tr>
+<tr><th id="486">486</th><td><i> *     number of weak classifiers is (numiter * numclasses).</i></td></tr>
+<tr><th id="487">487</th><td><i> *   numfeatures</i></td></tr>
+<tr><th id="488">488</th><td><i> *     Number of features in sample.</i></td></tr>
+<tr><th id="489">489</th><td><i> *   trees</i></td></tr>
+<tr><th id="490">490</th><td><i> *     Stores weak classifiers when the model does not support tuning.</i></td></tr>
+<tr><th id="491">491</th><td><i> *   seq</i></td></tr>
+<tr><th id="492">492</th><td><i> *     Stores weak classifiers when the model supports tuning.</i></td></tr>
+<tr><th id="493">493</th><td><i> *   trainer</i></td></tr>
+<tr><th id="494">494</th><td><i> *     Pointer to internal tuning parameters if the model supports tuning.</i></td></tr>
+<tr><th id="495">495</th><td><i> */</i></td></tr>
+<tr><th id="496">496</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvBtClassifier" title='CvBtClassifier' data-ref="CvBtClassifier"><a class="type" href="#CvBtClassifier" title='CvBtClassifier' data-ref="CvBtClassifier">CvBtClassifier</a></dfn></td></tr>
+<tr><th id="497">497</th><td>{</td></tr>
+<tr><th id="498">498</th><td>    <a class="macro" href="#124" title="int flags; float(*eval)( struct CvClassifier*, CvMat* ); void (*tune)( struct CvClassifier*, CvMat*, int flags, CvMat*, CvMat*, CvMat*, CvMat*, CvMat* ); int (*save)( struct CvClassifier*, const char* file_name ); void (*release)( struct CvClassifier** );" data-ref="_M/CV_CLASSIFIER_FIELDS">CV_CLASSIFIER_FIELDS</a>()</td></tr>
+<tr><th id="499">499</th><td></td></tr>
+<tr><th id="500">500</th><td>    <a class="typedef" href="#CvBoostType" title='CvBoostType' data-type='enum CvBoostType' data-ref="CvBoostType">CvBoostType</a> <dfn class="decl" id="CvBtClassifier::type" title='CvBtClassifier::type' data-ref="CvBtClassifier::type">type</dfn>;</td></tr>
+<tr><th id="501">501</th><td>    <em>int</em> <dfn class="decl" id="CvBtClassifier::numclasses" title='CvBtClassifier::numclasses' data-ref="CvBtClassifier::numclasses">numclasses</dfn>;</td></tr>
+<tr><th id="502">502</th><td>    <em>int</em> <dfn class="decl" id="CvBtClassifier::numiter" title='CvBtClassifier::numiter' data-ref="CvBtClassifier::numiter">numiter</dfn>;</td></tr>
+<tr><th id="503">503</th><td>    <em>int</em> <dfn class="decl" id="CvBtClassifier::numfeatures" title='CvBtClassifier::numfeatures' data-ref="CvBtClassifier::numfeatures">numfeatures</dfn>;</td></tr>
+<tr><th id="504">504</th><td>    <b>union</b></td></tr>
+<tr><th id="505">505</th><td>    {</td></tr>
+<tr><th id="506">506</th><td>        <a class="typedef" href="#CvCARTClassifier" title='CvCARTClassifier' data-type='struct CvCARTClassifier' data-ref="CvCARTClassifier">CvCARTClassifier</a>** <dfn class="decl" id="CvBtClassifier::{anonymous}::trees" title='CvBtClassifier::&lt;anonymous union&gt;::trees' data-ref="CvBtClassifier::{anonymous}::trees">trees</dfn>;</td></tr>
+<tr><th id="507">507</th><td>        <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvSeq" title='CvSeq' data-type='struct CvSeq' data-ref="CvSeq">CvSeq</a>* <dfn class="decl" id="CvBtClassifier::{anonymous}::seq" title='CvBtClassifier::&lt;anonymous union&gt;::seq' data-ref="CvBtClassifier::{anonymous}::seq">seq</dfn>;</td></tr>
+<tr><th id="508">508</th><td>    };</td></tr>
+<tr><th id="509">509</th><td>    <em>void</em>* <dfn class="decl" id="CvBtClassifier::trainer" title='CvBtClassifier::trainer' data-ref="CvBtClassifier::trainer">trainer</dfn>;</td></tr>
+<tr><th id="510">510</th><td>} <dfn class="typedef" id="CvBtClassifier" title='CvBtClassifier' data-type='struct CvBtClassifier' data-ref="CvBtClassifier">CvBtClassifier</dfn>;</td></tr>
+<tr><th id="511">511</th><td></td></tr>
+<tr><th id="512">512</th><td><i>/*</i></td></tr>
+<tr><th id="513">513</th><td><i> * CvBtClassifierTrainParams</i></td></tr>
+<tr><th id="514">514</th><td><i> *</i></td></tr>
+<tr><th id="515">515</th><td><i> * The CvBtClassifierTrainParams structure stores training parameters for</i></td></tr>
+<tr><th id="516">516</th><td><i> * boosted tree model.</i></td></tr>
+<tr><th id="517">517</th><td><i> *</i></td></tr>
+<tr><th id="518">518</th><td><i> * Members</i></td></tr>
+<tr><th id="519">519</th><td><i> *   type</i></td></tr>
+<tr><th id="520">520</th><td><i> *     Boosted tree model type.</i></td></tr>
+<tr><th id="521">521</th><td><i> *   numiter</i></td></tr>
+<tr><th id="522">522</th><td><i> *     Desired number of iterations.</i></td></tr>
+<tr><th id="523">523</th><td><i> *   param</i></td></tr>
+<tr><th id="524">524</th><td><i> *     Parameter   Model Type    Parameter Meaning</i></td></tr>
+<tr><th id="525">525</th><td><i> *     param[0]    Any           Shrinkage factor</i></td></tr>
+<tr><th id="526">526</th><td><i> *     param[1]    CV_MREG       alpha. (1-alpha) determines "break-down" point of</i></td></tr>
+<tr><th id="527">527</th><td><i> *                               the training procedure, i.e. the fraction of samples</i></td></tr>
+<tr><th id="528">528</th><td><i> *                               that can be arbitrary modified without serious</i></td></tr>
+<tr><th id="529">529</th><td><i> *                               degrading the quality of the result.</i></td></tr>
+<tr><th id="530">530</th><td><i> *                 CV_DABCLASS,  Weight trimming factor.</i></td></tr>
+<tr><th id="531">531</th><td><i> *                 CV_RABCLASS,</i></td></tr>
+<tr><th id="532">532</th><td><i> *                 CV_LBCLASS,</i></td></tr>
+<tr><th id="533">533</th><td><i> *                 CV_GABCLASS,</i></td></tr>
+<tr><th id="534">534</th><td><i> *                 CV_L2CLASS,</i></td></tr>
+<tr><th id="535">535</th><td><i> *                 CV_LKCLASS</i></td></tr>
+<tr><th id="536">536</th><td><i> *   numsplits</i></td></tr>
+<tr><th id="537">537</th><td><i> *     Desired number of splits in each tree.</i></td></tr>
+<tr><th id="538">538</th><td><i> */</i></td></tr>
+<tr><th id="539">539</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="CvBtClassifierTrainParams" title='CvBtClassifierTrainParams' data-ref="CvBtClassifierTrainParams"><a class="type" href="#CvBtClassifierTrainParams" title='CvBtClassifierTrainParams' data-ref="CvBtClassifierTrainParams">CvBtClassifierTrainParams</a></dfn></td></tr>
+<tr><th id="540">540</th><td>{</td></tr>
+<tr><th id="541">541</th><td>    <a class="macro" href="#137" title="" data-ref="_M/CV_CLASSIFIER_TRAIN_PARAM_FIELDS">CV_CLASSIFIER_TRAIN_PARAM_FIELDS</a>()</td></tr>
+<tr><th id="542">542</th><td></td></tr>
+<tr><th id="543">543</th><td>    <a class="typedef" href="#CvBoostType" title='CvBoostType' data-type='enum CvBoostType' data-ref="CvBoostType">CvBoostType</a> <dfn class="decl" id="CvBtClassifierTrainParams::type" title='CvBtClassifierTrainParams::type' data-ref="CvBtClassifierTrainParams::type">type</dfn>;</td></tr>
+<tr><th id="544">544</th><td>    <em>int</em> <dfn class="decl" id="CvBtClassifierTrainParams::numiter" title='CvBtClassifierTrainParams::numiter' data-ref="CvBtClassifierTrainParams::numiter">numiter</dfn>;</td></tr>
+<tr><th id="545">545</th><td>    <em>float</em> <dfn class="decl" id="CvBtClassifierTrainParams::param" title='CvBtClassifierTrainParams::param' data-ref="CvBtClassifierTrainParams::param">param</dfn>[<var>2</var>];</td></tr>
+<tr><th id="546">546</th><td>    <em>int</em> <dfn class="decl" id="CvBtClassifierTrainParams::numsplits" title='CvBtClassifierTrainParams::numsplits' data-ref="CvBtClassifierTrainParams::numsplits">numsplits</dfn>;</td></tr>
+<tr><th id="547">547</th><td>} <dfn class="typedef" id="CvBtClassifierTrainParams" title='CvBtClassifierTrainParams' data-type='struct CvBtClassifierTrainParams' data-ref="CvBtClassifierTrainParams">CvBtClassifierTrainParams</dfn>;</td></tr>
+<tr><th id="548">548</th><td></td></tr>
+<tr><th id="549">549</th><td><i>/*</i></td></tr>
+<tr><th id="550">550</th><td><i> * cvCreateBtClassifier</i></td></tr>
+<tr><th id="551">551</th><td><i> *</i></td></tr>
+<tr><th id="552">552</th><td><i> * The cvCreateBtClassifier function creates boosted tree model.</i></td></tr>
+<tr><th id="553">553</th><td><i> *</i></td></tr>
+<tr><th id="554">554</th><td><i> * Parameters</i></td></tr>
+<tr><th id="555">555</th><td><i> *   trainData</i></td></tr>
+<tr><th id="556">556</th><td><i> *     Matrix of feature values. Must have CV_32FC1 type.</i></td></tr>
+<tr><th id="557">557</th><td><i> *   flags</i></td></tr>
+<tr><th id="558">558</th><td><i> *     Determines how samples are stored in trainData.</i></td></tr>
+<tr><th id="559">559</th><td><i> *     One of CV_ROW_SAMPLE or CV_COL_SAMPLE.</i></td></tr>
+<tr><th id="560">560</th><td><i> *     Optionally may be combined with CV_TUNABLE to make tunable model.</i></td></tr>
+<tr><th id="561">561</th><td><i> *   trainClasses</i></td></tr>
+<tr><th id="562">562</th><td><i> *     Vector of responses for regression or classes (0, 1, 2, etc.) for classification.</i></td></tr>
+<tr><th id="563">563</th><td><i> *   typeMask,</i></td></tr>
+<tr><th id="564">564</th><td><i> *   missedMeasurementsMask,</i></td></tr>
+<tr><th id="565">565</th><td><i> *   compIdx</i></td></tr>
+<tr><th id="566">566</th><td><i> *     Not supported. Must be NULL.</i></td></tr>
+<tr><th id="567">567</th><td><i> *   sampleIdx</i></td></tr>
+<tr><th id="568">568</th><td><i> *     Indices of samples used in training. If NULL then all samples are used.</i></td></tr>
+<tr><th id="569">569</th><td><i> *     For CV_DABCLASS, CV_RABCLASS, CV_LBCLASS and CV_GABCLASS must be NULL.</i></td></tr>
+<tr><th id="570">570</th><td><i> *   weights</i></td></tr>
+<tr><th id="571">571</th><td><i> *     Not supported. Must be NULL.</i></td></tr>
+<tr><th id="572">572</th><td><i> *   trainParams</i></td></tr>
+<tr><th id="573">573</th><td><i> *     A pointer to CvBtClassifierTrainParams structure. Training parameters.</i></td></tr>
+<tr><th id="574">574</th><td><i> *     See CvBtClassifierTrainParams description for details.</i></td></tr>
+<tr><th id="575">575</th><td><i> *</i></td></tr>
+<tr><th id="576">576</th><td><i> * Return Values</i></td></tr>
+<tr><th id="577">577</th><td><i> *   The return value is a pointer to created boosted tree model of type CvBtClassifier.</i></td></tr>
+<tr><th id="578">578</th><td><i> *</i></td></tr>
+<tr><th id="579">579</th><td><i> * Remarks</i></td></tr>
+<tr><th id="580">580</th><td><i> *     The function performs trainParams-&gt;numiter training iterations.</i></td></tr>
+<tr><th id="581">581</th><td><i> *     If CV_TUNABLE flag is specified then created model supports tuning.</i></td></tr>
+<tr><th id="582">582</th><td><i> *     In this case additional training iterations may be performed by</i></td></tr>
+<tr><th id="583">583</th><td><i> *     tune function call.</i></td></tr>
+<tr><th id="584">584</th><td><i> */</i></td></tr>
+<tr><th id="585">585</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="586">586</th><td><a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <a class="decl" href="cvboost.cpp.html#_Z20cvCreateBtClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" title='cvCreateBtClassifier' data-ref="_Z20cvCreateBtClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams" id="_Z20cvCreateBtClassifierP5CvMatiS0_S0_S0_S0_S0_S0_P23CvClassifierTrainParams">cvCreateBtClassifier</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="71trainData" title='trainData' data-type='CvMat *' data-ref="71trainData">trainData</dfn>,</td></tr>
+<tr><th id="587">587</th><td>                                    <em>int</em> <dfn class="local col2 decl" id="72flags" title='flags' data-type='int' data-ref="72flags">flags</dfn>,</td></tr>
+<tr><th id="588">588</th><td>                                    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="73trainClasses" title='trainClasses' data-type='CvMat *' data-ref="73trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="589">589</th><td>                                    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col4 decl" id="74typeMask" title='typeMask' data-type='CvMat *' data-ref="74typeMask">typeMask</dfn>,</td></tr>
+<tr><th id="590">590</th><td>                                    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col5 decl" id="75missedMeasurementsMask" title='missedMeasurementsMask' data-type='CvMat *' data-ref="75missedMeasurementsMask">missedMeasurementsMask</dfn>,</td></tr>
+<tr><th id="591">591</th><td>                                    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col6 decl" id="76compIdx" title='compIdx' data-type='CvMat *' data-ref="76compIdx">compIdx</dfn>,</td></tr>
+<tr><th id="592">592</th><td>                                    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col7 decl" id="77sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="77sampleIdx">sampleIdx</dfn>,</td></tr>
+<tr><th id="593">593</th><td>                                    <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col8 decl" id="78weights" title='weights' data-type='CvMat *' data-ref="78weights">weights</dfn>,</td></tr>
+<tr><th id="594">594</th><td>                                    <a class="typedef" href="#CvClassifierTrainParams" title='CvClassifierTrainParams' data-type='struct CvClassifierTrainParams' data-ref="CvClassifierTrainParams">CvClassifierTrainParams</a>* <dfn class="local col9 decl" id="79trainParams" title='trainParams' data-type='CvClassifierTrainParams *' data-ref="79trainParams">trainParams</dfn> );</td></tr>
+<tr><th id="595">595</th><td></td></tr>
+<tr><th id="596">596</th><td><i>/*</i></td></tr>
+<tr><th id="597">597</th><td><i> * cvCreateBtClassifierFromFile</i></td></tr>
+<tr><th id="598">598</th><td><i> *</i></td></tr>
+<tr><th id="599">599</th><td><i> * The cvCreateBtClassifierFromFile function restores previously saved</i></td></tr>
+<tr><th id="600">600</th><td><i> * boosted tree model from file.</i></td></tr>
+<tr><th id="601">601</th><td><i> *</i></td></tr>
+<tr><th id="602">602</th><td><i> * Parameters</i></td></tr>
+<tr><th id="603">603</th><td><i> *   filename</i></td></tr>
+<tr><th id="604">604</th><td><i> *     The name of the file with boosted tree model.</i></td></tr>
+<tr><th id="605">605</th><td><i> *</i></td></tr>
+<tr><th id="606">606</th><td><i> * Remarks</i></td></tr>
+<tr><th id="607">607</th><td><i> *   The restored model does not support tuning.</i></td></tr>
+<tr><th id="608">608</th><td><i> */</i></td></tr>
+<tr><th id="609">609</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="610">610</th><td><a class="typedef" href="#CvClassifier" title='CvClassifier' data-type='struct CvClassifier' data-ref="CvClassifier">CvClassifier</a>* <a class="decl" href="cvboost.cpp.html#_Z28cvCreateBtClassifierFromFilePKc" title='cvCreateBtClassifierFromFile' data-ref="_Z28cvCreateBtClassifierFromFilePKc" id="_Z28cvCreateBtClassifierFromFilePKc">cvCreateBtClassifierFromFile</a>( <em>const</em> <em>char</em>* <dfn class="local col0 decl" id="80filename" title='filename' data-type='const char *' data-ref="80filename">filename</dfn> );</td></tr>
+<tr><th id="611">611</th><td></td></tr>
+<tr><th id="612">612</th><td><i>/****************************************************************************************\</i></td></tr>
+<tr><th id="613">613</th><td><i>*                                    Utility functions                                   *</i></td></tr>
+<tr><th id="614">614</th><td><i>\****************************************************************************************/</i></td></tr>
+<tr><th id="615">615</th><td></td></tr>
+<tr><th id="616">616</th><td><i>/*</i></td></tr>
+<tr><th id="617">617</th><td><i> * cvTrimWeights</i></td></tr>
+<tr><th id="618">618</th><td><i> *</i></td></tr>
+<tr><th id="619">619</th><td><i> * The cvTrimWeights function performs weight trimming.</i></td></tr>
+<tr><th id="620">620</th><td><i> *</i></td></tr>
+<tr><th id="621">621</th><td><i> * Parameters</i></td></tr>
+<tr><th id="622">622</th><td><i> *   weights</i></td></tr>
+<tr><th id="623">623</th><td><i> *     Weights vector.</i></td></tr>
+<tr><th id="624">624</th><td><i> *   idx</i></td></tr>
+<tr><th id="625">625</th><td><i> *     Indices vector of weights that should be considered.</i></td></tr>
+<tr><th id="626">626</th><td><i> *     If it is NULL then all weights are used.</i></td></tr>
+<tr><th id="627">627</th><td><i> *   factor</i></td></tr>
+<tr><th id="628">628</th><td><i> *     Weight trimming factor. Must be in [0, 1] range.</i></td></tr>
+<tr><th id="629">629</th><td><i> *</i></td></tr>
+<tr><th id="630">630</th><td><i> * Return Values</i></td></tr>
+<tr><th id="631">631</th><td><i> *   The return value is a vector of indices. If all samples should be used then</i></td></tr>
+<tr><th id="632">632</th><td><i> *   it is equal to idx. In other case the cvReleaseMat function should be called</i></td></tr>
+<tr><th id="633">633</th><td><i> *   to release it.</i></td></tr>
+<tr><th id="634">634</th><td><i> *</i></td></tr>
+<tr><th id="635">635</th><td><i> * Remarks</i></td></tr>
+<tr><th id="636">636</th><td><i> */</i></td></tr>
+<tr><th id="637">637</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="638">638</th><td><a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <a class="decl" href="cvboost.cpp.html#_Z13cvTrimWeightsP5CvMatS0_f" title='cvTrimWeights' data-ref="_Z13cvTrimWeightsP5CvMatS0_f" id="_Z13cvTrimWeightsP5CvMatS0_f">cvTrimWeights</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="81weights" title='weights' data-type='CvMat *' data-ref="81weights">weights</dfn>, <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="82idx" title='idx' data-type='CvMat *' data-ref="82idx">idx</dfn>, <em>float</em> <dfn class="local col3 decl" id="83factor" title='factor' data-type='float' data-ref="83factor">factor</dfn> );</td></tr>
+<tr><th id="639">639</th><td></td></tr>
+<tr><th id="640">640</th><td><i>/*</i></td></tr>
+<tr><th id="641">641</th><td><i> * cvReadTrainData</i></td></tr>
+<tr><th id="642">642</th><td><i> *</i></td></tr>
+<tr><th id="643">643</th><td><i> * The cvReadTrainData function reads feature values and responses from file.</i></td></tr>
+<tr><th id="644">644</th><td><i> *</i></td></tr>
+<tr><th id="645">645</th><td><i> * Parameters</i></td></tr>
+<tr><th id="646">646</th><td><i> *   filename</i></td></tr>
+<tr><th id="647">647</th><td><i> *     The name of the file to be read.</i></td></tr>
+<tr><th id="648">648</th><td><i> *   flags</i></td></tr>
+<tr><th id="649">649</th><td><i> *     One of CV_ROW_SAMPLE or CV_COL_SAMPLE. Determines how feature values</i></td></tr>
+<tr><th id="650">650</th><td><i> *     will be stored.</i></td></tr>
+<tr><th id="651">651</th><td><i> *   trainData</i></td></tr>
+<tr><th id="652">652</th><td><i> *     A pointer to a pointer to created matrix with feature values.</i></td></tr>
+<tr><th id="653">653</th><td><i> *     cvReleaseMat function should be used to destroy created matrix.</i></td></tr>
+<tr><th id="654">654</th><td><i> *   trainClasses</i></td></tr>
+<tr><th id="655">655</th><td><i> *     A pointer to a pointer to created matrix with response values.</i></td></tr>
+<tr><th id="656">656</th><td><i> *     cvReleaseMat function should be used to destroy created matrix.</i></td></tr>
+<tr><th id="657">657</th><td><i> *</i></td></tr>
+<tr><th id="658">658</th><td><i> * Remarks</i></td></tr>
+<tr><th id="659">659</th><td><i> *   File format:</i></td></tr>
+<tr><th id="660">660</th><td><i> *   ============================================</i></td></tr>
+<tr><th id="661">661</th><td><i> *   m n</i></td></tr>
+<tr><th id="662">662</th><td><i> *   value_1_1 value_1_2 ... value_1_n response_1</i></td></tr>
+<tr><th id="663">663</th><td><i> *   value_2_1 value_2_2 ... value_2_n response_2</i></td></tr>
+<tr><th id="664">664</th><td><i> *   ...</i></td></tr>
+<tr><th id="665">665</th><td><i> *   value_m_1 value_m_2 ... value_m_n response_m</i></td></tr>
+<tr><th id="666">666</th><td><i> *   ============================================</i></td></tr>
+<tr><th id="667">667</th><td><i> *   m</i></td></tr>
+<tr><th id="668">668</th><td><i> *     Number of samples</i></td></tr>
+<tr><th id="669">669</th><td><i> *   n</i></td></tr>
+<tr><th id="670">670</th><td><i> *     Number of features in each sample</i></td></tr>
+<tr><th id="671">671</th><td><i> *   value_i_j</i></td></tr>
+<tr><th id="672">672</th><td><i> *     Value of j-th feature of i-th sample</i></td></tr>
+<tr><th id="673">673</th><td><i> *   response_i</i></td></tr>
+<tr><th id="674">674</th><td><i> *     Response value of i-th sample</i></td></tr>
+<tr><th id="675">675</th><td><i> *     For classification problems responses represent classes (0, 1, etc.)</i></td></tr>
+<tr><th id="676">676</th><td><i> *   All values and classes are integer or real numbers.</i></td></tr>
+<tr><th id="677">677</th><td><i> */</i></td></tr>
+<tr><th id="678">678</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="679">679</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z15cvReadTrainDataPKciPP5CvMatS3_" title='cvReadTrainData' data-ref="_Z15cvReadTrainDataPKciPP5CvMatS3_" id="_Z15cvReadTrainDataPKciPP5CvMatS3_">cvReadTrainData</a>( <em>const</em> <em>char</em>* <dfn class="local col4 decl" id="84filename" title='filename' data-type='const char *' data-ref="84filename">filename</dfn>,</td></tr>
+<tr><th id="680">680</th><td>                      <em>int</em> <dfn class="local col5 decl" id="85flags" title='flags' data-type='int' data-ref="85flags">flags</dfn>,</td></tr>
+<tr><th id="681">681</th><td>                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col6 decl" id="86trainData" title='trainData' data-type='CvMat **' data-ref="86trainData">trainData</dfn>,</td></tr>
+<tr><th id="682">682</th><td>                      <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>** <dfn class="local col7 decl" id="87trainClasses" title='trainClasses' data-type='CvMat **' data-ref="87trainClasses">trainClasses</dfn> );</td></tr>
+<tr><th id="683">683</th><td></td></tr>
+<tr><th id="684">684</th><td></td></tr>
+<tr><th id="685">685</th><td><i>/*</i></td></tr>
+<tr><th id="686">686</th><td><i> * cvWriteTrainData</i></td></tr>
+<tr><th id="687">687</th><td><i> *</i></td></tr>
+<tr><th id="688">688</th><td><i> * The cvWriteTrainData function stores feature values and responses into file.</i></td></tr>
+<tr><th id="689">689</th><td><i> *</i></td></tr>
+<tr><th id="690">690</th><td><i> * Parameters</i></td></tr>
+<tr><th id="691">691</th><td><i> *   filename</i></td></tr>
+<tr><th id="692">692</th><td><i> *     The name of the file.</i></td></tr>
+<tr><th id="693">693</th><td><i> *   flags</i></td></tr>
+<tr><th id="694">694</th><td><i> *     One of CV_ROW_SAMPLE or CV_COL_SAMPLE. Determines how feature values</i></td></tr>
+<tr><th id="695">695</th><td><i> *     are stored.</i></td></tr>
+<tr><th id="696">696</th><td><i> *   trainData</i></td></tr>
+<tr><th id="697">697</th><td><i> *     Feature values matrix.</i></td></tr>
+<tr><th id="698">698</th><td><i> *   trainClasses</i></td></tr>
+<tr><th id="699">699</th><td><i> *     Response values vector.</i></td></tr>
+<tr><th id="700">700</th><td><i> *   sampleIdx</i></td></tr>
+<tr><th id="701">701</th><td><i> *     Vector of idicies of the samples that should be stored. If it is NULL</i></td></tr>
+<tr><th id="702">702</th><td><i> *     then all samples will be stored.</i></td></tr>
+<tr><th id="703">703</th><td><i> *</i></td></tr>
+<tr><th id="704">704</th><td><i> * Remarks</i></td></tr>
+<tr><th id="705">705</th><td><i> *   See the cvReadTrainData function for file format description.</i></td></tr>
+<tr><th id="706">706</th><td><i> */</i></td></tr>
+<tr><th id="707">707</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="708">708</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z16cvWriteTrainDataPKciP5CvMatS2_S2_" title='cvWriteTrainData' data-ref="_Z16cvWriteTrainDataPKciP5CvMatS2_S2_" id="_Z16cvWriteTrainDataPKciP5CvMatS2_S2_">cvWriteTrainData</a>( <em>const</em> <em>char</em>* <dfn class="local col8 decl" id="88filename" title='filename' data-type='const char *' data-ref="88filename">filename</dfn>,</td></tr>
+<tr><th id="709">709</th><td>                       <em>int</em> <dfn class="local col9 decl" id="89flags" title='flags' data-type='int' data-ref="89flags">flags</dfn>,</td></tr>
+<tr><th id="710">710</th><td>                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col0 decl" id="90trainData" title='trainData' data-type='CvMat *' data-ref="90trainData">trainData</dfn>,</td></tr>
+<tr><th id="711">711</th><td>                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col1 decl" id="91trainClasses" title='trainClasses' data-type='CvMat *' data-ref="91trainClasses">trainClasses</dfn>,</td></tr>
+<tr><th id="712">712</th><td>                       <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col2 decl" id="92sampleIdx" title='sampleIdx' data-type='CvMat *' data-ref="92sampleIdx">sampleIdx</dfn> );</td></tr>
+<tr><th id="713">713</th><td></td></tr>
+<tr><th id="714">714</th><td><i>/*</i></td></tr>
+<tr><th id="715">715</th><td><i> * cvRandShuffle</i></td></tr>
+<tr><th id="716">716</th><td><i> *</i></td></tr>
+<tr><th id="717">717</th><td><i> * The cvRandShuffle function perfroms random shuffling of given vector.</i></td></tr>
+<tr><th id="718">718</th><td><i> *</i></td></tr>
+<tr><th id="719">719</th><td><i> * Parameters</i></td></tr>
+<tr><th id="720">720</th><td><i> *   vector</i></td></tr>
+<tr><th id="721">721</th><td><i> *     Vector that should be shuffled.</i></td></tr>
+<tr><th id="722">722</th><td><i> *     Must have CV_8UC1, CV_16SC1, CV_32SC1 or CV_32FC1 type.</i></td></tr>
+<tr><th id="723">723</th><td><i> */</i></td></tr>
+<tr><th id="724">724</th><td><a class="macro" href="#54" title="" data-ref="_M/CV_BOOST_API">CV_BOOST_API</a></td></tr>
+<tr><th id="725">725</th><td><em>void</em> <a class="decl" href="cvboost.cpp.html#_Z16cvRandShuffleVecP5CvMat" title='cvRandShuffleVec' data-ref="_Z16cvRandShuffleVecP5CvMat" id="_Z16cvRandShuffleVecP5CvMat">cvRandShuffleVec</a>( <a class="typedef" href="../../modules/core/include/opencv2/core/types_c.h.html#CvMat" title='CvMat' data-type='struct CvMat' data-ref="CvMat">CvMat</a>* <dfn class="local col3 decl" id="93vector" title='vector' data-type='CvMat *' data-ref="93vector">vector</dfn> );</td></tr>
+<tr><th id="726">726</th><td></td></tr>
+<tr><th id="727">727</th><td><u>#<span data-ppcond="48">endif</span> /* _CVCLASSIFIER_H_ */</u></td></tr>
+<tr><th id="728">728</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='cvboost.cpp.html'>opencv/apps/haartraining/cvboost.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

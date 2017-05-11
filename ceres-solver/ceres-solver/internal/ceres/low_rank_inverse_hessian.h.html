@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>low_rank_inverse_hessian.h source code [ceres-solver/internal/ceres/low_rank_inverse_hessian.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::LowRankInverseHessian "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/low_rank_inverse_hessian.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='low_rank_inverse_hessian.h.html'>low_rank_inverse_hessian.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// Limited memory positive definite approximation to the inverse</i></td></tr>
+<tr><th id="32">32</th><td><i>// Hessian, using the LBFGS algorithm</i></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#<span data-ppcond="34">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_LOW_RANK_INVERSE_HESSIAN_H_">CERES_INTERNAL_LOW_RANK_INVERSE_HESSIAN_H_</span></u></td></tr>
+<tr><th id="35">35</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_LOW_RANK_INVERSE_HESSIAN_H_" data-ref="_M/CERES_INTERNAL_LOW_RANK_INVERSE_HESSIAN_H_">CERES_INTERNAL_LOW_RANK_INVERSE_HESSIAN_H_</dfn></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../include/c++/4.8/list.html">&lt;list&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../include/ceres/internal/eigen.h.html">"ceres/internal/eigen.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="linear_operator.h.html">"ceres/linear_operator.h"</a></u></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="43">43</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><i>// LowRankInverseHessian is a positive definite approximation to the</i></td></tr>
+<tr><th id="46">46</th><td><i>// Hessian using the limited memory variant of the</i></td></tr>
+<tr><th id="47">47</th><td><i>// Broyden-Fletcher-Goldfarb-Shanno (BFGS)secant formula for</i></td></tr>
+<tr><th id="48">48</th><td><i>// approximating the Hessian.</i></td></tr>
+<tr><th id="49">49</th><td><i>//</i></td></tr>
+<tr><th id="50">50</th><td><i>// Other update rules like the Davidon-Fletcher-Powell (DFP) are</i></td></tr>
+<tr><th id="51">51</th><td><i>// possible, but the BFGS rule is considered the best performing one.</i></td></tr>
+<tr><th id="52">52</th><td><i>//</i></td></tr>
+<tr><th id="53">53</th><td><i>// The limited memory variant was developed by Nocedal and further</i></td></tr>
+<tr><th id="54">54</th><td><i>// enhanced with scaling rule by Byrd, Nocedal and Schanbel.</i></td></tr>
+<tr><th id="55">55</th><td><i>//</i></td></tr>
+<tr><th id="56">56</th><td><i>// Nocedal, J. (1980). "Updating Quasi-Newton Matrices with Limited</i></td></tr>
+<tr><th id="57">57</th><td><i>// Storage". Mathematics of Computation 35 (151): 773–782.</i></td></tr>
+<tr><th id="58">58</th><td><i>//</i></td></tr>
+<tr><th id="59">59</th><td><i>// Byrd, R. H.; Nocedal, J.; Schnabel, R. B. (1994).</i></td></tr>
+<tr><th id="60">60</th><td><i>// "Representations of Quasi-Newton Matrices and their use in</i></td></tr>
+<tr><th id="61">61</th><td><i>// Limited Memory Methods". Mathematical Programming 63 (4):</i></td></tr>
+<tr><th id="62">62</th><td><b>class</b> <dfn class="type def" id="ceres::internal::LowRankInverseHessian" title='ceres::internal::LowRankInverseHessian' data-ref="ceres::internal::LowRankInverseHessian">LowRankInverseHessian</dfn> : <b>public</b> <a class="type" href="linear_operator.h.html#ceres::internal::LinearOperator" title='ceres::internal::LinearOperator' data-ref="ceres::internal::LinearOperator">LinearOperator</a> {</td></tr>
+<tr><th id="63">63</th><td> <b>public</b>:</td></tr>
+<tr><th id="64">64</th><td>  <i>// num_parameters is the row/column size of the Hessian.</i></td></tr>
+<tr><th id="65">65</th><td><i>  // max_num_corrections is the rank of the Hessian approximation.</i></td></tr>
+<tr><th id="66">66</th><td><i>  // use_approximate_eigenvalue_scaling controls whether the initial</i></td></tr>
+<tr><th id="67">67</th><td><i>  // inverse Hessian used during Right/LeftMultiply() is scaled by</i></td></tr>
+<tr><th id="68">68</th><td><i>  // the approximate eigenvalue of the true inverse Hessian at the</i></td></tr>
+<tr><th id="69">69</th><td><i>  // current operating point.</i></td></tr>
+<tr><th id="70">70</th><td><i>  // The approximation uses:</i></td></tr>
+<tr><th id="71">71</th><td><i>  // 2 * max_num_corrections * num_parameters + max_num_corrections</i></td></tr>
+<tr><th id="72">72</th><td><i>  // doubles.</i></td></tr>
+<tr><th id="73">73</th><td>  <dfn class="decl" id="_ZN5ceres8internal21LowRankInverseHessianC1Eiib" title='ceres::internal::LowRankInverseHessian::LowRankInverseHessian' data-ref="_ZN5ceres8internal21LowRankInverseHessianC1Eiib">LowRankInverseHessian</dfn>(<em>int</em> <dfn class="local col0 decl" id="10num_parameters" title='num_parameters' data-type='int' data-ref="10num_parameters">num_parameters</dfn>,</td></tr>
+<tr><th id="74">74</th><td>                        <em>int</em> <dfn class="local col1 decl" id="11max_num_corrections" title='max_num_corrections' data-type='int' data-ref="11max_num_corrections">max_num_corrections</dfn>,</td></tr>
+<tr><th id="75">75</th><td>                        <em>bool</em> <dfn class="local col2 decl" id="12use_approximate_eigenvalue_scaling" title='use_approximate_eigenvalue_scaling' data-type='bool' data-ref="12use_approximate_eigenvalue_scaling">use_approximate_eigenvalue_scaling</dfn>);</td></tr>
+<tr><th id="76">76</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres8internal21LowRankInverseHessianD1Ev" title='ceres::internal::LowRankInverseHessian::~LowRankInverseHessian' data-ref="_ZN5ceres8internal21LowRankInverseHessianD1Ev">~</dfn>LowRankInverseHessian() {}</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td>  <i>// Update the low rank approximation. delta_x is the change in the</i></td></tr>
+<tr><th id="79">79</th><td><i>  // domain of Hessian, and delta_gradient is the change in the</i></td></tr>
+<tr><th id="80">80</th><td><i>  // gradient.  The update copies the delta_x and delta_gradient</i></td></tr>
+<tr><th id="81">81</th><td><i>  // vectors, and gets rid of the oldest delta_x and delta_gradient</i></td></tr>
+<tr><th id="82">82</th><td><i>  // vectors if the number of corrections is already equal to</i></td></tr>
+<tr><th id="83">83</th><td><i>  // max_num_corrections.</i></td></tr>
+<tr><th id="84">84</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal21LowRankInverseHessian6UpdateERKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEES6_" title='ceres::internal::LowRankInverseHessian::Update' data-ref="_ZN5ceres8internal21LowRankInverseHessian6UpdateERKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEES6_">Update</dfn>(<em>const</em> <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a>&amp; <dfn class="local col3 decl" id="13delta_x" title='delta_x' data-type='const Vector &amp;' data-ref="13delta_x">delta_x</dfn>, <em>const</em> <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a>&amp; <dfn class="local col4 decl" id="14delta_gradient" title='delta_gradient' data-type='const Vector &amp;' data-ref="14delta_gradient">delta_gradient</dfn>);</td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td>  <i>// LinearOperator interface</i></td></tr>
+<tr><th id="87">87</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal21LowRankInverseHessian13RightMultiplyEPKdPd" title='ceres::internal::LowRankInverseHessian::RightMultiply' data-ref="_ZNK5ceres8internal21LowRankInverseHessian13RightMultiplyEPKdPd">RightMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col5 decl" id="15x" title='x' data-type='const double *' data-ref="15x">x</dfn>, <em>double</em>* <dfn class="local col6 decl" id="16y" title='y' data-type='double *' data-ref="16y">y</dfn>) <em>const</em>;</td></tr>
+<tr><th id="88">88</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal21LowRankInverseHessian12LeftMultiplyEPKdPd" title='ceres::internal::LowRankInverseHessian::LeftMultiply' data-ref="_ZNK5ceres8internal21LowRankInverseHessian12LeftMultiplyEPKdPd">LeftMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col7 decl" id="17x" title='x' data-type='const double *' data-ref="17x">x</dfn>, <em>double</em>* <dfn class="local col8 decl" id="18y" title='y' data-type='double *' data-ref="18y">y</dfn>) <em>const</em> {</td></tr>
+<tr><th id="89">89</th><td>    <a class="virtual member" href="#_ZNK5ceres8internal21LowRankInverseHessian13RightMultiplyEPKdPd" title='ceres::internal::LowRankInverseHessian::RightMultiply' data-ref="_ZNK5ceres8internal21LowRankInverseHessian13RightMultiplyEPKdPd">RightMultiply</a>(<a class="local col7 ref" href="#17x" title='x' data-ref="17x">x</a>, <a class="local col8 ref" href="#18y" title='y' data-ref="18y">y</a>);</td></tr>
+<tr><th id="90">90</th><td>  }</td></tr>
+<tr><th id="91">91</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal21LowRankInverseHessian8num_rowsEv" title='ceres::internal::LowRankInverseHessian::num_rows' data-ref="_ZNK5ceres8internal21LowRankInverseHessian8num_rowsEv">num_rows</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::LowRankInverseHessian::num_parameters_" title='ceres::internal::LowRankInverseHessian::num_parameters_' data-ref="ceres::internal::LowRankInverseHessian::num_parameters_">num_parameters_</a>; }</td></tr>
+<tr><th id="92">92</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal21LowRankInverseHessian8num_colsEv" title='ceres::internal::LowRankInverseHessian::num_cols' data-ref="_ZNK5ceres8internal21LowRankInverseHessian8num_colsEv">num_cols</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::LowRankInverseHessian::num_parameters_" title='ceres::internal::LowRankInverseHessian::num_parameters_' data-ref="ceres::internal::LowRankInverseHessian::num_parameters_">num_parameters_</a>; }</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td> <b>private</b>:</td></tr>
+<tr><th id="95">95</th><td>  <em>const</em> <em>int</em> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::num_parameters_" title='ceres::internal::LowRankInverseHessian::num_parameters_' data-ref="ceres::internal::LowRankInverseHessian::num_parameters_">num_parameters_</dfn>;</td></tr>
+<tr><th id="96">96</th><td>  <em>const</em> <em>int</em> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::max_num_corrections_" title='ceres::internal::LowRankInverseHessian::max_num_corrections_' data-ref="ceres::internal::LowRankInverseHessian::max_num_corrections_">max_num_corrections_</dfn>;</td></tr>
+<tr><th id="97">97</th><td>  <em>const</em> <em>bool</em> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::use_approximate_eigenvalue_scaling_" title='ceres::internal::LowRankInverseHessian::use_approximate_eigenvalue_scaling_' data-ref="ceres::internal::LowRankInverseHessian::use_approximate_eigenvalue_scaling_">use_approximate_eigenvalue_scaling_</dfn>;</td></tr>
+<tr><th id="98">98</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::approximate_eigenvalue_scale_" title='ceres::internal::LowRankInverseHessian::approximate_eigenvalue_scale_' data-ref="ceres::internal::LowRankInverseHessian::approximate_eigenvalue_scale_">approximate_eigenvalue_scale_</dfn>;</td></tr>
+<tr><th id="99">99</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::ColMajorMatrix" title='ceres::ColMajorMatrix' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor&gt;' data-ref="ceres::ColMajorMatrix">ColMajorMatrix</a> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::delta_x_history_" title='ceres::internal::LowRankInverseHessian::delta_x_history_' data-ref="ceres::internal::LowRankInverseHessian::delta_x_history_">delta_x_history_</dfn>;</td></tr>
+<tr><th id="100">100</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::ColMajorMatrix" title='ceres::ColMajorMatrix' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor&gt;' data-ref="ceres::ColMajorMatrix">ColMajorMatrix</a> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::delta_gradient_history_" title='ceres::internal::LowRankInverseHessian::delta_gradient_history_' data-ref="ceres::internal::LowRankInverseHessian::delta_gradient_history_">delta_gradient_history_</dfn>;</td></tr>
+<tr><th id="101">101</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::LowRankInverseHessian::delta_x_dot_delta_gradient_" title='ceres::internal::LowRankInverseHessian::delta_x_dot_delta_gradient_' data-ref="ceres::internal::LowRankInverseHessian::delta_x_dot_delta_gradient_">delta_x_dot_delta_gradient_</dfn>;</td></tr>
+<tr><th id="102">102</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;<em>int</em>&gt; <dfn class="decl" id="ceres::internal::LowRankInverseHessian::indices_" title='ceres::internal::LowRankInverseHessian::indices_' data-ref="ceres::internal::LowRankInverseHessian::indices_">indices_</dfn>;</td></tr>
+<tr><th id="103">103</th><td>};</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="106">106</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td><u>#<span data-ppcond="34">endif</span>  // CERES_INTERNAL_LOW_RANK_INVERSE_HESSIAN_H_</u></td></tr>
+<tr><th id="109">109</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='line_search_direction.cc.html'>ceres-solver/internal/ceres/line_search_direction.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

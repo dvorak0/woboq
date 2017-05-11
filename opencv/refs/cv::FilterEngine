@@ -1,0 +1,114 @@
+<def f='opencv/modules/imgproc/include/opencv2/imgproc/imgproc.hpp' l='218' ll='279'/>
+<size>304</size>
+<doc f='opencv/modules/imgproc/include/opencv2/imgproc/imgproc.hpp' l='145'>/*!
+ The Main Class for Image Filtering.
+
+ The class can be used to apply an arbitrary filtering operation to an image.
+ It contains all the necessary intermediate buffers, it computes extrapolated values
+ of the &quot;virtual&quot; pixels outside of the image etc.
+ Pointers to the initialized cv::FilterEngine instances
+ are returned by various OpenCV functions, such as cv::createSeparableLinearFilter(),
+ cv::createLinearFilter(), cv::createGaussianFilter(), cv::createDerivFilter(),
+ cv::createBoxFilter() and cv::createMorphologyFilter().
+
+ Using the class you can process large images by parts and build complex pipelines
+ that include filtering as some of the stages. If all you need is to apply some pre-defined
+ filtering operation, you may use cv::filter2D(), cv::erode(), cv::dilate() etc.
+ functions that create FilterEngine internally.
+
+ Here is the example on how to use the class to implement Laplacian operator, which is the sum of
+ second-order derivatives. More complex variant for different types is implemented in cv::Laplacian().
+
+ \code
+ void laplace_f(const Mat&amp; src, Mat&amp; dst)
+ {
+     CV_Assert( src.type() == CV_32F );
+     // make sure the destination array has the proper size and type
+     dst.create(src.size(), src.type());
+
+     // get the derivative and smooth kernels for d2I/dx2.
+     // for d2I/dy2 we could use the same kernels, just swapped
+     Mat kd, ks;
+     getSobelKernels( kd, ks, 2, 0, ksize, false, ktype );
+
+     // let&apos;s process 10 source rows at once
+     int DELTA = std::min(10, src.rows);
+     Ptr&lt;FilterEngine&gt; Fxx = createSeparableLinearFilter(src.type(),
+     dst.type(), kd, ks, Point(-1,-1), 0, borderType, borderType, Scalar() );
+     Ptr&lt;FilterEngine&gt; Fyy = createSeparableLinearFilter(src.type(),
+     dst.type(), ks, kd, Point(-1,-1), 0, borderType, borderType, Scalar() );
+
+     int y = Fxx-&gt;start(src), dsty = 0, dy = 0;
+     Fyy-&gt;start(src);
+     const uchar* sptr = src.data + y*src.step;
+
+     // allocate the buffers for the spatial image derivatives;
+     // the buffers need to have more than DELTA rows, because at the
+     // last iteration the output may take max(kd.rows-1,ks.rows-1)
+     // rows more than the input.
+     Mat Ixx( DELTA + kd.rows - 1, src.cols, dst.type() );
+     Mat Iyy( DELTA + kd.rows - 1, src.cols, dst.type() );
+
+     // inside the loop we always pass DELTA rows to the filter
+     // (note that the &quot;proceed&quot; method takes care of possibe overflow, since
+     // it was given the actual image height in the &quot;start&quot; method)
+     // on output we can get:
+     //  * &lt; DELTA rows (the initial buffer accumulation stage)
+     //  * = DELTA rows (settled state in the middle)
+     //  * &gt; DELTA rows (then the input image is over, but we generate
+     //                  &quot;virtual&quot; rows using the border mode and filter them)
+     // this variable number of output rows is dy.
+     // dsty is the current output row.
+     // sptr is the pointer to the first input row in the portion to process
+     for( ; dsty &lt; dst.rows; sptr += DELTA*src.step, dsty += dy )
+     {
+         Fxx-&gt;proceed( sptr, (int)src.step, DELTA, Ixx.data, (int)Ixx.step );
+         dy = Fyy-&gt;proceed( sptr, (int)src.step, DELTA, d2y.data, (int)Iyy.step );
+         if( dy &gt; 0 )
+         {
+             Mat dstripe = dst.rowRange(dsty, dsty + dy);
+             add(Ixx.rowRange(0, dy), Iyy.rowRange(0, dy), dstripe);
+         }
+     }
+ }
+ \endcode
+*/</doc>
+<fun r='_ZN2cv12FilterEngineC1Ev'/>
+<fun r='_ZN2cv12FilterEngineC1ERKNS_3PtrINS_10BaseFilterEEERKNS1_INS_13BaseRowFilterEEERKNS1_INS_16BaseColumnFilterEEEiiiiiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv12FilterEngineD1Ev'/>
+<fun r='_ZN2cv12FilterEngine4initERKNS_3PtrINS_10BaseFilterEEERKNS1_INS_13BaseRowFilterEEERKNS1_INS_16BaseColumnFilterEEEiiiiiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv12FilterEngine5startENS_5Size_IiEENS_5Rect_IiEEi'/>
+<fun r='_ZN2cv12FilterEngine5startERKNS_3MatERKNS_5Rect_IiEEbi'/>
+<fun r='_ZN2cv12FilterEngine7proceedEPKhiiPhi'/>
+<fun r='_ZN2cv12FilterEngine5applyERKNS_3MatERS1_RKNS_5Rect_IiEENS_6Point_IiEEb'/>
+<fun r='_ZNK2cv12FilterEngine11isSeparableEv'/>
+<fun r='_ZNK2cv12FilterEngine18remainingInputRowsEv'/>
+<fun r='_ZNK2cv12FilterEngine19remainingOutputRowsEv'/>
+<mbr r='cv::FilterEngine::srcType' o='64' t='int'/>
+<mbr r='cv::FilterEngine::dstType' o='96' t='int'/>
+<mbr r='cv::FilterEngine::bufType' o='128' t='int'/>
+<mbr r='cv::FilterEngine::ksize' o='160' t='Size'/>
+<mbr r='cv::FilterEngine::anchor' o='224' t='Point'/>
+<mbr r='cv::FilterEngine::maxWidth' o='288' t='int'/>
+<mbr r='cv::FilterEngine::wholeSize' o='320' t='Size'/>
+<mbr r='cv::FilterEngine::roi' o='384' t='Rect'/>
+<mbr r='cv::FilterEngine::dx1' o='512' t='int'/>
+<mbr r='cv::FilterEngine::dx2' o='544' t='int'/>
+<mbr r='cv::FilterEngine::rowBorderType' o='576' t='int'/>
+<mbr r='cv::FilterEngine::columnBorderType' o='608' t='int'/>
+<mbr r='cv::FilterEngine::borderTab' o='640' t='vector&lt;int&gt;'/>
+<mbr r='cv::FilterEngine::borderElemSize' o='832' t='int'/>
+<mbr r='cv::FilterEngine::ringBuf' o='896' t='vector&lt;uchar&gt;'/>
+<mbr r='cv::FilterEngine::srcRow' o='1088' t='vector&lt;uchar&gt;'/>
+<mbr r='cv::FilterEngine::constBorderValue' o='1280' t='vector&lt;uchar&gt;'/>
+<mbr r='cv::FilterEngine::constBorderRow' o='1472' t='vector&lt;uchar&gt;'/>
+<mbr r='cv::FilterEngine::bufStep' o='1664' t='int'/>
+<mbr r='cv::FilterEngine::startY' o='1696' t='int'/>
+<mbr r='cv::FilterEngine::startY0' o='1728' t='int'/>
+<mbr r='cv::FilterEngine::endY' o='1760' t='int'/>
+<mbr r='cv::FilterEngine::rowCount' o='1792' t='int'/>
+<mbr r='cv::FilterEngine::dstY' o='1824' t='int'/>
+<mbr r='cv::FilterEngine::rows' o='1856' t='vector&lt;uchar *&gt;'/>
+<mbr r='cv::FilterEngine::filter2D' o='2048' t='Ptr&lt;cv::BaseFilter&gt;'/>
+<mbr r='cv::FilterEngine::rowFilter' o='2176' t='Ptr&lt;cv::BaseRowFilter&gt;'/>
+<mbr r='cv::FilterEngine::columnFilter' o='2304' t='Ptr&lt;cv::BaseColumnFilter&gt;'/>

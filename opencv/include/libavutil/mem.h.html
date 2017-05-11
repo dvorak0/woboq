@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>mem.h source code [include/libavutil/mem.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/libavutil/mem.h'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>include</a>/<a href='./'>libavutil</a>/<a href='mem.h.html'>mem.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*</i></td></tr>
+<tr><th id="2">2</th><td><i> * copyright (c) 2006 Michael Niedermayer &lt;michaelni@gmx.at&gt;</i></td></tr>
+<tr><th id="3">3</th><td><i> *</i></td></tr>
+<tr><th id="4">4</th><td><i> * This file is part of Libav.</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> * Libav is free software; you can redistribute it and/or</i></td></tr>
+<tr><th id="7">7</th><td><i> * modify it under the terms of the GNU Lesser General Public</i></td></tr>
+<tr><th id="8">8</th><td><i> * License as published by the Free Software Foundation; either</i></td></tr>
+<tr><th id="9">9</th><td><i> * version 2.1 of the License, or (at your option) any later version.</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * Libav is distributed in the hope that it will be useful,</i></td></tr>
+<tr><th id="12">12</th><td><i> * but WITHOUT ANY WARRANTY; without even the implied warranty of</i></td></tr>
+<tr><th id="13">13</th><td><i> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU</i></td></tr>
+<tr><th id="14">14</th><td><i> * Lesser General Public License for more details.</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> * You should have received a copy of the GNU Lesser General Public</i></td></tr>
+<tr><th id="17">17</th><td><i> * License along with Libav; if not, write to the Free Software</i></td></tr>
+<tr><th id="18">18</th><td><i> * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</i></td></tr>
+<tr><th id="19">19</th><td><i> */</i></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"> *<span class="command"> @file</span></i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"> * memory handling functions</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><u>#<span data-ppcond="26">ifndef</span> <span class="macro" data-ref="_M/AVUTIL_MEM_H">AVUTIL_MEM_H</span></u></td></tr>
+<tr><th id="27">27</th><td><u>#define <dfn class="macro" id="_M/AVUTIL_MEM_H" data-ref="_M/AVUTIL_MEM_H">AVUTIL_MEM_H</dfn></u></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><u>#include &lt;limits.h&gt;</u></td></tr>
+<tr><th id="30">30</th><td><u>#include &lt;stdint.h&gt;</u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="attributes.h.html">"attributes.h"</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="avutil.h.html">"avutil.h"</a></u></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * <span class="command">@addtogroup</span> <span class="verb">lavu_mem</span></i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * @{</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><u>#<span data-ppcond="41">if</span> defined(<span class="macro" data-ref="_M/__ICC">__ICC</span>) &amp;&amp; __ICC &lt; 1200 || defined(<span class="macro" data-ref="_M/__SUNPRO_C">__SUNPRO_C</span>)</u></td></tr>
+<tr><th id="42">42</th><td>    <u>#define DECLARE_ALIGNED(n,t,v)      t __attribute__ ((aligned (n))) v</u></td></tr>
+<tr><th id="43">43</th><td>    <u>#define DECLARE_ASM_CONST(n,t,v)    const t __attribute__ ((aligned (n))) v</u></td></tr>
+<tr><th id="44">44</th><td><u>#elif defined(<span class="macro" data-ref="_M/__TI_COMPILER_VERSION__">__TI_COMPILER_VERSION__</span>)</u></td></tr>
+<tr><th id="45">45</th><td>    <u>#define DECLARE_ALIGNED(n,t,v)                      \</u></td></tr>
+<tr><th id="46">46</th><td><u>        AV_PRAGMA(DATA_ALIGN(v,n))                      \</u></td></tr>
+<tr><th id="47">47</th><td><u>        t __attribute__((aligned(n))) v</u></td></tr>
+<tr><th id="48">48</th><td>    <u>#define DECLARE_ASM_CONST(n,t,v)                    \</u></td></tr>
+<tr><th id="49">49</th><td><u>        AV_PRAGMA(DATA_ALIGN(v,n))                      \</u></td></tr>
+<tr><th id="50">50</th><td><u>        static const t __attribute__((aligned(n))) v</u></td></tr>
+<tr><th id="51">51</th><td><u>#<span data-ppcond="41">elif</span> defined(<span class="macro" data-ref="_M/__GNUC__">__GNUC__</span>)</u></td></tr>
+<tr><th id="52">52</th><td>    <u>#define <dfn class="macro" id="_M/DECLARE_ALIGNED" data-ref="_M/DECLARE_ALIGNED">DECLARE_ALIGNED</dfn>(n,t,v)      t __attribute__ ((aligned (n))) v</u></td></tr>
+<tr><th id="53">53</th><td>    <u>#define <dfn class="macro" id="_M/DECLARE_ASM_CONST" data-ref="_M/DECLARE_ASM_CONST">DECLARE_ASM_CONST</dfn>(n,t,v)    static const t av_used __attribute__ ((aligned (n))) v</u></td></tr>
+<tr><th id="54">54</th><td><u>#<span data-ppcond="41">elif</span> defined(_MSC_VER)</u></td></tr>
+<tr><th id="55">55</th><td>    <u>#define DECLARE_ALIGNED(n,t,v)      __declspec(align(n)) t v</u></td></tr>
+<tr><th id="56">56</th><td>    <u>#define DECLARE_ASM_CONST(n,t,v)    __declspec(align(n)) static const t v</u></td></tr>
+<tr><th id="57">57</th><td><u>#else</u></td></tr>
+<tr><th id="58">58</th><td>    <u>#define DECLARE_ALIGNED(n,t,v)      t v</u></td></tr>
+<tr><th id="59">59</th><td>    <u>#define DECLARE_ASM_CONST(n,t,v)    static const t v</u></td></tr>
+<tr><th id="60">60</th><td><u>#<span data-ppcond="41">endif</span></u></td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td><u>#<span data-ppcond="62">if</span> <a class="macro" href="attributes.h.html#30" title="(4 &gt; 3 || 4 == 3 &amp;&amp; 2 &gt;= 1)" data-ref="_M/AV_GCC_VERSION_AT_LEAST">AV_GCC_VERSION_AT_LEAST</a>(3,1)</u></td></tr>
+<tr><th id="63">63</th><td>    <u>#define <dfn class="macro" id="_M/av_malloc_attrib" data-ref="_M/av_malloc_attrib">av_malloc_attrib</dfn> __attribute__((__malloc__))</u></td></tr>
+<tr><th id="64">64</th><td><u>#<span data-ppcond="62">else</span></u></td></tr>
+<tr><th id="65">65</th><td>    <u>#define av_malloc_attrib</u></td></tr>
+<tr><th id="66">66</th><td><u>#<span data-ppcond="62">endif</span></u></td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><u>#<span data-ppcond="68">if</span> <a class="macro" href="attributes.h.html#30" title="(4 &gt; 4 || 4 == 4 &amp;&amp; 2 &gt;= 3)" data-ref="_M/AV_GCC_VERSION_AT_LEAST">AV_GCC_VERSION_AT_LEAST</a>(4,3)</u></td></tr>
+<tr><th id="69">69</th><td>    <u>#define av_alloc_size(...) __attribute__((alloc_size(__VA_ARGS__)))</u></td></tr>
+<tr><th id="70">70</th><td><u>#<span data-ppcond="68">else</span></u></td></tr>
+<tr><th id="71">71</th><td>    <u>#define <dfn class="macro" id="_M/av_alloc_size" data-ref="_M/av_alloc_size">av_alloc_size</dfn>(...)</u></td></tr>
+<tr><th id="72">72</th><td><u>#<span data-ppcond="68">endif</span></u></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc"> * Allocate a block of size bytes with alignment suitable for all</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc"> * memory accesses (including vectors if available on the CPU).</i></td></tr>
+<tr><th id="77">77</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">size</span> Size in bytes for the memory block to be allocated.</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc"> * <span class="command">@return</span> Pointer to the allocated block, NULL if the block cannot</i></td></tr>
+<tr><th id="79">79</th><td><i class="doc"> * be allocated.</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc"> * <span class="command">@see</span> av_mallocz()</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="82">82</th><td><em>void</em> *<dfn class="decl" id="av_malloc" title='av_malloc' data-ref="av_malloc">av_malloc</dfn>(<a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="591size" title='size' data-type='size_t' data-ref="591size">size</dfn>) <a class="macro" href="#63" title="__attribute__((__malloc__))" data-ref="_M/av_malloc_attrib">av_malloc_attrib</a> <a class="macro" href="#71" title="" data-ref="_M/av_alloc_size">av_alloc_size</a>(<var>1</var>);</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc"> * Helper function to allocate a block of size * nmemb bytes with</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc"> * using av_malloc()</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">nmemb</span> Number of elements</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">size</span> Size of the single element</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc"> * <span class="command">@return</span> Pointer to the allocated block, NULL if the block cannot</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc"> * be allocated.</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc"> * <span class="command">@see</span> av_malloc()</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="93">93</th><td><a class="macro" href="#71" title="" data-ref="_M/av_alloc_size">av_alloc_size</a>(<var>1</var>, <var>2</var>) <em>static</em> <b>inline</b> <em>void</em> *<dfn class="decl def" id="_Z15av_malloc_arraymm" title='av_malloc_array' data-ref="_Z15av_malloc_arraymm">av_malloc_array</dfn>(<a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="592nmemb" title='nmemb' data-type='size_t' data-ref="592nmemb">nmemb</dfn>, <a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col3 decl" id="593size" title='size' data-type='size_t' data-ref="593size">size</dfn>)</td></tr>
+<tr><th id="94">94</th><td>{</td></tr>
+<tr><th id="95">95</th><td>    <b>if</b> (<a class="local col3 ref" href="#593size" title='size' data-ref="593size">size</a> &lt;= <var>0</var> || <a class="local col2 ref" href="#592nmemb" title='nmemb' data-ref="592nmemb">nmemb</a> &gt;= <span class="macro" title="2147483647" data-ref="_M/INT_MAX">INT_MAX</span> / <a class="local col3 ref" href="#593size" title='size' data-ref="593size">size</a>)</td></tr>
+<tr><th id="96">96</th><td>        <b>return</b> <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="97">97</th><td>    <b>return</b> <a class="ref" href="#av_malloc" title='av_malloc' data-ref="av_malloc">av_malloc</a>(<a class="local col2 ref" href="#592nmemb" title='nmemb' data-ref="592nmemb">nmemb</a> * <a class="local col3 ref" href="#593size" title='size' data-ref="593size">size</a>);</td></tr>
+<tr><th id="98">98</th><td>}</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc"> * Allocate or reallocate a block of memory.</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc"> * If ptr is NULL and size &gt; 0, allocate a new block. If</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc"> * size is zero, free the memory block pointed to by ptr.</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">ptr</span> Pointer to a memory block already allocated with</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc"> * av_malloc(z)() or av_realloc() or NULL.</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">size</span> Size in bytes for the memory block to be allocated or</i></td></tr>
+<tr><th id="107">107</th><td><i class="doc"> * reallocated.</i></td></tr>
+<tr><th id="108">108</th><td><i class="doc"> * <span class="command">@return</span> Pointer to a newly reallocated block or NULL if the block</i></td></tr>
+<tr><th id="109">109</th><td><i class="doc"> * cannot be reallocated or the function is used to free the memory block.</i></td></tr>
+<tr><th id="110">110</th><td><i class="doc"> * <span class="command">@see</span> av_fast_realloc()</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="112">112</th><td><em>void</em> *<dfn class="decl" id="av_realloc" title='av_realloc' data-ref="av_realloc">av_realloc</dfn>(<em>void</em> *<dfn class="local col4 decl" id="594ptr" title='ptr' data-type='void *' data-ref="594ptr">ptr</dfn>, <a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="595size" title='size' data-type='size_t' data-ref="595size">size</dfn>) <a class="macro" href="#71" title="" data-ref="_M/av_alloc_size">av_alloc_size</a>(<var>2</var>);</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc"> * Free a memory block which has been allocated with av_malloc(z)() or</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc"> * av_realloc().</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">ptr</span> Pointer to the memory block which should be freed.</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc"> * <span class="command">@note</span> ptr = NULL is explicitly allowed.</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc"> * <span class="command">@note</span> It is recommended that you use av_freep() instead.</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc"> * <span class="command">@see</span> av_freep()</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="122">122</th><td><em>void</em> <dfn class="decl" id="av_free" title='av_free' data-ref="av_free">av_free</dfn>(<em>void</em> *<dfn class="local col6 decl" id="596ptr" title='ptr' data-type='void *' data-ref="596ptr">ptr</dfn>);</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc"> * Allocate a block of size bytes with alignment suitable for all</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc"> * memory accesses (including vectors if available on the CPU) and</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc"> * zero all the bytes of the block.</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">size</span> Size in bytes for the memory block to be allocated.</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc"> * <span class="command">@return</span> Pointer to the allocated block, NULL if it cannot be allocated.</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc"> * <span class="command">@see</span> av_malloc()</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="132">132</th><td><em>void</em> *<dfn class="decl" id="av_mallocz" title='av_mallocz' data-ref="av_mallocz">av_mallocz</dfn>(<a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="597size" title='size' data-type='size_t' data-ref="597size">size</dfn>) <a class="macro" href="#63" title="__attribute__((__malloc__))" data-ref="_M/av_malloc_attrib">av_malloc_attrib</a> <a class="macro" href="#71" title="" data-ref="_M/av_alloc_size">av_alloc_size</a>(<var>1</var>);</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc"> * Helper function to allocate a block of size * nmemb bytes with</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc"> * using av_mallocz()</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">nmemb</span> Number of elements</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">size</span> Size of the single element</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc"> * <span class="command">@return</span> Pointer to the allocated block, NULL if the block cannot</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc"> * be allocated.</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc"> * <span class="command">@see</span> av_mallocz()</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc"> * <span class="command">@see</span> av_malloc_array()</i></td></tr>
+<tr><th id="143">143</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="144">144</th><td><a class="macro" href="#71" title="" data-ref="_M/av_alloc_size">av_alloc_size</a>(<var>1</var>, <var>2</var>) <em>static</em> <b>inline</b> <em>void</em> *<dfn class="decl def" id="_Z16av_mallocz_arraymm" title='av_mallocz_array' data-ref="_Z16av_mallocz_arraymm">av_mallocz_array</dfn>(<a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col8 decl" id="598nmemb" title='nmemb' data-type='size_t' data-ref="598nmemb">nmemb</dfn>, <a class="typedef" href="../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="599size" title='size' data-type='size_t' data-ref="599size">size</dfn>)</td></tr>
+<tr><th id="145">145</th><td>{</td></tr>
+<tr><th id="146">146</th><td>    <b>if</b> (<a class="local col9 ref" href="#599size" title='size' data-ref="599size">size</a> &lt;= <var>0</var> || <a class="local col8 ref" href="#598nmemb" title='nmemb' data-ref="598nmemb">nmemb</a> &gt;= <span class="macro" title="2147483647" data-ref="_M/INT_MAX">INT_MAX</span> / <a class="local col9 ref" href="#599size" title='size' data-ref="599size">size</a>)</td></tr>
+<tr><th id="147">147</th><td>        <b>return</b> <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="148">148</th><td>    <b>return</b> <a class="ref" href="#av_mallocz" title='av_mallocz' data-ref="av_mallocz">av_mallocz</a>(<a class="local col8 ref" href="#598nmemb" title='nmemb' data-ref="598nmemb">nmemb</a> * <a class="local col9 ref" href="#599size" title='size' data-ref="599size">size</a>);</td></tr>
+<tr><th id="149">149</th><td>}</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc"> * Duplicate the string s.</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">s</span> string to be duplicated</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc"> * <span class="command">@return</span> Pointer to a newly allocated string containing a</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc"> * copy of s or NULL if the string cannot be allocated.</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="157">157</th><td><em>char</em> *<dfn class="decl" id="av_strdup" title='av_strdup' data-ref="av_strdup">av_strdup</dfn>(<em>const</em> <em>char</em> *<dfn class="local col0 decl" id="600s" title='s' data-type='const char *' data-ref="600s">s</dfn>) <a class="macro" href="#63" title="__attribute__((__malloc__))" data-ref="_M/av_malloc_attrib">av_malloc_attrib</a>;</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc"> * Free a memory block which has been allocated with av_malloc(z)() or</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc"> * av_realloc() and set the pointer pointing to it to NULL.</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">ptr</span> Pointer to the pointer to the memory block which should</i></td></tr>
+<tr><th id="163">163</th><td><i class="doc"> * be freed.</i></td></tr>
+<tr><th id="164">164</th><td><i class="doc"> * <span class="command">@see</span> av_free()</i></td></tr>
+<tr><th id="165">165</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="166">166</th><td><em>void</em> <dfn class="decl" id="av_freep" title='av_freep' data-ref="av_freep">av_freep</dfn>(<em>void</em> *<dfn class="local col1 decl" id="601ptr" title='ptr' data-type='void *' data-ref="601ptr">ptr</dfn>);</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="169">169</th><td><i class="doc"> * <span class="command">@brief</span> deliberately overlapping memcpy implementation</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">dst</span> destination buffer</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">back</span> how many bytes back we start (the initial size of the overlapping window)</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">cnt</span> number of bytes to copy, must be &gt;= 0</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc"> * cnt &gt; back is valid, this will copy the bytes we just copied,</i></td></tr>
+<tr><th id="175">175</th><td><i class="doc"> * thus creating a repeating pattern with a period length of back.</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="177">177</th><td><em>void</em> <dfn class="decl" id="av_memcpy_backptr" title='av_memcpy_backptr' data-ref="av_memcpy_backptr">av_memcpy_backptr</dfn>(<a class="typedef" href="../stdint.h.html#uint8_t" title='uint8_t' data-type='unsigned char' data-ref="uint8_t">uint8_t</a> *<dfn class="local col2 decl" id="602dst" title='dst' data-type='uint8_t *' data-ref="602dst">dst</dfn>, <em>int</em> <dfn class="local col3 decl" id="603back" title='back' data-type='int' data-ref="603back">back</dfn>, <em>int</em> <dfn class="local col4 decl" id="604cnt" title='cnt' data-type='int' data-ref="604cnt">cnt</dfn>);</td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="180">180</th><td><i class="doc"> * @}</i></td></tr>
+<tr><th id="181">181</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="182">182</th><td></td></tr>
+<tr><th id="183">183</th><td><u>#<span data-ppcond="26">endif</span> /* AVUTIL_MEM_H */</u></td></tr>
+<tr><th id="184">184</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../opencv/modules/highgui/src/cap_ffmpeg.cpp.html'>opencv/modules/highgui/src/cap_ffmpeg.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

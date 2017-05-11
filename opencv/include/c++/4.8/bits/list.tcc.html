@@ -1,0 +1,487 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>list.tcc source code [include/c++/4.8/bits/list.tcc] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/c++/4.8/bits/list.tcc'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>include</a>/<a href='../..'>c++</a>/<a href='..'>4.8</a>/<a href='./'>bits</a>/<a href='list.tcc.html'>list.tcc</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// List implementation (out of line) -*- C++ -*-</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i>// Copyright (C) 2001-2013 Free Software Foundation, Inc.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// This file is part of the GNU ISO C++ Library.  This library is free</i></td></tr>
+<tr><th id="6">6</th><td><i>// software; you can redistribute it and/or modify it under the</i></td></tr>
+<tr><th id="7">7</th><td><i>// terms of the GNU General Public License as published by the</i></td></tr>
+<tr><th id="8">8</th><td><i>// Free Software Foundation; either version 3, or (at your option)</i></td></tr>
+<tr><th id="9">9</th><td><i>// any later version.</i></td></tr>
+<tr><th id="10">10</th><td><i></i></td></tr>
+<tr><th id="11">11</th><td><i>// This library is distributed in the hope that it will be useful,</i></td></tr>
+<tr><th id="12">12</th><td><i>// but WITHOUT ANY WARRANTY; without even the implied warranty of</i></td></tr>
+<tr><th id="13">13</th><td><i>// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</i></td></tr>
+<tr><th id="14">14</th><td><i>// GNU General Public License for more details.</i></td></tr>
+<tr><th id="15">15</th><td><i></i></td></tr>
+<tr><th id="16">16</th><td><i>// Under Section 7 of GPL version 3, you are granted additional</i></td></tr>
+<tr><th id="17">17</th><td><i>// permissions described in the GCC Runtime Library Exception, version</i></td></tr>
+<tr><th id="18">18</th><td><i>// 3.1, as published by the Free Software Foundation.</i></td></tr>
+<tr><th id="19">19</th><td><i></i></td></tr>
+<tr><th id="20">20</th><td><i>// You should have received a copy of the GNU General Public License and</i></td></tr>
+<tr><th id="21">21</th><td><i>// a copy of the GCC Runtime Library Exception along with this program;</i></td></tr>
+<tr><th id="22">22</th><td><i>// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see</i></td></tr>
+<tr><th id="23">23</th><td><i>// &lt;<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</i></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><i>/*</i></td></tr>
+<tr><th id="26">26</th><td><i> *</i></td></tr>
+<tr><th id="27">27</th><td><i> * Copyright (c) 1994</i></td></tr>
+<tr><th id="28">28</th><td><i> * Hewlett-Packard Company</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> * Permission to use, copy, modify, distribute and sell this software</i></td></tr>
+<tr><th id="31">31</th><td><i> * and its documentation for any purpose is hereby granted without fee,</i></td></tr>
+<tr><th id="32">32</th><td><i> * provided that the above copyright notice appear in all copies and</i></td></tr>
+<tr><th id="33">33</th><td><i> * that both that copyright notice and this permission notice appear</i></td></tr>
+<tr><th id="34">34</th><td><i> * in supporting documentation.  Hewlett-Packard Company makes no</i></td></tr>
+<tr><th id="35">35</th><td><i> * representations about the suitability of this software for any</i></td></tr>
+<tr><th id="36">36</th><td><i> * purpose.  It is provided "as is" without express or implied warranty.</i></td></tr>
+<tr><th id="37">37</th><td><i> *</i></td></tr>
+<tr><th id="38">38</th><td><i> *</i></td></tr>
+<tr><th id="39">39</th><td><i> * Copyright (c) 1996,1997</i></td></tr>
+<tr><th id="40">40</th><td><i> * Silicon Graphics Computer Systems, Inc.</i></td></tr>
+<tr><th id="41">41</th><td><i> *</i></td></tr>
+<tr><th id="42">42</th><td><i> * Permission to use, copy, modify, distribute and sell this software</i></td></tr>
+<tr><th id="43">43</th><td><i> * and its documentation for any purpose is hereby granted without fee,</i></td></tr>
+<tr><th id="44">44</th><td><i> * provided that the above copyright notice appear in all copies and</i></td></tr>
+<tr><th id="45">45</th><td><i> * that both that copyright notice and this permission notice appear</i></td></tr>
+<tr><th id="46">46</th><td><i> * in supporting documentation.  Silicon Graphics makes no</i></td></tr>
+<tr><th id="47">47</th><td><i> * representations about the suitability of this software for any</i></td></tr>
+<tr><th id="48">48</th><td><i> * purpose.  It is provided "as is" without express or implied warranty.</i></td></tr>
+<tr><th id="49">49</th><td><i> */</i></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><i class="doc">/**<span class="command"> @file</span> bits/list.tcc</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> *  This is an internal header file, included by other library headers.</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> *  Do not attempt to use it directly.<span class="command"> @headername</span>{list}</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><u>#<span data-ppcond="56">ifndef</span> <span class="macro" data-ref="_M/_LIST_TCC">_LIST_TCC</span></u></td></tr>
+<tr><th id="57">57</th><td><u>#define <dfn class="macro" id="_M/_LIST_TCC" data-ref="_M/_LIST_TCC">_LIST_TCC</dfn> 1</u></td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><b>namespace</b> <span class="namespace">std</span> <a class="macro" href="../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#67" title="__attribute__ ((__visibility__ (&quot;default&quot;)))" data-ref="_M/_GLIBCXX_VISIBILITY">_GLIBCXX_VISIBILITY</a>(<b>default</b>)</td></tr>
+<tr><th id="60">60</th><td>{</td></tr>
+<tr><th id="61">61</th><td><a class="macro" href="../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#333" title="" data-ref="_M/_GLIBCXX_BEGIN_NAMESPACE_CONTAINER">_GLIBCXX_BEGIN_NAMESPACE_CONTAINER</a></td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="64">64</th><td>    <em>void</em></td></tr>
+<tr><th id="65">65</th><td>    <a class="type" href="stl_list.h.html#std::_List_base" title='std::_List_base' data-ref="std::_List_base">_List_base</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="66">66</th><td>    <dfn class="decl def" id="_ZNSt10_List_base8_M_clearEv" title='std::_List_base::_M_clear' data-ref="_ZNSt10_List_base8_M_clearEv">_M_clear</dfn>()</td></tr>
+<tr><th id="67">67</th><td>    {</td></tr>
+<tr><th id="68">68</th><td>      <b>typedef</b> <a class="type" href="stl_list.h.html#std::_List_node" title='std::_List_node' data-ref="std::_List_node">_List_node</a>&lt;_Tp&gt;  <dfn class="local col8 typedef" id="4548_Node" title='_Node' data-type='_List_node&lt;_Tp&gt;' data-ref="4548_Node">_Node</dfn>;</td></tr>
+<tr><th id="69">69</th><td>      <a class="local col8 typedef" href="#4548_Node" title='_Node' data-type='_List_node&lt;_Tp&gt;' data-ref="4548_Node">_Node</a>* <dfn class="local col9 decl" id="4549__cur" title='__cur' data-type='_Node *' data-ref="4549__cur">__cur</dfn> = <b>static_cast</b>&lt;<a class="local col8 typedef" href="#4548_Node" title='_Node' data-type='_List_node&lt;_Tp&gt;' data-ref="4548_Node">_Node</a>*&gt;(<a class="member" href="stl_list.h.html#std::_List_base::_M_impl" title='std::_List_base::_M_impl' data-ref="std::_List_base::_M_impl">_M_impl</a>._M_node._M_next);</td></tr>
+<tr><th id="70">70</th><td>      <b>while</b> (<a class="local col9 ref" href="#4549__cur" title='__cur' data-ref="4549__cur">__cur</a> != &amp;<a class="member" href="stl_list.h.html#std::_List_base::_M_impl" title='std::_List_base::_M_impl' data-ref="std::_List_base::_M_impl">_M_impl</a>._M_node)</td></tr>
+<tr><th id="71">71</th><td>	{</td></tr>
+<tr><th id="72">72</th><td>	  <a class="local col8 typedef" href="#4548_Node" title='_Node' data-type='_List_node&lt;_Tp&gt;' data-ref="4548_Node">_Node</a>* <dfn class="local col0 decl" id="4550__tmp" title='__tmp' data-type='_Node *' data-ref="4550__tmp">__tmp</dfn> = <a class="local col9 ref" href="#4549__cur" title='__cur' data-ref="4549__cur">__cur</a>;</td></tr>
+<tr><th id="73">73</th><td>	  <a class="local col9 ref" href="#4549__cur" title='__cur' data-ref="4549__cur">__cur</a> = <b>static_cast</b>&lt;<a class="local col8 typedef" href="#4548_Node" title='_Node' data-type='_List_node&lt;_Tp&gt;' data-ref="4548_Node">_Node</a>*&gt;(<a class="local col9 ref" href="#4549__cur" title='__cur' data-ref="4549__cur">__cur</a>-&gt;_M_next);</td></tr>
+<tr><th id="74">74</th><td><u>#<span data-ppcond="74">if</span> <span class="macro" title="199711L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201103L</u></td></tr>
+<tr><th id="75">75</th><td>	  _M_get_Node_allocator().destroy(__tmp);</td></tr>
+<tr><th id="76">76</th><td><u>#<span data-ppcond="74">else</span></u></td></tr>
+<tr><th id="77">77</th><td>	  <a class="member" href="stl_list.h.html#_ZNKSt10_List_base19_M_get_Tp_allocatorEv" title='std::_List_base::_M_get_Tp_allocator' data-ref="_ZNKSt10_List_base19_M_get_Tp_allocatorEv">_M_get_Tp_allocator</a>().destroy(<span class="namespace">std::</span>__addressof(<a class="local col0 ref" href="#4550__tmp" title='__tmp' data-ref="4550__tmp">__tmp</a>-&gt;_M_data));</td></tr>
+<tr><th id="78">78</th><td><u>#<span data-ppcond="74">endif</span></u></td></tr>
+<tr><th id="79">79</th><td>	  <a class="member" href="stl_list.h.html#_ZNSt10_List_base11_M_put_nodeEPSt10_List_nodeIT_E" title='std::_List_base::_M_put_node' data-ref="_ZNSt10_List_base11_M_put_nodeEPSt10_List_nodeIT_E">_M_put_node</a>(<a class="local col0 ref" href="#4550__tmp" title='__tmp' data-ref="4550__tmp">__tmp</a>);</td></tr>
+<tr><th id="80">80</th><td>	}</td></tr>
+<tr><th id="81">81</th><td>    }</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><u>#<span data-ppcond="83">if</span> <span class="macro" title="199711L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201103L</u></td></tr>
+<tr><th id="84">84</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="85">85</th><td>    <b>template</b>&lt;<b>typename</b>... _Args&gt;</td></tr>
+<tr><th id="86">86</th><td>      <b>typename</b> list&lt;_Tp, _Alloc&gt;::iterator</td></tr>
+<tr><th id="87">87</th><td>      list&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="88">88</th><td>      emplace(iterator __position, _Args&amp;&amp;... __args)</td></tr>
+<tr><th id="89">89</th><td>      {</td></tr>
+<tr><th id="90">90</th><td>	_Node* __tmp = _M_create_node(std::forward&lt;_Args&gt;(__args)...);</td></tr>
+<tr><th id="91">91</th><td>	__tmp-&gt;_M_hook(__position._M_node);</td></tr>
+<tr><th id="92">92</th><td>	<b>return</b> iterator(__tmp);</td></tr>
+<tr><th id="93">93</th><td>      }</td></tr>
+<tr><th id="94">94</th><td><u>#<span data-ppcond="83">endif</span></u></td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="97">97</th><td>    <b>typename</b> <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::<a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a></td></tr>
+<tr><th id="98">98</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="99">99</th><td>    <dfn class="decl def" id="_ZNSt4list6insertESt14_List_iteratorIT_ERKS1_" title='std::list::insert' data-ref="_ZNSt4list6insertESt14_List_iteratorIT_ERKS1_">insert</dfn>(<a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col1 decl" id="4551__position" title='__position' data-type='iterator' data-ref="4551__position">__position</dfn>, <em>const</em> <a class="typedef" href="stl_list.h.html#std::list::value_type" title='std::list::value_type' data-type='_Tp' data-ref="std::list::value_type">value_type</a>&amp; <dfn class="local col2 decl" id="4552__x" title='__x' data-type='const value_type &amp;' data-ref="4552__x">__x</dfn>)</td></tr>
+<tr><th id="100">100</th><td>    {</td></tr>
+<tr><th id="101">101</th><td>      <a class="typedef" href="stl_list.h.html#std::list::_Node" title='std::list::_Node' data-type='_List_node&lt;_Tp&gt;' data-ref="std::list::_Node">_Node</a>* <dfn class="local col3 decl" id="4553__tmp" title='__tmp' data-type='_Node *' data-ref="4553__tmp">__tmp</dfn> = <a class="member" href="stl_list.h.html#_ZNSt4list14_M_create_nodeERKT_" title='std::list::_M_create_node' data-ref="_ZNSt4list14_M_create_nodeERKT_">_M_create_node</a>(<a class="local col2 ref" href="#4552__x" title='__x' data-ref="4552__x">__x</a>);</td></tr>
+<tr><th id="102">102</th><td>      <a class="local col3 ref" href="#4553__tmp" title='__tmp' data-ref="4553__tmp">__tmp</a>-&gt;_M_hook(<a class="local col1 ref" href="#4551__position" title='__position' data-ref="4551__position">__position</a>._M_node);</td></tr>
+<tr><th id="103">103</th><td>      <b>return</b> <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a>(<a class="local col3 ref" href="#4553__tmp" title='__tmp' data-ref="4553__tmp">__tmp</a>);</td></tr>
+<tr><th id="104">104</th><td>    }</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="107">107</th><td>    <b>typename</b> <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::<a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a></td></tr>
+<tr><th id="108">108</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="109">109</th><td>    <dfn class="decl def" id="_ZNSt4list5eraseESt14_List_iteratorIT_E" title='std::list::erase' data-ref="_ZNSt4list5eraseESt14_List_iteratorIT_E">erase</dfn>(<a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col4 decl" id="4554__position" title='__position' data-type='iterator' data-ref="4554__position">__position</dfn>)</td></tr>
+<tr><th id="110">110</th><td>    {</td></tr>
+<tr><th id="111">111</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col5 decl" id="4555__ret" title='__ret' data-type='iterator' data-ref="4555__ret">__ret</dfn> = <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a>(<a class="local col4 ref" href="#4554__position" title='__position' data-ref="4554__position">__position</a>._M_node-&gt;_M_next);</td></tr>
+<tr><th id="112">112</th><td>      <a class="member" href="stl_list.h.html#_ZNSt4list8_M_eraseESt14_List_iteratorIT_E" title='std::list::_M_erase' data-ref="_ZNSt4list8_M_eraseESt14_List_iteratorIT_E">_M_erase</a>(<a class="local col4 ref" href="#4554__position" title='__position' data-ref="4554__position">__position</a>);</td></tr>
+<tr><th id="113">113</th><td>      <b>return</b> <a class="local col5 ref" href="#4555__ret" title='__ret' data-ref="4555__ret">__ret</a>;</td></tr>
+<tr><th id="114">114</th><td>    }</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><u>#<span data-ppcond="116">if</span> <span class="macro" title="199711L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201103L</u></td></tr>
+<tr><th id="117">117</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="118">118</th><td>    <em>void</em></td></tr>
+<tr><th id="119">119</th><td>    list&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="120">120</th><td>    _M_default_append(size_type __n)</td></tr>
+<tr><th id="121">121</th><td>    {</td></tr>
+<tr><th id="122">122</th><td>      size_type __i = <var>0</var>;</td></tr>
+<tr><th id="123">123</th><td>      __try</td></tr>
+<tr><th id="124">124</th><td>	{</td></tr>
+<tr><th id="125">125</th><td>	  <b>for</b> (; __i &lt; __n; ++__i)</td></tr>
+<tr><th id="126">126</th><td>	    emplace_back();</td></tr>
+<tr><th id="127">127</th><td>	}</td></tr>
+<tr><th id="128">128</th><td>      __catch(...)</td></tr>
+<tr><th id="129">129</th><td>	{</td></tr>
+<tr><th id="130">130</th><td>	  <b>for</b> (; __i; --__i)</td></tr>
+<tr><th id="131">131</th><td>	    pop_back();</td></tr>
+<tr><th id="132">132</th><td>	  __throw_exception_again;</td></tr>
+<tr><th id="133">133</th><td>	}</td></tr>
+<tr><th id="134">134</th><td>    }</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="137">137</th><td>    <em>void</em></td></tr>
+<tr><th id="138">138</th><td>    list&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="139">139</th><td>    resize(size_type __new_size)</td></tr>
+<tr><th id="140">140</th><td>    {</td></tr>
+<tr><th id="141">141</th><td>      iterator __i = begin();</td></tr>
+<tr><th id="142">142</th><td>      size_type __len = <var>0</var>;</td></tr>
+<tr><th id="143">143</th><td>      <b>for</b> (; __i != end() &amp;&amp; __len &lt; __new_size; ++__i, ++__len)</td></tr>
+<tr><th id="144">144</th><td>        ;</td></tr>
+<tr><th id="145">145</th><td>      <b>if</b> (__len == __new_size)</td></tr>
+<tr><th id="146">146</th><td>        erase(__i, end());</td></tr>
+<tr><th id="147">147</th><td>      <b>else</b>                          <i>// __i == end()</i></td></tr>
+<tr><th id="148">148</th><td>	_M_default_append(__new_size - __len);</td></tr>
+<tr><th id="149">149</th><td>    }</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="152">152</th><td>    <em>void</em></td></tr>
+<tr><th id="153">153</th><td>    list&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="154">154</th><td>    resize(size_type __new_size, <em>const</em> value_type&amp; __x)</td></tr>
+<tr><th id="155">155</th><td>    {</td></tr>
+<tr><th id="156">156</th><td>      iterator __i = begin();</td></tr>
+<tr><th id="157">157</th><td>      size_type __len = <var>0</var>;</td></tr>
+<tr><th id="158">158</th><td>      <b>for</b> (; __i != end() &amp;&amp; __len &lt; __new_size; ++__i, ++__len)</td></tr>
+<tr><th id="159">159</th><td>        ;</td></tr>
+<tr><th id="160">160</th><td>      <b>if</b> (__len == __new_size)</td></tr>
+<tr><th id="161">161</th><td>        erase(__i, end());</td></tr>
+<tr><th id="162">162</th><td>      <b>else</b>                          <i>// __i == end()</i></td></tr>
+<tr><th id="163">163</th><td>        insert(end(), __new_size - __len, __x);</td></tr>
+<tr><th id="164">164</th><td>    }</td></tr>
+<tr><th id="165">165</th><td><u>#<span data-ppcond="116">else</span></u></td></tr>
+<tr><th id="166">166</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="167">167</th><td>    <em>void</em></td></tr>
+<tr><th id="168">168</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="169">169</th><td>    <dfn class="decl def" id="_ZNSt4list6resizeEmT_" title='std::list::resize' data-ref="_ZNSt4list6resizeEmT_">resize</dfn>(<a class="typedef" href="stl_list.h.html#std::list::size_type" title='std::list::size_type' data-type='size_t' data-ref="std::list::size_type">size_type</a> <dfn class="local col6 decl" id="4556__new_size" title='__new_size' data-type='size_type' data-ref="4556__new_size">__new_size</dfn>, <a class="typedef" href="stl_list.h.html#std::list::value_type" title='std::list::value_type' data-type='_Tp' data-ref="std::list::value_type">value_type</a> <dfn class="local col7 decl" id="4557__x" title='__x' data-type='value_type' data-ref="4557__x">__x</dfn>)</td></tr>
+<tr><th id="170">170</th><td>    {</td></tr>
+<tr><th id="171">171</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col8 decl" id="4558__i" title='__i' data-type='iterator' data-ref="4558__i">__i</dfn> = begin();</td></tr>
+<tr><th id="172">172</th><td>      <a class="typedef" href="stl_list.h.html#std::list::size_type" title='std::list::size_type' data-type='size_t' data-ref="std::list::size_type">size_type</a> <dfn class="local col9 decl" id="4559__len" title='__len' data-type='size_type' data-ref="4559__len">__len</dfn> = <var>0</var>;</td></tr>
+<tr><th id="173">173</th><td>      <b>for</b> (; <a class="local col8 ref" href="#4558__i" title='__i' data-ref="4558__i">__i</a> != end() &amp;&amp; <a class="local col9 ref" href="#4559__len" title='__len' data-ref="4559__len">__len</a> &lt; <a class="local col6 ref" href="#4556__new_size" title='__new_size' data-ref="4556__new_size">__new_size</a>; ++<a class="local col8 ref" href="#4558__i" title='__i' data-ref="4558__i">__i</a>, ++<a class="local col9 ref" href="#4559__len" title='__len' data-ref="4559__len">__len</a>)</td></tr>
+<tr><th id="174">174</th><td>        ;</td></tr>
+<tr><th id="175">175</th><td>      <b>if</b> (<a class="local col9 ref" href="#4559__len" title='__len' data-ref="4559__len">__len</a> == <a class="local col6 ref" href="#4556__new_size" title='__new_size' data-ref="4556__new_size">__new_size</a>)</td></tr>
+<tr><th id="176">176</th><td>        erase(<a class="local col8 ref" href="#4558__i" title='__i' data-ref="4558__i">__i</a>, end());</td></tr>
+<tr><th id="177">177</th><td>      <b>else</b>                          <i>// __i == end()</i></td></tr>
+<tr><th id="178">178</th><td>        insert(end(), <a class="local col6 ref" href="#4556__new_size" title='__new_size' data-ref="4556__new_size">__new_size</a> - <a class="local col9 ref" href="#4559__len" title='__len' data-ref="4559__len">__len</a>, <a class="local col7 ref" href="#4557__x" title='__x' data-ref="4557__x">__x</a>);</td></tr>
+<tr><th id="179">179</th><td>    }</td></tr>
+<tr><th id="180">180</th><td><u>#<span data-ppcond="116">endif</span></u></td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="183">183</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;&amp;</td></tr>
+<tr><th id="184">184</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="185">185</th><td>    <dfn class="decl def" id="_ZNSt4listaSERKSt4listIT_T0_E" title='std::list::operator=' data-ref="_ZNSt4listaSERKSt4listIT_T0_E"><b>operator</b>=</dfn>(<em>const</em> list&amp; <dfn class="local col0 decl" id="4560__x" title='__x' data-type='const list&lt;_Tp, _Alloc&gt; &amp;' data-ref="4560__x">__x</dfn>)</td></tr>
+<tr><th id="186">186</th><td>    {</td></tr>
+<tr><th id="187">187</th><td>      <b>if</b> (<b>this</b> != &amp;<a class="local col0 ref" href="#4560__x" title='__x' data-ref="4560__x">__x</a>)</td></tr>
+<tr><th id="188">188</th><td>	{</td></tr>
+<tr><th id="189">189</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col1 decl" id="4561__first1" title='__first1' data-type='iterator' data-ref="4561__first1">__first1</dfn> = begin();</td></tr>
+<tr><th id="190">190</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col2 decl" id="4562__last1" title='__last1' data-type='iterator' data-ref="4562__last1">__last1</dfn> = end();</td></tr>
+<tr><th id="191">191</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::const_iterator" title='std::list::const_iterator' data-type='_List_const_iterator&lt;_Tp&gt;' data-ref="std::list::const_iterator">const_iterator</a> <dfn class="local col3 decl" id="4563__first2" title='__first2' data-type='const_iterator' data-ref="4563__first2">__first2</dfn> = <a class="local col0 ref" href="#4560__x" title='__x' data-ref="4560__x">__x</a>.begin();</td></tr>
+<tr><th id="192">192</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::const_iterator" title='std::list::const_iterator' data-type='_List_const_iterator&lt;_Tp&gt;' data-ref="std::list::const_iterator">const_iterator</a> <dfn class="local col4 decl" id="4564__last2" title='__last2' data-type='const_iterator' data-ref="4564__last2">__last2</dfn> = <a class="local col0 ref" href="#4560__x" title='__x' data-ref="4560__x">__x</a>.end();</td></tr>
+<tr><th id="193">193</th><td>	  <b>for</b> (; <a class="local col1 ref" href="#4561__first1" title='__first1' data-ref="4561__first1">__first1</a> != <a class="local col2 ref" href="#4562__last1" title='__last1' data-ref="4562__last1">__last1</a> &amp;&amp; <a class="local col3 ref" href="#4563__first2" title='__first2' data-ref="4563__first2">__first2</a> != <a class="local col4 ref" href="#4564__last2" title='__last2' data-ref="4564__last2">__last2</a>;</td></tr>
+<tr><th id="194">194</th><td>	       ++<a class="local col1 ref" href="#4561__first1" title='__first1' data-ref="4561__first1">__first1</a>, ++<a class="local col3 ref" href="#4563__first2" title='__first2' data-ref="4563__first2">__first2</a>)</td></tr>
+<tr><th id="195">195</th><td>	    *<a class="local col1 ref" href="#4561__first1" title='__first1' data-ref="4561__first1">__first1</a> = *<a class="local col3 ref" href="#4563__first2" title='__first2' data-ref="4563__first2">__first2</a>;</td></tr>
+<tr><th id="196">196</th><td>	  <b>if</b> (<a class="local col3 ref" href="#4563__first2" title='__first2' data-ref="4563__first2">__first2</a> == <a class="local col4 ref" href="#4564__last2" title='__last2' data-ref="4564__last2">__last2</a>)</td></tr>
+<tr><th id="197">197</th><td>	    erase(<a class="local col1 ref" href="#4561__first1" title='__first1' data-ref="4561__first1">__first1</a>, <a class="local col2 ref" href="#4562__last1" title='__last1' data-ref="4562__last1">__last1</a>);</td></tr>
+<tr><th id="198">198</th><td>	  <b>else</b></td></tr>
+<tr><th id="199">199</th><td>	    insert(<a class="local col2 ref" href="#4562__last1" title='__last1' data-ref="4562__last1">__last1</a>, <a class="local col3 ref" href="#4563__first2" title='__first2' data-ref="4563__first2">__first2</a>, <a class="local col4 ref" href="#4564__last2" title='__last2' data-ref="4564__last2">__last2</a>);</td></tr>
+<tr><th id="200">200</th><td>	}</td></tr>
+<tr><th id="201">201</th><td>      <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="202">202</th><td>    }</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="205">205</th><td>    <em>void</em></td></tr>
+<tr><th id="206">206</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="207">207</th><td>    <dfn class="decl def" id="_ZNSt4list14_M_fill_assignEmRKT_" title='std::list::_M_fill_assign' data-ref="_ZNSt4list14_M_fill_assignEmRKT_">_M_fill_assign</dfn>(<a class="typedef" href="stl_list.h.html#std::list::size_type" title='std::list::size_type' data-type='size_t' data-ref="std::list::size_type">size_type</a> <dfn class="local col5 decl" id="4565__n" title='__n' data-type='size_type' data-ref="4565__n">__n</dfn>, <em>const</em> <a class="typedef" href="stl_list.h.html#std::list::value_type" title='std::list::value_type' data-type='_Tp' data-ref="std::list::value_type">value_type</a>&amp; <dfn class="local col6 decl" id="4566__val" title='__val' data-type='const value_type &amp;' data-ref="4566__val">__val</dfn>)</td></tr>
+<tr><th id="208">208</th><td>    {</td></tr>
+<tr><th id="209">209</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col7 decl" id="4567__i" title='__i' data-type='iterator' data-ref="4567__i">__i</dfn> = begin();</td></tr>
+<tr><th id="210">210</th><td>      <b>for</b> (; <a class="local col7 ref" href="#4567__i" title='__i' data-ref="4567__i">__i</a> != end() &amp;&amp; <a class="local col5 ref" href="#4565__n" title='__n' data-ref="4565__n">__n</a> &gt; <var>0</var>; ++<a class="local col7 ref" href="#4567__i" title='__i' data-ref="4567__i">__i</a>, --<a class="local col5 ref" href="#4565__n" title='__n' data-ref="4565__n">__n</a>)</td></tr>
+<tr><th id="211">211</th><td>        *<a class="local col7 ref" href="#4567__i" title='__i' data-ref="4567__i">__i</a> = <a class="local col6 ref" href="#4566__val" title='__val' data-ref="4566__val">__val</a>;</td></tr>
+<tr><th id="212">212</th><td>      <b>if</b> (<a class="local col5 ref" href="#4565__n" title='__n' data-ref="4565__n">__n</a> &gt; <var>0</var>)</td></tr>
+<tr><th id="213">213</th><td>        insert(end(), <a class="local col5 ref" href="#4565__n" title='__n' data-ref="4565__n">__n</a>, <a class="local col6 ref" href="#4566__val" title='__val' data-ref="4566__val">__val</a>);</td></tr>
+<tr><th id="214">214</th><td>      <b>else</b></td></tr>
+<tr><th id="215">215</th><td>        erase(<a class="local col7 ref" href="#4567__i" title='__i' data-ref="4567__i">__i</a>, end());</td></tr>
+<tr><th id="216">216</th><td>    }</td></tr>
+<tr><th id="217">217</th><td></td></tr>
+<tr><th id="218">218</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="219">219</th><td>    <b>template</b> &lt;<b>typename</b> _InputIterator&gt;</td></tr>
+<tr><th id="220">220</th><td>      <em>void</em></td></tr>
+<tr><th id="221">221</th><td>      <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="222">222</th><td>      <dfn class="decl def" id="_ZNSt4list18_M_assign_dispatchET_S0_St12__false_type" title='std::list::_M_assign_dispatch' data-ref="_ZNSt4list18_M_assign_dispatchET_S0_St12__false_type">_M_assign_dispatch</dfn>(_InputIterator <dfn class="local col8 decl" id="4568__first2" title='__first2' data-type='_InputIterator' data-ref="4568__first2">__first2</dfn>, _InputIterator <dfn class="local col9 decl" id="4569__last2" title='__last2' data-type='_InputIterator' data-ref="4569__last2">__last2</dfn>,</td></tr>
+<tr><th id="223">223</th><td>			 <a class="type" href="cpp_type_traits.h.html#std::__false_type" title='std::__false_type' data-ref="std::__false_type">__false_type</a>)</td></tr>
+<tr><th id="224">224</th><td>      {</td></tr>
+<tr><th id="225">225</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col0 decl" id="4570__first1" title='__first1' data-type='iterator' data-ref="4570__first1">__first1</dfn> = begin();</td></tr>
+<tr><th id="226">226</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col1 decl" id="4571__last1" title='__last1' data-type='iterator' data-ref="4571__last1">__last1</dfn> = end();</td></tr>
+<tr><th id="227">227</th><td>        <b>for</b> (; <a class="local col0 ref" href="#4570__first1" title='__first1' data-ref="4570__first1">__first1</a> != <a class="local col1 ref" href="#4571__last1" title='__last1' data-ref="4571__last1">__last1</a> &amp;&amp; <a class="local col8 ref" href="#4568__first2" title='__first2' data-ref="4568__first2">__first2</a> != <a class="local col9 ref" href="#4569__last2" title='__last2' data-ref="4569__last2">__last2</a>;</td></tr>
+<tr><th id="228">228</th><td>	     ++<a class="local col0 ref" href="#4570__first1" title='__first1' data-ref="4570__first1">__first1</a>, ++<a class="local col8 ref" href="#4568__first2" title='__first2' data-ref="4568__first2">__first2</a>)</td></tr>
+<tr><th id="229">229</th><td>          *<a class="local col0 ref" href="#4570__first1" title='__first1' data-ref="4570__first1">__first1</a> = *<a class="local col8 ref" href="#4568__first2" title='__first2' data-ref="4568__first2">__first2</a>;</td></tr>
+<tr><th id="230">230</th><td>        <b>if</b> (<a class="local col8 ref" href="#4568__first2" title='__first2' data-ref="4568__first2">__first2</a> == <a class="local col9 ref" href="#4569__last2" title='__last2' data-ref="4569__last2">__last2</a>)</td></tr>
+<tr><th id="231">231</th><td>          erase(<a class="local col0 ref" href="#4570__first1" title='__first1' data-ref="4570__first1">__first1</a>, <a class="local col1 ref" href="#4571__last1" title='__last1' data-ref="4571__last1">__last1</a>);</td></tr>
+<tr><th id="232">232</th><td>        <b>else</b></td></tr>
+<tr><th id="233">233</th><td>          insert(<a class="local col1 ref" href="#4571__last1" title='__last1' data-ref="4571__last1">__last1</a>, <a class="local col8 ref" href="#4568__first2" title='__first2' data-ref="4568__first2">__first2</a>, <a class="local col9 ref" href="#4569__last2" title='__last2' data-ref="4569__last2">__last2</a>);</td></tr>
+<tr><th id="234">234</th><td>      }</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="237">237</th><td>    <em>void</em></td></tr>
+<tr><th id="238">238</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="239">239</th><td>    <dfn class="decl def" id="_ZNSt4list6removeERKT_" title='std::list::remove' data-ref="_ZNSt4list6removeERKT_">remove</dfn>(<em>const</em> <a class="typedef" href="stl_list.h.html#std::list::value_type" title='std::list::value_type' data-type='_Tp' data-ref="std::list::value_type">value_type</a>&amp; <dfn class="local col2 decl" id="4572__value" title='__value' data-type='const value_type &amp;' data-ref="4572__value">__value</dfn>)</td></tr>
+<tr><th id="240">240</th><td>    {</td></tr>
+<tr><th id="241">241</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col3 decl" id="4573__first" title='__first' data-type='iterator' data-ref="4573__first">__first</dfn> = begin();</td></tr>
+<tr><th id="242">242</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col4 decl" id="4574__last" title='__last' data-type='iterator' data-ref="4574__last">__last</dfn> = end();</td></tr>
+<tr><th id="243">243</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col5 decl" id="4575__extra" title='__extra' data-type='iterator' data-ref="4575__extra">__extra</dfn> = <a class="local col4 ref" href="#4574__last" title='__last' data-ref="4574__last">__last</a>;</td></tr>
+<tr><th id="244">244</th><td>      <b>while</b> (<a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a> != <a class="local col4 ref" href="#4574__last" title='__last' data-ref="4574__last">__last</a>)</td></tr>
+<tr><th id="245">245</th><td>	{</td></tr>
+<tr><th id="246">246</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col6 decl" id="4576__next" title='__next' data-type='iterator' data-ref="4576__next">__next</dfn> = <a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a>;</td></tr>
+<tr><th id="247">247</th><td>	  ++<a class="local col6 ref" href="#4576__next" title='__next' data-ref="4576__next">__next</a>;</td></tr>
+<tr><th id="248">248</th><td>	  <b>if</b> (*<a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a> == <a class="local col2 ref" href="#4572__value" title='__value' data-ref="4572__value">__value</a>)</td></tr>
+<tr><th id="249">249</th><td>	    {</td></tr>
+<tr><th id="250">250</th><td>	      <i>// _GLIBCXX_RESOLVE_LIB_DEFECTS</i></td></tr>
+<tr><th id="251">251</th><td><i>	      // 526. Is it undefined if a function in the standard changes</i></td></tr>
+<tr><th id="252">252</th><td><i>	      // in parameters?</i></td></tr>
+<tr><th id="253">253</th><td>	      <b>if</b> (<span class="namespace">std::</span>__addressof(*<a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a>) != <span class="namespace">std::</span>__addressof(<a class="local col2 ref" href="#4572__value" title='__value' data-ref="4572__value">__value</a>))</td></tr>
+<tr><th id="254">254</th><td>		<a class="member" href="stl_list.h.html#_ZNSt4list8_M_eraseESt14_List_iteratorIT_E" title='std::list::_M_erase' data-ref="_ZNSt4list8_M_eraseESt14_List_iteratorIT_E">_M_erase</a>(<a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a>);</td></tr>
+<tr><th id="255">255</th><td>	      <b>else</b></td></tr>
+<tr><th id="256">256</th><td>		<a class="local col5 ref" href="#4575__extra" title='__extra' data-ref="4575__extra">__extra</a> = <a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a>;</td></tr>
+<tr><th id="257">257</th><td>	    }</td></tr>
+<tr><th id="258">258</th><td>	  <a class="local col3 ref" href="#4573__first" title='__first' data-ref="4573__first">__first</a> = <a class="local col6 ref" href="#4576__next" title='__next' data-ref="4576__next">__next</a>;</td></tr>
+<tr><th id="259">259</th><td>	}</td></tr>
+<tr><th id="260">260</th><td>      <b>if</b> (<a class="local col5 ref" href="#4575__extra" title='__extra' data-ref="4575__extra">__extra</a> != <a class="local col4 ref" href="#4574__last" title='__last' data-ref="4574__last">__last</a>)</td></tr>
+<tr><th id="261">261</th><td>	<a class="member" href="stl_list.h.html#_ZNSt4list8_M_eraseESt14_List_iteratorIT_E" title='std::list::_M_erase' data-ref="_ZNSt4list8_M_eraseESt14_List_iteratorIT_E">_M_erase</a>(<a class="local col5 ref" href="#4575__extra" title='__extra' data-ref="4575__extra">__extra</a>);</td></tr>
+<tr><th id="262">262</th><td>    }</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="265">265</th><td>    <em>void</em></td></tr>
+<tr><th id="266">266</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="267">267</th><td>    <dfn class="decl def" id="_ZNSt4list6uniqueEv" title='std::list::unique' data-ref="_ZNSt4list6uniqueEv">unique</dfn>()</td></tr>
+<tr><th id="268">268</th><td>    {</td></tr>
+<tr><th id="269">269</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col7 decl" id="4577__first" title='__first' data-type='iterator' data-ref="4577__first">__first</dfn> = begin();</td></tr>
+<tr><th id="270">270</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col8 decl" id="4578__last" title='__last' data-type='iterator' data-ref="4578__last">__last</dfn> = end();</td></tr>
+<tr><th id="271">271</th><td>      <b>if</b> (<a class="local col7 ref" href="#4577__first" title='__first' data-ref="4577__first">__first</a> == <a class="local col8 ref" href="#4578__last" title='__last' data-ref="4578__last">__last</a>)</td></tr>
+<tr><th id="272">272</th><td>	<b>return</b>;</td></tr>
+<tr><th id="273">273</th><td>      <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col9 decl" id="4579__next" title='__next' data-type='iterator' data-ref="4579__next">__next</dfn> = <a class="local col7 ref" href="#4577__first" title='__first' data-ref="4577__first">__first</a>;</td></tr>
+<tr><th id="274">274</th><td>      <b>while</b> (++<a class="local col9 ref" href="#4579__next" title='__next' data-ref="4579__next">__next</a> != <a class="local col8 ref" href="#4578__last" title='__last' data-ref="4578__last">__last</a>)</td></tr>
+<tr><th id="275">275</th><td>	{</td></tr>
+<tr><th id="276">276</th><td>	  <b>if</b> (*<a class="local col7 ref" href="#4577__first" title='__first' data-ref="4577__first">__first</a> == *<a class="local col9 ref" href="#4579__next" title='__next' data-ref="4579__next">__next</a>)</td></tr>
+<tr><th id="277">277</th><td>	    <a class="member" href="stl_list.h.html#_ZNSt4list8_M_eraseESt14_List_iteratorIT_E" title='std::list::_M_erase' data-ref="_ZNSt4list8_M_eraseESt14_List_iteratorIT_E">_M_erase</a>(<a class="local col9 ref" href="#4579__next" title='__next' data-ref="4579__next">__next</a>);</td></tr>
+<tr><th id="278">278</th><td>	  <b>else</b></td></tr>
+<tr><th id="279">279</th><td>	    <a class="local col7 ref" href="#4577__first" title='__first' data-ref="4577__first">__first</a> = <a class="local col9 ref" href="#4579__next" title='__next' data-ref="4579__next">__next</a>;</td></tr>
+<tr><th id="280">280</th><td>	  <a class="local col9 ref" href="#4579__next" title='__next' data-ref="4579__next">__next</a> = <a class="local col7 ref" href="#4577__first" title='__first' data-ref="4577__first">__first</a>;</td></tr>
+<tr><th id="281">281</th><td>	}</td></tr>
+<tr><th id="282">282</th><td>    }</td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="285">285</th><td>    <em>void</em></td></tr>
+<tr><th id="286">286</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="287">287</th><td><u>#<span data-ppcond="287">if</span> <span class="macro" title="199711L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201103L</u></td></tr>
+<tr><th id="288">288</th><td>    merge(list&amp;&amp; __x)</td></tr>
+<tr><th id="289">289</th><td><u>#<span data-ppcond="287">else</span></u></td></tr>
+<tr><th id="290">290</th><td>    <dfn class="decl def" id="_ZNSt4list5mergeERSt4listIT_T0_E" title='std::list::merge' data-ref="_ZNSt4list5mergeERSt4listIT_T0_E">merge</dfn>(list&amp; <dfn class="local col0 decl" id="4580__x" title='__x' data-type='list&lt;_Tp, _Alloc&gt; &amp;' data-ref="4580__x">__x</dfn>)</td></tr>
+<tr><th id="291">291</th><td><u>#<span data-ppcond="287">endif</span></u></td></tr>
+<tr><th id="292">292</th><td>    {</td></tr>
+<tr><th id="293">293</th><td>      <i>// _GLIBCXX_RESOLVE_LIB_DEFECTS</i></td></tr>
+<tr><th id="294">294</th><td><i>      // 300. list::merge() specification incomplete</i></td></tr>
+<tr><th id="295">295</th><td>      <b>if</b> (<b>this</b> != &amp;<a class="local col0 ref" href="#4580__x" title='__x' data-ref="4580__x">__x</a>)</td></tr>
+<tr><th id="296">296</th><td>	{</td></tr>
+<tr><th id="297">297</th><td>	  <a class="member" href="stl_list.h.html#_ZNSt4list25_M_check_equal_allocatorsERSt4listIT_T0_E" title='std::list::_M_check_equal_allocators' data-ref="_ZNSt4list25_M_check_equal_allocatorsERSt4listIT_T0_E">_M_check_equal_allocators</a>(<span class='refarg'><a class="local col0 ref" href="#4580__x" title='__x' data-ref="4580__x">__x</a></span>); </td></tr>
+<tr><th id="298">298</th><td></td></tr>
+<tr><th id="299">299</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col1 decl" id="4581__first1" title='__first1' data-type='iterator' data-ref="4581__first1">__first1</dfn> = begin();</td></tr>
+<tr><th id="300">300</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col2 decl" id="4582__last1" title='__last1' data-type='iterator' data-ref="4582__last1">__last1</dfn> = end();</td></tr>
+<tr><th id="301">301</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col3 decl" id="4583__first2" title='__first2' data-type='iterator' data-ref="4583__first2">__first2</dfn> = <a class="local col0 ref" href="#4580__x" title='__x' data-ref="4580__x">__x</a>.begin();</td></tr>
+<tr><th id="302">302</th><td>	  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col4 decl" id="4584__last2" title='__last2' data-type='iterator' data-ref="4584__last2">__last2</dfn> = <a class="local col0 ref" href="#4580__x" title='__x' data-ref="4580__x">__x</a>.end();</td></tr>
+<tr><th id="303">303</th><td>	  <b>while</b> (<a class="local col1 ref" href="#4581__first1" title='__first1' data-ref="4581__first1">__first1</a> != <a class="local col2 ref" href="#4582__last1" title='__last1' data-ref="4582__last1">__last1</a> &amp;&amp; <a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a> != <a class="local col4 ref" href="#4584__last2" title='__last2' data-ref="4584__last2">__last2</a>)</td></tr>
+<tr><th id="304">304</th><td>	    <b>if</b> (*<a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a> &lt; *<a class="local col1 ref" href="#4581__first1" title='__first1' data-ref="4581__first1">__first1</a>)</td></tr>
+<tr><th id="305">305</th><td>	      {</td></tr>
+<tr><th id="306">306</th><td>		<a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col5 decl" id="4585__next" title='__next' data-type='iterator' data-ref="4585__next">__next</dfn> = <a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a>;</td></tr>
+<tr><th id="307">307</th><td>		<a class="member" href="stl_list.h.html#_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_" title='std::list::_M_transfer' data-ref="_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_">_M_transfer</a>(<a class="local col1 ref" href="#4581__first1" title='__first1' data-ref="4581__first1">__first1</a>, <a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a>, ++<a class="local col5 ref" href="#4585__next" title='__next' data-ref="4585__next">__next</a>);</td></tr>
+<tr><th id="308">308</th><td>		<a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a> = <a class="local col5 ref" href="#4585__next" title='__next' data-ref="4585__next">__next</a>;</td></tr>
+<tr><th id="309">309</th><td>	      }</td></tr>
+<tr><th id="310">310</th><td>	    <b>else</b></td></tr>
+<tr><th id="311">311</th><td>	      ++<a class="local col1 ref" href="#4581__first1" title='__first1' data-ref="4581__first1">__first1</a>;</td></tr>
+<tr><th id="312">312</th><td>	  <b>if</b> (<a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a> != <a class="local col4 ref" href="#4584__last2" title='__last2' data-ref="4584__last2">__last2</a>)</td></tr>
+<tr><th id="313">313</th><td>	    <a class="member" href="stl_list.h.html#_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_" title='std::list::_M_transfer' data-ref="_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_">_M_transfer</a>(<a class="local col2 ref" href="#4582__last1" title='__last1' data-ref="4582__last1">__last1</a>, <a class="local col3 ref" href="#4583__first2" title='__first2' data-ref="4583__first2">__first2</a>, <a class="local col4 ref" href="#4584__last2" title='__last2' data-ref="4584__last2">__last2</a>);</td></tr>
+<tr><th id="314">314</th><td>	}</td></tr>
+<tr><th id="315">315</th><td>    }</td></tr>
+<tr><th id="316">316</th><td></td></tr>
+<tr><th id="317">317</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="318">318</th><td>    <b>template</b> &lt;<b>typename</b> _StrictWeakOrdering&gt;</td></tr>
+<tr><th id="319">319</th><td>      <em>void</em></td></tr>
+<tr><th id="320">320</th><td>      <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="321">321</th><td><u>#<span data-ppcond="321">if</span> <span class="macro" title="199711L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201103L</u></td></tr>
+<tr><th id="322">322</th><td>      merge(list&amp;&amp; __x, _StrictWeakOrdering __comp)</td></tr>
+<tr><th id="323">323</th><td><u>#<span data-ppcond="321">else</span></u></td></tr>
+<tr><th id="324">324</th><td>      <dfn class="decl def" id="_ZNSt4list5mergeERSt4listIT_T0_ET_" title='std::list::merge' data-ref="_ZNSt4list5mergeERSt4listIT_T0_ET_">merge</dfn>(list&amp; <dfn class="local col6 decl" id="4586__x" title='__x' data-type='list&lt;_Tp, _Alloc&gt; &amp;' data-ref="4586__x">__x</dfn>, _StrictWeakOrdering <dfn class="local col7 decl" id="4587__comp" title='__comp' data-type='_StrictWeakOrdering' data-ref="4587__comp">__comp</dfn>)</td></tr>
+<tr><th id="325">325</th><td><u>#<span data-ppcond="321">endif</span></u></td></tr>
+<tr><th id="326">326</th><td>      {</td></tr>
+<tr><th id="327">327</th><td>	<i>// _GLIBCXX_RESOLVE_LIB_DEFECTS</i></td></tr>
+<tr><th id="328">328</th><td><i>	// 300. list::merge() specification incomplete</i></td></tr>
+<tr><th id="329">329</th><td>	<b>if</b> (<b>this</b> != &amp;<a class="local col6 ref" href="#4586__x" title='__x' data-ref="4586__x">__x</a>)</td></tr>
+<tr><th id="330">330</th><td>	  {</td></tr>
+<tr><th id="331">331</th><td>	    <a class="member" href="stl_list.h.html#_ZNSt4list25_M_check_equal_allocatorsERSt4listIT_T0_E" title='std::list::_M_check_equal_allocators' data-ref="_ZNSt4list25_M_check_equal_allocatorsERSt4listIT_T0_E">_M_check_equal_allocators</a>(<span class='refarg'><a class="local col6 ref" href="#4586__x" title='__x' data-ref="4586__x">__x</a></span>);</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td>	    <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col8 decl" id="4588__first1" title='__first1' data-type='iterator' data-ref="4588__first1">__first1</dfn> = begin();</td></tr>
+<tr><th id="334">334</th><td>	    <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col9 decl" id="4589__last1" title='__last1' data-type='iterator' data-ref="4589__last1">__last1</dfn> = end();</td></tr>
+<tr><th id="335">335</th><td>	    <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col0 decl" id="4590__first2" title='__first2' data-type='iterator' data-ref="4590__first2">__first2</dfn> = <a class="local col6 ref" href="#4586__x" title='__x' data-ref="4586__x">__x</a>.begin();</td></tr>
+<tr><th id="336">336</th><td>	    <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col1 decl" id="4591__last2" title='__last2' data-type='iterator' data-ref="4591__last2">__last2</dfn> = <a class="local col6 ref" href="#4586__x" title='__x' data-ref="4586__x">__x</a>.end();</td></tr>
+<tr><th id="337">337</th><td>	    <b>while</b> (<a class="local col8 ref" href="#4588__first1" title='__first1' data-ref="4588__first1">__first1</a> != <a class="local col9 ref" href="#4589__last1" title='__last1' data-ref="4589__last1">__last1</a> &amp;&amp; <a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a> != <a class="local col1 ref" href="#4591__last2" title='__last2' data-ref="4591__last2">__last2</a>)</td></tr>
+<tr><th id="338">338</th><td>	      <b>if</b> (<a class="local col7 ref" href="#4587__comp" title='__comp' data-ref="4587__comp">__comp</a>(*<a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a>, *<a class="local col8 ref" href="#4588__first1" title='__first1' data-ref="4588__first1">__first1</a>))</td></tr>
+<tr><th id="339">339</th><td>		{</td></tr>
+<tr><th id="340">340</th><td>		  <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col2 decl" id="4592__next" title='__next' data-type='iterator' data-ref="4592__next">__next</dfn> = <a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a>;</td></tr>
+<tr><th id="341">341</th><td>		  <a class="member" href="stl_list.h.html#_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_" title='std::list::_M_transfer' data-ref="_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_">_M_transfer</a>(<a class="local col8 ref" href="#4588__first1" title='__first1' data-ref="4588__first1">__first1</a>, <a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a>, ++<a class="local col2 ref" href="#4592__next" title='__next' data-ref="4592__next">__next</a>);</td></tr>
+<tr><th id="342">342</th><td>		  <a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a> = <a class="local col2 ref" href="#4592__next" title='__next' data-ref="4592__next">__next</a>;</td></tr>
+<tr><th id="343">343</th><td>		}</td></tr>
+<tr><th id="344">344</th><td>	      <b>else</b></td></tr>
+<tr><th id="345">345</th><td>		++<a class="local col8 ref" href="#4588__first1" title='__first1' data-ref="4588__first1">__first1</a>;</td></tr>
+<tr><th id="346">346</th><td>	    <b>if</b> (<a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a> != <a class="local col1 ref" href="#4591__last2" title='__last2' data-ref="4591__last2">__last2</a>)</td></tr>
+<tr><th id="347">347</th><td>	      <a class="member" href="stl_list.h.html#_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_" title='std::list::_M_transfer' data-ref="_ZNSt4list11_M_transferESt14_List_iteratorIT_ES2_S2_">_M_transfer</a>(<a class="local col9 ref" href="#4589__last1" title='__last1' data-ref="4589__last1">__last1</a>, <a class="local col0 ref" href="#4590__first2" title='__first2' data-ref="4590__first2">__first2</a>, <a class="local col1 ref" href="#4591__last2" title='__last2' data-ref="4591__last2">__last2</a>);</td></tr>
+<tr><th id="348">348</th><td>	  }</td></tr>
+<tr><th id="349">349</th><td>      }</td></tr>
+<tr><th id="350">350</th><td></td></tr>
+<tr><th id="351">351</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="352">352</th><td>    <em>void</em></td></tr>
+<tr><th id="353">353</th><td>    <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="354">354</th><td>    <dfn class="decl def" id="_ZNSt4list4sortEv" title='std::list::sort' data-ref="_ZNSt4list4sortEv">sort</dfn>()</td></tr>
+<tr><th id="355">355</th><td>    {</td></tr>
+<tr><th id="356">356</th><td>      <i>// Do nothing if the list has length 0 or 1.</i></td></tr>
+<tr><th id="357">357</th><td>      <b>if</b> (<b>this</b>-&gt;_M_impl._M_node._M_next != &amp;<b>this</b>-&gt;_M_impl._M_node</td></tr>
+<tr><th id="358">358</th><td>	  &amp;&amp; <b>this</b>-&gt;_M_impl._M_node._M_next-&gt;_M_next != &amp;<b>this</b>-&gt;_M_impl._M_node)</td></tr>
+<tr><th id="359">359</th><td>      {</td></tr>
+<tr><th id="360">360</th><td>        list <dfn class="local col3 decl" id="4593__carry" title='__carry' data-type='list&lt;_Tp, _Alloc&gt;' data-ref="4593__carry">__carry</dfn>;</td></tr>
+<tr><th id="361">361</th><td>        list <dfn class="local col4 decl" id="4594__tmp" title='__tmp' data-type='list&lt;_Tp, _Alloc&gt; [64]' data-ref="4594__tmp">__tmp</dfn>[<var>64</var>];</td></tr>
+<tr><th id="362">362</th><td>        list * <dfn class="local col5 decl" id="4595__fill" title='__fill' data-type='list&lt;_Tp, _Alloc&gt; *' data-ref="4595__fill">__fill</dfn> = &amp;<a class="local col4 ref" href="#4594__tmp" title='__tmp' data-ref="4594__tmp">__tmp</a>[<var>0</var>];</td></tr>
+<tr><th id="363">363</th><td>        list * <dfn class="local col6 decl" id="4596__counter" title='__counter' data-type='list&lt;_Tp, _Alloc&gt; *' data-ref="4596__counter">__counter</dfn>;</td></tr>
+<tr><th id="364">364</th><td></td></tr>
+<tr><th id="365">365</th><td>        <b>do</b></td></tr>
+<tr><th id="366">366</th><td>	  {</td></tr>
+<tr><th id="367">367</th><td>	    <a class="local col3 ref" href="#4593__carry" title='__carry' data-ref="4593__carry">__carry</a>.splice(<a class="local col3 ref" href="#4593__carry" title='__carry' data-ref="4593__carry">__carry</a>.begin(), *<b>this</b>, begin());</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td>	    <b>for</b>(<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a> = &amp;<a class="local col4 ref" href="#4594__tmp" title='__tmp' data-ref="4594__tmp">__tmp</a>[<var>0</var>];</td></tr>
+<tr><th id="370">370</th><td>		<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a> != <a class="local col5 ref" href="#4595__fill" title='__fill' data-ref="4595__fill">__fill</a> &amp;&amp; !<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>-&gt;empty();</td></tr>
+<tr><th id="371">371</th><td>		++<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>)</td></tr>
+<tr><th id="372">372</th><td>	      {</td></tr>
+<tr><th id="373">373</th><td>		<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>-&gt;merge(<a class="local col3 ref" href="#4593__carry" title='__carry' data-ref="4593__carry">__carry</a>);</td></tr>
+<tr><th id="374">374</th><td>		<a class="local col3 ref" href="#4593__carry" title='__carry' data-ref="4593__carry">__carry</a>.swap(*<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>);</td></tr>
+<tr><th id="375">375</th><td>	      }</td></tr>
+<tr><th id="376">376</th><td>	    <a class="local col3 ref" href="#4593__carry" title='__carry' data-ref="4593__carry">__carry</a>.swap(*<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>);</td></tr>
+<tr><th id="377">377</th><td>	    <b>if</b> (<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a> == <a class="local col5 ref" href="#4595__fill" title='__fill' data-ref="4595__fill">__fill</a>)</td></tr>
+<tr><th id="378">378</th><td>	      ++<a class="local col5 ref" href="#4595__fill" title='__fill' data-ref="4595__fill">__fill</a>;</td></tr>
+<tr><th id="379">379</th><td>	  }</td></tr>
+<tr><th id="380">380</th><td>	<b>while</b> ( !<a class="member" href="stl_list.h.html#_ZNKSt4list5emptyEv" title='std::list::empty' data-ref="_ZNKSt4list5emptyEv">empty</a>() );</td></tr>
+<tr><th id="381">381</th><td></td></tr>
+<tr><th id="382">382</th><td>        <b>for</b> (<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a> = &amp;<a class="local col4 ref" href="#4594__tmp" title='__tmp' data-ref="4594__tmp">__tmp</a>[<var>1</var>]; <a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a> != <a class="local col5 ref" href="#4595__fill" title='__fill' data-ref="4595__fill">__fill</a>; ++<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>)</td></tr>
+<tr><th id="383">383</th><td>          <a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a>-&gt;merge(*(<a class="local col6 ref" href="#4596__counter" title='__counter' data-ref="4596__counter">__counter</a> - <var>1</var>));</td></tr>
+<tr><th id="384">384</th><td>        <a class="member" href="stl_list.h.html#_ZNSt4list4swapERSt4listIT_T0_E" title='std::list::swap' data-ref="_ZNSt4list4swapERSt4listIT_T0_E">swap</a>( <span class='refarg'>*(<a class="local col5 ref" href="#4595__fill" title='__fill' data-ref="4595__fill">__fill</a> - <var>1</var>)</span> );</td></tr>
+<tr><th id="385">385</th><td>      }</td></tr>
+<tr><th id="386">386</th><td>    }</td></tr>
+<tr><th id="387">387</th><td></td></tr>
+<tr><th id="388">388</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="389">389</th><td>    <b>template</b> &lt;<b>typename</b> _Predicate&gt;</td></tr>
+<tr><th id="390">390</th><td>      <em>void</em></td></tr>
+<tr><th id="391">391</th><td>      <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="392">392</th><td>      <dfn class="decl def" id="_ZNSt4list9remove_ifET_" title='std::list::remove_if' data-ref="_ZNSt4list9remove_ifET_">remove_if</dfn>(_Predicate <dfn class="local col7 decl" id="4597__pred" title='__pred' data-type='_Predicate' data-ref="4597__pred">__pred</dfn>)</td></tr>
+<tr><th id="393">393</th><td>      {</td></tr>
+<tr><th id="394">394</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col8 decl" id="4598__first" title='__first' data-type='iterator' data-ref="4598__first">__first</dfn> = begin();</td></tr>
+<tr><th id="395">395</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col9 decl" id="4599__last" title='__last' data-type='iterator' data-ref="4599__last">__last</dfn> = end();</td></tr>
+<tr><th id="396">396</th><td>        <b>while</b> (<a class="local col8 ref" href="#4598__first" title='__first' data-ref="4598__first">__first</a> != <a class="local col9 ref" href="#4599__last" title='__last' data-ref="4599__last">__last</a>)</td></tr>
+<tr><th id="397">397</th><td>	  {</td></tr>
+<tr><th id="398">398</th><td>	    <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col0 decl" id="4600__next" title='__next' data-type='iterator' data-ref="4600__next">__next</dfn> = <a class="local col8 ref" href="#4598__first" title='__first' data-ref="4598__first">__first</a>;</td></tr>
+<tr><th id="399">399</th><td>	    ++<a class="local col0 ref" href="#4600__next" title='__next' data-ref="4600__next">__next</a>;</td></tr>
+<tr><th id="400">400</th><td>	    <b>if</b> (<a class="local col7 ref" href="#4597__pred" title='__pred' data-ref="4597__pred">__pred</a>(*<a class="local col8 ref" href="#4598__first" title='__first' data-ref="4598__first">__first</a>))</td></tr>
+<tr><th id="401">401</th><td>	      <a class="member" href="stl_list.h.html#_ZNSt4list8_M_eraseESt14_List_iteratorIT_E" title='std::list::_M_erase' data-ref="_ZNSt4list8_M_eraseESt14_List_iteratorIT_E">_M_erase</a>(<a class="local col8 ref" href="#4598__first" title='__first' data-ref="4598__first">__first</a>);</td></tr>
+<tr><th id="402">402</th><td>	    <a class="local col8 ref" href="#4598__first" title='__first' data-ref="4598__first">__first</a> = <a class="local col0 ref" href="#4600__next" title='__next' data-ref="4600__next">__next</a>;</td></tr>
+<tr><th id="403">403</th><td>	  }</td></tr>
+<tr><th id="404">404</th><td>      }</td></tr>
+<tr><th id="405">405</th><td></td></tr>
+<tr><th id="406">406</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="407">407</th><td>    <b>template</b> &lt;<b>typename</b> _BinaryPredicate&gt;</td></tr>
+<tr><th id="408">408</th><td>      <em>void</em></td></tr>
+<tr><th id="409">409</th><td>      <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="410">410</th><td>      <dfn class="decl def" id="_ZNSt4list6uniqueET_" title='std::list::unique' data-ref="_ZNSt4list6uniqueET_">unique</dfn>(_BinaryPredicate <dfn class="local col1 decl" id="4601__binary_pred" title='__binary_pred' data-type='_BinaryPredicate' data-ref="4601__binary_pred">__binary_pred</dfn>)</td></tr>
+<tr><th id="411">411</th><td>      {</td></tr>
+<tr><th id="412">412</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col2 decl" id="4602__first" title='__first' data-type='iterator' data-ref="4602__first">__first</dfn> = begin();</td></tr>
+<tr><th id="413">413</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col3 decl" id="4603__last" title='__last' data-type='iterator' data-ref="4603__last">__last</dfn> = end();</td></tr>
+<tr><th id="414">414</th><td>        <b>if</b> (<a class="local col2 ref" href="#4602__first" title='__first' data-ref="4602__first">__first</a> == <a class="local col3 ref" href="#4603__last" title='__last' data-ref="4603__last">__last</a>)</td></tr>
+<tr><th id="415">415</th><td>	  <b>return</b>;</td></tr>
+<tr><th id="416">416</th><td>        <a class="typedef" href="stl_list.h.html#std::list::iterator" title='std::list::iterator' data-type='_List_iterator&lt;_Tp&gt;' data-ref="std::list::iterator">iterator</a> <dfn class="local col4 decl" id="4604__next" title='__next' data-type='iterator' data-ref="4604__next">__next</dfn> = <a class="local col2 ref" href="#4602__first" title='__first' data-ref="4602__first">__first</a>;</td></tr>
+<tr><th id="417">417</th><td>        <b>while</b> (++<a class="local col4 ref" href="#4604__next" title='__next' data-ref="4604__next">__next</a> != <a class="local col3 ref" href="#4603__last" title='__last' data-ref="4603__last">__last</a>)</td></tr>
+<tr><th id="418">418</th><td>	  {</td></tr>
+<tr><th id="419">419</th><td>	    <b>if</b> (<a class="local col1 ref" href="#4601__binary_pred" title='__binary_pred' data-ref="4601__binary_pred">__binary_pred</a>(*<a class="local col2 ref" href="#4602__first" title='__first' data-ref="4602__first">__first</a>, *<a class="local col4 ref" href="#4604__next" title='__next' data-ref="4604__next">__next</a>))</td></tr>
+<tr><th id="420">420</th><td>	      <a class="member" href="stl_list.h.html#_ZNSt4list8_M_eraseESt14_List_iteratorIT_E" title='std::list::_M_erase' data-ref="_ZNSt4list8_M_eraseESt14_List_iteratorIT_E">_M_erase</a>(<a class="local col4 ref" href="#4604__next" title='__next' data-ref="4604__next">__next</a>);</td></tr>
+<tr><th id="421">421</th><td>	    <b>else</b></td></tr>
+<tr><th id="422">422</th><td>	      <a class="local col2 ref" href="#4602__first" title='__first' data-ref="4602__first">__first</a> = <a class="local col4 ref" href="#4604__next" title='__next' data-ref="4604__next">__next</a>;</td></tr>
+<tr><th id="423">423</th><td>	    <a class="local col4 ref" href="#4604__next" title='__next' data-ref="4604__next">__next</a> = <a class="local col2 ref" href="#4602__first" title='__first' data-ref="4602__first">__first</a>;</td></tr>
+<tr><th id="424">424</th><td>	  }</td></tr>
+<tr><th id="425">425</th><td>      }</td></tr>
+<tr><th id="426">426</th><td></td></tr>
+<tr><th id="427">427</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b> _Alloc&gt;</td></tr>
+<tr><th id="428">428</th><td>    <b>template</b> &lt;<b>typename</b> _StrictWeakOrdering&gt;</td></tr>
+<tr><th id="429">429</th><td>      <em>void</em></td></tr>
+<tr><th id="430">430</th><td>      <a class="type" href="stl_list.h.html#std::list" title='std::list' data-ref="std::list">list</a>&lt;_Tp, _Alloc&gt;::</td></tr>
+<tr><th id="431">431</th><td>      <dfn class="decl def" id="_ZNSt4list4sortET_" title='std::list::sort' data-ref="_ZNSt4list4sortET_">sort</dfn>(_StrictWeakOrdering <dfn class="local col5 decl" id="4605__comp" title='__comp' data-type='_StrictWeakOrdering' data-ref="4605__comp">__comp</dfn>)</td></tr>
+<tr><th id="432">432</th><td>      {</td></tr>
+<tr><th id="433">433</th><td>	<i>// Do nothing if the list has length 0 or 1.</i></td></tr>
+<tr><th id="434">434</th><td>	<b>if</b> (<b>this</b>-&gt;_M_impl._M_node._M_next != &amp;<b>this</b>-&gt;_M_impl._M_node</td></tr>
+<tr><th id="435">435</th><td>	    &amp;&amp; <b>this</b>-&gt;_M_impl._M_node._M_next-&gt;_M_next != &amp;<b>this</b>-&gt;_M_impl._M_node)</td></tr>
+<tr><th id="436">436</th><td>	  {</td></tr>
+<tr><th id="437">437</th><td>	    list <dfn class="local col6 decl" id="4606__carry" title='__carry' data-type='list&lt;_Tp, _Alloc&gt;' data-ref="4606__carry">__carry</dfn>;</td></tr>
+<tr><th id="438">438</th><td>	    list <dfn class="local col7 decl" id="4607__tmp" title='__tmp' data-type='list&lt;_Tp, _Alloc&gt; [64]' data-ref="4607__tmp">__tmp</dfn>[<var>64</var>];</td></tr>
+<tr><th id="439">439</th><td>	    list * <dfn class="local col8 decl" id="4608__fill" title='__fill' data-type='list&lt;_Tp, _Alloc&gt; *' data-ref="4608__fill">__fill</dfn> = &amp;<a class="local col7 ref" href="#4607__tmp" title='__tmp' data-ref="4607__tmp">__tmp</a>[<var>0</var>];</td></tr>
+<tr><th id="440">440</th><td>	    list * <dfn class="local col9 decl" id="4609__counter" title='__counter' data-type='list&lt;_Tp, _Alloc&gt; *' data-ref="4609__counter">__counter</dfn>;</td></tr>
+<tr><th id="441">441</th><td></td></tr>
+<tr><th id="442">442</th><td>	    <b>do</b></td></tr>
+<tr><th id="443">443</th><td>	      {</td></tr>
+<tr><th id="444">444</th><td>		<a class="local col6 ref" href="#4606__carry" title='__carry' data-ref="4606__carry">__carry</a>.splice(<a class="local col6 ref" href="#4606__carry" title='__carry' data-ref="4606__carry">__carry</a>.begin(), *<b>this</b>, begin());</td></tr>
+<tr><th id="445">445</th><td></td></tr>
+<tr><th id="446">446</th><td>		<b>for</b>(<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a> = &amp;<a class="local col7 ref" href="#4607__tmp" title='__tmp' data-ref="4607__tmp">__tmp</a>[<var>0</var>];</td></tr>
+<tr><th id="447">447</th><td>		    <a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a> != <a class="local col8 ref" href="#4608__fill" title='__fill' data-ref="4608__fill">__fill</a> &amp;&amp; !<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>-&gt;empty();</td></tr>
+<tr><th id="448">448</th><td>		    ++<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>)</td></tr>
+<tr><th id="449">449</th><td>		  {</td></tr>
+<tr><th id="450">450</th><td>		    <a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>-&gt;merge(<a class="local col6 ref" href="#4606__carry" title='__carry' data-ref="4606__carry">__carry</a>, <a class="local col5 ref" href="#4605__comp" title='__comp' data-ref="4605__comp">__comp</a>);</td></tr>
+<tr><th id="451">451</th><td>		    <a class="local col6 ref" href="#4606__carry" title='__carry' data-ref="4606__carry">__carry</a>.swap(*<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>);</td></tr>
+<tr><th id="452">452</th><td>		  }</td></tr>
+<tr><th id="453">453</th><td>		<a class="local col6 ref" href="#4606__carry" title='__carry' data-ref="4606__carry">__carry</a>.swap(*<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>);</td></tr>
+<tr><th id="454">454</th><td>		<b>if</b> (<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a> == <a class="local col8 ref" href="#4608__fill" title='__fill' data-ref="4608__fill">__fill</a>)</td></tr>
+<tr><th id="455">455</th><td>		  ++<a class="local col8 ref" href="#4608__fill" title='__fill' data-ref="4608__fill">__fill</a>;</td></tr>
+<tr><th id="456">456</th><td>	      }</td></tr>
+<tr><th id="457">457</th><td>	    <b>while</b> ( !<a class="member" href="stl_list.h.html#_ZNKSt4list5emptyEv" title='std::list::empty' data-ref="_ZNKSt4list5emptyEv">empty</a>() );</td></tr>
+<tr><th id="458">458</th><td></td></tr>
+<tr><th id="459">459</th><td>	    <b>for</b> (<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a> = &amp;<a class="local col7 ref" href="#4607__tmp" title='__tmp' data-ref="4607__tmp">__tmp</a>[<var>1</var>]; <a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a> != <a class="local col8 ref" href="#4608__fill" title='__fill' data-ref="4608__fill">__fill</a>; ++<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>)</td></tr>
+<tr><th id="460">460</th><td>	      <a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a>-&gt;merge(*(<a class="local col9 ref" href="#4609__counter" title='__counter' data-ref="4609__counter">__counter</a> - <var>1</var>), <a class="local col5 ref" href="#4605__comp" title='__comp' data-ref="4605__comp">__comp</a>);</td></tr>
+<tr><th id="461">461</th><td>	    <a class="member" href="stl_list.h.html#_ZNSt4list4swapERSt4listIT_T0_E" title='std::list::swap' data-ref="_ZNSt4list4swapERSt4listIT_T0_E">swap</a>(<span class='refarg'>*(<a class="local col8 ref" href="#4608__fill" title='__fill' data-ref="4608__fill">__fill</a> - <var>1</var>)</span>);</td></tr>
+<tr><th id="462">462</th><td>	  }</td></tr>
+<tr><th id="463">463</th><td>      }</td></tr>
+<tr><th id="464">464</th><td></td></tr>
+<tr><th id="465">465</th><td><a class="macro" href="../../../x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#337" title="" data-ref="_M/_GLIBCXX_END_NAMESPACE_CONTAINER">_GLIBCXX_END_NAMESPACE_CONTAINER</a></td></tr>
+<tr><th id="466">466</th><td>} <i>// namespace std</i></td></tr>
+<tr><th id="467">467</th><td></td></tr>
+<tr><th id="468">468</th><td><u>#<span data-ppcond="56">endif</span> /* _LIST_TCC */</u></td></tr>
+<tr><th id="469">469</th><td></td></tr>
+<tr><th id="470">470</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../opencv/modules/calib3d/src/calibinit.cpp.html'>opencv/modules/calib3d/src/calibinit.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,162 @@
+<def f='ceres-solver/include/ceres/covariance.h' l='200' ll='461'/>
+<size>8</size>
+<doc f='ceres-solver/include/ceres/covariance.h' l='49'>// WARNING
+// =======
+// It is very easy to use this class incorrectly without understanding
+// the underlying mathematics. Please read and understand the
+// documentation completely before attempting to use this class.
+//
+//
+// This class allows the user to evaluate the covariance for a
+// non-linear least squares problem and provides random access to its
+// blocks
+//
+// Background
+// ==========
+// One way to assess the quality of the solution returned by a
+// non-linear least squares solve is to analyze the covariance of the
+// solution.
+//
+// Let us consider the non-linear regression problem
+//
+//   y = f(x) + N(0, I)
+//
+// i.e., the observation y is a random non-linear function of the
+// independent variable x with mean f(x) and identity covariance. Then
+// the maximum likelihood estimate of x given observations y is the
+// solution to the non-linear least squares problem:
+//
+//  x* = arg min_x |f(x)|^2
+//
+// And the covariance of x* is given by
+//
+//  C(x*) = inverse[J&apos;(x*)J(x*)]
+//
+// Here J(x*) is the Jacobian of f at x*. The above formula assumes
+// that J(x*) has full column rank.
+//
+// If J(x*) is rank deficient, then the covariance matrix C(x*) is
+// also rank deficient and is given by
+//
+//  C(x*) =  pseudoinverse[J&apos;(x*)J(x*)]
+//
+// Note that in the above, we assumed that the covariance
+// matrix for y was identity. This is an important assumption. If this
+// is not the case and we have
+//
+//  y = f(x) + N(0, S)
+//
+// Where S is a positive semi-definite matrix denoting the covariance
+// of y, then the maximum likelihood problem to be solved is
+//
+//  x* = arg min_x f&apos;(x) inverse[S] f(x)
+//
+// and the corresponding covariance estimate of x* is given by
+//
+//  C(x*) = inverse[J&apos;(x*) inverse[S] J(x*)]
+//
+// So, if it is the case that the observations being fitted to have a
+// covariance matrix not equal to identity, then it is the user&apos;s
+// responsibility that the corresponding cost functions are correctly
+// scaled, e.g. in the above case the cost function for this problem
+// should evaluate S^{-1/2} f(x) instead of just f(x), where S^{-1/2}
+// is the inverse square root of the covariance matrix S.
+//
+// This class allows the user to evaluate the covariance for a
+// non-linear least squares problem and provides random access to its
+// blocks. The computation assumes that the CostFunctions compute
+// residuals such that their covariance is identity.
+//
+// Since the computation of the covariance matrix requires computing
+// the inverse of a potentially large matrix, this can involve a
+// rather large amount of time and memory. However, it is usually the
+// case that the user is only interested in a small part of the
+// covariance matrix. Quite often just the block diagonal. This class
+// allows the user to specify the parts of the covariance matrix that
+// she is interested in and then uses this information to only compute
+// and store those parts of the covariance matrix.
+//
+// Rank of the Jacobian
+// --------------------
+// As we noted above, if the jacobian is rank deficient, then the
+// inverse of J&apos;J is not defined and instead a pseudo inverse needs to
+// be computed.
+//
+// The rank deficiency in J can be structural -- columns which are
+// always known to be zero or numerical -- depending on the exact
+// values in the Jacobian.
+//
+// Structural rank deficiency occurs when the problem contains
+// parameter blocks that are constant. This class correctly handles
+// structural rank deficiency like that.
+//
+// Numerical rank deficiency, where the rank of the matrix cannot be
+// predicted by its sparsity structure and requires looking at its
+// numerical values is more complicated. Here again there are two
+// cases.
+//
+//   a. The rank deficiency arises from overparameterization. e.g., a
+//   four dimensional quaternion used to parameterize SO(3), which is
+//   a three dimensional manifold. In cases like this, the user should
+//   use an appropriate LocalParameterization. Not only will this lead
+//   to better numerical behaviour of the Solver, it will also expose
+//   the rank deficiency to the Covariance object so that it can
+//   handle it correctly.
+//
+//   b. More general numerical rank deficiency in the Jacobian
+//   requires the computation of the so called Singular Value
+//   Decomposition (SVD) of J&apos;J. We do not know how to do this for
+//   large sparse matrices efficiently. For small and moderate sized
+//   problems this is done using dense linear algebra.
+//
+// Gauge Invariance
+// ----------------
+// In structure from motion (3D reconstruction) problems, the
+// reconstruction is ambiguous upto a similarity transform. This is
+// known as a Gauge Ambiguity. Handling Gauges correctly requires the
+// use of SVD or custom inversion algorithms. For small problems the
+// user can use the dense algorithm. For more details see
+//
+// Ken-ichi Kanatani, Daniel D. Morris: Gauges and gauge
+// transformations for uncertainty description of geometric structure
+// with indeterminacy. IEEE Transactions on Information Theory 47(5):
+// 2017-2028 (2001)
+//
+// Example Usage
+// =============
+//
+//  double x[3];
+//  double y[2];
+//
+//  Problem problem;
+//  problem.AddParameterBlock(x, 3);
+//  problem.AddParameterBlock(y, 2);
+//  &lt;Build Problem&gt;
+//  &lt;Solve Problem&gt;
+//
+//  Covariance::Options options;
+//  Covariance covariance(options);
+//
+//  std::vector&lt;std::pair&lt;const double*, const double*&gt; &gt; covariance_blocks;
+//  covariance_blocks.push_back(make_pair(x, x));
+//  covariance_blocks.push_back(make_pair(y, y));
+//  covariance_blocks.push_back(make_pair(x, y));
+//
+//  CHECK(covariance.Compute(covariance_blocks, &amp;problem));
+//
+//  double covariance_xx[3 * 3];
+//  double covariance_yy[2 * 2];
+//  double covariance_xy[3 * 2];
+//  covariance.GetCovarianceBlock(x, x, covariance_xx)
+//  covariance.GetCovarianceBlock(y, y, covariance_yy)
+//  covariance.GetCovarianceBlock(x, y, covariance_xy)
+//</doc>
+<fun r='_ZN5ceres10CovarianceC1ERKNS0_7OptionsE'/>
+<fun r='_ZN5ceres10CovarianceD1Ev'/>
+<fun r='_ZN5ceres10Covariance7ComputeERKSt6vectorISt4pairIPKdS4_ESaIS5_EEPNS_7ProblemE'/>
+<fun r='_ZN5ceres10Covariance7ComputeERKSt6vectorIPKdSaIS3_EEPNS_7ProblemE'/>
+<fun r='_ZNK5ceres10Covariance18GetCovarianceBlockEPKdS2_Pd'/>
+<fun r='_ZNK5ceres10Covariance32GetCovarianceBlockInTangentSpaceEPKdS2_Pd'/>
+<fun r='_ZN5ceres10Covariance19GetCovarianceMatrixERKSt6vectorIPKdSaIS3_EEPd'/>
+<fun r='_ZN5ceres10Covariance33GetCovarianceMatrixInTangentSpaceERKSt6vectorIPKdSaIS3_EEPd'/>
+<mbr r='ceres::Covariance::impl_' o='0' t='internal::scoped_ptr&lt;internal::CovarianceImpl&gt;'/>

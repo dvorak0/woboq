@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>line_search_minimizer.h source code [ceres-solver/internal/ceres/line_search_minimizer.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::LineSearchMinimizer "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/line_search_minimizer.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='line_search_minimizer.h.html'>line_search_minimizer.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_LINE_SEARCH_MINIMIZER_H_">CERES_INTERNAL_LINE_SEARCH_MINIMIZER_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_LINE_SEARCH_MINIMIZER_H_" data-ref="_M/CERES_INTERNAL_LINE_SEARCH_MINIMIZER_H_">CERES_INTERNAL_LINE_SEARCH_MINIMIZER_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="minimizer.h.html">"ceres/minimizer.h"</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../include/ceres/solver.h.html">"ceres/solver.h"</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../include/ceres/types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../include/ceres/internal/eigen.h.html">"ceres/internal/eigen.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../../../include/glog/logging.h.html">"glog/logging.h"</a></u></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><i>// Generic line search minimization algorithm.</i></td></tr>
+<tr><th id="44">44</th><td><i>//</i></td></tr>
+<tr><th id="45">45</th><td><i>// For example usage, see SolverImpl::Minimize.</i></td></tr>
+<tr><th id="46">46</th><td><b>class</b> <dfn class="type def" id="ceres::internal::LineSearchMinimizer" title='ceres::internal::LineSearchMinimizer' data-ref="ceres::internal::LineSearchMinimizer">LineSearchMinimizer</dfn> : <b>public</b> <a class="type" href="minimizer.h.html#ceres::internal::Minimizer" title='ceres::internal::Minimizer' data-ref="ceres::internal::Minimizer">Minimizer</a> {</td></tr>
+<tr><th id="47">47</th><td> <b>public</b>:</td></tr>
+<tr><th id="48">48</th><td>  <b>struct</b> <dfn class="type def" id="ceres::internal::LineSearchMinimizer::State" title='ceres::internal::LineSearchMinimizer::State' data-ref="ceres::internal::LineSearchMinimizer::State">State</dfn> {</td></tr>
+<tr><th id="49">49</th><td>    <dfn class="decl def" id="_ZN5ceres8internal19LineSearchMinimizer5StateC1Eii" title='ceres::internal::LineSearchMinimizer::State::State' data-ref="_ZN5ceres8internal19LineSearchMinimizer5StateC1Eii">State</dfn>(<em>int</em> <dfn class="local col1 decl" id="1num_parameters" title='num_parameters' data-type='int' data-ref="1num_parameters">num_parameters</dfn>,</td></tr>
+<tr><th id="50">50</th><td>          <em>int</em> <dfn class="local col2 decl" id="2num_effective_parameters" title='num_effective_parameters' data-type='int' data-ref="2num_effective_parameters">num_effective_parameters</dfn>)</td></tr>
+<tr><th id="51">51</th><td>        : <a class="member" href="#ceres::internal::LineSearchMinimizer::State::cost" title='ceres::internal::LineSearchMinimizer::State::cost' data-ref="ceres::internal::LineSearchMinimizer::State::cost">cost</a>(<var>0.0</var>),</td></tr>
+<tr><th id="52">52</th><td>          <a class="member" href="#ceres::internal::LineSearchMinimizer::State::gradient" title='ceres::internal::LineSearchMinimizer::State::gradient' data-ref="ceres::internal::LineSearchMinimizer::State::gradient">gradient</a><a class="ref" href="../../../include/eigen3/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ENS_8internal6traitsINS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEEE5IndexE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ENS_8internal6traitsINS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEEE5IndexE">(</a><a class="local col2 ref" href="#2num_effective_parameters" title='num_effective_parameters' data-ref="2num_effective_parameters">num_effective_parameters</a>),</td></tr>
+<tr><th id="53">53</th><td>          <a class="member" href="#ceres::internal::LineSearchMinimizer::State::gradient_squared_norm" title='ceres::internal::LineSearchMinimizer::State::gradient_squared_norm' data-ref="ceres::internal::LineSearchMinimizer::State::gradient_squared_norm">gradient_squared_norm</a>(<var>0.0</var>),</td></tr>
+<tr><th id="54">54</th><td>          <a class="member" href="#ceres::internal::LineSearchMinimizer::State::search_direction" title='ceres::internal::LineSearchMinimizer::State::search_direction' data-ref="ceres::internal::LineSearchMinimizer::State::search_direction">search_direction</a><a class="ref" href="../../../include/eigen3/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ENS_8internal6traitsINS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEEE5IndexE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ENS_8internal6traitsINS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEEE5IndexE">(</a><a class="local col2 ref" href="#2num_effective_parameters" title='num_effective_parameters' data-ref="2num_effective_parameters">num_effective_parameters</a>),</td></tr>
+<tr><th id="55">55</th><td>          <a class="member" href="#ceres::internal::LineSearchMinimizer::State::directional_derivative" title='ceres::internal::LineSearchMinimizer::State::directional_derivative' data-ref="ceres::internal::LineSearchMinimizer::State::directional_derivative">directional_derivative</a>(<var>0.0</var>),</td></tr>
+<tr><th id="56">56</th><td>          <a class="member" href="#ceres::internal::LineSearchMinimizer::State::step_size" title='ceres::internal::LineSearchMinimizer::State::step_size' data-ref="ceres::internal::LineSearchMinimizer::State::step_size">step_size</a>(<var>0.0</var>) {</td></tr>
+<tr><th id="57">57</th><td>    }</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::cost" title='ceres::internal::LineSearchMinimizer::State::cost' data-ref="ceres::internal::LineSearchMinimizer::State::cost">cost</dfn>;</td></tr>
+<tr><th id="60">60</th><td>    <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::gradient" title='ceres::internal::LineSearchMinimizer::State::gradient' data-ref="ceres::internal::LineSearchMinimizer::State::gradient">gradient</dfn>;</td></tr>
+<tr><th id="61">61</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::gradient_squared_norm" title='ceres::internal::LineSearchMinimizer::State::gradient_squared_norm' data-ref="ceres::internal::LineSearchMinimizer::State::gradient_squared_norm">gradient_squared_norm</dfn>;</td></tr>
+<tr><th id="62">62</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::gradient_max_norm" title='ceres::internal::LineSearchMinimizer::State::gradient_max_norm' data-ref="ceres::internal::LineSearchMinimizer::State::gradient_max_norm">gradient_max_norm</dfn>;</td></tr>
+<tr><th id="63">63</th><td>    <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::search_direction" title='ceres::internal::LineSearchMinimizer::State::search_direction' data-ref="ceres::internal::LineSearchMinimizer::State::search_direction">search_direction</dfn>;</td></tr>
+<tr><th id="64">64</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::directional_derivative" title='ceres::internal::LineSearchMinimizer::State::directional_derivative' data-ref="ceres::internal::LineSearchMinimizer::State::directional_derivative">directional_derivative</dfn>;</td></tr>
+<tr><th id="65">65</th><td>    <em>double</em> <dfn class="decl" id="ceres::internal::LineSearchMinimizer::State::step_size" title='ceres::internal::LineSearchMinimizer::State::step_size' data-ref="ceres::internal::LineSearchMinimizer::State::step_size">step_size</dfn>;</td></tr>
+<tr><th id="66">66</th><td>  };</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td>  <dfn class="virtual decl def" id="_ZN5ceres8internal19LineSearchMinimizerD1Ev" title='ceres::internal::LineSearchMinimizer::~LineSearchMinimizer' data-ref="_ZN5ceres8internal19LineSearchMinimizerD1Ev">~</dfn>LineSearchMinimizer() {}</td></tr>
+<tr><th id="69">69</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal19LineSearchMinimizer8MinimizeERKNS0_9Minimizer7OptionsEPdPNS_6Solver7SummaryE" title='ceres::internal::LineSearchMinimizer::Minimize' data-ref="_ZN5ceres8internal19LineSearchMinimizer8MinimizeERKNS0_9Minimizer7OptionsEPdPNS_6Solver7SummaryE">Minimize</dfn>(<em>const</em> <a class="type" href="minimizer.h.html#ceres::internal::Minimizer" title='ceres::internal::Minimizer' data-ref="ceres::internal::Minimizer">Minimizer</a>::<a class="type" href="minimizer.h.html#ceres::internal::Minimizer::Options" title='ceres::internal::Minimizer::Options' data-ref="ceres::internal::Minimizer::Options">Options</a>&amp; <dfn class="local col3 decl" id="3options" title='options' data-type='const Minimizer::Options &amp;' data-ref="3options">options</dfn>,</td></tr>
+<tr><th id="70">70</th><td>                        <em>double</em>* <dfn class="local col4 decl" id="4parameters" title='parameters' data-type='double *' data-ref="4parameters">parameters</dfn>,</td></tr>
+<tr><th id="71">71</th><td>                        <a class="type" href="../../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../../include/ceres/solver.h.html#ceres::Solver::Summary" title='ceres::Solver::Summary' data-ref="ceres::Solver::Summary">Summary</a>* <dfn class="local col5 decl" id="5summary" title='summary' data-type='Solver::Summary *' data-ref="5summary">summary</dfn>);</td></tr>
+<tr><th id="72">72</th><td>};</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="75">75</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_INTERNAL_LINE_SEARCH_MINIMIZER_H_</u></td></tr>
+<tr><th id="78">78</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='line_search_direction.cc.html'>ceres-solver/internal/ceres/line_search_direction.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

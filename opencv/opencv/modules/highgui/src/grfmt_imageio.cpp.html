@@ -1,0 +1,414 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>grfmt_imageio.cpp source code [opencv/modules/highgui/src/grfmt_imageio.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/highgui/src/grfmt_imageio.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>highgui</a>/<a href='./'>src</a>/<a href='grfmt_imageio.cpp.html'>grfmt_imageio.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*</i></td></tr>
+<tr><th id="2">2</th><td><i> *  grfmt_imageio.cpp</i></td></tr>
+<tr><th id="3">3</th><td><i> *</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *  Created by Morgan Conbere on 5/17/07.</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> */</i></td></tr>
+<tr><th id="8">8</th><td></td></tr>
+<tr><th id="9">9</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifdef</span> <span class="macro" data-ref="_M/HAVE_IMAGEIO">HAVE_IMAGEIO</span></u></td></tr>
+<tr><th id="12">12</th><td></td></tr>
+<tr><th id="13">13</th><td><u>#include "grfmt_imageio.hpp"</u></td></tr>
+<tr><th id="14">14</th><td></td></tr>
+<tr><th id="15">15</th><td><b>namespace</b> cv</td></tr>
+<tr><th id="16">16</th><td>{</td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><i>/////////////////////// ImageIODecoder ///////////////////</i></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td>ImageIODecoder::ImageIODecoder()</td></tr>
+<tr><th id="21">21</th><td>{</td></tr>
+<tr><th id="22">22</th><td>    imageRef = NULL;</td></tr>
+<tr><th id="23">23</th><td>}</td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td>ImageIODecoder::~ImageIODecoder()</td></tr>
+<tr><th id="26">26</th><td>{</td></tr>
+<tr><th id="27">27</th><td>    close();</td></tr>
+<tr><th id="28">28</th><td>}</td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><em>void</em>  ImageIODecoder::close()</td></tr>
+<tr><th id="32">32</th><td>{</td></tr>
+<tr><th id="33">33</th><td>    CGImageRelease( imageRef );</td></tr>
+<tr><th id="34">34</th><td>    imageRef = NULL;</td></tr>
+<tr><th id="35">35</th><td>}</td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td>size_t ImageIODecoder::signatureLength() <em>const</em></td></tr>
+<tr><th id="39">39</th><td>{</td></tr>
+<tr><th id="40">40</th><td>    <b>return</b> <var>12</var>;</td></tr>
+<tr><th id="41">41</th><td>}</td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><em>bool</em> ImageIODecoder::checkSignature( <em>const</em> string&amp; signature ) <em>const</em></td></tr>
+<tr><th id="44">44</th><td>{</td></tr>
+<tr><th id="45">45</th><td>    <i>// TODO: implement real signature check</i></td></tr>
+<tr><th id="46">46</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="47">47</th><td>}</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td>ImageDecoder ImageIODecoder::newDecoder() <em>const</em></td></tr>
+<tr><th id="50">50</th><td>{</td></tr>
+<tr><th id="51">51</th><td>    <b>return</b> <b>new</b> ImageIODecoder;</td></tr>
+<tr><th id="52">52</th><td>}</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><em>bool</em> ImageIODecoder::readHeader()</td></tr>
+<tr><th id="55">55</th><td>{</td></tr>
+<tr><th id="56">56</th><td>    CFURLRef         imageURLRef;</td></tr>
+<tr><th id="57">57</th><td>    CGImageSourceRef sourceRef;</td></tr>
+<tr><th id="58">58</th><td>    <i>// diciu, if ReadHeader is called twice in a row make sure to release the previously allocated imageRef</i></td></tr>
+<tr><th id="59">59</th><td>    <b>if</b> (imageRef != NULL)</td></tr>
+<tr><th id="60">60</th><td>        CGImageRelease(imageRef);</td></tr>
+<tr><th id="61">61</th><td>    imageRef = NULL;</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>    imageURLRef = CFURLCreateFromFileSystemRepresentation( NULL,</td></tr>
+<tr><th id="64">64</th><td>        (<em>const</em> UInt8*)m_filename.c_str(), m_filename.size(), <b>false</b> );</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>    sourceRef = CGImageSourceCreateWithURL( imageURLRef, NULL );</td></tr>
+<tr><th id="67">67</th><td>    CFRelease( imageURLRef );</td></tr>
+<tr><th id="68">68</th><td>    <b>if</b> ( !sourceRef )</td></tr>
+<tr><th id="69">69</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td>    imageRef = CGImageSourceCreateImageAtIndex( sourceRef, <var>0</var>, NULL );</td></tr>
+<tr><th id="72">72</th><td>    CFRelease( sourceRef );</td></tr>
+<tr><th id="73">73</th><td>    <b>if</b>( !imageRef )</td></tr>
+<tr><th id="74">74</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>    m_width = CGImageGetWidth( imageRef );</td></tr>
+<tr><th id="77">77</th><td>    m_height = CGImageGetHeight( imageRef );</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>    CGColorSpaceRef colorSpace = CGImageGetColorSpace( imageRef );</td></tr>
+<tr><th id="80">80</th><td>    <b>if</b>( !colorSpace )</td></tr>
+<tr><th id="81">81</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>    m_type = CGColorSpaceGetNumberOfComponents( colorSpace ) &gt; <var>1</var> ? CV_8UC3 : CV_8UC1;</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="86">86</th><td>}</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td><em>bool</em>  ImageIODecoder::readData( Mat&amp; img )</td></tr>
+<tr><th id="90">90</th><td>{</td></tr>
+<tr><th id="91">91</th><td>    uchar* data = img.data;</td></tr>
+<tr><th id="92">92</th><td>    <em>int</em> step = img.step;</td></tr>
+<tr><th id="93">93</th><td>    <em>bool</em> color = img.channels() &gt; <var>1</var>;</td></tr>
+<tr><th id="94">94</th><td>    <em>int</em> bpp; <i>// Bytes per pixel</i></td></tr>
+<tr><th id="95">95</th><td>    <em>int</em> bit_depth = <var>8</var>;</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    <i>// Get Height, Width, and color information</i></td></tr>
+<tr><th id="98">98</th><td>    <b>if</b>( !readHeader() )</td></tr>
+<tr><th id="99">99</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td>    CGContextRef     context = NULL; <i>// The bitmap context</i></td></tr>
+<tr><th id="102">102</th><td>    CGColorSpaceRef  colorSpace = NULL;</td></tr>
+<tr><th id="103">103</th><td>    uchar*           bitmap = NULL;</td></tr>
+<tr><th id="104">104</th><td>    CGImageAlphaInfo alphaInfo;</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>    <i>// CoreGraphics will take care of converting to grayscale and back as long as the</i></td></tr>
+<tr><th id="107">107</th><td><i>    // appropriate colorspace is set</i></td></tr>
+<tr><th id="108">108</th><td>    <b>if</b>( color == CV_LOAD_IMAGE_GRAYSCALE )</td></tr>
+<tr><th id="109">109</th><td>    {</td></tr>
+<tr><th id="110">110</th><td>        colorSpace = CGColorSpaceCreateDeviceGray();</td></tr>
+<tr><th id="111">111</th><td>        bpp = <var>1</var>;</td></tr>
+<tr><th id="112">112</th><td>        alphaInfo = kCGImageAlphaNone;</td></tr>
+<tr><th id="113">113</th><td>    }</td></tr>
+<tr><th id="114">114</th><td>    <b>else</b> <b>if</b>( color == CV_LOAD_IMAGE_COLOR )</td></tr>
+<tr><th id="115">115</th><td>    {</td></tr>
+<tr><th id="116">116</th><td><u>#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR</u></td></tr>
+<tr><th id="117">117</th><td>        colorSpace = CGColorSpaceCreateDeviceRGB();</td></tr>
+<tr><th id="118">118</th><td><u>#else</u></td></tr>
+<tr><th id="119">119</th><td>        colorSpace = CGColorSpaceCreateWithName( kCGColorSpaceGenericRGBLinear );</td></tr>
+<tr><th id="120">120</th><td><u>#endif</u></td></tr>
+<tr><th id="121">121</th><td>        bpp = <var>4</var>; <i>/* CG only has 8 and 32 bit color spaces, so we waste a byte */</i></td></tr>
+<tr><th id="122">122</th><td>        alphaInfo = kCGImageAlphaNoneSkipLast;</td></tr>
+<tr><th id="123">123</th><td>    }</td></tr>
+<tr><th id="124">124</th><td>    <b>if</b>( !colorSpace )</td></tr>
+<tr><th id="125">125</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>    bitmap = (uchar*)malloc( bpp * m_height * m_width );</td></tr>
+<tr><th id="128">128</th><td>    <b>if</b>( !bitmap )</td></tr>
+<tr><th id="129">129</th><td>    {</td></tr>
+<tr><th id="130">130</th><td>        CGColorSpaceRelease( colorSpace );</td></tr>
+<tr><th id="131">131</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="132">132</th><td>    }</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td>    context = CGBitmapContextCreate( (<em>void</em> *)bitmap,</td></tr>
+<tr><th id="135">135</th><td>                                     m_width,        <i>/* width */</i></td></tr>
+<tr><th id="136">136</th><td>                                     m_height,       <i>/* height */</i></td></tr>
+<tr><th id="137">137</th><td>                                     bit_depth,    <i>/* bit depth */</i></td></tr>
+<tr><th id="138">138</th><td>                                     bpp * m_width,  <i>/* bytes per row */</i></td></tr>
+<tr><th id="139">139</th><td>                                     colorSpace,     <i>/* color space */</i></td></tr>
+<tr><th id="140">140</th><td>                                     alphaInfo);</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>    CGColorSpaceRelease( colorSpace );</td></tr>
+<tr><th id="143">143</th><td>    <b>if</b>( !context )</td></tr>
+<tr><th id="144">144</th><td>    {</td></tr>
+<tr><th id="145">145</th><td>        free( bitmap );</td></tr>
+<tr><th id="146">146</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="147">147</th><td>    }</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td>    <i>// Copy the image data into the bitmap region</i></td></tr>
+<tr><th id="150">150</th><td>    CGRect rect = {{<var>0</var>,<var>0</var>},{m_width,m_height}};</td></tr>
+<tr><th id="151">151</th><td>    CGContextDrawImage( context, rect, imageRef );</td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td>    uchar* bitdata = (uchar*)CGBitmapContextGetData( context );</td></tr>
+<tr><th id="154">154</th><td>    <b>if</b>( !bitdata )</td></tr>
+<tr><th id="155">155</th><td>    {</td></tr>
+<tr><th id="156">156</th><td>        free( bitmap);</td></tr>
+<tr><th id="157">157</th><td>        CGContextRelease( context );</td></tr>
+<tr><th id="158">158</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="159">159</th><td>    }</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td>    <i>// Move the bitmap (in RGB) into data (in BGR)</i></td></tr>
+<tr><th id="162">162</th><td>    <em>int</em> bitmapIndex = <var>0</var>;</td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td>    <b>if</b>( color == CV_LOAD_IMAGE_COLOR )</td></tr>
+<tr><th id="165">165</th><td>    {</td></tr>
+<tr><th id="166">166</th><td>        uchar * base = data;</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td>        <b>for</b> (<em>int</em> y = <var>0</var>; y &lt; m_height; y++)</td></tr>
+<tr><th id="169">169</th><td>        {</td></tr>
+<tr><th id="170">170</th><td>            uchar * line = base + y * step;</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td>            <b>for</b> (<em>int</em> x = <var>0</var>; x &lt; m_width; x++)</td></tr>
+<tr><th id="173">173</th><td>            {</td></tr>
+<tr><th id="174">174</th><td>                <i>// Blue channel</i></td></tr>
+<tr><th id="175">175</th><td>                line[<var>0</var>] = bitdata[bitmapIndex + <var>2</var>];</td></tr>
+<tr><th id="176">176</th><td>                <i>// Green channel</i></td></tr>
+<tr><th id="177">177</th><td>                line[<var>1</var>] = bitdata[bitmapIndex + <var>1</var>];</td></tr>
+<tr><th id="178">178</th><td>                <i>// Red channel</i></td></tr>
+<tr><th id="179">179</th><td>                line[<var>2</var>] = bitdata[bitmapIndex + <var>0</var>];</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>                line        += <var>3</var>;</td></tr>
+<tr><th id="182">182</th><td>                bitmapIndex += bpp;</td></tr>
+<tr><th id="183">183</th><td>            }</td></tr>
+<tr><th id="184">184</th><td>        }</td></tr>
+<tr><th id="185">185</th><td>    }</td></tr>
+<tr><th id="186">186</th><td>    <b>else</b> <b>if</b>( color == CV_LOAD_IMAGE_GRAYSCALE )</td></tr>
+<tr><th id="187">187</th><td>    {</td></tr>
+<tr><th id="188">188</th><td>        <b>for</b> (<em>int</em> y = <var>0</var>; y &lt; m_height; y++)</td></tr>
+<tr><th id="189">189</th><td>            memcpy (data + y * step, bitmap + y * m_width, m_width);</td></tr>
+<tr><th id="190">190</th><td>    }</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>    free( bitmap );</td></tr>
+<tr><th id="193">193</th><td>    CGContextRelease( context );</td></tr>
+<tr><th id="194">194</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="195">195</th><td>}</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td><i>/////////////////////// ImageIOEncoder ///////////////////</i></td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>ImageIOEncoder::ImageIOEncoder()</td></tr>
+<tr><th id="201">201</th><td>{</td></tr>
+<tr><th id="202">202</th><td>    m_description = <q>"Apple ImageIO (*.bmp;*.dib;*.exr;*.jpeg;*.jpg;*.jpe;*.jp2;*.pdf;*.png;*.tiff;*.tif)"</q>;</td></tr>
+<tr><th id="203">203</th><td>}</td></tr>
+<tr><th id="204">204</th><td></td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>ImageIOEncoder::~ImageIOEncoder()</td></tr>
+<tr><th id="207">207</th><td>{</td></tr>
+<tr><th id="208">208</th><td>}</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td>ImageEncoder ImageIOEncoder::newEncoder() <em>const</em></td></tr>
+<tr><th id="212">212</th><td>{</td></tr>
+<tr><th id="213">213</th><td>    <b>return</b> <b>new</b> ImageIOEncoder;</td></tr>
+<tr><th id="214">214</th><td>}</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td><em>static</em></td></tr>
+<tr><th id="217">217</th><td>CFStringRef  FilenameToUTI( <em>const</em> <em>char</em>* filename )</td></tr>
+<tr><th id="218">218</th><td>{</td></tr>
+<tr><th id="219">219</th><td>    <em>const</em> <em>char</em>* ext = filename;</td></tr>
+<tr><th id="220">220</th><td>    <em>char</em>* ext_buf;</td></tr>
+<tr><th id="221">221</th><td>    <em>int</em> i;</td></tr>
+<tr><th id="222">222</th><td>    CFStringRef imageUTI = NULL;</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td>    <b>for</b>(;;)</td></tr>
+<tr><th id="225">225</th><td>    {</td></tr>
+<tr><th id="226">226</th><td>        <em>const</em> <em>char</em>* temp = strchr( ext + <var>1</var>, <kbd>'.'</kbd> );</td></tr>
+<tr><th id="227">227</th><td>        <b>if</b>( !temp ) <b>break</b>;</td></tr>
+<tr><th id="228">228</th><td>        ext = temp;</td></tr>
+<tr><th id="229">229</th><td>    }</td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td>    <b>if</b>(!ext)</td></tr>
+<tr><th id="232">232</th><td>        <b>return</b> NULL;</td></tr>
+<tr><th id="233">233</th><td></td></tr>
+<tr><th id="234">234</th><td>    ext_buf = (<em>char</em>*)malloc(strlen(ext)+<var>1</var>);</td></tr>
+<tr><th id="235">235</th><td>    <b>for</b>(i = <var>0</var>; ext[i] != <kbd>'\0'</kbd>; i++)</td></tr>
+<tr><th id="236">236</th><td>        ext_buf[i] = (<em>char</em>)tolower(ext[i]);</td></tr>
+<tr><th id="237">237</th><td>    ext_buf[i] = <kbd>'\0'</kbd>;</td></tr>
+<tr><th id="238">238</th><td>    ext = ext_buf;</td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td>    <b>if</b>( !strcmp(ext, <q>".bmp"</q>) || !strcmp(ext, <q>".dib"</q>) )</td></tr>
+<tr><th id="241">241</th><td>        imageUTI = CFSTR( <q>"com.microsoft.bmp"</q> );</td></tr>
+<tr><th id="242">242</th><td>    <b>else</b> <b>if</b>( !strcmp(ext, <q>".exr"</q>) )</td></tr>
+<tr><th id="243">243</th><td>        imageUTI = CFSTR( <q>"com.ilm.openexr-image"</q> );</td></tr>
+<tr><th id="244">244</th><td>    <b>else</b> <b>if</b>( !strcmp(ext, <q>".jpeg"</q>) || !strcmp(ext, <q>".jpg"</q>) || !strcmp(ext, <q>".jpe"</q>) )</td></tr>
+<tr><th id="245">245</th><td>        imageUTI = CFSTR( <q>"public.jpeg"</q> );</td></tr>
+<tr><th id="246">246</th><td>    <b>else</b> <b>if</b>( !strcmp(ext, <q>".jp2"</q>) )</td></tr>
+<tr><th id="247">247</th><td>        imageUTI = CFSTR( <q>"public.jpeg-2000"</q> );</td></tr>
+<tr><th id="248">248</th><td>    <b>else</b> <b>if</b>( !strcmp(ext, <q>".pdf"</q>) )</td></tr>
+<tr><th id="249">249</th><td>        imageUTI = CFSTR( <q>"com.adobe.pdf"</q> );</td></tr>
+<tr><th id="250">250</th><td>    <b>else</b> <b>if</b>( !strcmp(ext, <q>".png"</q>) )</td></tr>
+<tr><th id="251">251</th><td>        imageUTI = CFSTR( <q>"public.png"</q> );</td></tr>
+<tr><th id="252">252</th><td>    <b>else</b> <b>if</b>( !strcmp(ext, <q>".tiff"</q>) || !strcmp(ext, <q>".tif"</q>) )</td></tr>
+<tr><th id="253">253</th><td>        imageUTI = CFSTR( <q>"public.tiff"</q> );</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td>    free(ext_buf);</td></tr>
+<tr><th id="256">256</th><td></td></tr>
+<tr><th id="257">257</th><td>    <b>return</b> imageUTI;</td></tr>
+<tr><th id="258">258</th><td>}</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td><em>bool</em>  ImageIOEncoder::write( <em>const</em> Mat&amp; img, <em>const</em> vector&lt;<em>int</em>&gt;&amp; params )</td></tr>
+<tr><th id="262">262</th><td>{</td></tr>
+<tr><th id="263">263</th><td>    <em>int</em> width = img.cols, height = img.rows;</td></tr>
+<tr><th id="264">264</th><td>    <em>int</em> _channels = img.channels();</td></tr>
+<tr><th id="265">265</th><td>    <em>const</em> uchar* data = img.data;</td></tr>
+<tr><th id="266">266</th><td>    <em>int</em> step = img.step;</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td>    <i>// Determine the appropriate UTI based on the filename extension</i></td></tr>
+<tr><th id="269">269</th><td>    CFStringRef imageUTI = FilenameToUTI( m_filename.c_str() );</td></tr>
+<tr><th id="270">270</th><td></td></tr>
+<tr><th id="271">271</th><td>    <i>// Determine the Bytes Per Pixel</i></td></tr>
+<tr><th id="272">272</th><td>    <em>int</em> bpp = (_channels == <var>1</var>) ? <var>1</var> : <var>4</var>;</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td>    <i>// Write the data into a bitmap context</i></td></tr>
+<tr><th id="275">275</th><td>    CGContextRef context;</td></tr>
+<tr><th id="276">276</th><td>    CGColorSpaceRef colorSpace;</td></tr>
+<tr><th id="277">277</th><td>    uchar* bitmapData = NULL;</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>    <b>if</b>( bpp == <var>1</var> ) {</td></tr>
+<tr><th id="280">280</th><td><u>#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR</u></td></tr>
+<tr><th id="281">281</th><td>        colorSpace = CGColorSpaceCreateDeviceGray();</td></tr>
+<tr><th id="282">282</th><td><u>#else</u></td></tr>
+<tr><th id="283">283</th><td>        colorSpace = CGColorSpaceCreateWithName( kCGColorSpaceGenericGray );</td></tr>
+<tr><th id="284">284</th><td><u>#endif</u></td></tr>
+<tr><th id="285">285</th><td>    }</td></tr>
+<tr><th id="286">286</th><td>    <b>else</b> <b>if</b>( bpp == <var>4</var> ) {</td></tr>
+<tr><th id="287">287</th><td><u>#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR</u></td></tr>
+<tr><th id="288">288</th><td>        colorSpace = CGColorSpaceCreateDeviceRGB();</td></tr>
+<tr><th id="289">289</th><td><u>#else</u></td></tr>
+<tr><th id="290">290</th><td>        colorSpace = CGColorSpaceCreateWithName( kCGColorSpaceGenericRGBLinear );</td></tr>
+<tr><th id="291">291</th><td><u>#endif</u></td></tr>
+<tr><th id="292">292</th><td>    }</td></tr>
+<tr><th id="293">293</th><td>    <b>if</b>( !colorSpace )</td></tr>
+<tr><th id="294">294</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td>    bitmapData = (uchar*)malloc( bpp * height * width );</td></tr>
+<tr><th id="297">297</th><td>    <b>if</b>( !bitmapData )</td></tr>
+<tr><th id="298">298</th><td>    {</td></tr>
+<tr><th id="299">299</th><td>        CGColorSpaceRelease( colorSpace );</td></tr>
+<tr><th id="300">300</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="301">301</th><td>    }</td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td>    context = CGBitmapContextCreate( bitmapData,</td></tr>
+<tr><th id="304">304</th><td>                                     width,</td></tr>
+<tr><th id="305">305</th><td>                                     height,</td></tr>
+<tr><th id="306">306</th><td>                                     <var>8</var>,</td></tr>
+<tr><th id="307">307</th><td>                                     bpp * width,</td></tr>
+<tr><th id="308">308</th><td>                                     colorSpace,</td></tr>
+<tr><th id="309">309</th><td>                                     (bpp == <var>1</var>) ? kCGImageAlphaNone :</td></tr>
+<tr><th id="310">310</th><td>                                     kCGImageAlphaNoneSkipLast );</td></tr>
+<tr><th id="311">311</th><td>    CGColorSpaceRelease( colorSpace );</td></tr>
+<tr><th id="312">312</th><td>    <b>if</b>( !context )</td></tr>
+<tr><th id="313">313</th><td>    {</td></tr>
+<tr><th id="314">314</th><td>        free( bitmapData );</td></tr>
+<tr><th id="315">315</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="316">316</th><td>    }</td></tr>
+<tr><th id="317">317</th><td></td></tr>
+<tr><th id="318">318</th><td>    <i>// Copy pixel information from data into bitmapData</i></td></tr>
+<tr><th id="319">319</th><td>    <b>if</b> (bpp == <var>4</var>)</td></tr>
+<tr><th id="320">320</th><td>    {</td></tr>
+<tr><th id="321">321</th><td>        <em>int</em>           bitmapIndex = <var>0</var>;</td></tr>
+<tr><th id="322">322</th><td>        <em>const</em> uchar * base        = data;</td></tr>
+<tr><th id="323">323</th><td></td></tr>
+<tr><th id="324">324</th><td>        <b>for</b> (<em>int</em> y = <var>0</var>; y &lt; height; y++)</td></tr>
+<tr><th id="325">325</th><td>        {</td></tr>
+<tr><th id="326">326</th><td>            <em>const</em> uchar * line = base + y * step;</td></tr>
+<tr><th id="327">327</th><td></td></tr>
+<tr><th id="328">328</th><td>            <b>for</b> (<em>int</em> x = <var>0</var>; x &lt; width; x++)</td></tr>
+<tr><th id="329">329</th><td>            {</td></tr>
+<tr><th id="330">330</th><td>                <i>// Blue channel</i></td></tr>
+<tr><th id="331">331</th><td>                bitmapData[bitmapIndex + <var>2</var>] = line[<var>0</var>];</td></tr>
+<tr><th id="332">332</th><td>                <i>// Green channel</i></td></tr>
+<tr><th id="333">333</th><td>                bitmapData[bitmapIndex + <var>1</var>] = line[<var>1</var>];</td></tr>
+<tr><th id="334">334</th><td>                <i>// Red channel</i></td></tr>
+<tr><th id="335">335</th><td>                bitmapData[bitmapIndex + <var>0</var>] = line[<var>2</var>];</td></tr>
+<tr><th id="336">336</th><td></td></tr>
+<tr><th id="337">337</th><td>                line        += <var>3</var>;</td></tr>
+<tr><th id="338">338</th><td>                bitmapIndex += bpp;</td></tr>
+<tr><th id="339">339</th><td>            }</td></tr>
+<tr><th id="340">340</th><td>        }</td></tr>
+<tr><th id="341">341</th><td>    }</td></tr>
+<tr><th id="342">342</th><td>    <b>else</b> <b>if</b> (bpp == <var>1</var>)</td></tr>
+<tr><th id="343">343</th><td>    {</td></tr>
+<tr><th id="344">344</th><td>        <b>for</b> (<em>int</em> y = <var>0</var>; y &lt; height; y++)</td></tr>
+<tr><th id="345">345</th><td>            memcpy (bitmapData + y * width, data + y * step, width);</td></tr>
+<tr><th id="346">346</th><td>    }</td></tr>
+<tr><th id="347">347</th><td></td></tr>
+<tr><th id="348">348</th><td>    <i>// Turn the bitmap context into an imageRef</i></td></tr>
+<tr><th id="349">349</th><td>    CGImageRef imageRef = CGBitmapContextCreateImage( context );</td></tr>
+<tr><th id="350">350</th><td>    CGContextRelease( context );</td></tr>
+<tr><th id="351">351</th><td>    <b>if</b>( !imageRef )</td></tr>
+<tr><th id="352">352</th><td>    {</td></tr>
+<tr><th id="353">353</th><td>        free( bitmapData );</td></tr>
+<tr><th id="354">354</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="355">355</th><td>    }</td></tr>
+<tr><th id="356">356</th><td></td></tr>
+<tr><th id="357">357</th><td>    <i>// Write the imageRef to a file based on the UTI</i></td></tr>
+<tr><th id="358">358</th><td>    CFURLRef imageURLRef = CFURLCreateFromFileSystemRepresentation( NULL,</td></tr>
+<tr><th id="359">359</th><td>        (<em>const</em> UInt8*)m_filename.c_str(), m_filename.size(), <b>false</b> );</td></tr>
+<tr><th id="360">360</th><td>    <b>if</b>( !imageURLRef )</td></tr>
+<tr><th id="361">361</th><td>    {</td></tr>
+<tr><th id="362">362</th><td>        CGImageRelease( imageRef );</td></tr>
+<tr><th id="363">363</th><td>        free( bitmapData );</td></tr>
+<tr><th id="364">364</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="365">365</th><td>    }</td></tr>
+<tr><th id="366">366</th><td></td></tr>
+<tr><th id="367">367</th><td>    CGImageDestinationRef destRef = CGImageDestinationCreateWithURL( imageURLRef,</td></tr>
+<tr><th id="368">368</th><td>                                                                     imageUTI,</td></tr>
+<tr><th id="369">369</th><td>                                                                     <var>1</var>,</td></tr>
+<tr><th id="370">370</th><td>                                                                     NULL);</td></tr>
+<tr><th id="371">371</th><td>    CFRelease( imageURLRef );</td></tr>
+<tr><th id="372">372</th><td>    <b>if</b>( !destRef )</td></tr>
+<tr><th id="373">373</th><td>    {</td></tr>
+<tr><th id="374">374</th><td>        CGImageRelease( imageRef );</td></tr>
+<tr><th id="375">375</th><td>        free( bitmapData );</td></tr>
+<tr><th id="376">376</th><td>        fprintf(stderr, <q>"!destRef\n"</q>);</td></tr>
+<tr><th id="377">377</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="378">378</th><td>    }</td></tr>
+<tr><th id="379">379</th><td></td></tr>
+<tr><th id="380">380</th><td>    CGImageDestinationAddImage(destRef, imageRef, NULL);</td></tr>
+<tr><th id="381">381</th><td>    <b>if</b>( !CGImageDestinationFinalize(destRef) )</td></tr>
+<tr><th id="382">382</th><td>    {</td></tr>
+<tr><th id="383">383</th><td>        fprintf(stderr, <q>"Finalize failed\n"</q>);</td></tr>
+<tr><th id="384">384</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="385">385</th><td>    }</td></tr>
+<tr><th id="386">386</th><td></td></tr>
+<tr><th id="387">387</th><td>    CFRelease( destRef );</td></tr>
+<tr><th id="388">388</th><td>    CGImageRelease( imageRef );</td></tr>
+<tr><th id="389">389</th><td>    free( bitmapData );</td></tr>
+<tr><th id="390">390</th><td></td></tr>
+<tr><th id="391">391</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="392">392</th><td>}</td></tr>
+<tr><th id="393">393</th><td></td></tr>
+<tr><th id="394">394</th><td>}</td></tr>
+<tr><th id="395">395</th><td></td></tr>
+<tr><th id="396">396</th><td><u>#<span data-ppcond="11">endif</span> /* HAVE_IMAGEIO */</u></td></tr>
+<tr><th id="397">397</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

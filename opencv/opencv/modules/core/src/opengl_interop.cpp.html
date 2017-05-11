@@ -1,0 +1,1597 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>opengl_interop.cpp source code [opencv/modules/core/src/opengl_interop.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/core/src/opengl_interop.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>core</a>/<a href='./'>src</a>/<a href='opengl_interop.cpp.html'>opengl_interop.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2009, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="../include/opencv2/core/opengl_interop.hpp.html">"opencv2/core/opengl_interop.hpp"</a></u></td></tr>
+<tr><th id="45">45</th><td><u>#include <a href="../include/opencv2/core/gpumat.hpp.html">"opencv2/core/gpumat.hpp"</a></u></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><u>#<span data-ppcond="47">ifdef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="48">48</th><td>    <u>#include "gl_core_3_1.hpp"</u></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td>    <u>#ifdef HAVE_CUDA</u></td></tr>
+<tr><th id="51">51</th><td>        <u>#include &lt;cuda_runtime.h&gt;</u></td></tr>
+<tr><th id="52">52</th><td>        <u>#include &lt;cuda_gl_interop.h&gt;</u></td></tr>
+<tr><th id="53">53</th><td>    <u>#endif</u></td></tr>
+<tr><th id="54">54</th><td><u>#<span data-ppcond="47">endif</span></u></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><b>using</b> <b>namespace</b> <span class="namespace">std</span>;</td></tr>
+<tr><th id="57">57</th><td><b>using</b> <b>namespace</b> <span class="namespace">cv</span>;</td></tr>
+<tr><th id="58">58</th><td><b>using</b> <b>namespace</b> <span class="namespace">cv::gpu</span>;</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><b>namespace</b></td></tr>
+<tr><th id="61">61</th><td>{</td></tr>
+<tr><th id="62">62</th><td>    <u>#<span data-ppcond="62">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="63">63</th><td>        <em>void</em> <dfn class="tu decl def" id="_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-type='void &lt;anonymous namespace&gt;::throw_nogl()' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</dfn>() { <a class="macro" href="../include/opencv2/core/core.hpp.html#218" title="cv::error( cv::Exception(CV_OpenGlNotSupported, &quot;The library is compiled without OpenGL support&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 63) )" data-ref="_M/CV_Error">CV_Error</a>(<a class="enum" href="../include/opencv2/core/types_c.h.html#::CV_OpenGlNotSupported" title='::CV_OpenGlNotSupported' data-ref="::CV_OpenGlNotSupported">CV_OpenGlNotSupported</a>, <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"The library is compiled without OpenGL support"</q>); }</td></tr>
+<tr><th id="64">64</th><td>    <u>#<span data-ppcond="62">else</span></u></td></tr>
+<tr><th id="65">65</th><td>        <em>void</em> throw_nogl() { CV_Error(CV_OpenGlApiCallError, <q>"OpenGL context doesn't exist"</q>); }</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>        <u>#ifndef HAVE_CUDA</u></td></tr>
+<tr><th id="68">68</th><td>            <em>void</em> throw_nocuda() { CV_Error(CV_GpuNotSupported, <q>"The library is compiled without GPU support"</q>); }</td></tr>
+<tr><th id="69">69</th><td>        <u>#else</u></td></tr>
+<tr><th id="70">70</th><td>            <em>void</em> throw_nocuda() { CV_Error(CV_StsNotImplemented, <q>"The called functionality is disabled for current build or platform"</q>); }</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>            <u>#define cudaSafeCall(expr)  ___cudaSafeCall(expr, __FILE__, __LINE__, CV_Func)</u></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>            <em>void</em> ___cudaSafeCall(cudaError_t err, <em>const</em> <em>char</em>* file, <em>const</em> <em>int</em> line, <em>const</em> <em>char</em>* func = <q>""</q>)</td></tr>
+<tr><th id="75">75</th><td>            {</td></tr>
+<tr><th id="76">76</th><td>                <b>if</b> (cudaSuccess != err)</td></tr>
+<tr><th id="77">77</th><td>                    cv::gpu::error(cudaGetErrorString(err), file, line, func);</td></tr>
+<tr><th id="78">78</th><td>            }</td></tr>
+<tr><th id="79">79</th><td>        <u>#endif</u></td></tr>
+<tr><th id="80">80</th><td>    <u>#<span data-ppcond="62">endif</span></u></td></tr>
+<tr><th id="81">81</th><td>}</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><em>bool</em> <span class="namespace">cv::ogl::</span><dfn class="decl def" id="_ZN2cv3ogl10checkErrorEPKciS2_" title='cv::ogl::checkError' data-ref="_ZN2cv3ogl10checkErrorEPKciS2_">checkError</dfn>(<em>const</em> <em>char</em>* <dfn class="local col1 decl" id="1file" title='file' data-type='const char *' data-ref="1file">file</dfn>, <em>const</em> <em>int</em> <dfn class="local col2 decl" id="2line" title='line' data-type='const int' data-ref="2line">line</dfn>, <em>const</em> <em>char</em>* <dfn class="local col3 decl" id="3func" title='func' data-type='const char *' data-ref="3func">func</dfn>)</td></tr>
+<tr><th id="84">84</th><td>{</td></tr>
+<tr><th id="85">85</th><td><u>#<span data-ppcond="85">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="86">86</th><td>    (<em>void</em>) <a class="local col1 ref" href="#1file" title='file' data-ref="1file">file</a>;</td></tr>
+<tr><th id="87">87</th><td>    (<em>void</em>) <a class="local col2 ref" href="#2line" title='line' data-ref="2line">line</a>;</td></tr>
+<tr><th id="88">88</th><td>    (<em>void</em>) <a class="local col3 ref" href="#3func" title='func' data-ref="3func">func</a>;</td></tr>
+<tr><th id="89">89</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="90">90</th><td><u>#<span data-ppcond="85">else</span></u></td></tr>
+<tr><th id="91">91</th><td>    GLenum err = gl::GetError();</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>    <b>if</b> (err != gl::NO_ERROR_)</td></tr>
+<tr><th id="94">94</th><td>    {</td></tr>
+<tr><th id="95">95</th><td>        <em>const</em> <em>char</em>* msg;</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>        <b>switch</b> (err)</td></tr>
+<tr><th id="98">98</th><td>        {</td></tr>
+<tr><th id="99">99</th><td>        <b>case</b> gl::INVALID_ENUM:</td></tr>
+<tr><th id="100">100</th><td>            msg = <q>"An unacceptable value is specified for an enumerated argument"</q>;</td></tr>
+<tr><th id="101">101</th><td>            <b>break</b>;</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>        <b>case</b> gl::INVALID_VALUE:</td></tr>
+<tr><th id="104">104</th><td>            msg = <q>"A numeric argument is out of range"</q>;</td></tr>
+<tr><th id="105">105</th><td>            <b>break</b>;</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>        <b>case</b> gl::INVALID_OPERATION:</td></tr>
+<tr><th id="108">108</th><td>            msg = <q>"The specified operation is not allowed in the current state"</q>;</td></tr>
+<tr><th id="109">109</th><td>            <b>break</b>;</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>        <b>case</b> gl::OUT_OF_MEMORY:</td></tr>
+<tr><th id="112">112</th><td>            msg = <q>"There is not enough memory left to execute the command"</q>;</td></tr>
+<tr><th id="113">113</th><td>            <b>break</b>;</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>        <b>default</b>:</td></tr>
+<tr><th id="116">116</th><td>            msg = <q>"Unknown error"</q>;</td></tr>
+<tr><th id="117">117</th><td>        };</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>        cvError(CV_OpenGlApiCallError, func, msg, file, line);</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="122">122</th><td>    }</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="125">125</th><td><u>#<span data-ppcond="85">endif</span></u></td></tr>
+<tr><th id="126">126</th><td>}</td></tr>
+<tr><th id="127">127</th><td></td></tr>
+<tr><th id="128">128</th><td><u>#<span data-ppcond="128">ifdef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="129">129</th><td><b>namespace</b></td></tr>
+<tr><th id="130">130</th><td>{</td></tr>
+<tr><th id="131">131</th><td>    <em>const</em> GLenum gl_types[] = { gl::UNSIGNED_BYTE, gl::BYTE, gl::UNSIGNED_SHORT, gl::SHORT, gl::INT, gl::FLOAT, gl::DOUBLE };</td></tr>
+<tr><th id="132">132</th><td>}</td></tr>
+<tr><th id="133">133</th><td><u>#<span data-ppcond="128">endif</span></u></td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td><i>////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="136">136</th><td><i>// setGlDevice</i></td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td><em>void</em> <span class="namespace">cv::gpu::</span><dfn class="decl def" id="_ZN2cv3gpu11setGlDeviceEi" title='cv::gpu::setGlDevice' data-ref="_ZN2cv3gpu11setGlDeviceEi">setGlDevice</dfn>(<em>int</em> <dfn class="local col4 decl" id="4device" title='device' data-type='int' data-ref="4device">device</dfn>)</td></tr>
+<tr><th id="139">139</th><td>{</td></tr>
+<tr><th id="140">140</th><td><u>#<span data-ppcond="140">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="141">141</th><td>    (<em>void</em>) <a class="local col4 ref" href="#4device" title='device' data-ref="4device">device</a>;</td></tr>
+<tr><th id="142">142</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="143">143</th><td><u>#<span data-ppcond="140">else</span></u></td></tr>
+<tr><th id="144">144</th><td>    <u>#if !defined(HAVE_CUDA) || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="145">145</th><td>        (<em>void</em>) device;</td></tr>
+<tr><th id="146">146</th><td>        throw_nocuda();</td></tr>
+<tr><th id="147">147</th><td>    <u>#else</u></td></tr>
+<tr><th id="148">148</th><td>        cudaSafeCall( cudaGLSetGLDevice(device) );</td></tr>
+<tr><th id="149">149</th><td>    <u>#endif</u></td></tr>
+<tr><th id="150">150</th><td><u>#<span data-ppcond="140">endif</span></u></td></tr>
+<tr><th id="151">151</th><td>}</td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td><i>////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="154">154</th><td><i>// CudaResource</i></td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td><u>#<span data-ppcond="156">if</span> defined(<span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span>) &amp;&amp; defined(<a class="macro" href="../../../cvconfig.h.html#44" data-ref="_M/HAVE_CUDA">HAVE_CUDA</a>) &amp;&amp; !defined(<span class="macro" data-ref="_M/CUDA_DISABLER">CUDA_DISABLER</span>)</u></td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td><b>namespace</b></td></tr>
+<tr><th id="159">159</th><td>{</td></tr>
+<tr><th id="160">160</th><td>    <b>class</b> CudaResource</td></tr>
+<tr><th id="161">161</th><td>    {</td></tr>
+<tr><th id="162">162</th><td>    <b>public</b>:</td></tr>
+<tr><th id="163">163</th><td>        CudaResource();</td></tr>
+<tr><th id="164">164</th><td>        ~CudaResource();</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>        <em>void</em> registerBuffer(GLuint buffer);</td></tr>
+<tr><th id="167">167</th><td>        <em>void</em> release();</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>        <em>void</em> copyFrom(<em>const</em> <em>void</em>* src, size_t spitch, size_t width, size_t height, cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="170">170</th><td>        <em>void</em> copyTo(<em>void</em>* dst, size_t dpitch, size_t width, size_t height, cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td>        <em>void</em>* map(cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="173">173</th><td>        <em>void</em> unmap(cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>    <b>private</b>:</td></tr>
+<tr><th id="176">176</th><td>        cudaGraphicsResource_t resource_;</td></tr>
+<tr><th id="177">177</th><td>        GLuint buffer_;</td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td>        <b>class</b> GraphicsMapHolder;</td></tr>
+<tr><th id="180">180</th><td>    };</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>    CudaResource::CudaResource() : resource_(<var>0</var>), buffer_(<var>0</var>)</td></tr>
+<tr><th id="183">183</th><td>    {</td></tr>
+<tr><th id="184">184</th><td>    }</td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td>    CudaResource::~CudaResource()</td></tr>
+<tr><th id="187">187</th><td>    {</td></tr>
+<tr><th id="188">188</th><td>        release();</td></tr>
+<tr><th id="189">189</th><td>    }</td></tr>
+<tr><th id="190">190</th><td></td></tr>
+<tr><th id="191">191</th><td>    <em>void</em> CudaResource::registerBuffer(GLuint buffer)</td></tr>
+<tr><th id="192">192</th><td>    {</td></tr>
+<tr><th id="193">193</th><td>        CV_DbgAssert( buffer != <var>0</var> );</td></tr>
+<tr><th id="194">194</th><td></td></tr>
+<tr><th id="195">195</th><td>        <b>if</b> (buffer_ == buffer)</td></tr>
+<tr><th id="196">196</th><td>            <b>return</b>;</td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td>        cudaGraphicsResource_t resource;</td></tr>
+<tr><th id="199">199</th><td>        cudaSafeCall( cudaGraphicsGLRegisterBuffer(&amp;resource, buffer, cudaGraphicsMapFlagsNone) );</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td>        release();</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td>        resource_ = resource;</td></tr>
+<tr><th id="204">204</th><td>        buffer_ = buffer;</td></tr>
+<tr><th id="205">205</th><td>    }</td></tr>
+<tr><th id="206">206</th><td></td></tr>
+<tr><th id="207">207</th><td>    <em>void</em> CudaResource::release()</td></tr>
+<tr><th id="208">208</th><td>    {</td></tr>
+<tr><th id="209">209</th><td>        <b>if</b> (resource_)</td></tr>
+<tr><th id="210">210</th><td>            cudaGraphicsUnregisterResource(resource_);</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>        resource_ = <var>0</var>;</td></tr>
+<tr><th id="213">213</th><td>        buffer_ = <var>0</var>;</td></tr>
+<tr><th id="214">214</th><td>    }</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td>    <b>class</b> CudaResource::GraphicsMapHolder</td></tr>
+<tr><th id="217">217</th><td>    {</td></tr>
+<tr><th id="218">218</th><td>    <b>public</b>:</td></tr>
+<tr><th id="219">219</th><td>        GraphicsMapHolder(cudaGraphicsResource_t* resource, cudaStream_t stream);</td></tr>
+<tr><th id="220">220</th><td>        ~GraphicsMapHolder();</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>        <em>void</em> reset();</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td>    <b>private</b>:</td></tr>
+<tr><th id="225">225</th><td>        cudaGraphicsResource_t* resource_;</td></tr>
+<tr><th id="226">226</th><td>        cudaStream_t stream_;</td></tr>
+<tr><th id="227">227</th><td>    };</td></tr>
+<tr><th id="228">228</th><td></td></tr>
+<tr><th id="229">229</th><td>    CudaResource::GraphicsMapHolder::GraphicsMapHolder(cudaGraphicsResource_t* resource, cudaStream_t stream) : resource_(resource), stream_(stream)</td></tr>
+<tr><th id="230">230</th><td>    {</td></tr>
+<tr><th id="231">231</th><td>        <b>if</b> (resource_)</td></tr>
+<tr><th id="232">232</th><td>            cudaSafeCall( cudaGraphicsMapResources(<var>1</var>, resource_, stream_) );</td></tr>
+<tr><th id="233">233</th><td>    }</td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td>    CudaResource::GraphicsMapHolder::~GraphicsMapHolder()</td></tr>
+<tr><th id="236">236</th><td>    {</td></tr>
+<tr><th id="237">237</th><td>        <b>if</b> (resource_)</td></tr>
+<tr><th id="238">238</th><td>            cudaGraphicsUnmapResources(<var>1</var>, resource_, stream_);</td></tr>
+<tr><th id="239">239</th><td>    }</td></tr>
+<tr><th id="240">240</th><td></td></tr>
+<tr><th id="241">241</th><td>    <em>void</em> CudaResource::GraphicsMapHolder::reset()</td></tr>
+<tr><th id="242">242</th><td>    {</td></tr>
+<tr><th id="243">243</th><td>        resource_ = <var>0</var>;</td></tr>
+<tr><th id="244">244</th><td>    }</td></tr>
+<tr><th id="245">245</th><td></td></tr>
+<tr><th id="246">246</th><td>    <em>void</em> CudaResource::copyFrom(<em>const</em> <em>void</em>* src, size_t spitch, size_t width, size_t height, cudaStream_t stream)</td></tr>
+<tr><th id="247">247</th><td>    {</td></tr>
+<tr><th id="248">248</th><td>        CV_DbgAssert( resource_ != <var>0</var> );</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>        GraphicsMapHolder h(&amp;resource_, stream);</td></tr>
+<tr><th id="251">251</th><td>        (<em>void</em>) h;</td></tr>
+<tr><th id="252">252</th><td></td></tr>
+<tr><th id="253">253</th><td>        <em>void</em>* dst;</td></tr>
+<tr><th id="254">254</th><td>        size_t size;</td></tr>
+<tr><th id="255">255</th><td>        cudaSafeCall( cudaGraphicsResourceGetMappedPointer(&amp;dst, &amp;size, resource_) );</td></tr>
+<tr><th id="256">256</th><td></td></tr>
+<tr><th id="257">257</th><td>        CV_DbgAssert( width * height == size );</td></tr>
+<tr><th id="258">258</th><td></td></tr>
+<tr><th id="259">259</th><td>        <b>if</b> (stream == <var>0</var>)</td></tr>
+<tr><th id="260">260</th><td>            cudaSafeCall( cudaMemcpy2D(dst, width, src, spitch, width, height, cudaMemcpyDeviceToDevice) );</td></tr>
+<tr><th id="261">261</th><td>        <b>else</b></td></tr>
+<tr><th id="262">262</th><td>            cudaSafeCall( cudaMemcpy2DAsync(dst, width, src, spitch, width, height, cudaMemcpyDeviceToDevice, stream) );</td></tr>
+<tr><th id="263">263</th><td>    }</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td>    <em>void</em> CudaResource::copyTo(<em>void</em>* dst, size_t dpitch, size_t width, size_t height, cudaStream_t stream)</td></tr>
+<tr><th id="266">266</th><td>    {</td></tr>
+<tr><th id="267">267</th><td>        CV_DbgAssert( resource_ != <var>0</var> );</td></tr>
+<tr><th id="268">268</th><td></td></tr>
+<tr><th id="269">269</th><td>        GraphicsMapHolder h(&amp;resource_, stream);</td></tr>
+<tr><th id="270">270</th><td>        (<em>void</em>) h;</td></tr>
+<tr><th id="271">271</th><td></td></tr>
+<tr><th id="272">272</th><td>        <em>void</em>* src;</td></tr>
+<tr><th id="273">273</th><td>        size_t size;</td></tr>
+<tr><th id="274">274</th><td>        cudaSafeCall( cudaGraphicsResourceGetMappedPointer(&amp;src, &amp;size, resource_) );</td></tr>
+<tr><th id="275">275</th><td></td></tr>
+<tr><th id="276">276</th><td>        CV_DbgAssert( width * height == size );</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td>        <b>if</b> (stream == <var>0</var>)</td></tr>
+<tr><th id="279">279</th><td>            cudaSafeCall( cudaMemcpy2D(dst, dpitch, src, width, width, height, cudaMemcpyDeviceToDevice) );</td></tr>
+<tr><th id="280">280</th><td>        <b>else</b></td></tr>
+<tr><th id="281">281</th><td>            cudaSafeCall( cudaMemcpy2DAsync(dst, dpitch, src, width, width, height, cudaMemcpyDeviceToDevice, stream) );</td></tr>
+<tr><th id="282">282</th><td>    }</td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td>    <em>void</em>* CudaResource::map(cudaStream_t stream)</td></tr>
+<tr><th id="285">285</th><td>    {</td></tr>
+<tr><th id="286">286</th><td>        CV_DbgAssert( resource_ != <var>0</var> );</td></tr>
+<tr><th id="287">287</th><td></td></tr>
+<tr><th id="288">288</th><td>        GraphicsMapHolder h(&amp;resource_, stream);</td></tr>
+<tr><th id="289">289</th><td></td></tr>
+<tr><th id="290">290</th><td>        <em>void</em>* ptr;</td></tr>
+<tr><th id="291">291</th><td>        size_t size;</td></tr>
+<tr><th id="292">292</th><td>        cudaSafeCall( cudaGraphicsResourceGetMappedPointer(&amp;ptr, &amp;size, resource_) );</td></tr>
+<tr><th id="293">293</th><td></td></tr>
+<tr><th id="294">294</th><td>        h.reset();</td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td>        <b>return</b> ptr;</td></tr>
+<tr><th id="297">297</th><td>    }</td></tr>
+<tr><th id="298">298</th><td></td></tr>
+<tr><th id="299">299</th><td>    <em>void</em> CudaResource::unmap(cudaStream_t stream)</td></tr>
+<tr><th id="300">300</th><td>    {</td></tr>
+<tr><th id="301">301</th><td>        CV_Assert( resource_ != <var>0</var> );</td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td>        cudaGraphicsUnmapResources(<var>1</var>, &amp;resource_, stream);</td></tr>
+<tr><th id="304">304</th><td>    }</td></tr>
+<tr><th id="305">305</th><td>}</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td><u>#<span data-ppcond="156">endif</span></u></td></tr>
+<tr><th id="308">308</th><td></td></tr>
+<tr><th id="309">309</th><td><i>////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="310">310</th><td><i>// ogl::Buffer</i></td></tr>
+<tr><th id="311">311</th><td></td></tr>
+<tr><th id="312">312</th><td><u>#<span data-ppcond="312">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td><b>class</b> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="type def" id="cv::ogl::Buffer::Impl" title='cv::ogl::Buffer::Impl' data-ref="cv::ogl::Buffer::Impl">Impl</dfn></td></tr>
+<tr><th id="315">315</th><td>{</td></tr>
+<tr><th id="316">316</th><td>};</td></tr>
+<tr><th id="317">317</th><td></td></tr>
+<tr><th id="318">318</th><td><u>#<span data-ppcond="312">else</span></u></td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td><b>class</b> cv::ogl::Buffer::Impl</td></tr>
+<tr><th id="321">321</th><td>{</td></tr>
+<tr><th id="322">322</th><td><b>public</b>:</td></tr>
+<tr><th id="323">323</th><td>    <em>static</em> <em>const</em> Ptr&lt;Impl&gt;&amp; empty();</td></tr>
+<tr><th id="324">324</th><td></td></tr>
+<tr><th id="325">325</th><td>    Impl(GLuint bufId, <em>bool</em> autoRelease);</td></tr>
+<tr><th id="326">326</th><td>    Impl(GLsizeiptr size, <em>const</em> GLvoid* data, GLenum target, <em>bool</em> autoRelease);</td></tr>
+<tr><th id="327">327</th><td>    ~Impl();</td></tr>
+<tr><th id="328">328</th><td></td></tr>
+<tr><th id="329">329</th><td>    <em>void</em> bind(GLenum target) <em>const</em>;</td></tr>
+<tr><th id="330">330</th><td></td></tr>
+<tr><th id="331">331</th><td>    <em>void</em> copyFrom(GLuint srcBuf, GLsizeiptr size);</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td>    <em>void</em> copyFrom(GLsizeiptr size, <em>const</em> GLvoid* data);</td></tr>
+<tr><th id="334">334</th><td>    <em>void</em> copyTo(GLsizeiptr size, GLvoid* data) <em>const</em>;</td></tr>
+<tr><th id="335">335</th><td></td></tr>
+<tr><th id="336">336</th><td>    <em>void</em>* mapHost(GLenum access);</td></tr>
+<tr><th id="337">337</th><td>    <em>void</em> unmapHost();</td></tr>
+<tr><th id="338">338</th><td></td></tr>
+<tr><th id="339">339</th><td><u>#ifdef HAVE_CUDA</u></td></tr>
+<tr><th id="340">340</th><td>    <em>void</em> copyFrom(<em>const</em> <em>void</em>* src, size_t spitch, size_t width, size_t height, cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="341">341</th><td>    <em>void</em> copyTo(<em>void</em>* dst, size_t dpitch, size_t width, size_t height, cudaStream_t stream = <var>0</var>) <em>const</em>;</td></tr>
+<tr><th id="342">342</th><td></td></tr>
+<tr><th id="343">343</th><td>    <em>void</em>* mapDevice(cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="344">344</th><td>    <em>void</em> unmapDevice(cudaStream_t stream = <var>0</var>);</td></tr>
+<tr><th id="345">345</th><td><u>#endif</u></td></tr>
+<tr><th id="346">346</th><td></td></tr>
+<tr><th id="347">347</th><td>    <em>void</em> setAutoRelease(<em>bool</em> flag) { autoRelease_ = flag; }</td></tr>
+<tr><th id="348">348</th><td></td></tr>
+<tr><th id="349">349</th><td>    GLuint bufId() <em>const</em> { <b>return</b> bufId_; }</td></tr>
+<tr><th id="350">350</th><td></td></tr>
+<tr><th id="351">351</th><td><b>private</b>:</td></tr>
+<tr><th id="352">352</th><td>    Impl();</td></tr>
+<tr><th id="353">353</th><td></td></tr>
+<tr><th id="354">354</th><td>    GLuint bufId_;</td></tr>
+<tr><th id="355">355</th><td>    <em>bool</em> autoRelease_;</td></tr>
+<tr><th id="356">356</th><td></td></tr>
+<tr><th id="357">357</th><td><u>#ifdef HAVE_CUDA</u></td></tr>
+<tr><th id="358">358</th><td>    <em>mutable</em> CudaResource cudaResource_;</td></tr>
+<tr><th id="359">359</th><td><u>#endif</u></td></tr>
+<tr><th id="360">360</th><td>};</td></tr>
+<tr><th id="361">361</th><td></td></tr>
+<tr><th id="362">362</th><td><em>const</em> Ptr&lt;cv::ogl::Buffer::Impl&gt;&amp; cv::ogl::Buffer::Impl::empty()</td></tr>
+<tr><th id="363">363</th><td>{</td></tr>
+<tr><th id="364">364</th><td>    <em>static</em> Ptr&lt;Impl&gt; p(<b>new</b> Impl);</td></tr>
+<tr><th id="365">365</th><td>    <b>return</b> p;</td></tr>
+<tr><th id="366">366</th><td>}</td></tr>
+<tr><th id="367">367</th><td></td></tr>
+<tr><th id="368">368</th><td>cv::ogl::Buffer::Impl::Impl() : bufId_(<var>0</var>), autoRelease_(<b>true</b>)</td></tr>
+<tr><th id="369">369</th><td>{</td></tr>
+<tr><th id="370">370</th><td>}</td></tr>
+<tr><th id="371">371</th><td></td></tr>
+<tr><th id="372">372</th><td>cv::ogl::Buffer::Impl::Impl(GLuint abufId, <em>bool</em> autoRelease) : bufId_(abufId), autoRelease_(autoRelease)</td></tr>
+<tr><th id="373">373</th><td>{</td></tr>
+<tr><th id="374">374</th><td>}</td></tr>
+<tr><th id="375">375</th><td></td></tr>
+<tr><th id="376">376</th><td>cv::ogl::Buffer::Impl::Impl(GLsizeiptr size, <em>const</em> GLvoid* data, GLenum target, <em>bool</em> autoRelease) : bufId_(<var>0</var>), autoRelease_(autoRelease)</td></tr>
+<tr><th id="377">377</th><td>{</td></tr>
+<tr><th id="378">378</th><td>    gl::GenBuffers(<var>1</var>, &amp;bufId_);</td></tr>
+<tr><th id="379">379</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="380">380</th><td></td></tr>
+<tr><th id="381">381</th><td>    CV_Assert( bufId_ != <var>0</var> );</td></tr>
+<tr><th id="382">382</th><td></td></tr>
+<tr><th id="383">383</th><td>    gl::BindBuffer(target, bufId_);</td></tr>
+<tr><th id="384">384</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="385">385</th><td></td></tr>
+<tr><th id="386">386</th><td>    gl::BufferData(target, size, data, gl::DYNAMIC_DRAW);</td></tr>
+<tr><th id="387">387</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="388">388</th><td></td></tr>
+<tr><th id="389">389</th><td>    gl::BindBuffer(target, <var>0</var>);</td></tr>
+<tr><th id="390">390</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="391">391</th><td>}</td></tr>
+<tr><th id="392">392</th><td></td></tr>
+<tr><th id="393">393</th><td>cv::ogl::Buffer::Impl::~Impl()</td></tr>
+<tr><th id="394">394</th><td>{</td></tr>
+<tr><th id="395">395</th><td>    <b>if</b> (autoRelease_ &amp;&amp; bufId_)</td></tr>
+<tr><th id="396">396</th><td>        gl::DeleteBuffers(<var>1</var>, &amp;bufId_);</td></tr>
+<tr><th id="397">397</th><td>}</td></tr>
+<tr><th id="398">398</th><td></td></tr>
+<tr><th id="399">399</th><td><em>void</em> cv::ogl::Buffer::Impl::bind(GLenum target) <em>const</em></td></tr>
+<tr><th id="400">400</th><td>{</td></tr>
+<tr><th id="401">401</th><td>    gl::BindBuffer(target, bufId_);</td></tr>
+<tr><th id="402">402</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="403">403</th><td>}</td></tr>
+<tr><th id="404">404</th><td></td></tr>
+<tr><th id="405">405</th><td><em>void</em> cv::ogl::Buffer::Impl::copyFrom(GLuint srcBuf, GLsizeiptr size)</td></tr>
+<tr><th id="406">406</th><td>{</td></tr>
+<tr><th id="407">407</th><td>    gl::BindBuffer(gl::COPY_WRITE_BUFFER, bufId_);</td></tr>
+<tr><th id="408">408</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="409">409</th><td></td></tr>
+<tr><th id="410">410</th><td>    gl::BindBuffer(gl::COPY_READ_BUFFER, srcBuf);</td></tr>
+<tr><th id="411">411</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="412">412</th><td></td></tr>
+<tr><th id="413">413</th><td>    gl::CopyBufferSubData(gl::COPY_READ_BUFFER, gl::COPY_WRITE_BUFFER, <var>0</var>, <var>0</var>, size);</td></tr>
+<tr><th id="414">414</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="415">415</th><td>}</td></tr>
+<tr><th id="416">416</th><td></td></tr>
+<tr><th id="417">417</th><td><em>void</em> cv::ogl::Buffer::Impl::copyFrom(GLsizeiptr size, <em>const</em> GLvoid* data)</td></tr>
+<tr><th id="418">418</th><td>{</td></tr>
+<tr><th id="419">419</th><td>    gl::BindBuffer(gl::COPY_WRITE_BUFFER, bufId_);</td></tr>
+<tr><th id="420">420</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="421">421</th><td></td></tr>
+<tr><th id="422">422</th><td>    gl::BufferSubData(gl::COPY_WRITE_BUFFER, <var>0</var>, size, data);</td></tr>
+<tr><th id="423">423</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="424">424</th><td>}</td></tr>
+<tr><th id="425">425</th><td></td></tr>
+<tr><th id="426">426</th><td><em>void</em> cv::ogl::Buffer::Impl::copyTo(GLsizeiptr size, GLvoid* data) <em>const</em></td></tr>
+<tr><th id="427">427</th><td>{</td></tr>
+<tr><th id="428">428</th><td>    gl::BindBuffer(gl::COPY_READ_BUFFER, bufId_);</td></tr>
+<tr><th id="429">429</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="430">430</th><td></td></tr>
+<tr><th id="431">431</th><td>    gl::GetBufferSubData(gl::COPY_READ_BUFFER, <var>0</var>, size, data);</td></tr>
+<tr><th id="432">432</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="433">433</th><td>}</td></tr>
+<tr><th id="434">434</th><td></td></tr>
+<tr><th id="435">435</th><td><em>void</em>* cv::ogl::Buffer::Impl::mapHost(GLenum access)</td></tr>
+<tr><th id="436">436</th><td>{</td></tr>
+<tr><th id="437">437</th><td>    gl::BindBuffer(gl::COPY_READ_BUFFER, bufId_);</td></tr>
+<tr><th id="438">438</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="439">439</th><td></td></tr>
+<tr><th id="440">440</th><td>    GLvoid* data = gl::MapBuffer(gl::COPY_READ_BUFFER, access);</td></tr>
+<tr><th id="441">441</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="442">442</th><td></td></tr>
+<tr><th id="443">443</th><td>    <b>return</b> data;</td></tr>
+<tr><th id="444">444</th><td>}</td></tr>
+<tr><th id="445">445</th><td></td></tr>
+<tr><th id="446">446</th><td><em>void</em> cv::ogl::Buffer::Impl::unmapHost()</td></tr>
+<tr><th id="447">447</th><td>{</td></tr>
+<tr><th id="448">448</th><td>    gl::UnmapBuffer(gl::COPY_READ_BUFFER);</td></tr>
+<tr><th id="449">449</th><td>}</td></tr>
+<tr><th id="450">450</th><td></td></tr>
+<tr><th id="451">451</th><td><u>#ifdef HAVE_CUDA</u></td></tr>
+<tr><th id="452">452</th><td>    <em>void</em> cv::ogl::Buffer::Impl::copyFrom(<em>const</em> <em>void</em>* src, size_t spitch, size_t width, size_t height, cudaStream_t stream)</td></tr>
+<tr><th id="453">453</th><td>    {</td></tr>
+<tr><th id="454">454</th><td>        cudaResource_.registerBuffer(bufId_);</td></tr>
+<tr><th id="455">455</th><td>        cudaResource_.copyFrom(src, spitch, width, height, stream);</td></tr>
+<tr><th id="456">456</th><td>    }</td></tr>
+<tr><th id="457">457</th><td></td></tr>
+<tr><th id="458">458</th><td>    <em>void</em> cv::ogl::Buffer::Impl::copyTo(<em>void</em>* dst, size_t dpitch, size_t width, size_t height, cudaStream_t stream) <em>const</em></td></tr>
+<tr><th id="459">459</th><td>    {</td></tr>
+<tr><th id="460">460</th><td>        cudaResource_.registerBuffer(bufId_);</td></tr>
+<tr><th id="461">461</th><td>        cudaResource_.copyTo(dst, dpitch, width, height, stream);</td></tr>
+<tr><th id="462">462</th><td>    }</td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td>    <em>void</em>* cv::ogl::Buffer::Impl::mapDevice(cudaStream_t stream)</td></tr>
+<tr><th id="465">465</th><td>    {</td></tr>
+<tr><th id="466">466</th><td>        cudaResource_.registerBuffer(bufId_);</td></tr>
+<tr><th id="467">467</th><td>        <b>return</b> cudaResource_.map(stream);</td></tr>
+<tr><th id="468">468</th><td>    }</td></tr>
+<tr><th id="469">469</th><td></td></tr>
+<tr><th id="470">470</th><td>    <em>void</em> cv::ogl::Buffer::Impl::unmapDevice(cudaStream_t stream)</td></tr>
+<tr><th id="471">471</th><td>    {</td></tr>
+<tr><th id="472">472</th><td>        cudaResource_.unmap(stream);</td></tr>
+<tr><th id="473">473</th><td>    }</td></tr>
+<tr><th id="474">474</th><td><u>#endif</u></td></tr>
+<tr><th id="475">475</th><td></td></tr>
+<tr><th id="476">476</th><td><u>#<span data-ppcond="312">endif</span> // HAVE_OPENGL</u></td></tr>
+<tr><th id="477">477</th><td></td></tr>
+<tr><th id="478">478</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6BufferC1Ev" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1Ev">Buffer</dfn>() : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::rows_" title='cv::ogl::Buffer::rows_' data-ref="cv::ogl::Buffer::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::cols_" title='cv::ogl::Buffer::cols_' data-ref="cv::ogl::Buffer::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::type_" title='cv::ogl::Buffer::type_' data-ref="cv::ogl::Buffer::type_">type_</a>(<var>0</var>)</td></tr>
+<tr><th id="479">479</th><td>{</td></tr>
+<tr><th id="480">480</th><td><u>#<span data-ppcond="480">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="481">481</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="482">482</th><td><u>#<span data-ppcond="480">else</span></u></td></tr>
+<tr><th id="483">483</th><td>    impl_ = Impl::empty();</td></tr>
+<tr><th id="484">484</th><td><u>#<span data-ppcond="480">endif</span></u></td></tr>
+<tr><th id="485">485</th><td>}</td></tr>
+<tr><th id="486">486</th><td></td></tr>
+<tr><th id="487">487</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6BufferC1Eiiijb" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1Eiiijb">Buffer</dfn>(<em>int</em> <dfn class="local col5 decl" id="5arows" title='arows' data-type='int' data-ref="5arows">arows</dfn>, <em>int</em> <dfn class="local col6 decl" id="6acols" title='acols' data-type='int' data-ref="6acols">acols</dfn>, <em>int</em> <dfn class="local col7 decl" id="7atype" title='atype' data-type='int' data-ref="7atype">atype</dfn>, <em>unsigned</em> <em>int</em> <dfn class="local col8 decl" id="8abufId" title='abufId' data-type='unsigned int' data-ref="8abufId">abufId</dfn>, <em>bool</em> <dfn class="local col9 decl" id="9autoRelease" title='autoRelease' data-type='bool' data-ref="9autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::rows_" title='cv::ogl::Buffer::rows_' data-ref="cv::ogl::Buffer::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::cols_" title='cv::ogl::Buffer::cols_' data-ref="cv::ogl::Buffer::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::type_" title='cv::ogl::Buffer::type_' data-ref="cv::ogl::Buffer::type_">type_</a>(<var>0</var>)</td></tr>
+<tr><th id="488">488</th><td>{</td></tr>
+<tr><th id="489">489</th><td><u>#<span data-ppcond="489">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="490">490</th><td>    (<em>void</em>) <a class="local col5 ref" href="#5arows" title='arows' data-ref="5arows">arows</a>;</td></tr>
+<tr><th id="491">491</th><td>    (<em>void</em>) <a class="local col6 ref" href="#6acols" title='acols' data-ref="6acols">acols</a>;</td></tr>
+<tr><th id="492">492</th><td>    (<em>void</em>) <a class="local col7 ref" href="#7atype" title='atype' data-ref="7atype">atype</a>;</td></tr>
+<tr><th id="493">493</th><td>    (<em>void</em>) <a class="local col8 ref" href="#8abufId" title='abufId' data-ref="8abufId">abufId</a>;</td></tr>
+<tr><th id="494">494</th><td>    (<em>void</em>) <a class="local col9 ref" href="#9autoRelease" title='autoRelease' data-ref="9autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="495">495</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="496">496</th><td><u>#<span data-ppcond="489">else</span></u></td></tr>
+<tr><th id="497">497</th><td>    impl_ = <b>new</b> Impl(abufId, autoRelease);</td></tr>
+<tr><th id="498">498</th><td>    rows_ = arows;</td></tr>
+<tr><th id="499">499</th><td>    cols_ = acols;</td></tr>
+<tr><th id="500">500</th><td>    type_ = atype;</td></tr>
+<tr><th id="501">501</th><td><u>#<span data-ppcond="489">endif</span></u></td></tr>
+<tr><th id="502">502</th><td>}</td></tr>
+<tr><th id="503">503</th><td></td></tr>
+<tr><th id="504">504</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6BufferC1ENS_5Size_IiEEijb" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1ENS_5Size_IiEEijb">Buffer</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::Size" title='cv::Size' data-type='Size2i' data-ref="cv::Size">Size</a> <dfn class="local col0 decl" id="10asize" title='asize' data-type='Size' data-ref="10asize">asize</dfn>, <em>int</em> <dfn class="local col1 decl" id="11atype" title='atype' data-type='int' data-ref="11atype">atype</dfn>, <em>unsigned</em> <em>int</em> <dfn class="local col2 decl" id="12abufId" title='abufId' data-type='unsigned int' data-ref="12abufId">abufId</dfn>, <em>bool</em> <dfn class="local col3 decl" id="13autoRelease" title='autoRelease' data-type='bool' data-ref="13autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::rows_" title='cv::ogl::Buffer::rows_' data-ref="cv::ogl::Buffer::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::cols_" title='cv::ogl::Buffer::cols_' data-ref="cv::ogl::Buffer::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::type_" title='cv::ogl::Buffer::type_' data-ref="cv::ogl::Buffer::type_">type_</a>(<var>0</var>)</td></tr>
+<tr><th id="505">505</th><td>{</td></tr>
+<tr><th id="506">506</th><td><u>#<span data-ppcond="506">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="507">507</th><td>    (<em>void</em>) <a class="local col0 ref" href="#10asize" title='asize' data-ref="10asize">asize</a>;</td></tr>
+<tr><th id="508">508</th><td>    (<em>void</em>) <a class="local col1 ref" href="#11atype" title='atype' data-ref="11atype">atype</a>;</td></tr>
+<tr><th id="509">509</th><td>    (<em>void</em>) <a class="local col2 ref" href="#12abufId" title='abufId' data-ref="12abufId">abufId</a>;</td></tr>
+<tr><th id="510">510</th><td>    (<em>void</em>) <a class="local col3 ref" href="#13autoRelease" title='autoRelease' data-ref="13autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="511">511</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="512">512</th><td><u>#<span data-ppcond="506">else</span></u></td></tr>
+<tr><th id="513">513</th><td>    impl_ = <b>new</b> Impl(abufId, autoRelease);</td></tr>
+<tr><th id="514">514</th><td>    rows_ = asize.height;</td></tr>
+<tr><th id="515">515</th><td>    cols_ = asize.width;</td></tr>
+<tr><th id="516">516</th><td>    type_ = atype;</td></tr>
+<tr><th id="517">517</th><td><u>#<span data-ppcond="506">endif</span></u></td></tr>
+<tr><th id="518">518</th><td>}</td></tr>
+<tr><th id="519">519</th><td></td></tr>
+<tr><th id="520">520</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6BufferC1EiiiNS1_6TargetEb" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1EiiiNS1_6TargetEb">Buffer</dfn>(<em>int</em> <dfn class="local col4 decl" id="14arows" title='arows' data-type='int' data-ref="14arows">arows</dfn>, <em>int</em> <dfn class="local col5 decl" id="15acols" title='acols' data-type='int' data-ref="15acols">acols</dfn>, <em>int</em> <dfn class="local col6 decl" id="16atype" title='atype' data-type='int' data-ref="16atype">atype</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col7 decl" id="17target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="17target">target</dfn>, <em>bool</em> <dfn class="local col8 decl" id="18autoRelease" title='autoRelease' data-type='bool' data-ref="18autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::rows_" title='cv::ogl::Buffer::rows_' data-ref="cv::ogl::Buffer::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::cols_" title='cv::ogl::Buffer::cols_' data-ref="cv::ogl::Buffer::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::type_" title='cv::ogl::Buffer::type_' data-ref="cv::ogl::Buffer::type_">type_</a>(<var>0</var>)</td></tr>
+<tr><th id="521">521</th><td>{</td></tr>
+<tr><th id="522">522</th><td>    <a class="member" href="#_ZN2cv3ogl6Buffer6createEiiiNS1_6TargetEb" title='cv::ogl::Buffer::create' data-ref="_ZN2cv3ogl6Buffer6createEiiiNS1_6TargetEb">create</a>(<a class="local col4 ref" href="#14arows" title='arows' data-ref="14arows">arows</a>, <a class="local col5 ref" href="#15acols" title='acols' data-ref="15acols">acols</a>, <a class="local col6 ref" href="#16atype" title='atype' data-ref="16atype">atype</a>, <a class="local col7 ref" href="#17target" title='target' data-ref="17target">target</a>, <a class="local col8 ref" href="#18autoRelease" title='autoRelease' data-ref="18autoRelease">autoRelease</a>);</td></tr>
+<tr><th id="523">523</th><td>}</td></tr>
+<tr><th id="524">524</th><td></td></tr>
+<tr><th id="525">525</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6BufferC1ENS_5Size_IiEEiNS1_6TargetEb" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1ENS_5Size_IiEEiNS1_6TargetEb">Buffer</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::Size" title='cv::Size' data-type='Size2i' data-ref="cv::Size">Size</a> <dfn class="local col9 decl" id="19asize" title='asize' data-type='Size' data-ref="19asize">asize</dfn>, <em>int</em> <dfn class="local col0 decl" id="20atype" title='atype' data-type='int' data-ref="20atype">atype</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col1 decl" id="21target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="21target">target</dfn>, <em>bool</em> <dfn class="local col2 decl" id="22autoRelease" title='autoRelease' data-type='bool' data-ref="22autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::rows_" title='cv::ogl::Buffer::rows_' data-ref="cv::ogl::Buffer::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::cols_" title='cv::ogl::Buffer::cols_' data-ref="cv::ogl::Buffer::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::type_" title='cv::ogl::Buffer::type_' data-ref="cv::ogl::Buffer::type_">type_</a>(<var>0</var>)</td></tr>
+<tr><th id="526">526</th><td>{</td></tr>
+<tr><th id="527">527</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#_ZN2cv3ogl6Buffer6createENS_5Size_IiEEiNS1_6TargetEb" title='cv::ogl::Buffer::create' data-ref="_ZN2cv3ogl6Buffer6createENS_5Size_IiEEiNS1_6TargetEb">create</a>(<a class="ref fake" href="../include/opencv2/core/core.hpp.html#_ZN2cv5Size_C1ERKNS_5Size_IT_EE" title='cv::Size_::Size_&lt;_Tp&gt;' data-ref="_ZN2cv5Size_C1ERKNS_5Size_IT_EE"></a><a class="local col9 ref" href="#19asize" title='asize' data-ref="19asize">asize</a>, <a class="local col0 ref" href="#20atype" title='atype' data-ref="20atype">atype</a>, <a class="local col1 ref" href="#21target" title='target' data-ref="21target">target</a>, <a class="local col2 ref" href="#22autoRelease" title='autoRelease' data-ref="22autoRelease">autoRelease</a>);</td></tr>
+<tr><th id="528">528</th><td>}</td></tr>
+<tr><th id="529">529</th><td></td></tr>
+<tr><th id="530">530</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6BufferC1ERKNS_11_InputArrayENS1_6TargetEb" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1ERKNS_11_InputArrayENS1_6TargetEb">Buffer</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col3 decl" id="23arr" title='arr' data-type='InputArray' data-ref="23arr">arr</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col4 decl" id="24target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="24target">target</dfn>, <em>bool</em> <dfn class="local col5 decl" id="25autoRelease" title='autoRelease' data-type='bool' data-ref="25autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::rows_" title='cv::ogl::Buffer::rows_' data-ref="cv::ogl::Buffer::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::cols_" title='cv::ogl::Buffer::cols_' data-ref="cv::ogl::Buffer::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::type_" title='cv::ogl::Buffer::type_' data-ref="cv::ogl::Buffer::type_">type_</a>(<var>0</var>)</td></tr>
+<tr><th id="531">531</th><td>{</td></tr>
+<tr><th id="532">532</th><td><u>#<span data-ppcond="532">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="533">533</th><td>    (<em>void</em>) <a class="local col3 ref" href="#23arr" title='arr' data-ref="23arr">arr</a>;</td></tr>
+<tr><th id="534">534</th><td>    (<em>void</em>) <a class="local col4 ref" href="#24target" title='target' data-ref="24target">target</a>;</td></tr>
+<tr><th id="535">535</th><td>    (<em>void</em>) <a class="local col5 ref" href="#25autoRelease" title='autoRelease' data-ref="25autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="536">536</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="537">537</th><td><u>#<span data-ppcond="532">else</span></u></td></tr>
+<tr><th id="538">538</th><td>    <em>const</em> <em>int</em> kind = arr.kind();</td></tr>
+<tr><th id="539">539</th><td></td></tr>
+<tr><th id="540">540</th><td>    <b>switch</b> (kind)</td></tr>
+<tr><th id="541">541</th><td>    {</td></tr>
+<tr><th id="542">542</th><td>    <b>case</b> _InputArray::OPENGL_BUFFER:</td></tr>
+<tr><th id="543">543</th><td>        {</td></tr>
+<tr><th id="544">544</th><td>            copyFrom(arr, target, autoRelease);</td></tr>
+<tr><th id="545">545</th><td>            <b>break</b>;</td></tr>
+<tr><th id="546">546</th><td>        }</td></tr>
+<tr><th id="547">547</th><td></td></tr>
+<tr><th id="548">548</th><td>    <b>case</b> _InputArray::OPENGL_TEXTURE:</td></tr>
+<tr><th id="549">549</th><td>        {</td></tr>
+<tr><th id="550">550</th><td>            copyFrom(arr, target, autoRelease);</td></tr>
+<tr><th id="551">551</th><td>            <b>break</b>;</td></tr>
+<tr><th id="552">552</th><td>        }</td></tr>
+<tr><th id="553">553</th><td></td></tr>
+<tr><th id="554">554</th><td>    <b>case</b> _InputArray::GPU_MAT:</td></tr>
+<tr><th id="555">555</th><td>        {</td></tr>
+<tr><th id="556">556</th><td>            copyFrom(arr, target, autoRelease);</td></tr>
+<tr><th id="557">557</th><td>            <b>break</b>;</td></tr>
+<tr><th id="558">558</th><td>        }</td></tr>
+<tr><th id="559">559</th><td></td></tr>
+<tr><th id="560">560</th><td>    <b>default</b>:</td></tr>
+<tr><th id="561">561</th><td>        {</td></tr>
+<tr><th id="562">562</th><td>            Mat mat = arr.getMat();</td></tr>
+<tr><th id="563">563</th><td>            CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="564">564</th><td>            <em>const</em> GLsizeiptr asize = mat.rows * mat.cols * mat.elemSize();</td></tr>
+<tr><th id="565">565</th><td>            impl_ = <b>new</b> Impl(asize, mat.data, target, autoRelease);</td></tr>
+<tr><th id="566">566</th><td>            rows_ = mat.rows;</td></tr>
+<tr><th id="567">567</th><td>            cols_ = mat.cols;</td></tr>
+<tr><th id="568">568</th><td>            type_ = mat.type();</td></tr>
+<tr><th id="569">569</th><td>            <b>break</b>;</td></tr>
+<tr><th id="570">570</th><td>        }</td></tr>
+<tr><th id="571">571</th><td>    }</td></tr>
+<tr><th id="572">572</th><td><u>#<span data-ppcond="532">endif</span></u></td></tr>
+<tr><th id="573">573</th><td>}</td></tr>
+<tr><th id="574">574</th><td></td></tr>
+<tr><th id="575">575</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer6createEiiiNS1_6TargetEb" title='cv::ogl::Buffer::create' data-ref="_ZN2cv3ogl6Buffer6createEiiiNS1_6TargetEb">create</dfn>(<em>int</em> <dfn class="local col6 decl" id="26arows" title='arows' data-type='int' data-ref="26arows">arows</dfn>, <em>int</em> <dfn class="local col7 decl" id="27acols" title='acols' data-type='int' data-ref="27acols">acols</dfn>, <em>int</em> <dfn class="local col8 decl" id="28atype" title='atype' data-type='int' data-ref="28atype">atype</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col9 decl" id="29target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="29target">target</dfn>, <em>bool</em> <dfn class="local col0 decl" id="30autoRelease" title='autoRelease' data-type='bool' data-ref="30autoRelease">autoRelease</dfn>)</td></tr>
+<tr><th id="576">576</th><td>{</td></tr>
+<tr><th id="577">577</th><td><u>#<span data-ppcond="577">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="578">578</th><td>    (<em>void</em>) <a class="local col6 ref" href="#26arows" title='arows' data-ref="26arows">arows</a>;</td></tr>
+<tr><th id="579">579</th><td>    (<em>void</em>) <a class="local col7 ref" href="#27acols" title='acols' data-ref="27acols">acols</a>;</td></tr>
+<tr><th id="580">580</th><td>    (<em>void</em>) <a class="local col8 ref" href="#28atype" title='atype' data-ref="28atype">atype</a>;</td></tr>
+<tr><th id="581">581</th><td>    (<em>void</em>) <a class="local col9 ref" href="#29target" title='target' data-ref="29target">target</a>;</td></tr>
+<tr><th id="582">582</th><td>    (<em>void</em>) <a class="local col0 ref" href="#30autoRelease" title='autoRelease' data-ref="30autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="583">583</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="584">584</th><td><u>#<span data-ppcond="577">else</span></u></td></tr>
+<tr><th id="585">585</th><td>    <b>if</b> (rows_ != arows || cols_ != acols || type_ != atype)</td></tr>
+<tr><th id="586">586</th><td>    {</td></tr>
+<tr><th id="587">587</th><td>        <em>const</em> GLsizeiptr asize = arows * acols * CV_ELEM_SIZE(atype);</td></tr>
+<tr><th id="588">588</th><td>        impl_ = <b>new</b> Impl(asize, <var>0</var>, target, autoRelease);</td></tr>
+<tr><th id="589">589</th><td>        rows_ = arows;</td></tr>
+<tr><th id="590">590</th><td>        cols_ = acols;</td></tr>
+<tr><th id="591">591</th><td>        type_ = atype;</td></tr>
+<tr><th id="592">592</th><td>    }</td></tr>
+<tr><th id="593">593</th><td><u>#<span data-ppcond="577">endif</span></u></td></tr>
+<tr><th id="594">594</th><td>}</td></tr>
+<tr><th id="595">595</th><td></td></tr>
+<tr><th id="596">596</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer7releaseEv" title='cv::ogl::Buffer::release' data-ref="_ZN2cv3ogl6Buffer7releaseEv">release</dfn>()</td></tr>
+<tr><th id="597">597</th><td>{</td></tr>
+<tr><th id="598">598</th><td><u>#<span data-ppcond="598">ifdef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="599">599</th><td>    <b>if</b> (*impl_.refcount == <var>1</var>)</td></tr>
+<tr><th id="600">600</th><td>        impl_-&gt;setAutoRelease(<b>true</b>);</td></tr>
+<tr><th id="601">601</th><td>    impl_ = Impl::empty();</td></tr>
+<tr><th id="602">602</th><td>    rows_ = <var>0</var>;</td></tr>
+<tr><th id="603">603</th><td>    cols_ = <var>0</var>;</td></tr>
+<tr><th id="604">604</th><td>    type_ = <var>0</var>;</td></tr>
+<tr><th id="605">605</th><td><u>#<span data-ppcond="598">endif</span></u></td></tr>
+<tr><th id="606">606</th><td>}</td></tr>
+<tr><th id="607">607</th><td></td></tr>
+<tr><th id="608">608</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer14setAutoReleaseEb" title='cv::ogl::Buffer::setAutoRelease' data-ref="_ZN2cv3ogl6Buffer14setAutoReleaseEb">setAutoRelease</dfn>(<em>bool</em> <dfn class="local col1 decl" id="31flag" title='flag' data-type='bool' data-ref="31flag">flag</dfn>)</td></tr>
+<tr><th id="609">609</th><td>{</td></tr>
+<tr><th id="610">610</th><td><u>#<span data-ppcond="610">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="611">611</th><td>    (<em>void</em>) <a class="local col1 ref" href="#31flag" title='flag' data-ref="31flag">flag</a>;</td></tr>
+<tr><th id="612">612</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="613">613</th><td><u>#<span data-ppcond="610">else</span></u></td></tr>
+<tr><th id="614">614</th><td>    impl_-&gt;setAutoRelease(flag);</td></tr>
+<tr><th id="615">615</th><td><u>#<span data-ppcond="610">endif</span></u></td></tr>
+<tr><th id="616">616</th><td>}</td></tr>
+<tr><th id="617">617</th><td></td></tr>
+<tr><th id="618">618</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb" title='cv::ogl::Buffer::copyFrom' data-ref="_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb">copyFrom</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col2 decl" id="32arr" title='arr' data-type='InputArray' data-ref="32arr">arr</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col3 decl" id="33target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="33target">target</dfn>, <em>bool</em> <dfn class="local col4 decl" id="34autoRelease" title='autoRelease' data-type='bool' data-ref="34autoRelease">autoRelease</dfn>)</td></tr>
+<tr><th id="619">619</th><td>{</td></tr>
+<tr><th id="620">620</th><td><u>#<span data-ppcond="620">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="621">621</th><td>    (<em>void</em>) <a class="local col2 ref" href="#32arr" title='arr' data-ref="32arr">arr</a>;</td></tr>
+<tr><th id="622">622</th><td>    (<em>void</em>) <a class="local col3 ref" href="#33target" title='target' data-ref="33target">target</a>;</td></tr>
+<tr><th id="623">623</th><td>    (<em>void</em>) <a class="local col4 ref" href="#34autoRelease" title='autoRelease' data-ref="34autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="624">624</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="625">625</th><td><u>#<span data-ppcond="620">else</span></u></td></tr>
+<tr><th id="626">626</th><td>    <em>const</em> <em>int</em> kind = arr.kind();</td></tr>
+<tr><th id="627">627</th><td></td></tr>
+<tr><th id="628">628</th><td>    <b>if</b> (kind == _InputArray::OPENGL_TEXTURE)</td></tr>
+<tr><th id="629">629</th><td>    {</td></tr>
+<tr><th id="630">630</th><td>        ogl::Texture2D tex = arr.getOGlTexture2D();</td></tr>
+<tr><th id="631">631</th><td>        tex.copyTo(*<b>this</b>);</td></tr>
+<tr><th id="632">632</th><td>        setAutoRelease(autoRelease);</td></tr>
+<tr><th id="633">633</th><td>        <b>return</b>;</td></tr>
+<tr><th id="634">634</th><td>    }</td></tr>
+<tr><th id="635">635</th><td></td></tr>
+<tr><th id="636">636</th><td>    <em>const</em> Size asize = arr.size();</td></tr>
+<tr><th id="637">637</th><td>    <em>const</em> <em>int</em> atype = arr.type();</td></tr>
+<tr><th id="638">638</th><td>    create(asize, atype, target, autoRelease);</td></tr>
+<tr><th id="639">639</th><td></td></tr>
+<tr><th id="640">640</th><td>    <b>switch</b> (kind)</td></tr>
+<tr><th id="641">641</th><td>    {</td></tr>
+<tr><th id="642">642</th><td>    <b>case</b> _InputArray::OPENGL_BUFFER:</td></tr>
+<tr><th id="643">643</th><td>        {</td></tr>
+<tr><th id="644">644</th><td>            ogl::Buffer buf = arr.getOGlBuffer();</td></tr>
+<tr><th id="645">645</th><td>            impl_-&gt;copyFrom(buf.bufId(), asize.area() * CV_ELEM_SIZE(atype));</td></tr>
+<tr><th id="646">646</th><td>            <b>break</b>;</td></tr>
+<tr><th id="647">647</th><td>        }</td></tr>
+<tr><th id="648">648</th><td></td></tr>
+<tr><th id="649">649</th><td>    <b>case</b> _InputArray::GPU_MAT:</td></tr>
+<tr><th id="650">650</th><td>        {</td></tr>
+<tr><th id="651">651</th><td>            <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="652">652</th><td>                throw_nocuda();</td></tr>
+<tr><th id="653">653</th><td>            <u>#else</u></td></tr>
+<tr><th id="654">654</th><td>                GpuMat dmat = arr.getGpuMat();</td></tr>
+<tr><th id="655">655</th><td>                impl_-&gt;copyFrom(dmat.data, dmat.step, dmat.cols * dmat.elemSize(), dmat.rows);</td></tr>
+<tr><th id="656">656</th><td>            <u>#endif</u></td></tr>
+<tr><th id="657">657</th><td></td></tr>
+<tr><th id="658">658</th><td>            <b>break</b>;</td></tr>
+<tr><th id="659">659</th><td>        }</td></tr>
+<tr><th id="660">660</th><td></td></tr>
+<tr><th id="661">661</th><td>    <b>default</b>:</td></tr>
+<tr><th id="662">662</th><td>        {</td></tr>
+<tr><th id="663">663</th><td>            Mat mat = arr.getMat();</td></tr>
+<tr><th id="664">664</th><td>            CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="665">665</th><td>            impl_-&gt;copyFrom(asize.area() * CV_ELEM_SIZE(atype), mat.data);</td></tr>
+<tr><th id="666">666</th><td>        }</td></tr>
+<tr><th id="667">667</th><td>    }</td></tr>
+<tr><th id="668">668</th><td><u>#<span data-ppcond="620">endif</span></u></td></tr>
+<tr><th id="669">669</th><td>}</td></tr>
+<tr><th id="670">670</th><td></td></tr>
+<tr><th id="671">671</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZNK2cv3ogl6Buffer6copyToERKNS_12_OutputArrayENS1_6TargetEb" title='cv::ogl::Buffer::copyTo' data-ref="_ZNK2cv3ogl6Buffer6copyToERKNS_12_OutputArrayENS1_6TargetEb">copyTo</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::OutputArray" title='cv::OutputArray' data-type='const cv::_OutputArray &amp;' data-ref="cv::OutputArray">OutputArray</a> <dfn class="local col5 decl" id="35arr" title='arr' data-type='OutputArray' data-ref="35arr">arr</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col6 decl" id="36target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="36target">target</dfn>, <em>bool</em> <dfn class="local col7 decl" id="37autoRelease" title='autoRelease' data-type='bool' data-ref="37autoRelease">autoRelease</dfn>) <em>const</em></td></tr>
+<tr><th id="672">672</th><td>{</td></tr>
+<tr><th id="673">673</th><td><u>#<span data-ppcond="673">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="674">674</th><td>    (<em>void</em>) <a class="local col5 ref" href="#35arr" title='arr' data-ref="35arr">arr</a>;</td></tr>
+<tr><th id="675">675</th><td>    (<em>void</em>) <a class="local col6 ref" href="#36target" title='target' data-ref="36target">target</a>;</td></tr>
+<tr><th id="676">676</th><td>    (<em>void</em>) <a class="local col7 ref" href="#37autoRelease" title='autoRelease' data-ref="37autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="677">677</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="678">678</th><td><u>#<span data-ppcond="673">else</span></u></td></tr>
+<tr><th id="679">679</th><td>    <em>const</em> <em>int</em> kind = arr.kind();</td></tr>
+<tr><th id="680">680</th><td></td></tr>
+<tr><th id="681">681</th><td>    <b>switch</b> (kind)</td></tr>
+<tr><th id="682">682</th><td>    {</td></tr>
+<tr><th id="683">683</th><td>    <b>case</b> _InputArray::OPENGL_BUFFER:</td></tr>
+<tr><th id="684">684</th><td>        {</td></tr>
+<tr><th id="685">685</th><td>            arr.getOGlBufferRef().copyFrom(*<b>this</b>, target, autoRelease);</td></tr>
+<tr><th id="686">686</th><td>            <b>break</b>;</td></tr>
+<tr><th id="687">687</th><td>        }</td></tr>
+<tr><th id="688">688</th><td></td></tr>
+<tr><th id="689">689</th><td>    <b>case</b> _InputArray::OPENGL_TEXTURE:</td></tr>
+<tr><th id="690">690</th><td>        {</td></tr>
+<tr><th id="691">691</th><td>            arr.getOGlTexture2DRef().copyFrom(*<b>this</b>, autoRelease);</td></tr>
+<tr><th id="692">692</th><td>            <b>break</b>;</td></tr>
+<tr><th id="693">693</th><td>        }</td></tr>
+<tr><th id="694">694</th><td></td></tr>
+<tr><th id="695">695</th><td>    <b>case</b> _InputArray::GPU_MAT:</td></tr>
+<tr><th id="696">696</th><td>        {</td></tr>
+<tr><th id="697">697</th><td>            <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="698">698</th><td>                throw_nocuda();</td></tr>
+<tr><th id="699">699</th><td>            <u>#else</u></td></tr>
+<tr><th id="700">700</th><td>                GpuMat&amp; dmat = arr.getGpuMatRef();</td></tr>
+<tr><th id="701">701</th><td>                dmat.create(rows_, cols_, type_);</td></tr>
+<tr><th id="702">702</th><td>                impl_-&gt;copyTo(dmat.data, dmat.step, dmat.cols * dmat.elemSize(), dmat.rows);</td></tr>
+<tr><th id="703">703</th><td>            <u>#endif</u></td></tr>
+<tr><th id="704">704</th><td></td></tr>
+<tr><th id="705">705</th><td>            <b>break</b>;</td></tr>
+<tr><th id="706">706</th><td>        }</td></tr>
+<tr><th id="707">707</th><td></td></tr>
+<tr><th id="708">708</th><td>    <b>default</b>:</td></tr>
+<tr><th id="709">709</th><td>        {</td></tr>
+<tr><th id="710">710</th><td>            arr.create(rows_, cols_, type_);</td></tr>
+<tr><th id="711">711</th><td>            Mat mat = arr.getMat();</td></tr>
+<tr><th id="712">712</th><td>            CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="713">713</th><td>            impl_-&gt;copyTo(mat.rows * mat.cols * mat.elemSize(), mat.data);</td></tr>
+<tr><th id="714">714</th><td>        }</td></tr>
+<tr><th id="715">715</th><td>    }</td></tr>
+<tr><th id="716">716</th><td><u>#<span data-ppcond="673">endif</span></u></td></tr>
+<tr><th id="717">717</th><td>}</td></tr>
+<tr><th id="718">718</th><td></td></tr>
+<tr><th id="719">719</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZNK2cv3ogl6Buffer5cloneENS1_6TargetEb" title='cv::ogl::Buffer::clone' data-ref="_ZNK2cv3ogl6Buffer5cloneENS1_6TargetEb">clone</dfn>(<a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col8 decl" id="38target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="38target">target</dfn>, <em>bool</em> <dfn class="local col9 decl" id="39autoRelease" title='autoRelease' data-type='bool' data-ref="39autoRelease">autoRelease</dfn>) <em>const</em></td></tr>
+<tr><th id="720">720</th><td>{</td></tr>
+<tr><th id="721">721</th><td><u>#<span data-ppcond="721">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="722">722</th><td>    (<em>void</em>) <a class="local col8 ref" href="#38target" title='target' data-ref="38target">target</a>;</td></tr>
+<tr><th id="723">723</th><td>    (<em>void</em>) <a class="local col9 ref" href="#39autoRelease" title='autoRelease' data-ref="39autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="724">724</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="725">725</th><td>    <b>return</b> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a><a class="ref" href="#_ZN2cv3ogl6BufferC1Ev" title='cv::ogl::Buffer::Buffer' data-ref="_ZN2cv3ogl6BufferC1Ev">(</a>);</td></tr>
+<tr><th id="726">726</th><td><u>#<span data-ppcond="721">else</span></u></td></tr>
+<tr><th id="727">727</th><td>    ogl::Buffer buf;</td></tr>
+<tr><th id="728">728</th><td>    buf.copyFrom(*<b>this</b>, target, autoRelease);</td></tr>
+<tr><th id="729">729</th><td>    <b>return</b> buf;</td></tr>
+<tr><th id="730">730</th><td><u>#<span data-ppcond="721">endif</span></u></td></tr>
+<tr><th id="731">731</th><td>}</td></tr>
+<tr><th id="732">732</th><td></td></tr>
+<tr><th id="733">733</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZNK2cv3ogl6Buffer4bindENS1_6TargetE" title='cv::ogl::Buffer::bind' data-ref="_ZNK2cv3ogl6Buffer4bindENS1_6TargetE">bind</dfn>(<a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col0 decl" id="40target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="40target">target</dfn>) <em>const</em></td></tr>
+<tr><th id="734">734</th><td>{</td></tr>
+<tr><th id="735">735</th><td><u>#<span data-ppcond="735">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="736">736</th><td>    (<em>void</em>) <a class="local col0 ref" href="#40target" title='target' data-ref="40target">target</a>;</td></tr>
+<tr><th id="737">737</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="738">738</th><td><u>#<span data-ppcond="735">else</span></u></td></tr>
+<tr><th id="739">739</th><td>    impl_-&gt;bind(target);</td></tr>
+<tr><th id="740">740</th><td><u>#<span data-ppcond="735">endif</span></u></td></tr>
+<tr><th id="741">741</th><td>}</td></tr>
+<tr><th id="742">742</th><td></td></tr>
+<tr><th id="743">743</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer6unbindENS1_6TargetE" title='cv::ogl::Buffer::unbind' data-ref="_ZN2cv3ogl6Buffer6unbindENS1_6TargetE">unbind</dfn>(<a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Target" title='cv::ogl::Buffer::Target' data-ref="cv::ogl::Buffer::Target">Target</a> <dfn class="local col1 decl" id="41target" title='target' data-type='cv::ogl::Buffer::Target' data-ref="41target">target</dfn>)</td></tr>
+<tr><th id="744">744</th><td>{</td></tr>
+<tr><th id="745">745</th><td><u>#<span data-ppcond="745">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="746">746</th><td>    (<em>void</em>) <a class="local col1 ref" href="#41target" title='target' data-ref="41target">target</a>;</td></tr>
+<tr><th id="747">747</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="748">748</th><td><u>#<span data-ppcond="745">else</span></u></td></tr>
+<tr><th id="749">749</th><td>    gl::BindBuffer(target, <var>0</var>);</td></tr>
+<tr><th id="750">750</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="751">751</th><td><u>#<span data-ppcond="745">endif</span></u></td></tr>
+<tr><th id="752">752</th><td>}</td></tr>
+<tr><th id="753">753</th><td></td></tr>
+<tr><th id="754">754</th><td><a class="type" href="../include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer7mapHostENS1_6AccessE" title='cv::ogl::Buffer::mapHost' data-ref="_ZN2cv3ogl6Buffer7mapHostENS1_6AccessE">mapHost</dfn>(<a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer::Access" title='cv::ogl::Buffer::Access' data-ref="cv::ogl::Buffer::Access">Access</a> <dfn class="local col2 decl" id="42access" title='access' data-type='cv::ogl::Buffer::Access' data-ref="42access">access</dfn>)</td></tr>
+<tr><th id="755">755</th><td>{</td></tr>
+<tr><th id="756">756</th><td><u>#<span data-ppcond="756">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="757">757</th><td>    (<em>void</em>) <a class="local col2 ref" href="#42access" title='access' data-ref="42access">access</a>;</td></tr>
+<tr><th id="758">758</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="759">759</th><td>    <b>return</b> <a class="type" href="../include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a><a class="ref" href="../include/opencv2/core/core.hpp.html#_ZN2cv3MatC1Ev" title='cv::Mat::Mat' data-ref="_ZN2cv3MatC1Ev">(</a>);</td></tr>
+<tr><th id="760">760</th><td><u>#<span data-ppcond="756">else</span></u></td></tr>
+<tr><th id="761">761</th><td>    <b>return</b> Mat(rows_, cols_, type_, impl_-&gt;mapHost(access));</td></tr>
+<tr><th id="762">762</th><td><u>#<span data-ppcond="756">endif</span></u></td></tr>
+<tr><th id="763">763</th><td>}</td></tr>
+<tr><th id="764">764</th><td></td></tr>
+<tr><th id="765">765</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer9unmapHostEv" title='cv::ogl::Buffer::unmapHost' data-ref="_ZN2cv3ogl6Buffer9unmapHostEv">unmapHost</dfn>()</td></tr>
+<tr><th id="766">766</th><td>{</td></tr>
+<tr><th id="767">767</th><td><u>#<span data-ppcond="767">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="768">768</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="769">769</th><td><u>#<span data-ppcond="767">else</span></u></td></tr>
+<tr><th id="770">770</th><td>    <b>return</b> impl_-&gt;unmapHost();</td></tr>
+<tr><th id="771">771</th><td><u>#<span data-ppcond="767">endif</span></u></td></tr>
+<tr><th id="772">772</th><td>}</td></tr>
+<tr><th id="773">773</th><td></td></tr>
+<tr><th id="774">774</th><td><a class="type" href="../include/opencv2/core/gpumat.hpp.html#cv::gpu::GpuMat" title='cv::gpu::GpuMat' data-ref="cv::gpu::GpuMat">GpuMat</a> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer9mapDeviceEv" title='cv::ogl::Buffer::mapDevice' data-ref="_ZN2cv3ogl6Buffer9mapDeviceEv">mapDevice</dfn>()</td></tr>
+<tr><th id="775">775</th><td>{</td></tr>
+<tr><th id="776">776</th><td><u>#<span data-ppcond="776">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="777">777</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="778">778</th><td>    <b>return</b> <a class="type" href="../include/opencv2/core/gpumat.hpp.html#cv::gpu::GpuMat" title='cv::gpu::GpuMat' data-ref="cv::gpu::GpuMat">GpuMat</a><a class="ref" href="../include/opencv2/core/gpumat.hpp.html#_ZN2cv3gpu6GpuMatC1Ev" title='cv::gpu::GpuMat::GpuMat' data-ref="_ZN2cv3gpu6GpuMatC1Ev">(</a>);</td></tr>
+<tr><th id="779">779</th><td><u>#<span data-ppcond="776">else</span></u></td></tr>
+<tr><th id="780">780</th><td>    <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="781">781</th><td>        throw_nocuda();</td></tr>
+<tr><th id="782">782</th><td>        <b>return</b> GpuMat();</td></tr>
+<tr><th id="783">783</th><td>    <u>#else</u></td></tr>
+<tr><th id="784">784</th><td>        <b>return</b> GpuMat(rows_, cols_, type_, impl_-&gt;mapDevice());</td></tr>
+<tr><th id="785">785</th><td>    <u>#endif</u></td></tr>
+<tr><th id="786">786</th><td><u>#<span data-ppcond="776">endif</span></u></td></tr>
+<tr><th id="787">787</th><td>}</td></tr>
+<tr><th id="788">788</th><td></td></tr>
+<tr><th id="789">789</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZN2cv3ogl6Buffer11unmapDeviceEv" title='cv::ogl::Buffer::unmapDevice' data-ref="_ZN2cv3ogl6Buffer11unmapDeviceEv">unmapDevice</dfn>()</td></tr>
+<tr><th id="790">790</th><td>{</td></tr>
+<tr><th id="791">791</th><td><u>#<span data-ppcond="791">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="792">792</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="793">793</th><td><u>#<span data-ppcond="791">else</span></u></td></tr>
+<tr><th id="794">794</th><td>    <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="795">795</th><td>        throw_nocuda();</td></tr>
+<tr><th id="796">796</th><td>    <u>#else</u></td></tr>
+<tr><th id="797">797</th><td>        impl_-&gt;unmapDevice();</td></tr>
+<tr><th id="798">798</th><td>    <u>#endif</u></td></tr>
+<tr><th id="799">799</th><td><u>#<span data-ppcond="791">endif</span></u></td></tr>
+<tr><th id="800">800</th><td>}</td></tr>
+<tr><th id="801">801</th><td></td></tr>
+<tr><th id="802">802</th><td><em>unsigned</em> <em>int</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<dfn class="decl def" id="_ZNK2cv3ogl6Buffer5bufIdEv" title='cv::ogl::Buffer::bufId' data-ref="_ZNK2cv3ogl6Buffer5bufIdEv">bufId</dfn>() <em>const</em></td></tr>
+<tr><th id="803">803</th><td>{</td></tr>
+<tr><th id="804">804</th><td><u>#<span data-ppcond="804">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="805">805</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="806">806</th><td>    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="807">807</th><td><u>#<span data-ppcond="804">else</span></u></td></tr>
+<tr><th id="808">808</th><td>    <b>return</b> impl_-&gt;bufId();</td></tr>
+<tr><th id="809">809</th><td><u>#<span data-ppcond="804">endif</span></u></td></tr>
+<tr><th id="810">810</th><td>}</td></tr>
+<tr><th id="811">811</th><td></td></tr>
+<tr><th id="812">812</th><td><b>template</b> &lt;&gt; <em>void</em> <span class="namespace">cv::</span><a class="type" href="../include/opencv2/core/core.hpp.html#cv::Ptr" title='cv::Ptr' data-ref="cv::Ptr">Ptr</a>&lt;<span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Buffer" title='cv::ogl::Buffer' data-ref="cv::ogl::Buffer">Buffer</a>::<a class="type" href="#cv::ogl::Buffer::Impl" title='cv::ogl::Buffer::Impl' data-ref="cv::ogl::Buffer::Impl">Impl</a>&gt;::<dfn class="decl def" id="_ZN2cv3Ptr10delete_objEv" title='cv::Ptr::delete_obj' data-ref="_ZN2cv3Ptr10delete_objEv">delete_obj</dfn>()</td></tr>
+<tr><th id="813">813</th><td>{</td></tr>
+<tr><th id="814">814</th><td>    <b>if</b> (<a class="member" href="../include/opencv2/core/core.hpp.html#cv::Ptr::obj" title='cv::Ptr&lt;cv::ogl::Buffer::Impl&gt;::obj' data-ref="cv::Ptr::obj">obj</a>) <b>delete</b> <a class="member" href="../include/opencv2/core/core.hpp.html#cv::Ptr::obj" title='cv::Ptr&lt;cv::ogl::Buffer::Impl&gt;::obj' data-ref="cv::Ptr::obj">obj</a>;</td></tr>
+<tr><th id="815">815</th><td>}</td></tr>
+<tr><th id="816">816</th><td></td></tr>
+<tr><th id="817">817</th><td><i>//////////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="818">818</th><td><i>// ogl::Texture</i></td></tr>
+<tr><th id="819">819</th><td></td></tr>
+<tr><th id="820">820</th><td><u>#<span data-ppcond="820">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="821">821</th><td></td></tr>
+<tr><th id="822">822</th><td><b>class</b> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="type def" id="cv::ogl::Texture2D::Impl" title='cv::ogl::Texture2D::Impl' data-ref="cv::ogl::Texture2D::Impl">Impl</dfn></td></tr>
+<tr><th id="823">823</th><td>{</td></tr>
+<tr><th id="824">824</th><td>};</td></tr>
+<tr><th id="825">825</th><td></td></tr>
+<tr><th id="826">826</th><td><u>#<span data-ppcond="820">else</span></u></td></tr>
+<tr><th id="827">827</th><td></td></tr>
+<tr><th id="828">828</th><td><b>class</b> cv::ogl::Texture2D::Impl</td></tr>
+<tr><th id="829">829</th><td>{</td></tr>
+<tr><th id="830">830</th><td><b>public</b>:</td></tr>
+<tr><th id="831">831</th><td>    <em>static</em> <em>const</em> Ptr&lt;Impl&gt; empty();</td></tr>
+<tr><th id="832">832</th><td></td></tr>
+<tr><th id="833">833</th><td>    Impl(GLuint texId, <em>bool</em> autoRelease);</td></tr>
+<tr><th id="834">834</th><td>    Impl(GLint internalFormat, GLsizei width, GLsizei height, GLenum format, GLenum type, <em>const</em> GLvoid* pixels, <em>bool</em> autoRelease);</td></tr>
+<tr><th id="835">835</th><td>    ~Impl();</td></tr>
+<tr><th id="836">836</th><td></td></tr>
+<tr><th id="837">837</th><td>    <em>void</em> copyFrom(GLsizei width, GLsizei height, GLenum format, GLenum type, <em>const</em> GLvoid *pixels);</td></tr>
+<tr><th id="838">838</th><td>    <em>void</em> copyTo(GLenum format, GLenum type, GLvoid* pixels) <em>const</em>;</td></tr>
+<tr><th id="839">839</th><td></td></tr>
+<tr><th id="840">840</th><td>    <em>void</em> bind() <em>const</em>;</td></tr>
+<tr><th id="841">841</th><td></td></tr>
+<tr><th id="842">842</th><td>    <em>void</em> setAutoRelease(<em>bool</em> flag) { autoRelease_ = flag; }</td></tr>
+<tr><th id="843">843</th><td></td></tr>
+<tr><th id="844">844</th><td>    GLuint texId() <em>const</em> { <b>return</b> texId_; }</td></tr>
+<tr><th id="845">845</th><td></td></tr>
+<tr><th id="846">846</th><td><b>private</b>:</td></tr>
+<tr><th id="847">847</th><td>    Impl();</td></tr>
+<tr><th id="848">848</th><td></td></tr>
+<tr><th id="849">849</th><td>    GLuint texId_;</td></tr>
+<tr><th id="850">850</th><td>    <em>bool</em> autoRelease_;</td></tr>
+<tr><th id="851">851</th><td>};</td></tr>
+<tr><th id="852">852</th><td></td></tr>
+<tr><th id="853">853</th><td><em>const</em> Ptr&lt;cv::ogl::Texture2D::Impl&gt; cv::ogl::Texture2D::Impl::empty()</td></tr>
+<tr><th id="854">854</th><td>{</td></tr>
+<tr><th id="855">855</th><td>    <em>static</em> Ptr&lt;Impl&gt; p(<b>new</b> Impl);</td></tr>
+<tr><th id="856">856</th><td>    <b>return</b> p;</td></tr>
+<tr><th id="857">857</th><td>}</td></tr>
+<tr><th id="858">858</th><td></td></tr>
+<tr><th id="859">859</th><td>cv::ogl::Texture2D::Impl::Impl() : texId_(<var>0</var>), autoRelease_(<b>true</b>)</td></tr>
+<tr><th id="860">860</th><td>{</td></tr>
+<tr><th id="861">861</th><td>}</td></tr>
+<tr><th id="862">862</th><td></td></tr>
+<tr><th id="863">863</th><td>cv::ogl::Texture2D::Impl::Impl(GLuint atexId, <em>bool</em> autoRelease) : texId_(atexId), autoRelease_(autoRelease)</td></tr>
+<tr><th id="864">864</th><td>{</td></tr>
+<tr><th id="865">865</th><td>}</td></tr>
+<tr><th id="866">866</th><td></td></tr>
+<tr><th id="867">867</th><td>cv::ogl::Texture2D::Impl::Impl(GLint internalFormat, GLsizei width, GLsizei height, GLenum format, GLenum type, <em>const</em> GLvoid* pixels, <em>bool</em> autoRelease) : texId_(<var>0</var>), autoRelease_(autoRelease)</td></tr>
+<tr><th id="868">868</th><td>{</td></tr>
+<tr><th id="869">869</th><td>    gl::GenTextures(<var>1</var>, &amp;texId_);</td></tr>
+<tr><th id="870">870</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="871">871</th><td></td></tr>
+<tr><th id="872">872</th><td>    CV_Assert(texId_ != <var>0</var>);</td></tr>
+<tr><th id="873">873</th><td></td></tr>
+<tr><th id="874">874</th><td>    gl::BindTexture(gl::TEXTURE_2D, texId_);</td></tr>
+<tr><th id="875">875</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="876">876</th><td></td></tr>
+<tr><th id="877">877</th><td>    gl::PixelStorei(gl::UNPACK_ALIGNMENT, <var>1</var>);</td></tr>
+<tr><th id="878">878</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="879">879</th><td></td></tr>
+<tr><th id="880">880</th><td>    gl::TexImage2D(gl::TEXTURE_2D, <var>0</var>, internalFormat, width, height, <var>0</var>, format, type, pixels);</td></tr>
+<tr><th id="881">881</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="882">882</th><td></td></tr>
+<tr><th id="883">883</th><td>    gl::GenerateMipmap(gl::TEXTURE_2D);</td></tr>
+<tr><th id="884">884</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="885">885</th><td>}</td></tr>
+<tr><th id="886">886</th><td></td></tr>
+<tr><th id="887">887</th><td>cv::ogl::Texture2D::Impl::~Impl()</td></tr>
+<tr><th id="888">888</th><td>{</td></tr>
+<tr><th id="889">889</th><td>    <b>if</b> (autoRelease_ &amp;&amp; texId_)</td></tr>
+<tr><th id="890">890</th><td>        gl::DeleteTextures(<var>1</var>, &amp;texId_);</td></tr>
+<tr><th id="891">891</th><td>}</td></tr>
+<tr><th id="892">892</th><td></td></tr>
+<tr><th id="893">893</th><td><em>void</em> cv::ogl::Texture2D::Impl::copyFrom(GLsizei width, GLsizei height, GLenum format, GLenum type, <em>const</em> GLvoid *pixels)</td></tr>
+<tr><th id="894">894</th><td>{</td></tr>
+<tr><th id="895">895</th><td>    gl::BindTexture(gl::TEXTURE_2D, texId_);</td></tr>
+<tr><th id="896">896</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="897">897</th><td></td></tr>
+<tr><th id="898">898</th><td>    gl::PixelStorei(gl::UNPACK_ALIGNMENT, <var>1</var>);</td></tr>
+<tr><th id="899">899</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="900">900</th><td></td></tr>
+<tr><th id="901">901</th><td>    gl::TexSubImage2D(gl::TEXTURE_2D, <var>0</var>, <var>0</var>, <var>0</var>, width, height, format, type, pixels);</td></tr>
+<tr><th id="902">902</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="903">903</th><td></td></tr>
+<tr><th id="904">904</th><td>    gl::GenerateMipmap(gl::TEXTURE_2D);</td></tr>
+<tr><th id="905">905</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="906">906</th><td>}</td></tr>
+<tr><th id="907">907</th><td></td></tr>
+<tr><th id="908">908</th><td><em>void</em> cv::ogl::Texture2D::Impl::copyTo(GLenum format, GLenum type, GLvoid* pixels) <em>const</em></td></tr>
+<tr><th id="909">909</th><td>{</td></tr>
+<tr><th id="910">910</th><td>    gl::BindTexture(gl::TEXTURE_2D, texId_);</td></tr>
+<tr><th id="911">911</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="912">912</th><td></td></tr>
+<tr><th id="913">913</th><td>    gl::PixelStorei(gl::PACK_ALIGNMENT, <var>1</var>);</td></tr>
+<tr><th id="914">914</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="915">915</th><td></td></tr>
+<tr><th id="916">916</th><td>    gl::GetTexImage(gl::TEXTURE_2D, <var>0</var>, format, type, pixels);</td></tr>
+<tr><th id="917">917</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="918">918</th><td>}</td></tr>
+<tr><th id="919">919</th><td></td></tr>
+<tr><th id="920">920</th><td><em>void</em> cv::ogl::Texture2D::Impl::bind() <em>const</em></td></tr>
+<tr><th id="921">921</th><td>{</td></tr>
+<tr><th id="922">922</th><td>    gl::BindTexture(gl::TEXTURE_2D, texId_);</td></tr>
+<tr><th id="923">923</th><td>    CV_CheckGlError();</td></tr>
+<tr><th id="924">924</th><td>}</td></tr>
+<tr><th id="925">925</th><td></td></tr>
+<tr><th id="926">926</th><td><u>#<span data-ppcond="820">endif</span> // HAVE_OPENGL</u></td></tr>
+<tr><th id="927">927</th><td></td></tr>
+<tr><th id="928">928</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2DC1Ev" title='cv::ogl::Texture2D::Texture2D' data-ref="_ZN2cv3ogl9Texture2DC1Ev">Texture2D</dfn>() : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::rows_" title='cv::ogl::Texture2D::rows_' data-ref="cv::ogl::Texture2D::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::cols_" title='cv::ogl::Texture2D::cols_' data-ref="cv::ogl::Texture2D::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::format_" title='cv::ogl::Texture2D::format_' data-ref="cv::ogl::Texture2D::format_">format_</a>(<a class="enum" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format::NONE" title='cv::ogl::Texture2D::Format::NONE' data-ref="cv::ogl::Texture2D::Format::NONE">NONE</a>)</td></tr>
+<tr><th id="929">929</th><td>{</td></tr>
+<tr><th id="930">930</th><td><u>#<span data-ppcond="930">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="931">931</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="932">932</th><td><u>#<span data-ppcond="930">else</span></u></td></tr>
+<tr><th id="933">933</th><td>    impl_ = Impl::empty();</td></tr>
+<tr><th id="934">934</th><td><u>#<span data-ppcond="930">endif</span></u></td></tr>
+<tr><th id="935">935</th><td>}</td></tr>
+<tr><th id="936">936</th><td></td></tr>
+<tr><th id="937">937</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2DC1EiiNS1_6FormatEjb" title='cv::ogl::Texture2D::Texture2D' data-ref="_ZN2cv3ogl9Texture2DC1EiiNS1_6FormatEjb">Texture2D</dfn>(<em>int</em> <dfn class="local col3 decl" id="43arows" title='arows' data-type='int' data-ref="43arows">arows</dfn>, <em>int</em> <dfn class="local col4 decl" id="44acols" title='acols' data-type='int' data-ref="44acols">acols</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format" title='cv::ogl::Texture2D::Format' data-ref="cv::ogl::Texture2D::Format">Format</a> <dfn class="local col5 decl" id="45aformat" title='aformat' data-type='cv::ogl::Texture2D::Format' data-ref="45aformat">aformat</dfn>, <em>unsigned</em> <em>int</em> <dfn class="local col6 decl" id="46atexId" title='atexId' data-type='unsigned int' data-ref="46atexId">atexId</dfn>, <em>bool</em> <dfn class="local col7 decl" id="47autoRelease" title='autoRelease' data-type='bool' data-ref="47autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::rows_" title='cv::ogl::Texture2D::rows_' data-ref="cv::ogl::Texture2D::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::cols_" title='cv::ogl::Texture2D::cols_' data-ref="cv::ogl::Texture2D::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::format_" title='cv::ogl::Texture2D::format_' data-ref="cv::ogl::Texture2D::format_">format_</a>(<a class="enum" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format::NONE" title='cv::ogl::Texture2D::Format::NONE' data-ref="cv::ogl::Texture2D::Format::NONE">NONE</a>)</td></tr>
+<tr><th id="938">938</th><td>{</td></tr>
+<tr><th id="939">939</th><td><u>#<span data-ppcond="939">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="940">940</th><td>    (<em>void</em>) <a class="local col3 ref" href="#43arows" title='arows' data-ref="43arows">arows</a>;</td></tr>
+<tr><th id="941">941</th><td>    (<em>void</em>) <a class="local col4 ref" href="#44acols" title='acols' data-ref="44acols">acols</a>;</td></tr>
+<tr><th id="942">942</th><td>    (<em>void</em>) <a class="local col5 ref" href="#45aformat" title='aformat' data-ref="45aformat">aformat</a>;</td></tr>
+<tr><th id="943">943</th><td>    (<em>void</em>) <a class="local col6 ref" href="#46atexId" title='atexId' data-ref="46atexId">atexId</a>;</td></tr>
+<tr><th id="944">944</th><td>    (<em>void</em>) <a class="local col7 ref" href="#47autoRelease" title='autoRelease' data-ref="47autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="945">945</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="946">946</th><td><u>#<span data-ppcond="939">else</span></u></td></tr>
+<tr><th id="947">947</th><td>    impl_ = <b>new</b> Impl(atexId, autoRelease);</td></tr>
+<tr><th id="948">948</th><td>    rows_ = arows;</td></tr>
+<tr><th id="949">949</th><td>    cols_ = acols;</td></tr>
+<tr><th id="950">950</th><td>    format_ = aformat;</td></tr>
+<tr><th id="951">951</th><td><u>#<span data-ppcond="939">endif</span></u></td></tr>
+<tr><th id="952">952</th><td>}</td></tr>
+<tr><th id="953">953</th><td></td></tr>
+<tr><th id="954">954</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2DC1ENS_5Size_IiEENS1_6FormatEjb" title='cv::ogl::Texture2D::Texture2D' data-ref="_ZN2cv3ogl9Texture2DC1ENS_5Size_IiEENS1_6FormatEjb">Texture2D</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::Size" title='cv::Size' data-type='Size2i' data-ref="cv::Size">Size</a> <dfn class="local col8 decl" id="48asize" title='asize' data-type='Size' data-ref="48asize">asize</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format" title='cv::ogl::Texture2D::Format' data-ref="cv::ogl::Texture2D::Format">Format</a> <dfn class="local col9 decl" id="49aformat" title='aformat' data-type='cv::ogl::Texture2D::Format' data-ref="49aformat">aformat</dfn>, <em>unsigned</em> <em>int</em> <dfn class="local col0 decl" id="50atexId" title='atexId' data-type='unsigned int' data-ref="50atexId">atexId</dfn>, <em>bool</em> <dfn class="local col1 decl" id="51autoRelease" title='autoRelease' data-type='bool' data-ref="51autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::rows_" title='cv::ogl::Texture2D::rows_' data-ref="cv::ogl::Texture2D::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::cols_" title='cv::ogl::Texture2D::cols_' data-ref="cv::ogl::Texture2D::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::format_" title='cv::ogl::Texture2D::format_' data-ref="cv::ogl::Texture2D::format_">format_</a>(<a class="enum" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format::NONE" title='cv::ogl::Texture2D::Format::NONE' data-ref="cv::ogl::Texture2D::Format::NONE">NONE</a>)</td></tr>
+<tr><th id="955">955</th><td>{</td></tr>
+<tr><th id="956">956</th><td><u>#<span data-ppcond="956">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="957">957</th><td>    (<em>void</em>) <a class="local col8 ref" href="#48asize" title='asize' data-ref="48asize">asize</a>;</td></tr>
+<tr><th id="958">958</th><td>    (<em>void</em>) <a class="local col9 ref" href="#49aformat" title='aformat' data-ref="49aformat">aformat</a>;</td></tr>
+<tr><th id="959">959</th><td>    (<em>void</em>) <a class="local col0 ref" href="#50atexId" title='atexId' data-ref="50atexId">atexId</a>;</td></tr>
+<tr><th id="960">960</th><td>    (<em>void</em>) <a class="local col1 ref" href="#51autoRelease" title='autoRelease' data-ref="51autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="961">961</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="962">962</th><td><u>#<span data-ppcond="956">else</span></u></td></tr>
+<tr><th id="963">963</th><td>    impl_ = <b>new</b> Impl(atexId, autoRelease);</td></tr>
+<tr><th id="964">964</th><td>    rows_ = asize.height;</td></tr>
+<tr><th id="965">965</th><td>    cols_ = asize.width;</td></tr>
+<tr><th id="966">966</th><td>    format_ = aformat;</td></tr>
+<tr><th id="967">967</th><td><u>#<span data-ppcond="956">endif</span></u></td></tr>
+<tr><th id="968">968</th><td>}</td></tr>
+<tr><th id="969">969</th><td></td></tr>
+<tr><th id="970">970</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2DC1EiiNS1_6FormatEb" title='cv::ogl::Texture2D::Texture2D' data-ref="_ZN2cv3ogl9Texture2DC1EiiNS1_6FormatEb">Texture2D</dfn>(<em>int</em> <dfn class="local col2 decl" id="52arows" title='arows' data-type='int' data-ref="52arows">arows</dfn>, <em>int</em> <dfn class="local col3 decl" id="53acols" title='acols' data-type='int' data-ref="53acols">acols</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format" title='cv::ogl::Texture2D::Format' data-ref="cv::ogl::Texture2D::Format">Format</a> <dfn class="local col4 decl" id="54aformat" title='aformat' data-type='cv::ogl::Texture2D::Format' data-ref="54aformat">aformat</dfn>, <em>bool</em> <dfn class="local col5 decl" id="55autoRelease" title='autoRelease' data-type='bool' data-ref="55autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::rows_" title='cv::ogl::Texture2D::rows_' data-ref="cv::ogl::Texture2D::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::cols_" title='cv::ogl::Texture2D::cols_' data-ref="cv::ogl::Texture2D::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::format_" title='cv::ogl::Texture2D::format_' data-ref="cv::ogl::Texture2D::format_">format_</a>(<a class="enum" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format::NONE" title='cv::ogl::Texture2D::Format::NONE' data-ref="cv::ogl::Texture2D::Format::NONE">NONE</a>)</td></tr>
+<tr><th id="971">971</th><td>{</td></tr>
+<tr><th id="972">972</th><td>    <a class="member" href="#_ZN2cv3ogl9Texture2D6createEiiNS1_6FormatEb" title='cv::ogl::Texture2D::create' data-ref="_ZN2cv3ogl9Texture2D6createEiiNS1_6FormatEb">create</a>(<a class="local col2 ref" href="#52arows" title='arows' data-ref="52arows">arows</a>, <a class="local col3 ref" href="#53acols" title='acols' data-ref="53acols">acols</a>, <a class="local col4 ref" href="#54aformat" title='aformat' data-ref="54aformat">aformat</a>, <a class="local col5 ref" href="#55autoRelease" title='autoRelease' data-ref="55autoRelease">autoRelease</a>);</td></tr>
+<tr><th id="973">973</th><td>}</td></tr>
+<tr><th id="974">974</th><td></td></tr>
+<tr><th id="975">975</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2DC1ENS_5Size_IiEENS1_6FormatEb" title='cv::ogl::Texture2D::Texture2D' data-ref="_ZN2cv3ogl9Texture2DC1ENS_5Size_IiEENS1_6FormatEb">Texture2D</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::Size" title='cv::Size' data-type='Size2i' data-ref="cv::Size">Size</a> <dfn class="local col6 decl" id="56asize" title='asize' data-type='Size' data-ref="56asize">asize</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format" title='cv::ogl::Texture2D::Format' data-ref="cv::ogl::Texture2D::Format">Format</a> <dfn class="local col7 decl" id="57aformat" title='aformat' data-type='cv::ogl::Texture2D::Format' data-ref="57aformat">aformat</dfn>, <em>bool</em> <dfn class="local col8 decl" id="58autoRelease" title='autoRelease' data-type='bool' data-ref="58autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::rows_" title='cv::ogl::Texture2D::rows_' data-ref="cv::ogl::Texture2D::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::cols_" title='cv::ogl::Texture2D::cols_' data-ref="cv::ogl::Texture2D::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::format_" title='cv::ogl::Texture2D::format_' data-ref="cv::ogl::Texture2D::format_">format_</a>(<a class="enum" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format::NONE" title='cv::ogl::Texture2D::Format::NONE' data-ref="cv::ogl::Texture2D::Format::NONE">NONE</a>)</td></tr>
+<tr><th id="976">976</th><td>{</td></tr>
+<tr><th id="977">977</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#_ZN2cv3ogl9Texture2D6createENS_5Size_IiEENS1_6FormatEb" title='cv::ogl::Texture2D::create' data-ref="_ZN2cv3ogl9Texture2D6createENS_5Size_IiEENS1_6FormatEb">create</a>(<a class="ref fake" href="../include/opencv2/core/core.hpp.html#_ZN2cv5Size_C1ERKNS_5Size_IT_EE" title='cv::Size_::Size_&lt;_Tp&gt;' data-ref="_ZN2cv5Size_C1ERKNS_5Size_IT_EE"></a><a class="local col6 ref" href="#56asize" title='asize' data-ref="56asize">asize</a>, <a class="local col7 ref" href="#57aformat" title='aformat' data-ref="57aformat">aformat</a>, <a class="local col8 ref" href="#58autoRelease" title='autoRelease' data-ref="58autoRelease">autoRelease</a>);</td></tr>
+<tr><th id="978">978</th><td>}</td></tr>
+<tr><th id="979">979</th><td></td></tr>
+<tr><th id="980">980</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2DC1ERKNS_11_InputArrayEb" title='cv::ogl::Texture2D::Texture2D' data-ref="_ZN2cv3ogl9Texture2DC1ERKNS_11_InputArrayEb">Texture2D</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col9 decl" id="59arr" title='arr' data-type='InputArray' data-ref="59arr">arr</dfn>, <em>bool</em> <dfn class="local col0 decl" id="60autoRelease" title='autoRelease' data-type='bool' data-ref="60autoRelease">autoRelease</dfn>) : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::rows_" title='cv::ogl::Texture2D::rows_' data-ref="cv::ogl::Texture2D::rows_">rows_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::cols_" title='cv::ogl::Texture2D::cols_' data-ref="cv::ogl::Texture2D::cols_">cols_</a>(<var>0</var>), <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::format_" title='cv::ogl::Texture2D::format_' data-ref="cv::ogl::Texture2D::format_">format_</a>(<a class="enum" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format::NONE" title='cv::ogl::Texture2D::Format::NONE' data-ref="cv::ogl::Texture2D::Format::NONE">NONE</a>)</td></tr>
+<tr><th id="981">981</th><td>{</td></tr>
+<tr><th id="982">982</th><td><u>#<span data-ppcond="982">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="983">983</th><td>    (<em>void</em>) <a class="local col9 ref" href="#59arr" title='arr' data-ref="59arr">arr</a>;</td></tr>
+<tr><th id="984">984</th><td>    (<em>void</em>) <a class="local col0 ref" href="#60autoRelease" title='autoRelease' data-ref="60autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="985">985</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="986">986</th><td><u>#<span data-ppcond="982">else</span></u></td></tr>
+<tr><th id="987">987</th><td>    <em>const</em> <em>int</em> kind = arr.kind();</td></tr>
+<tr><th id="988">988</th><td></td></tr>
+<tr><th id="989">989</th><td>    <em>const</em> Size asize = arr.size();</td></tr>
+<tr><th id="990">990</th><td>    <em>const</em> <em>int</em> atype = arr.type();</td></tr>
+<tr><th id="991">991</th><td></td></tr>
+<tr><th id="992">992</th><td>    <em>const</em> <em>int</em> depth = CV_MAT_DEPTH(atype);</td></tr>
+<tr><th id="993">993</th><td>    <em>const</em> <em>int</em> cn = CV_MAT_CN(atype);</td></tr>
+<tr><th id="994">994</th><td></td></tr>
+<tr><th id="995">995</th><td>    CV_Assert( depth &lt;= CV_32F );</td></tr>
+<tr><th id="996">996</th><td>    CV_Assert( cn == <var>1</var> || cn == <var>3</var> || cn == <var>4</var> );</td></tr>
+<tr><th id="997">997</th><td></td></tr>
+<tr><th id="998">998</th><td>    <em>const</em> Format internalFormats[] =</td></tr>
+<tr><th id="999">999</th><td>    {</td></tr>
+<tr><th id="1000">1000</th><td>        NONE, DEPTH_COMPONENT, NONE, RGB, RGBA</td></tr>
+<tr><th id="1001">1001</th><td>    };</td></tr>
+<tr><th id="1002">1002</th><td>    <em>const</em> GLenum srcFormats[] =</td></tr>
+<tr><th id="1003">1003</th><td>    {</td></tr>
+<tr><th id="1004">1004</th><td>        <var>0</var>, gl::DEPTH_COMPONENT, <var>0</var>, gl::BGR, gl::BGRA</td></tr>
+<tr><th id="1005">1005</th><td>    };</td></tr>
+<tr><th id="1006">1006</th><td></td></tr>
+<tr><th id="1007">1007</th><td>    <b>switch</b> (kind)</td></tr>
+<tr><th id="1008">1008</th><td>    {</td></tr>
+<tr><th id="1009">1009</th><td>    <b>case</b> _InputArray::OPENGL_BUFFER:</td></tr>
+<tr><th id="1010">1010</th><td>        {</td></tr>
+<tr><th id="1011">1011</th><td>            ogl::Buffer buf = arr.getOGlBuffer();</td></tr>
+<tr><th id="1012">1012</th><td>            buf.bind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1013">1013</th><td>            impl_ = <b>new</b> Impl(internalFormats[cn], asize.width, asize.height, srcFormats[cn], gl_types[depth], <var>0</var>, autoRelease);</td></tr>
+<tr><th id="1014">1014</th><td>            ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1015">1015</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1016">1016</th><td>        }</td></tr>
+<tr><th id="1017">1017</th><td></td></tr>
+<tr><th id="1018">1018</th><td>    <b>case</b> _InputArray::GPU_MAT:</td></tr>
+<tr><th id="1019">1019</th><td>        {</td></tr>
+<tr><th id="1020">1020</th><td>            <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="1021">1021</th><td>                throw_nocuda();</td></tr>
+<tr><th id="1022">1022</th><td>            <u>#else</u></td></tr>
+<tr><th id="1023">1023</th><td>                GpuMat dmat = arr.getGpuMat();</td></tr>
+<tr><th id="1024">1024</th><td>                ogl::Buffer buf(dmat, ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1025">1025</th><td>                buf.setAutoRelease(<b>true</b>);</td></tr>
+<tr><th id="1026">1026</th><td>                buf.bind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1027">1027</th><td>                impl_ = <b>new</b> Impl(internalFormats[cn], asize.width, asize.height, srcFormats[cn], gl_types[depth], <var>0</var>, autoRelease);</td></tr>
+<tr><th id="1028">1028</th><td>                ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1029">1029</th><td>            <u>#endif</u></td></tr>
+<tr><th id="1030">1030</th><td></td></tr>
+<tr><th id="1031">1031</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1032">1032</th><td>        }</td></tr>
+<tr><th id="1033">1033</th><td></td></tr>
+<tr><th id="1034">1034</th><td>    <b>default</b>:</td></tr>
+<tr><th id="1035">1035</th><td>        {</td></tr>
+<tr><th id="1036">1036</th><td>            Mat mat = arr.getMat();</td></tr>
+<tr><th id="1037">1037</th><td>            CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="1038">1038</th><td>            ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1039">1039</th><td>            impl_ = <b>new</b> Impl(internalFormats[cn], asize.width, asize.height, srcFormats[cn], gl_types[depth], mat.data, autoRelease);</td></tr>
+<tr><th id="1040">1040</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1041">1041</th><td>        }</td></tr>
+<tr><th id="1042">1042</th><td>    }</td></tr>
+<tr><th id="1043">1043</th><td></td></tr>
+<tr><th id="1044">1044</th><td>    rows_ = asize.height;</td></tr>
+<tr><th id="1045">1045</th><td>    cols_ = asize.width;</td></tr>
+<tr><th id="1046">1046</th><td>    format_ = internalFormats[cn];</td></tr>
+<tr><th id="1047">1047</th><td><u>#<span data-ppcond="982">endif</span></u></td></tr>
+<tr><th id="1048">1048</th><td>}</td></tr>
+<tr><th id="1049">1049</th><td></td></tr>
+<tr><th id="1050">1050</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2D6createEiiNS1_6FormatEb" title='cv::ogl::Texture2D::create' data-ref="_ZN2cv3ogl9Texture2D6createEiiNS1_6FormatEb">create</dfn>(<em>int</em> <dfn class="local col1 decl" id="61arows" title='arows' data-type='int' data-ref="61arows">arows</dfn>, <em>int</em> <dfn class="local col2 decl" id="62acols" title='acols' data-type='int' data-ref="62acols">acols</dfn>, <a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D::Format" title='cv::ogl::Texture2D::Format' data-ref="cv::ogl::Texture2D::Format">Format</a> <dfn class="local col3 decl" id="63aformat" title='aformat' data-type='cv::ogl::Texture2D::Format' data-ref="63aformat">aformat</dfn>, <em>bool</em> <dfn class="local col4 decl" id="64autoRelease" title='autoRelease' data-type='bool' data-ref="64autoRelease">autoRelease</dfn>)</td></tr>
+<tr><th id="1051">1051</th><td>{</td></tr>
+<tr><th id="1052">1052</th><td><u>#<span data-ppcond="1052">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1053">1053</th><td>    (<em>void</em>) <a class="local col1 ref" href="#61arows" title='arows' data-ref="61arows">arows</a>;</td></tr>
+<tr><th id="1054">1054</th><td>    (<em>void</em>) <a class="local col2 ref" href="#62acols" title='acols' data-ref="62acols">acols</a>;</td></tr>
+<tr><th id="1055">1055</th><td>    (<em>void</em>) <a class="local col3 ref" href="#63aformat" title='aformat' data-ref="63aformat">aformat</a>;</td></tr>
+<tr><th id="1056">1056</th><td>    (<em>void</em>) <a class="local col4 ref" href="#64autoRelease" title='autoRelease' data-ref="64autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="1057">1057</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1058">1058</th><td><u>#<span data-ppcond="1052">else</span></u></td></tr>
+<tr><th id="1059">1059</th><td>    <b>if</b> (rows_ != arows || cols_ != acols || format_ != aformat)</td></tr>
+<tr><th id="1060">1060</th><td>    {</td></tr>
+<tr><th id="1061">1061</th><td>        ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1062">1062</th><td>        impl_ = <b>new</b> Impl(aformat, acols, arows, aformat, gl::FLOAT, <var>0</var>, autoRelease);</td></tr>
+<tr><th id="1063">1063</th><td>        rows_ = arows;</td></tr>
+<tr><th id="1064">1064</th><td>        cols_ = acols;</td></tr>
+<tr><th id="1065">1065</th><td>        format_ = aformat;</td></tr>
+<tr><th id="1066">1066</th><td>    }</td></tr>
+<tr><th id="1067">1067</th><td><u>#<span data-ppcond="1052">endif</span></u></td></tr>
+<tr><th id="1068">1068</th><td>}</td></tr>
+<tr><th id="1069">1069</th><td></td></tr>
+<tr><th id="1070">1070</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2D7releaseEv" title='cv::ogl::Texture2D::release' data-ref="_ZN2cv3ogl9Texture2D7releaseEv">release</dfn>()</td></tr>
+<tr><th id="1071">1071</th><td>{</td></tr>
+<tr><th id="1072">1072</th><td><u>#<span data-ppcond="1072">ifdef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1073">1073</th><td>    <b>if</b> (*impl_.refcount == <var>1</var>)</td></tr>
+<tr><th id="1074">1074</th><td>        impl_-&gt;setAutoRelease(<b>true</b>);</td></tr>
+<tr><th id="1075">1075</th><td>    impl_ = Impl::empty();</td></tr>
+<tr><th id="1076">1076</th><td>    rows_ = <var>0</var>;</td></tr>
+<tr><th id="1077">1077</th><td>    cols_ = <var>0</var>;</td></tr>
+<tr><th id="1078">1078</th><td>    format_ = NONE;</td></tr>
+<tr><th id="1079">1079</th><td><u>#<span data-ppcond="1072">endif</span></u></td></tr>
+<tr><th id="1080">1080</th><td>}</td></tr>
+<tr><th id="1081">1081</th><td></td></tr>
+<tr><th id="1082">1082</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2D14setAutoReleaseEb" title='cv::ogl::Texture2D::setAutoRelease' data-ref="_ZN2cv3ogl9Texture2D14setAutoReleaseEb">setAutoRelease</dfn>(<em>bool</em> <dfn class="local col5 decl" id="65flag" title='flag' data-type='bool' data-ref="65flag">flag</dfn>)</td></tr>
+<tr><th id="1083">1083</th><td>{</td></tr>
+<tr><th id="1084">1084</th><td><u>#<span data-ppcond="1084">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1085">1085</th><td>    (<em>void</em>) <a class="local col5 ref" href="#65flag" title='flag' data-ref="65flag">flag</a>;</td></tr>
+<tr><th id="1086">1086</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1087">1087</th><td><u>#<span data-ppcond="1084">else</span></u></td></tr>
+<tr><th id="1088">1088</th><td>    impl_-&gt;setAutoRelease(flag);</td></tr>
+<tr><th id="1089">1089</th><td><u>#<span data-ppcond="1084">endif</span></u></td></tr>
+<tr><th id="1090">1090</th><td>}</td></tr>
+<tr><th id="1091">1091</th><td></td></tr>
+<tr><th id="1092">1092</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZN2cv3ogl9Texture2D8copyFromERKNS_11_InputArrayEb" title='cv::ogl::Texture2D::copyFrom' data-ref="_ZN2cv3ogl9Texture2D8copyFromERKNS_11_InputArrayEb">copyFrom</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col6 decl" id="66arr" title='arr' data-type='InputArray' data-ref="66arr">arr</dfn>, <em>bool</em> <dfn class="local col7 decl" id="67autoRelease" title='autoRelease' data-type='bool' data-ref="67autoRelease">autoRelease</dfn>)</td></tr>
+<tr><th id="1093">1093</th><td>{</td></tr>
+<tr><th id="1094">1094</th><td><u>#<span data-ppcond="1094">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1095">1095</th><td>    (<em>void</em>) <a class="local col6 ref" href="#66arr" title='arr' data-ref="66arr">arr</a>;</td></tr>
+<tr><th id="1096">1096</th><td>    (<em>void</em>) <a class="local col7 ref" href="#67autoRelease" title='autoRelease' data-ref="67autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="1097">1097</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1098">1098</th><td><u>#<span data-ppcond="1094">else</span></u></td></tr>
+<tr><th id="1099">1099</th><td>    <em>const</em> <em>int</em> kind = arr.kind();</td></tr>
+<tr><th id="1100">1100</th><td></td></tr>
+<tr><th id="1101">1101</th><td>    <em>const</em> Size asize = arr.size();</td></tr>
+<tr><th id="1102">1102</th><td>    <em>const</em> <em>int</em> atype = arr.type();</td></tr>
+<tr><th id="1103">1103</th><td></td></tr>
+<tr><th id="1104">1104</th><td>    <em>const</em> <em>int</em> depth = CV_MAT_DEPTH(atype);</td></tr>
+<tr><th id="1105">1105</th><td>    <em>const</em> <em>int</em> cn = CV_MAT_CN(atype);</td></tr>
+<tr><th id="1106">1106</th><td></td></tr>
+<tr><th id="1107">1107</th><td>    CV_Assert( depth &lt;= CV_32F );</td></tr>
+<tr><th id="1108">1108</th><td>    CV_Assert( cn == <var>1</var> || cn == <var>3</var> || cn == <var>4</var> );</td></tr>
+<tr><th id="1109">1109</th><td></td></tr>
+<tr><th id="1110">1110</th><td>    <em>const</em> Format internalFormats[] =</td></tr>
+<tr><th id="1111">1111</th><td>    {</td></tr>
+<tr><th id="1112">1112</th><td>        NONE, DEPTH_COMPONENT, NONE, RGB, RGBA</td></tr>
+<tr><th id="1113">1113</th><td>    };</td></tr>
+<tr><th id="1114">1114</th><td>    <em>const</em> GLenum srcFormats[] =</td></tr>
+<tr><th id="1115">1115</th><td>    {</td></tr>
+<tr><th id="1116">1116</th><td>        <var>0</var>, gl::DEPTH_COMPONENT, <var>0</var>, gl::BGR, gl::BGRA</td></tr>
+<tr><th id="1117">1117</th><td>    };</td></tr>
+<tr><th id="1118">1118</th><td></td></tr>
+<tr><th id="1119">1119</th><td>    create(asize, internalFormats[cn], autoRelease);</td></tr>
+<tr><th id="1120">1120</th><td></td></tr>
+<tr><th id="1121">1121</th><td>    <b>switch</b>(kind)</td></tr>
+<tr><th id="1122">1122</th><td>    {</td></tr>
+<tr><th id="1123">1123</th><td>    <b>case</b> _InputArray::OPENGL_BUFFER:</td></tr>
+<tr><th id="1124">1124</th><td>        {</td></tr>
+<tr><th id="1125">1125</th><td>            ogl::Buffer buf = arr.getOGlBuffer();</td></tr>
+<tr><th id="1126">1126</th><td>            buf.bind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1127">1127</th><td>            impl_-&gt;copyFrom(asize.width, asize.height, srcFormats[cn], gl_types[depth], <var>0</var>);</td></tr>
+<tr><th id="1128">1128</th><td>            ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1129">1129</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1130">1130</th><td>        }</td></tr>
+<tr><th id="1131">1131</th><td></td></tr>
+<tr><th id="1132">1132</th><td>    <b>case</b> _InputArray::GPU_MAT:</td></tr>
+<tr><th id="1133">1133</th><td>        {</td></tr>
+<tr><th id="1134">1134</th><td>            <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="1135">1135</th><td>                throw_nocuda();</td></tr>
+<tr><th id="1136">1136</th><td>            <u>#else</u></td></tr>
+<tr><th id="1137">1137</th><td>                GpuMat dmat = arr.getGpuMat();</td></tr>
+<tr><th id="1138">1138</th><td>                ogl::Buffer buf(dmat, ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1139">1139</th><td>                buf.setAutoRelease(<b>true</b>);</td></tr>
+<tr><th id="1140">1140</th><td>                buf.bind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1141">1141</th><td>                impl_-&gt;copyFrom(asize.width, asize.height, srcFormats[cn], gl_types[depth], <var>0</var>);</td></tr>
+<tr><th id="1142">1142</th><td>                ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1143">1143</th><td>            <u>#endif</u></td></tr>
+<tr><th id="1144">1144</th><td></td></tr>
+<tr><th id="1145">1145</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1146">1146</th><td>        }</td></tr>
+<tr><th id="1147">1147</th><td></td></tr>
+<tr><th id="1148">1148</th><td>    <b>default</b>:</td></tr>
+<tr><th id="1149">1149</th><td>        {</td></tr>
+<tr><th id="1150">1150</th><td>            Mat mat = arr.getMat();</td></tr>
+<tr><th id="1151">1151</th><td>            CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="1152">1152</th><td>            ogl::Buffer::unbind(ogl::Buffer::PIXEL_UNPACK_BUFFER);</td></tr>
+<tr><th id="1153">1153</th><td>            impl_-&gt;copyFrom(asize.width, asize.height, srcFormats[cn], gl_types[depth], mat.data);</td></tr>
+<tr><th id="1154">1154</th><td>        }</td></tr>
+<tr><th id="1155">1155</th><td>    }</td></tr>
+<tr><th id="1156">1156</th><td><u>#<span data-ppcond="1094">endif</span></u></td></tr>
+<tr><th id="1157">1157</th><td>}</td></tr>
+<tr><th id="1158">1158</th><td></td></tr>
+<tr><th id="1159">1159</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZNK2cv3ogl9Texture2D6copyToERKNS_12_OutputArrayEib" title='cv::ogl::Texture2D::copyTo' data-ref="_ZNK2cv3ogl9Texture2D6copyToERKNS_12_OutputArrayEib">copyTo</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::OutputArray" title='cv::OutputArray' data-type='const cv::_OutputArray &amp;' data-ref="cv::OutputArray">OutputArray</a> <dfn class="local col8 decl" id="68arr" title='arr' data-type='OutputArray' data-ref="68arr">arr</dfn>, <em>int</em> <dfn class="local col9 decl" id="69ddepth" title='ddepth' data-type='int' data-ref="69ddepth">ddepth</dfn>, <em>bool</em> <dfn class="local col0 decl" id="70autoRelease" title='autoRelease' data-type='bool' data-ref="70autoRelease">autoRelease</dfn>) <em>const</em></td></tr>
+<tr><th id="1160">1160</th><td>{</td></tr>
+<tr><th id="1161">1161</th><td><u>#<span data-ppcond="1161">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1162">1162</th><td>    (<em>void</em>) <a class="local col8 ref" href="#68arr" title='arr' data-ref="68arr">arr</a>;</td></tr>
+<tr><th id="1163">1163</th><td>    (<em>void</em>) <a class="local col9 ref" href="#69ddepth" title='ddepth' data-ref="69ddepth">ddepth</a>;</td></tr>
+<tr><th id="1164">1164</th><td>    (<em>void</em>) <a class="local col0 ref" href="#70autoRelease" title='autoRelease' data-ref="70autoRelease">autoRelease</a>;</td></tr>
+<tr><th id="1165">1165</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1166">1166</th><td><u>#<span data-ppcond="1161">else</span></u></td></tr>
+<tr><th id="1167">1167</th><td>    <em>const</em> <em>int</em> kind = arr.kind();</td></tr>
+<tr><th id="1168">1168</th><td></td></tr>
+<tr><th id="1169">1169</th><td>    <em>const</em> <em>int</em> cn = format_ == DEPTH_COMPONENT ? <var>1</var>: format_ == RGB ? <var>3</var> : <var>4</var>;</td></tr>
+<tr><th id="1170">1170</th><td>    <em>const</em> GLenum dstFormat = format_ == DEPTH_COMPONENT ? gl::DEPTH_COMPONENT : format_ == RGB ? gl::BGR : gl::BGRA;</td></tr>
+<tr><th id="1171">1171</th><td></td></tr>
+<tr><th id="1172">1172</th><td>    <b>switch</b>(kind)</td></tr>
+<tr><th id="1173">1173</th><td>    {</td></tr>
+<tr><th id="1174">1174</th><td>    <b>case</b> _InputArray::OPENGL_BUFFER:</td></tr>
+<tr><th id="1175">1175</th><td>        {</td></tr>
+<tr><th id="1176">1176</th><td>            ogl::Buffer&amp; buf = arr.getOGlBufferRef();</td></tr>
+<tr><th id="1177">1177</th><td>            buf.create(rows_, cols_, CV_MAKE_TYPE(ddepth, cn), ogl::Buffer::PIXEL_PACK_BUFFER, autoRelease);</td></tr>
+<tr><th id="1178">1178</th><td>            buf.bind(ogl::Buffer::PIXEL_PACK_BUFFER);</td></tr>
+<tr><th id="1179">1179</th><td>            impl_-&gt;copyTo(dstFormat, gl_types[ddepth], <var>0</var>);</td></tr>
+<tr><th id="1180">1180</th><td>            ogl::Buffer::unbind(ogl::Buffer::PIXEL_PACK_BUFFER);</td></tr>
+<tr><th id="1181">1181</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1182">1182</th><td>        }</td></tr>
+<tr><th id="1183">1183</th><td></td></tr>
+<tr><th id="1184">1184</th><td>    <b>case</b> _InputArray::GPU_MAT:</td></tr>
+<tr><th id="1185">1185</th><td>        {</td></tr>
+<tr><th id="1186">1186</th><td>            <u>#if !defined HAVE_CUDA || defined(CUDA_DISABLER)</u></td></tr>
+<tr><th id="1187">1187</th><td>                throw_nocuda();</td></tr>
+<tr><th id="1188">1188</th><td>            <u>#else</u></td></tr>
+<tr><th id="1189">1189</th><td>                ogl::Buffer buf(rows_, cols_, CV_MAKE_TYPE(ddepth, cn), ogl::Buffer::PIXEL_PACK_BUFFER);</td></tr>
+<tr><th id="1190">1190</th><td>                buf.setAutoRelease(<b>true</b>);</td></tr>
+<tr><th id="1191">1191</th><td>                buf.bind(ogl::Buffer::PIXEL_PACK_BUFFER);</td></tr>
+<tr><th id="1192">1192</th><td>                impl_-&gt;copyTo(dstFormat, gl_types[ddepth], <var>0</var>);</td></tr>
+<tr><th id="1193">1193</th><td>                ogl::Buffer::unbind(ogl::Buffer::PIXEL_PACK_BUFFER);</td></tr>
+<tr><th id="1194">1194</th><td>                buf.copyTo(arr);</td></tr>
+<tr><th id="1195">1195</th><td>            <u>#endif</u></td></tr>
+<tr><th id="1196">1196</th><td></td></tr>
+<tr><th id="1197">1197</th><td>            <b>break</b>;</td></tr>
+<tr><th id="1198">1198</th><td>        }</td></tr>
+<tr><th id="1199">1199</th><td></td></tr>
+<tr><th id="1200">1200</th><td>    <b>default</b>:</td></tr>
+<tr><th id="1201">1201</th><td>        {</td></tr>
+<tr><th id="1202">1202</th><td>            arr.create(rows_, cols_, CV_MAKE_TYPE(ddepth, cn));</td></tr>
+<tr><th id="1203">1203</th><td>            Mat mat = arr.getMat();</td></tr>
+<tr><th id="1204">1204</th><td>            CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="1205">1205</th><td>            ogl::Buffer::unbind(ogl::Buffer::PIXEL_PACK_BUFFER);</td></tr>
+<tr><th id="1206">1206</th><td>            impl_-&gt;copyTo(dstFormat, gl_types[ddepth], mat.data);</td></tr>
+<tr><th id="1207">1207</th><td>        }</td></tr>
+<tr><th id="1208">1208</th><td>    }</td></tr>
+<tr><th id="1209">1209</th><td><u>#<span data-ppcond="1161">endif</span></u></td></tr>
+<tr><th id="1210">1210</th><td>}</td></tr>
+<tr><th id="1211">1211</th><td></td></tr>
+<tr><th id="1212">1212</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZNK2cv3ogl9Texture2D4bindEv" title='cv::ogl::Texture2D::bind' data-ref="_ZNK2cv3ogl9Texture2D4bindEv">bind</dfn>() <em>const</em></td></tr>
+<tr><th id="1213">1213</th><td>{</td></tr>
+<tr><th id="1214">1214</th><td><u>#<span data-ppcond="1214">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1215">1215</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1216">1216</th><td><u>#<span data-ppcond="1214">else</span></u></td></tr>
+<tr><th id="1217">1217</th><td>    impl_-&gt;bind();</td></tr>
+<tr><th id="1218">1218</th><td><u>#<span data-ppcond="1214">endif</span></u></td></tr>
+<tr><th id="1219">1219</th><td>}</td></tr>
+<tr><th id="1220">1220</th><td></td></tr>
+<tr><th id="1221">1221</th><td><em>unsigned</em> <em>int</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<dfn class="decl def" id="_ZNK2cv3ogl9Texture2D5texIdEv" title='cv::ogl::Texture2D::texId' data-ref="_ZNK2cv3ogl9Texture2D5texIdEv">texId</dfn>() <em>const</em></td></tr>
+<tr><th id="1222">1222</th><td>{</td></tr>
+<tr><th id="1223">1223</th><td><u>#<span data-ppcond="1223">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1224">1224</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1225">1225</th><td>    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="1226">1226</th><td><u>#<span data-ppcond="1223">else</span></u></td></tr>
+<tr><th id="1227">1227</th><td>    <b>return</b> impl_-&gt;texId();</td></tr>
+<tr><th id="1228">1228</th><td><u>#<span data-ppcond="1223">endif</span></u></td></tr>
+<tr><th id="1229">1229</th><td>}</td></tr>
+<tr><th id="1230">1230</th><td></td></tr>
+<tr><th id="1231">1231</th><td><b>template</b> &lt;&gt; <em>void</em> <span class="namespace">cv::</span><a class="type" href="../include/opencv2/core/core.hpp.html#cv::Ptr" title='cv::Ptr' data-ref="cv::Ptr">Ptr</a>&lt;<span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>::<a class="type" href="#cv::ogl::Texture2D::Impl" title='cv::ogl::Texture2D::Impl' data-ref="cv::ogl::Texture2D::Impl">Impl</a>&gt;::<dfn class="decl def" id="_ZN2cv3Ptr10delete_objEv" title='cv::Ptr::delete_obj' data-ref="_ZN2cv3Ptr10delete_objEv">delete_obj</dfn>()</td></tr>
+<tr><th id="1232">1232</th><td>{</td></tr>
+<tr><th id="1233">1233</th><td>    <b>if</b> (<a class="member" href="../include/opencv2/core/core.hpp.html#cv::Ptr::obj" title='cv::Ptr&lt;cv::ogl::Texture2D::Impl&gt;::obj' data-ref="cv::Ptr::obj">obj</a>) <b>delete</b> <a class="member" href="../include/opencv2/core/core.hpp.html#cv::Ptr::obj" title='cv::Ptr&lt;cv::ogl::Texture2D::Impl&gt;::obj' data-ref="cv::Ptr::obj">obj</a>;</td></tr>
+<tr><th id="1234">1234</th><td>}</td></tr>
+<tr><th id="1235">1235</th><td></td></tr>
+<tr><th id="1236">1236</th><td><i>////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="1237">1237</th><td><i>// ogl::Arrays</i></td></tr>
+<tr><th id="1238">1238</th><td></td></tr>
+<tr><th id="1239">1239</th><td><span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6ArraysC1Ev" title='cv::ogl::Arrays::Arrays' data-ref="_ZN2cv3ogl6ArraysC1Ev">Arrays</dfn>() : <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::size_" title='cv::ogl::Arrays::size_' data-ref="cv::ogl::Arrays::size_">size_</a>(<var>0</var>)</td></tr>
+<tr><th id="1240">1240</th><td>{</td></tr>
+<tr><th id="1241">1241</th><td>}</td></tr>
+<tr><th id="1242">1242</th><td></td></tr>
+<tr><th id="1243">1243</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays14setVertexArrayERKNS_11_InputArrayE" title='cv::ogl::Arrays::setVertexArray' data-ref="_ZN2cv3ogl6Arrays14setVertexArrayERKNS_11_InputArrayE">setVertexArray</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col1 decl" id="71vertex" title='vertex' data-type='InputArray' data-ref="71vertex">vertex</dfn>)</td></tr>
+<tr><th id="1244">1244</th><td>{</td></tr>
+<tr><th id="1245">1245</th><td>    <em>const</em> <em>int</em> <dfn class="local col2 decl" id="72cn" title='cn' data-type='const int' data-ref="72cn">cn</dfn> = <a class="local col1 ref" href="#71vertex" title='vertex' data-ref="71vertex">vertex</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray8channelsEi" title='cv::_InputArray::channels' data-ref="_ZNK2cv11_InputArray8channelsEi">channels</a>();</td></tr>
+<tr><th id="1246">1246</th><td>    <em>const</em> <em>int</em> <dfn class="local col3 decl" id="73depth" title='depth' data-type='const int' data-ref="73depth">depth</dfn> = <a class="local col1 ref" href="#71vertex" title='vertex' data-ref="71vertex">vertex</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray5depthEi" title='cv::_InputArray::depth' data-ref="_ZNK2cv11_InputArray5depthEi">depth</a>();</td></tr>
+<tr><th id="1247">1247</th><td></td></tr>
+<tr><th id="1248">1248</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(cn == 2 || cn == 3 || cn == 4)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;cn == 2 || cn == 3 || cn == 4&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1248) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col2 ref" href="#72cn" title='cn' data-ref="72cn">cn</a> == <var>2</var> || <a class="local col2 ref" href="#72cn" title='cn' data-ref="72cn">cn</a> == <var>3</var> || <a class="local col2 ref" href="#72cn" title='cn' data-ref="72cn">cn</a> == <var>4</var> );</td></tr>
+<tr><th id="1249">1249</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(depth == 3 || depth == 4 || depth == 5 || depth == 6)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;depth == CV_16S || depth == CV_32S || depth == CV_32F || depth == CV_64F&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1249) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col3 ref" href="#73depth" title='depth' data-ref="73depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#608" title="3" data-ref="_M/CV_16S">CV_16S</a> || <a class="local col3 ref" href="#73depth" title='depth' data-ref="73depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#609" title="4" data-ref="_M/CV_32S">CV_32S</a> || <a class="local col3 ref" href="#73depth" title='depth' data-ref="73depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#610" title="5" data-ref="_M/CV_32F">CV_32F</a> || <a class="local col3 ref" href="#73depth" title='depth' data-ref="73depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#611" title="6" data-ref="_M/CV_64F">CV_64F</a> );</td></tr>
+<tr><th id="1250">1250</th><td></td></tr>
+<tr><th id="1251">1251</th><td>    <b>if</b> (<a class="local col1 ref" href="#71vertex" title='vertex' data-ref="71vertex">vertex</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray4kindEv" title='cv::_InputArray::kind' data-ref="_ZNK2cv11_InputArray4kindEv">kind</a>() == <a class="type" href="../include/opencv2/core/core.hpp.html#cv::_InputArray" title='cv::_InputArray' data-ref="cv::_InputArray">_InputArray</a>::<a class="enum" href="../include/opencv2/core/core.hpp.html#cv::_InputArray::::OPENGL_BUFFER" title='cv::_InputArray::::OPENGL_BUFFER' data-ref="cv::_InputArray::::OPENGL_BUFFER">OPENGL_BUFFER</a>)</td></tr>
+<tr><th id="1252">1252</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::vertex_" title='cv::ogl::Arrays::vertex_' data-ref="cv::ogl::Arrays::vertex_">vertex_</a> <a class="ref" href="../include/opencv2/core/opengl_interop.hpp.html#56" title='cv::ogl::Buffer::operator=' data-ref="_ZN2cv3ogl6BufferaSERKS1_">=</a> <a class="local col1 ref" href="#71vertex" title='vertex' data-ref="71vertex">vertex</a>.<a class="ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray12getOGlBufferEv" title='cv::_InputArray::getOGlBuffer' data-ref="_ZNK2cv11_InputArray12getOGlBufferEv">getOGlBuffer</a>();</td></tr>
+<tr><th id="1253">1253</th><td>    <b>else</b></td></tr>
+<tr><th id="1254">1254</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::vertex_" title='cv::ogl::Arrays::vertex_' data-ref="cv::ogl::Arrays::vertex_">vertex_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb" title='cv::ogl::Buffer::copyFrom' data-ref="_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb">copyFrom</a>(<a class="local col1 ref" href="#71vertex" title='vertex' data-ref="71vertex">vertex</a>);</td></tr>
+<tr><th id="1255">1255</th><td></td></tr>
+<tr><th id="1256">1256</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::size_" title='cv::ogl::Arrays::size_' data-ref="cv::ogl::Arrays::size_">size_</a> = <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::vertex_" title='cv::ogl::Arrays::vertex_' data-ref="cv::ogl::Arrays::vertex_">vertex_</a>.<a class="ref" href="../include/opencv2/core/opengl_interop.hpp.html#_ZNK2cv3ogl6Buffer4sizeEv" title='cv::ogl::Buffer::size' data-ref="_ZNK2cv3ogl6Buffer4sizeEv">size</a>().<a class="ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv5Size_4areaEv" title='cv::Size_::area' data-ref="_ZNK2cv5Size_4areaEv">area</a>();</td></tr>
+<tr><th id="1257">1257</th><td>}</td></tr>
+<tr><th id="1258">1258</th><td></td></tr>
+<tr><th id="1259">1259</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays16resetVertexArrayEv" title='cv::ogl::Arrays::resetVertexArray' data-ref="_ZN2cv3ogl6Arrays16resetVertexArrayEv">resetVertexArray</dfn>()</td></tr>
+<tr><th id="1260">1260</th><td>{</td></tr>
+<tr><th id="1261">1261</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::vertex_" title='cv::ogl::Arrays::vertex_' data-ref="cv::ogl::Arrays::vertex_">vertex_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer7releaseEv" title='cv::ogl::Buffer::release' data-ref="_ZN2cv3ogl6Buffer7releaseEv">release</a>();</td></tr>
+<tr><th id="1262">1262</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::size_" title='cv::ogl::Arrays::size_' data-ref="cv::ogl::Arrays::size_">size_</a> = <var>0</var>;</td></tr>
+<tr><th id="1263">1263</th><td>}</td></tr>
+<tr><th id="1264">1264</th><td></td></tr>
+<tr><th id="1265">1265</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays13setColorArrayERKNS_11_InputArrayE" title='cv::ogl::Arrays::setColorArray' data-ref="_ZN2cv3ogl6Arrays13setColorArrayERKNS_11_InputArrayE">setColorArray</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col4 decl" id="74color" title='color' data-type='InputArray' data-ref="74color">color</dfn>)</td></tr>
+<tr><th id="1266">1266</th><td>{</td></tr>
+<tr><th id="1267">1267</th><td>    <em>const</em> <em>int</em> <dfn class="local col5 decl" id="75cn" title='cn' data-type='const int' data-ref="75cn">cn</dfn> = <a class="local col4 ref" href="#74color" title='color' data-ref="74color">color</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray8channelsEi" title='cv::_InputArray::channels' data-ref="_ZNK2cv11_InputArray8channelsEi">channels</a>();</td></tr>
+<tr><th id="1268">1268</th><td></td></tr>
+<tr><th id="1269">1269</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(cn == 3 || cn == 4)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;cn == 3 || cn == 4&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1269) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col5 ref" href="#75cn" title='cn' data-ref="75cn">cn</a> == <var>3</var> || <a class="local col5 ref" href="#75cn" title='cn' data-ref="75cn">cn</a> == <var>4</var> );</td></tr>
+<tr><th id="1270">1270</th><td></td></tr>
+<tr><th id="1271">1271</th><td>    <b>if</b> (<a class="local col4 ref" href="#74color" title='color' data-ref="74color">color</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray4kindEv" title='cv::_InputArray::kind' data-ref="_ZNK2cv11_InputArray4kindEv">kind</a>() == <a class="type" href="../include/opencv2/core/core.hpp.html#cv::_InputArray" title='cv::_InputArray' data-ref="cv::_InputArray">_InputArray</a>::<a class="enum" href="../include/opencv2/core/core.hpp.html#cv::_InputArray::::OPENGL_BUFFER" title='cv::_InputArray::::OPENGL_BUFFER' data-ref="cv::_InputArray::::OPENGL_BUFFER">OPENGL_BUFFER</a>)</td></tr>
+<tr><th id="1272">1272</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::color_" title='cv::ogl::Arrays::color_' data-ref="cv::ogl::Arrays::color_">color_</a> <a class="ref" href="../include/opencv2/core/opengl_interop.hpp.html#56" title='cv::ogl::Buffer::operator=' data-ref="_ZN2cv3ogl6BufferaSERKS1_">=</a> <a class="local col4 ref" href="#74color" title='color' data-ref="74color">color</a>.<a class="ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray12getOGlBufferEv" title='cv::_InputArray::getOGlBuffer' data-ref="_ZNK2cv11_InputArray12getOGlBufferEv">getOGlBuffer</a>();</td></tr>
+<tr><th id="1273">1273</th><td>    <b>else</b></td></tr>
+<tr><th id="1274">1274</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::color_" title='cv::ogl::Arrays::color_' data-ref="cv::ogl::Arrays::color_">color_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb" title='cv::ogl::Buffer::copyFrom' data-ref="_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb">copyFrom</a>(<a class="local col4 ref" href="#74color" title='color' data-ref="74color">color</a>);</td></tr>
+<tr><th id="1275">1275</th><td>}</td></tr>
+<tr><th id="1276">1276</th><td></td></tr>
+<tr><th id="1277">1277</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays15resetColorArrayEv" title='cv::ogl::Arrays::resetColorArray' data-ref="_ZN2cv3ogl6Arrays15resetColorArrayEv">resetColorArray</dfn>()</td></tr>
+<tr><th id="1278">1278</th><td>{</td></tr>
+<tr><th id="1279">1279</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::color_" title='cv::ogl::Arrays::color_' data-ref="cv::ogl::Arrays::color_">color_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer7releaseEv" title='cv::ogl::Buffer::release' data-ref="_ZN2cv3ogl6Buffer7releaseEv">release</a>();</td></tr>
+<tr><th id="1280">1280</th><td>}</td></tr>
+<tr><th id="1281">1281</th><td></td></tr>
+<tr><th id="1282">1282</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays14setNormalArrayERKNS_11_InputArrayE" title='cv::ogl::Arrays::setNormalArray' data-ref="_ZN2cv3ogl6Arrays14setNormalArrayERKNS_11_InputArrayE">setNormalArray</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col6 decl" id="76normal" title='normal' data-type='InputArray' data-ref="76normal">normal</dfn>)</td></tr>
+<tr><th id="1283">1283</th><td>{</td></tr>
+<tr><th id="1284">1284</th><td>    <em>const</em> <em>int</em> <dfn class="local col7 decl" id="77cn" title='cn' data-type='const int' data-ref="77cn">cn</dfn> = <a class="local col6 ref" href="#76normal" title='normal' data-ref="76normal">normal</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray8channelsEi" title='cv::_InputArray::channels' data-ref="_ZNK2cv11_InputArray8channelsEi">channels</a>();</td></tr>
+<tr><th id="1285">1285</th><td>    <em>const</em> <em>int</em> <dfn class="local col8 decl" id="78depth" title='depth' data-type='const int' data-ref="78depth">depth</dfn> = <a class="local col6 ref" href="#76normal" title='normal' data-ref="76normal">normal</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray5depthEi" title='cv::_InputArray::depth' data-ref="_ZNK2cv11_InputArray5depthEi">depth</a>();</td></tr>
+<tr><th id="1286">1286</th><td></td></tr>
+<tr><th id="1287">1287</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(cn == 3)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;cn == 3&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1287) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col7 ref" href="#77cn" title='cn' data-ref="77cn">cn</a> == <var>3</var> );</td></tr>
+<tr><th id="1288">1288</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(depth == 1 || depth == 3 || depth == 4 || depth == 5 || depth == 6)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;depth == CV_8S || depth == CV_16S || depth == CV_32S || depth == CV_32F || depth == CV_64F&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1288) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col8 ref" href="#78depth" title='depth' data-ref="78depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#606" title="1" data-ref="_M/CV_8S">CV_8S</a> || <a class="local col8 ref" href="#78depth" title='depth' data-ref="78depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#608" title="3" data-ref="_M/CV_16S">CV_16S</a> || <a class="local col8 ref" href="#78depth" title='depth' data-ref="78depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#609" title="4" data-ref="_M/CV_32S">CV_32S</a> || <a class="local col8 ref" href="#78depth" title='depth' data-ref="78depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#610" title="5" data-ref="_M/CV_32F">CV_32F</a> || <a class="local col8 ref" href="#78depth" title='depth' data-ref="78depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#611" title="6" data-ref="_M/CV_64F">CV_64F</a> );</td></tr>
+<tr><th id="1289">1289</th><td></td></tr>
+<tr><th id="1290">1290</th><td>    <b>if</b> (<a class="local col6 ref" href="#76normal" title='normal' data-ref="76normal">normal</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray4kindEv" title='cv::_InputArray::kind' data-ref="_ZNK2cv11_InputArray4kindEv">kind</a>() == <a class="type" href="../include/opencv2/core/core.hpp.html#cv::_InputArray" title='cv::_InputArray' data-ref="cv::_InputArray">_InputArray</a>::<a class="enum" href="../include/opencv2/core/core.hpp.html#cv::_InputArray::::OPENGL_BUFFER" title='cv::_InputArray::::OPENGL_BUFFER' data-ref="cv::_InputArray::::OPENGL_BUFFER">OPENGL_BUFFER</a>)</td></tr>
+<tr><th id="1291">1291</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::normal_" title='cv::ogl::Arrays::normal_' data-ref="cv::ogl::Arrays::normal_">normal_</a> <a class="ref" href="../include/opencv2/core/opengl_interop.hpp.html#56" title='cv::ogl::Buffer::operator=' data-ref="_ZN2cv3ogl6BufferaSERKS1_">=</a> <a class="local col6 ref" href="#76normal" title='normal' data-ref="76normal">normal</a>.<a class="ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray12getOGlBufferEv" title='cv::_InputArray::getOGlBuffer' data-ref="_ZNK2cv11_InputArray12getOGlBufferEv">getOGlBuffer</a>();</td></tr>
+<tr><th id="1292">1292</th><td>    <b>else</b></td></tr>
+<tr><th id="1293">1293</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::normal_" title='cv::ogl::Arrays::normal_' data-ref="cv::ogl::Arrays::normal_">normal_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb" title='cv::ogl::Buffer::copyFrom' data-ref="_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb">copyFrom</a>(<a class="local col6 ref" href="#76normal" title='normal' data-ref="76normal">normal</a>);</td></tr>
+<tr><th id="1294">1294</th><td>}</td></tr>
+<tr><th id="1295">1295</th><td></td></tr>
+<tr><th id="1296">1296</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays16resetNormalArrayEv" title='cv::ogl::Arrays::resetNormalArray' data-ref="_ZN2cv3ogl6Arrays16resetNormalArrayEv">resetNormalArray</dfn>()</td></tr>
+<tr><th id="1297">1297</th><td>{</td></tr>
+<tr><th id="1298">1298</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::normal_" title='cv::ogl::Arrays::normal_' data-ref="cv::ogl::Arrays::normal_">normal_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer7releaseEv" title='cv::ogl::Buffer::release' data-ref="_ZN2cv3ogl6Buffer7releaseEv">release</a>();</td></tr>
+<tr><th id="1299">1299</th><td>}</td></tr>
+<tr><th id="1300">1300</th><td></td></tr>
+<tr><th id="1301">1301</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays16setTexCoordArrayERKNS_11_InputArrayE" title='cv::ogl::Arrays::setTexCoordArray' data-ref="_ZN2cv3ogl6Arrays16setTexCoordArrayERKNS_11_InputArrayE">setTexCoordArray</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col9 decl" id="79texCoord" title='texCoord' data-type='InputArray' data-ref="79texCoord">texCoord</dfn>)</td></tr>
+<tr><th id="1302">1302</th><td>{</td></tr>
+<tr><th id="1303">1303</th><td>    <em>const</em> <em>int</em> <dfn class="local col0 decl" id="80cn" title='cn' data-type='const int' data-ref="80cn">cn</dfn> = <a class="local col9 ref" href="#79texCoord" title='texCoord' data-ref="79texCoord">texCoord</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray8channelsEi" title='cv::_InputArray::channels' data-ref="_ZNK2cv11_InputArray8channelsEi">channels</a>();</td></tr>
+<tr><th id="1304">1304</th><td>    <em>const</em> <em>int</em> <dfn class="local col1 decl" id="81depth" title='depth' data-type='const int' data-ref="81depth">depth</dfn> = <a class="local col9 ref" href="#79texCoord" title='texCoord' data-ref="79texCoord">texCoord</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray5depthEi" title='cv::_InputArray::depth' data-ref="_ZNK2cv11_InputArray5depthEi">depth</a>();</td></tr>
+<tr><th id="1305">1305</th><td></td></tr>
+<tr><th id="1306">1306</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(cn &gt;= 1 &amp;&amp; cn &lt;= 4)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;cn &gt;= 1 &amp;&amp; cn &lt;= 4&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1306) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col0 ref" href="#80cn" title='cn' data-ref="80cn">cn</a> &gt;= <var>1</var> &amp;&amp; <a class="local col0 ref" href="#80cn" title='cn' data-ref="80cn">cn</a> &lt;= <var>4</var> );</td></tr>
+<tr><th id="1307">1307</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#220" title="if(!!(depth == 3 || depth == 4 || depth == 5 || depth == 6)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;depth == CV_16S || depth == CV_32S || depth == CV_32F || depth == CV_64F&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/opengl_interop.cpp&quot;, 1307) )" data-ref="_M/CV_Assert">CV_Assert</a>( <a class="local col1 ref" href="#81depth" title='depth' data-ref="81depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#608" title="3" data-ref="_M/CV_16S">CV_16S</a> || <a class="local col1 ref" href="#81depth" title='depth' data-ref="81depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#609" title="4" data-ref="_M/CV_32S">CV_32S</a> || <a class="local col1 ref" href="#81depth" title='depth' data-ref="81depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#610" title="5" data-ref="_M/CV_32F">CV_32F</a> || <a class="local col1 ref" href="#81depth" title='depth' data-ref="81depth">depth</a> == <a class="macro" href="../include/opencv2/core/types_c.h.html#611" title="6" data-ref="_M/CV_64F">CV_64F</a> );</td></tr>
+<tr><th id="1308">1308</th><td></td></tr>
+<tr><th id="1309">1309</th><td>    <b>if</b> (<a class="local col9 ref" href="#79texCoord" title='texCoord' data-ref="79texCoord">texCoord</a>.<a class="virtual ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray4kindEv" title='cv::_InputArray::kind' data-ref="_ZNK2cv11_InputArray4kindEv">kind</a>() == <a class="type" href="../include/opencv2/core/core.hpp.html#cv::_InputArray" title='cv::_InputArray' data-ref="cv::_InputArray">_InputArray</a>::<a class="enum" href="../include/opencv2/core/core.hpp.html#cv::_InputArray::::OPENGL_BUFFER" title='cv::_InputArray::::OPENGL_BUFFER' data-ref="cv::_InputArray::::OPENGL_BUFFER">OPENGL_BUFFER</a>)</td></tr>
+<tr><th id="1310">1310</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::texCoord_" title='cv::ogl::Arrays::texCoord_' data-ref="cv::ogl::Arrays::texCoord_">texCoord_</a> <a class="ref" href="../include/opencv2/core/opengl_interop.hpp.html#56" title='cv::ogl::Buffer::operator=' data-ref="_ZN2cv3ogl6BufferaSERKS1_">=</a> <a class="local col9 ref" href="#79texCoord" title='texCoord' data-ref="79texCoord">texCoord</a>.<a class="ref" href="../include/opencv2/core/core.hpp.html#_ZNK2cv11_InputArray12getOGlBufferEv" title='cv::_InputArray::getOGlBuffer' data-ref="_ZNK2cv11_InputArray12getOGlBufferEv">getOGlBuffer</a>();</td></tr>
+<tr><th id="1311">1311</th><td>    <b>else</b></td></tr>
+<tr><th id="1312">1312</th><td>        <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::texCoord_" title='cv::ogl::Arrays::texCoord_' data-ref="cv::ogl::Arrays::texCoord_">texCoord_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb" title='cv::ogl::Buffer::copyFrom' data-ref="_ZN2cv3ogl6Buffer8copyFromERKNS_11_InputArrayENS1_6TargetEb">copyFrom</a>(<a class="local col9 ref" href="#79texCoord" title='texCoord' data-ref="79texCoord">texCoord</a>);</td></tr>
+<tr><th id="1313">1313</th><td>}</td></tr>
+<tr><th id="1314">1314</th><td></td></tr>
+<tr><th id="1315">1315</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays18resetTexCoordArrayEv" title='cv::ogl::Arrays::resetTexCoordArray' data-ref="_ZN2cv3ogl6Arrays18resetTexCoordArrayEv">resetTexCoordArray</dfn>()</td></tr>
+<tr><th id="1316">1316</th><td>{</td></tr>
+<tr><th id="1317">1317</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::texCoord_" title='cv::ogl::Arrays::texCoord_' data-ref="cv::ogl::Arrays::texCoord_">texCoord_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer7releaseEv" title='cv::ogl::Buffer::release' data-ref="_ZN2cv3ogl6Buffer7releaseEv">release</a>();</td></tr>
+<tr><th id="1318">1318</th><td>}</td></tr>
+<tr><th id="1319">1319</th><td></td></tr>
+<tr><th id="1320">1320</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays7releaseEv" title='cv::ogl::Arrays::release' data-ref="_ZN2cv3ogl6Arrays7releaseEv">release</dfn>()</td></tr>
+<tr><th id="1321">1321</th><td>{</td></tr>
+<tr><th id="1322">1322</th><td>    <a class="member" href="#_ZN2cv3ogl6Arrays16resetVertexArrayEv" title='cv::ogl::Arrays::resetVertexArray' data-ref="_ZN2cv3ogl6Arrays16resetVertexArrayEv">resetVertexArray</a>();</td></tr>
+<tr><th id="1323">1323</th><td>    <a class="member" href="#_ZN2cv3ogl6Arrays15resetColorArrayEv" title='cv::ogl::Arrays::resetColorArray' data-ref="_ZN2cv3ogl6Arrays15resetColorArrayEv">resetColorArray</a>();</td></tr>
+<tr><th id="1324">1324</th><td>    <a class="member" href="#_ZN2cv3ogl6Arrays16resetNormalArrayEv" title='cv::ogl::Arrays::resetNormalArray' data-ref="_ZN2cv3ogl6Arrays16resetNormalArrayEv">resetNormalArray</a>();</td></tr>
+<tr><th id="1325">1325</th><td>    <a class="member" href="#_ZN2cv3ogl6Arrays18resetTexCoordArrayEv" title='cv::ogl::Arrays::resetTexCoordArray' data-ref="_ZN2cv3ogl6Arrays18resetTexCoordArrayEv">resetTexCoordArray</a>();</td></tr>
+<tr><th id="1326">1326</th><td>}</td></tr>
+<tr><th id="1327">1327</th><td></td></tr>
+<tr><th id="1328">1328</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZN2cv3ogl6Arrays14setAutoReleaseEb" title='cv::ogl::Arrays::setAutoRelease' data-ref="_ZN2cv3ogl6Arrays14setAutoReleaseEb">setAutoRelease</dfn>(<em>bool</em> <dfn class="local col2 decl" id="82flag" title='flag' data-type='bool' data-ref="82flag">flag</dfn>)</td></tr>
+<tr><th id="1329">1329</th><td>{</td></tr>
+<tr><th id="1330">1330</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::vertex_" title='cv::ogl::Arrays::vertex_' data-ref="cv::ogl::Arrays::vertex_">vertex_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer14setAutoReleaseEb" title='cv::ogl::Buffer::setAutoRelease' data-ref="_ZN2cv3ogl6Buffer14setAutoReleaseEb">setAutoRelease</a>(<a class="local col2 ref" href="#82flag" title='flag' data-ref="82flag">flag</a>);</td></tr>
+<tr><th id="1331">1331</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::color_" title='cv::ogl::Arrays::color_' data-ref="cv::ogl::Arrays::color_">color_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer14setAutoReleaseEb" title='cv::ogl::Buffer::setAutoRelease' data-ref="_ZN2cv3ogl6Buffer14setAutoReleaseEb">setAutoRelease</a>(<a class="local col2 ref" href="#82flag" title='flag' data-ref="82flag">flag</a>);</td></tr>
+<tr><th id="1332">1332</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::normal_" title='cv::ogl::Arrays::normal_' data-ref="cv::ogl::Arrays::normal_">normal_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer14setAutoReleaseEb" title='cv::ogl::Buffer::setAutoRelease' data-ref="_ZN2cv3ogl6Buffer14setAutoReleaseEb">setAutoRelease</a>(<a class="local col2 ref" href="#82flag" title='flag' data-ref="82flag">flag</a>);</td></tr>
+<tr><th id="1333">1333</th><td>    <a class="member" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays::texCoord_" title='cv::ogl::Arrays::texCoord_' data-ref="cv::ogl::Arrays::texCoord_">texCoord_</a>.<a class="ref" href="#_ZN2cv3ogl6Buffer14setAutoReleaseEb" title='cv::ogl::Buffer::setAutoRelease' data-ref="_ZN2cv3ogl6Buffer14setAutoReleaseEb">setAutoRelease</a>(<a class="local col2 ref" href="#82flag" title='flag' data-ref="82flag">flag</a>);</td></tr>
+<tr><th id="1334">1334</th><td>}</td></tr>
+<tr><th id="1335">1335</th><td></td></tr>
+<tr><th id="1336">1336</th><td><em>void</em> <span class="namespace">cv::ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>::<dfn class="decl def" id="_ZNK2cv3ogl6Arrays4bindEv" title='cv::ogl::Arrays::bind' data-ref="_ZNK2cv3ogl6Arrays4bindEv">bind</dfn>() <em>const</em></td></tr>
+<tr><th id="1337">1337</th><td>{</td></tr>
+<tr><th id="1338">1338</th><td><u>#<span data-ppcond="1338">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1339">1339</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1340">1340</th><td><u>#<span data-ppcond="1338">else</span></u></td></tr>
+<tr><th id="1341">1341</th><td>    CV_Assert( texCoord_.empty() || texCoord_.size().area() == size_ );</td></tr>
+<tr><th id="1342">1342</th><td>    CV_Assert( normal_.empty() || normal_.size().area() == size_ );</td></tr>
+<tr><th id="1343">1343</th><td>    CV_Assert( color_.empty() || color_.size().area() == size_ );</td></tr>
+<tr><th id="1344">1344</th><td></td></tr>
+<tr><th id="1345">1345</th><td>    <b>if</b> (texCoord_.empty())</td></tr>
+<tr><th id="1346">1346</th><td>    {</td></tr>
+<tr><th id="1347">1347</th><td>        gl::DisableClientState(gl::TEXTURE_COORD_ARRAY);</td></tr>
+<tr><th id="1348">1348</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1349">1349</th><td>    }</td></tr>
+<tr><th id="1350">1350</th><td>    <b>else</b></td></tr>
+<tr><th id="1351">1351</th><td>    {</td></tr>
+<tr><th id="1352">1352</th><td>        gl::EnableClientState(gl::TEXTURE_COORD_ARRAY);</td></tr>
+<tr><th id="1353">1353</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1354">1354</th><td></td></tr>
+<tr><th id="1355">1355</th><td>        texCoord_.bind(ogl::Buffer::ARRAY_BUFFER);</td></tr>
+<tr><th id="1356">1356</th><td></td></tr>
+<tr><th id="1357">1357</th><td>        gl::TexCoordPointer(texCoord_.channels(), gl_types[texCoord_.depth()], <var>0</var>, <var>0</var>);</td></tr>
+<tr><th id="1358">1358</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1359">1359</th><td>    }</td></tr>
+<tr><th id="1360">1360</th><td></td></tr>
+<tr><th id="1361">1361</th><td>    <b>if</b> (normal_.empty())</td></tr>
+<tr><th id="1362">1362</th><td>    {</td></tr>
+<tr><th id="1363">1363</th><td>        gl::DisableClientState(gl::NORMAL_ARRAY);</td></tr>
+<tr><th id="1364">1364</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1365">1365</th><td>    }</td></tr>
+<tr><th id="1366">1366</th><td>    <b>else</b></td></tr>
+<tr><th id="1367">1367</th><td>    {</td></tr>
+<tr><th id="1368">1368</th><td>        gl::EnableClientState(gl::NORMAL_ARRAY);</td></tr>
+<tr><th id="1369">1369</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1370">1370</th><td></td></tr>
+<tr><th id="1371">1371</th><td>        normal_.bind(ogl::Buffer::ARRAY_BUFFER);</td></tr>
+<tr><th id="1372">1372</th><td></td></tr>
+<tr><th id="1373">1373</th><td>        gl::NormalPointer(gl_types[normal_.depth()], <var>0</var>, <var>0</var>);</td></tr>
+<tr><th id="1374">1374</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1375">1375</th><td>    }</td></tr>
+<tr><th id="1376">1376</th><td></td></tr>
+<tr><th id="1377">1377</th><td>    <b>if</b> (color_.empty())</td></tr>
+<tr><th id="1378">1378</th><td>    {</td></tr>
+<tr><th id="1379">1379</th><td>        gl::DisableClientState(gl::COLOR_ARRAY);</td></tr>
+<tr><th id="1380">1380</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1381">1381</th><td>    }</td></tr>
+<tr><th id="1382">1382</th><td>    <b>else</b></td></tr>
+<tr><th id="1383">1383</th><td>    {</td></tr>
+<tr><th id="1384">1384</th><td>        gl::EnableClientState(gl::COLOR_ARRAY);</td></tr>
+<tr><th id="1385">1385</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1386">1386</th><td></td></tr>
+<tr><th id="1387">1387</th><td>        color_.bind(ogl::Buffer::ARRAY_BUFFER);</td></tr>
+<tr><th id="1388">1388</th><td></td></tr>
+<tr><th id="1389">1389</th><td>        <em>const</em> <em>int</em> cn = color_.channels();</td></tr>
+<tr><th id="1390">1390</th><td></td></tr>
+<tr><th id="1391">1391</th><td>        gl::ColorPointer(cn, gl_types[color_.depth()], <var>0</var>, <var>0</var>);</td></tr>
+<tr><th id="1392">1392</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1393">1393</th><td>    }</td></tr>
+<tr><th id="1394">1394</th><td></td></tr>
+<tr><th id="1395">1395</th><td>    <b>if</b> (vertex_.empty())</td></tr>
+<tr><th id="1396">1396</th><td>    {</td></tr>
+<tr><th id="1397">1397</th><td>        gl::DisableClientState(gl::VERTEX_ARRAY);</td></tr>
+<tr><th id="1398">1398</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1399">1399</th><td>    }</td></tr>
+<tr><th id="1400">1400</th><td>    <b>else</b></td></tr>
+<tr><th id="1401">1401</th><td>    {</td></tr>
+<tr><th id="1402">1402</th><td>        gl::EnableClientState(gl::VERTEX_ARRAY);</td></tr>
+<tr><th id="1403">1403</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1404">1404</th><td></td></tr>
+<tr><th id="1405">1405</th><td>        vertex_.bind(ogl::Buffer::ARRAY_BUFFER);</td></tr>
+<tr><th id="1406">1406</th><td></td></tr>
+<tr><th id="1407">1407</th><td>        gl::VertexPointer(vertex_.channels(), gl_types[vertex_.depth()], <var>0</var>, <var>0</var>);</td></tr>
+<tr><th id="1408">1408</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1409">1409</th><td>    }</td></tr>
+<tr><th id="1410">1410</th><td></td></tr>
+<tr><th id="1411">1411</th><td>    ogl::Buffer::unbind(ogl::Buffer::ARRAY_BUFFER);</td></tr>
+<tr><th id="1412">1412</th><td><u>#<span data-ppcond="1338">endif</span></u></td></tr>
+<tr><th id="1413">1413</th><td>}</td></tr>
+<tr><th id="1414">1414</th><td></td></tr>
+<tr><th id="1415">1415</th><td><i>////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="1416">1416</th><td><i>// Rendering</i></td></tr>
+<tr><th id="1417">1417</th><td></td></tr>
+<tr><th id="1418">1418</th><td><em>void</em> <span class="namespace">cv::ogl::</span><dfn class="decl def" id="_ZN2cv3ogl6renderERKNS0_9Texture2DENS_5Rect_IdEES5_" title='cv::ogl::render' data-ref="_ZN2cv3ogl6renderERKNS0_9Texture2DENS_5Rect_IdEES5_">render</dfn>(<em>const</em> <span class="namespace">ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Texture2D" title='cv::ogl::Texture2D' data-ref="cv::ogl::Texture2D">Texture2D</a>&amp; <dfn class="local col3 decl" id="83tex" title='tex' data-type='const ogl::Texture2D &amp;' data-ref="83tex">tex</dfn>, <a class="type" href="../include/opencv2/core/core.hpp.html#cv::Rect_" title='cv::Rect_' data-ref="cv::Rect_">Rect_</a>&lt;<em>double</em>&gt; <dfn class="local col4 decl" id="84wndRect" title='wndRect' data-type='Rect_&lt;double&gt;' data-ref="84wndRect">wndRect</dfn>, <a class="type" href="../include/opencv2/core/core.hpp.html#cv::Rect_" title='cv::Rect_' data-ref="cv::Rect_">Rect_</a>&lt;<em>double</em>&gt; <dfn class="local col5 decl" id="85texRect" title='texRect' data-type='Rect_&lt;double&gt;' data-ref="85texRect">texRect</dfn>)</td></tr>
+<tr><th id="1419">1419</th><td>{</td></tr>
+<tr><th id="1420">1420</th><td><u>#<span data-ppcond="1420">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1421">1421</th><td>    (<em>void</em>) <a class="local col3 ref" href="#83tex" title='tex' data-ref="83tex">tex</a>;</td></tr>
+<tr><th id="1422">1422</th><td>    (<em>void</em>) <a class="local col4 ref" href="#84wndRect" title='wndRect' data-ref="84wndRect">wndRect</a>;</td></tr>
+<tr><th id="1423">1423</th><td>    (<em>void</em>) <a class="local col5 ref" href="#85texRect" title='texRect' data-ref="85texRect">texRect</a>;</td></tr>
+<tr><th id="1424">1424</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1425">1425</th><td><u>#<span data-ppcond="1420">else</span></u></td></tr>
+<tr><th id="1426">1426</th><td>    <b>if</b> (!tex.empty())</td></tr>
+<tr><th id="1427">1427</th><td>    {</td></tr>
+<tr><th id="1428">1428</th><td>        gl::MatrixMode(gl::PROJECTION);</td></tr>
+<tr><th id="1429">1429</th><td>        gl::LoadIdentity();</td></tr>
+<tr><th id="1430">1430</th><td>        gl::Ortho(<var>0.0</var>, <var>1.0</var>, <var>1.0</var>, <var>0.0</var>, -<var>1.0</var>, <var>1.0</var>);</td></tr>
+<tr><th id="1431">1431</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1432">1432</th><td></td></tr>
+<tr><th id="1433">1433</th><td>        gl::MatrixMode(gl::MODELVIEW);</td></tr>
+<tr><th id="1434">1434</th><td>        gl::LoadIdentity();</td></tr>
+<tr><th id="1435">1435</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1436">1436</th><td></td></tr>
+<tr><th id="1437">1437</th><td>        gl::Disable(gl::LIGHTING);</td></tr>
+<tr><th id="1438">1438</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1439">1439</th><td></td></tr>
+<tr><th id="1440">1440</th><td>        tex.bind();</td></tr>
+<tr><th id="1441">1441</th><td></td></tr>
+<tr><th id="1442">1442</th><td>        gl::Enable(gl::TEXTURE_2D);</td></tr>
+<tr><th id="1443">1443</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1444">1444</th><td></td></tr>
+<tr><th id="1445">1445</th><td>        gl::TexEnvi(gl::TEXTURE_ENV, gl::TEXTURE_ENV_MODE, gl::REPLACE);</td></tr>
+<tr><th id="1446">1446</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1447">1447</th><td></td></tr>
+<tr><th id="1448">1448</th><td>        gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR);</td></tr>
+<tr><th id="1449">1449</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1450">1450</th><td></td></tr>
+<tr><th id="1451">1451</th><td>        <em>const</em> <em>float</em> vertex[] =</td></tr>
+<tr><th id="1452">1452</th><td>        {</td></tr>
+<tr><th id="1453">1453</th><td>            wndRect.x, wndRect.y, <var>0.0f</var>,</td></tr>
+<tr><th id="1454">1454</th><td>            wndRect.x, (wndRect.y + wndRect.height), <var>0.0f</var>,</td></tr>
+<tr><th id="1455">1455</th><td>            wndRect.x + wndRect.width, (wndRect.y + wndRect.height), <var>0.0f</var>,</td></tr>
+<tr><th id="1456">1456</th><td>            wndRect.x + wndRect.width, wndRect.y, <var>0.0f</var></td></tr>
+<tr><th id="1457">1457</th><td>        };</td></tr>
+<tr><th id="1458">1458</th><td>        <em>const</em> <em>float</em> texCoords[] =</td></tr>
+<tr><th id="1459">1459</th><td>        {</td></tr>
+<tr><th id="1460">1460</th><td>            texRect.x, texRect.y,</td></tr>
+<tr><th id="1461">1461</th><td>            texRect.x, texRect.y + texRect.height,</td></tr>
+<tr><th id="1462">1462</th><td>            texRect.x + texRect.width, texRect.y + texRect.height,</td></tr>
+<tr><th id="1463">1463</th><td>            texRect.x + texRect.width, texRect.y</td></tr>
+<tr><th id="1464">1464</th><td>        };</td></tr>
+<tr><th id="1465">1465</th><td></td></tr>
+<tr><th id="1466">1466</th><td>        ogl::Buffer::unbind(ogl::Buffer::ARRAY_BUFFER);</td></tr>
+<tr><th id="1467">1467</th><td></td></tr>
+<tr><th id="1468">1468</th><td>        gl::EnableClientState(gl::TEXTURE_COORD_ARRAY);</td></tr>
+<tr><th id="1469">1469</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1470">1470</th><td></td></tr>
+<tr><th id="1471">1471</th><td>        gl::TexCoordPointer(<var>2</var>, gl::FLOAT, <var>0</var>, texCoords);</td></tr>
+<tr><th id="1472">1472</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1473">1473</th><td></td></tr>
+<tr><th id="1474">1474</th><td>        gl::DisableClientState(gl::NORMAL_ARRAY);</td></tr>
+<tr><th id="1475">1475</th><td>        gl::DisableClientState(gl::COLOR_ARRAY);</td></tr>
+<tr><th id="1476">1476</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1477">1477</th><td></td></tr>
+<tr><th id="1478">1478</th><td>        gl::EnableClientState(gl::VERTEX_ARRAY);</td></tr>
+<tr><th id="1479">1479</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1480">1480</th><td></td></tr>
+<tr><th id="1481">1481</th><td>        gl::VertexPointer(<var>3</var>, gl::FLOAT, <var>0</var>, vertex);</td></tr>
+<tr><th id="1482">1482</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1483">1483</th><td></td></tr>
+<tr><th id="1484">1484</th><td>        gl::DrawArrays(gl::QUADS, <var>0</var>, <var>4</var>);</td></tr>
+<tr><th id="1485">1485</th><td>        CV_CheckGlError();</td></tr>
+<tr><th id="1486">1486</th><td>    }</td></tr>
+<tr><th id="1487">1487</th><td><u>#<span data-ppcond="1420">endif</span></u></td></tr>
+<tr><th id="1488">1488</th><td>}</td></tr>
+<tr><th id="1489">1489</th><td></td></tr>
+<tr><th id="1490">1490</th><td><em>void</em> <span class="namespace">cv::ogl::</span><dfn class="decl def" id="_ZN2cv3ogl6renderERKNS0_6ArraysEiNS_7Scalar_IdEE" title='cv::ogl::render' data-ref="_ZN2cv3ogl6renderERKNS0_6ArraysEiNS_7Scalar_IdEE">render</dfn>(<em>const</em> <span class="namespace">ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>&amp; <dfn class="local col6 decl" id="86arr" title='arr' data-type='const ogl::Arrays &amp;' data-ref="86arr">arr</dfn>, <em>int</em> <dfn class="local col7 decl" id="87mode" title='mode' data-type='int' data-ref="87mode">mode</dfn>, <a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::Scalar" title='cv::Scalar' data-type='Scalar_&lt;double&gt;' data-ref="cv::Scalar">Scalar</a> <dfn class="local col8 decl" id="88color" title='color' data-type='Scalar' data-ref="88color">color</dfn>)</td></tr>
+<tr><th id="1491">1491</th><td>{</td></tr>
+<tr><th id="1492">1492</th><td><u>#<span data-ppcond="1492">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1493">1493</th><td>    (<em>void</em>) <a class="local col6 ref" href="#86arr" title='arr' data-ref="86arr">arr</a>;</td></tr>
+<tr><th id="1494">1494</th><td>    (<em>void</em>) <a class="local col7 ref" href="#87mode" title='mode' data-ref="87mode">mode</a>;</td></tr>
+<tr><th id="1495">1495</th><td>    (<em>void</em>) <a class="local col8 ref" href="#88color" title='color' data-ref="88color">color</a>;</td></tr>
+<tr><th id="1496">1496</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1497">1497</th><td><u>#<span data-ppcond="1492">else</span></u></td></tr>
+<tr><th id="1498">1498</th><td>    <b>if</b> (!arr.empty())</td></tr>
+<tr><th id="1499">1499</th><td>    {</td></tr>
+<tr><th id="1500">1500</th><td>        gl::Color3d(color[<var>0</var>] / <var>255.0</var>, color[<var>1</var>] / <var>255.0</var>, color[<var>2</var>] / <var>255.0</var>);</td></tr>
+<tr><th id="1501">1501</th><td></td></tr>
+<tr><th id="1502">1502</th><td>        arr.bind();</td></tr>
+<tr><th id="1503">1503</th><td></td></tr>
+<tr><th id="1504">1504</th><td>        gl::DrawArrays(mode, <var>0</var>, arr.size());</td></tr>
+<tr><th id="1505">1505</th><td>    }</td></tr>
+<tr><th id="1506">1506</th><td><u>#<span data-ppcond="1492">endif</span></u></td></tr>
+<tr><th id="1507">1507</th><td>}</td></tr>
+<tr><th id="1508">1508</th><td></td></tr>
+<tr><th id="1509">1509</th><td><em>void</em> <span class="namespace">cv::ogl::</span><dfn class="decl def" id="_ZN2cv3ogl6renderERKNS0_6ArraysERKNS_11_InputArrayEiNS_7Scalar_IdEE" title='cv::ogl::render' data-ref="_ZN2cv3ogl6renderERKNS0_6ArraysERKNS_11_InputArrayEiNS_7Scalar_IdEE">render</dfn>(<em>const</em> <span class="namespace">ogl::</span><a class="type" href="../include/opencv2/core/opengl_interop.hpp.html#cv::ogl::Arrays" title='cv::ogl::Arrays' data-ref="cv::ogl::Arrays">Arrays</a>&amp; <dfn class="local col9 decl" id="89arr" title='arr' data-type='const ogl::Arrays &amp;' data-ref="89arr">arr</dfn>, <a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::InputArray" title='cv::InputArray' data-type='const cv::_InputArray &amp;' data-ref="cv::InputArray">InputArray</a> <dfn class="local col0 decl" id="90indices" title='indices' data-type='InputArray' data-ref="90indices">indices</dfn>, <em>int</em> <dfn class="local col1 decl" id="91mode" title='mode' data-type='int' data-ref="91mode">mode</dfn>, <a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::Scalar" title='cv::Scalar' data-type='Scalar_&lt;double&gt;' data-ref="cv::Scalar">Scalar</a> <dfn class="local col2 decl" id="92color" title='color' data-type='Scalar' data-ref="92color">color</dfn>)</td></tr>
+<tr><th id="1510">1510</th><td>{</td></tr>
+<tr><th id="1511">1511</th><td><u>#<span data-ppcond="1511">ifndef</span> <span class="macro" data-ref="_M/HAVE_OPENGL">HAVE_OPENGL</span></u></td></tr>
+<tr><th id="1512">1512</th><td>    (<em>void</em>) <a class="local col9 ref" href="#89arr" title='arr' data-ref="89arr">arr</a>;</td></tr>
+<tr><th id="1513">1513</th><td>    (<em>void</em>) <a class="local col0 ref" href="#90indices" title='indices' data-ref="90indices">indices</a>;</td></tr>
+<tr><th id="1514">1514</th><td>    (<em>void</em>) <a class="local col1 ref" href="#91mode" title='mode' data-ref="91mode">mode</a>;</td></tr>
+<tr><th id="1515">1515</th><td>    (<em>void</em>) <a class="local col2 ref" href="#92color" title='color' data-ref="92color">color</a>;</td></tr>
+<tr><th id="1516">1516</th><td>    <a class="tu ref" href="#_ZN12_GLOBAL__N_110throw_noglEv" title='&lt;anonymous namespace&gt;::throw_nogl' data-use='c' data-ref="_ZN12_GLOBAL__N_110throw_noglEv">throw_nogl</a>();</td></tr>
+<tr><th id="1517">1517</th><td><u>#<span data-ppcond="1511">else</span></u></td></tr>
+<tr><th id="1518">1518</th><td>    <b>if</b> (!arr.empty() &amp;&amp; !indices.empty())</td></tr>
+<tr><th id="1519">1519</th><td>    {</td></tr>
+<tr><th id="1520">1520</th><td>        gl::Color3d(color[<var>0</var>] / <var>255.0</var>, color[<var>1</var>] / <var>255.0</var>, color[<var>2</var>] / <var>255.0</var>);</td></tr>
+<tr><th id="1521">1521</th><td></td></tr>
+<tr><th id="1522">1522</th><td>        arr.bind();</td></tr>
+<tr><th id="1523">1523</th><td></td></tr>
+<tr><th id="1524">1524</th><td>        <em>const</em> <em>int</em> kind = indices.kind();</td></tr>
+<tr><th id="1525">1525</th><td></td></tr>
+<tr><th id="1526">1526</th><td>        <b>switch</b> (kind)</td></tr>
+<tr><th id="1527">1527</th><td>        {</td></tr>
+<tr><th id="1528">1528</th><td>        <b>case</b> _InputArray::OPENGL_BUFFER :</td></tr>
+<tr><th id="1529">1529</th><td>            {</td></tr>
+<tr><th id="1530">1530</th><td>                ogl::Buffer buf = indices.getOGlBuffer();</td></tr>
+<tr><th id="1531">1531</th><td></td></tr>
+<tr><th id="1532">1532</th><td>                <em>const</em> <em>int</em> depth = buf.depth();</td></tr>
+<tr><th id="1533">1533</th><td></td></tr>
+<tr><th id="1534">1534</th><td>                CV_Assert( buf.channels() == <var>1</var> );</td></tr>
+<tr><th id="1535">1535</th><td>                CV_Assert( depth &lt;= CV_32S );</td></tr>
+<tr><th id="1536">1536</th><td></td></tr>
+<tr><th id="1537">1537</th><td>                GLenum type;</td></tr>
+<tr><th id="1538">1538</th><td>                <b>if</b> (depth &lt; CV_16U)</td></tr>
+<tr><th id="1539">1539</th><td>                    type = gl::UNSIGNED_BYTE;</td></tr>
+<tr><th id="1540">1540</th><td>                <b>else</b> <b>if</b> (depth &lt; CV_32S)</td></tr>
+<tr><th id="1541">1541</th><td>                    type = gl::UNSIGNED_SHORT;</td></tr>
+<tr><th id="1542">1542</th><td>                <b>else</b></td></tr>
+<tr><th id="1543">1543</th><td>                    type = gl::UNSIGNED_INT;</td></tr>
+<tr><th id="1544">1544</th><td></td></tr>
+<tr><th id="1545">1545</th><td>                buf.bind(ogl::Buffer::ELEMENT_ARRAY_BUFFER);</td></tr>
+<tr><th id="1546">1546</th><td></td></tr>
+<tr><th id="1547">1547</th><td>                gl::DrawElements(mode, buf.size().area(), type, <var>0</var>);</td></tr>
+<tr><th id="1548">1548</th><td></td></tr>
+<tr><th id="1549">1549</th><td>                ogl::Buffer::unbind(ogl::Buffer::ELEMENT_ARRAY_BUFFER);</td></tr>
+<tr><th id="1550">1550</th><td></td></tr>
+<tr><th id="1551">1551</th><td>                <b>break</b>;</td></tr>
+<tr><th id="1552">1552</th><td>            }</td></tr>
+<tr><th id="1553">1553</th><td></td></tr>
+<tr><th id="1554">1554</th><td>        <b>default</b>:</td></tr>
+<tr><th id="1555">1555</th><td>            {</td></tr>
+<tr><th id="1556">1556</th><td>                Mat mat = indices.getMat();</td></tr>
+<tr><th id="1557">1557</th><td></td></tr>
+<tr><th id="1558">1558</th><td>                <em>const</em> <em>int</em> depth = mat.depth();</td></tr>
+<tr><th id="1559">1559</th><td></td></tr>
+<tr><th id="1560">1560</th><td>                CV_Assert( mat.channels() == <var>1</var> );</td></tr>
+<tr><th id="1561">1561</th><td>                CV_Assert( depth &lt;= CV_32S );</td></tr>
+<tr><th id="1562">1562</th><td>                CV_Assert( mat.isContinuous() );</td></tr>
+<tr><th id="1563">1563</th><td></td></tr>
+<tr><th id="1564">1564</th><td>                GLenum type;</td></tr>
+<tr><th id="1565">1565</th><td>                <b>if</b> (depth &lt; CV_16U)</td></tr>
+<tr><th id="1566">1566</th><td>                    type = gl::UNSIGNED_BYTE;</td></tr>
+<tr><th id="1567">1567</th><td>                <b>else</b> <b>if</b> (depth &lt; CV_32S)</td></tr>
+<tr><th id="1568">1568</th><td>                    type = gl::UNSIGNED_SHORT;</td></tr>
+<tr><th id="1569">1569</th><td>                <b>else</b></td></tr>
+<tr><th id="1570">1570</th><td>                    type = gl::UNSIGNED_INT;</td></tr>
+<tr><th id="1571">1571</th><td></td></tr>
+<tr><th id="1572">1572</th><td>                ogl::Buffer::unbind(ogl::Buffer::ELEMENT_ARRAY_BUFFER);</td></tr>
+<tr><th id="1573">1573</th><td></td></tr>
+<tr><th id="1574">1574</th><td>                gl::DrawElements(mode, mat.size().area(), type, mat.data);</td></tr>
+<tr><th id="1575">1575</th><td>            }</td></tr>
+<tr><th id="1576">1576</th><td>        }</td></tr>
+<tr><th id="1577">1577</th><td>    }</td></tr>
+<tr><th id="1578">1578</th><td><u>#<span data-ppcond="1511">endif</span></u></td></tr>
+<tr><th id="1579">1579</th><td>}</td></tr>
+<tr><th id="1580">1580</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

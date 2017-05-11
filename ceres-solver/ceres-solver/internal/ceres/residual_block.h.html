@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>residual_block.h source code [ceres-solver/internal/ceres/residual_block.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::ResidualBlock "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/residual_block.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='residual_block.h.html'>residual_block.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td><i>//         keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="31">31</th><td><i>//</i></td></tr>
+<tr><th id="32">32</th><td><i>// Purpose : Class and struct definitions for parameter and residual blocks.</i></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#<span data-ppcond="34">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_RESIDUAL_BLOCK_H_">CERES_INTERNAL_RESIDUAL_BLOCK_H_</span></u></td></tr>
+<tr><th id="35">35</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_RESIDUAL_BLOCK_H_" data-ref="_M/CERES_INTERNAL_RESIDUAL_BLOCK_H_">CERES_INTERNAL_RESIDUAL_BLOCK_H_</dfn></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../../include/ceres/cost_function.h.html">"ceres/cost_function.h"</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="../../include/ceres/internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="../../include/ceres/internal/scoped_ptr.h.html">"ceres/internal/scoped_ptr.h"</a></u></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="stringprintf.h.html">"ceres/stringprintf.h"</a></u></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="../../include/ceres/types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><b>class</b> <dfn class="type" id="ceres::LossFunction" title='ceres::LossFunction' data-ref="ceres::LossFunction">LossFunction</dfn>;</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><b>class</b> <a class="type" href="parameter_block.h.html#ceres::internal::ParameterBlock" title='ceres::internal::ParameterBlock' data-ref="ceres::internal::ParameterBlock" id="ceres::internal::ParameterBlock">ParameterBlock</a>;</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><i>// A term in the least squares problem. The mathematical form of each term in</i></td></tr>
+<tr><th id="55">55</th><td><i>// the overall least-squares cost function is:</i></td></tr>
+<tr><th id="56">56</th><td><i>//</i></td></tr>
+<tr><th id="57">57</th><td><i>//    1</i></td></tr>
+<tr><th id="58">58</th><td><i>//   --- loss_function( || cost_function(block1, block2, ...) ||^2  ),</i></td></tr>
+<tr><th id="59">59</th><td><i>//    2</i></td></tr>
+<tr><th id="60">60</th><td><i>//</i></td></tr>
+<tr><th id="61">61</th><td><i>// Storing the cost function and the loss function separately permits optimizing</i></td></tr>
+<tr><th id="62">62</th><td><i>// the problem with standard non-linear least techniques, without requiring a</i></td></tr>
+<tr><th id="63">63</th><td><i>// more general non-linear solver.</i></td></tr>
+<tr><th id="64">64</th><td><i>//</i></td></tr>
+<tr><th id="65">65</th><td><i>// The residual block stores pointers to but does not own the cost functions,</i></td></tr>
+<tr><th id="66">66</th><td><i>// loss functions, and parameter blocks.</i></td></tr>
+<tr><th id="67">67</th><td><b>class</b> <dfn class="type def" id="ceres::internal::ResidualBlock" title='ceres::internal::ResidualBlock' data-ref="ceres::internal::ResidualBlock">ResidualBlock</dfn> {</td></tr>
+<tr><th id="68">68</th><td> <b>public</b>:</td></tr>
+<tr><th id="69">69</th><td>  <i>// Construct the residual block with the given cost/loss functions. Loss may</i></td></tr>
+<tr><th id="70">70</th><td><i>  // be null. The index is the index of the residual block in the Program's</i></td></tr>
+<tr><th id="71">71</th><td><i>  // residual_blocks array.</i></td></tr>
+<tr><th id="72">72</th><td>  <dfn class="decl" id="_ZN5ceres8internal13ResidualBlockC1EPKNS_12CostFunctionEPKNS_12LossFunctionERKSt6vectorIPNS0_14ParameterBlockESaISA_EEi" title='ceres::internal::ResidualBlock::ResidualBlock' data-ref="_ZN5ceres8internal13ResidualBlockC1EPKNS_12CostFunctionEPKNS_12LossFunctionERKSt6vectorIPNS0_14ParameterBlockESaISA_EEi">ResidualBlock</dfn>(<em>const</em> <a class="type" href="../../include/ceres/cost_function.h.html#ceres::CostFunction" title='ceres::CostFunction' data-ref="ceres::CostFunction">CostFunction</a>* <dfn class="local col4 decl" id="464cost_function" title='cost_function' data-type='const ceres::CostFunction *' data-ref="464cost_function">cost_function</dfn>,</td></tr>
+<tr><th id="73">73</th><td>                <em>const</em> <a class="type" href="#ceres::LossFunction" title='ceres::LossFunction' data-ref="ceres::LossFunction">LossFunction</a>* <dfn class="local col5 decl" id="465loss_function" title='loss_function' data-type='const ceres::LossFunction *' data-ref="465loss_function">loss_function</dfn>,</td></tr>
+<tr><th id="74">74</th><td>                <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="parameter_block.h.html#ceres::internal::ParameterBlock" title='ceres::internal::ParameterBlock' data-ref="ceres::internal::ParameterBlock">ParameterBlock</a>*&gt;&amp; <dfn class="local col6 decl" id="466parameter_blocks" title='parameter_blocks' data-type='const std::vector&lt;ParameterBlock *&gt; &amp;' data-ref="466parameter_blocks">parameter_blocks</dfn>,</td></tr>
+<tr><th id="75">75</th><td>                <em>int</em> <dfn class="local col7 decl" id="467index" title='index' data-type='int' data-ref="467index">index</dfn>);</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>  <i>// Evaluates the residual term, storing the scalar cost in *cost, the residual</i></td></tr>
+<tr><th id="78">78</th><td><i>  // components in *residuals, and the jacobians between the parameters and</i></td></tr>
+<tr><th id="79">79</th><td><i>  // residuals in jacobians[i], in row-major order. If residuals is NULL, the</i></td></tr>
+<tr><th id="80">80</th><td><i>  // residuals are not computed. If jacobians is NULL, no jacobians are</i></td></tr>
+<tr><th id="81">81</th><td><i>  // computed. If jacobians[i] is NULL, then the jacobian for that parameter is</i></td></tr>
+<tr><th id="82">82</th><td><i>  // not computed.</i></td></tr>
+<tr><th id="83">83</th><td><i>  //</i></td></tr>
+<tr><th id="84">84</th><td><i>  // Evaluate needs scratch space which must be supplied by the caller via</i></td></tr>
+<tr><th id="85">85</th><td><i>  // scratch. The array should have at least NumScratchDoublesForEvaluate()</i></td></tr>
+<tr><th id="86">86</th><td><i>  // space available.</i></td></tr>
+<tr><th id="87">87</th><td><i>  //</i></td></tr>
+<tr><th id="88">88</th><td><i>  // The return value indicates the success or failure. If the function returns</i></td></tr>
+<tr><th id="89">89</th><td><i>  // false, the caller should expect the the output memory locations to have</i></td></tr>
+<tr><th id="90">90</th><td><i>  // been modified.</i></td></tr>
+<tr><th id="91">91</th><td><i>  //</i></td></tr>
+<tr><th id="92">92</th><td><i>  // The returned cost and jacobians have had robustification and local</i></td></tr>
+<tr><th id="93">93</th><td><i>  // parameterizations applied already; for example, the jacobian for a</i></td></tr>
+<tr><th id="94">94</th><td><i>  // 4-dimensional quaternion parameter using the "QuaternionParameterization"</i></td></tr>
+<tr><th id="95">95</th><td><i>  // is num_residuals by 3 instead of num_residuals by 4.</i></td></tr>
+<tr><th id="96">96</th><td><i>  //</i></td></tr>
+<tr><th id="97">97</th><td><i>  // apply_loss_function as the name implies allows the user to switch</i></td></tr>
+<tr><th id="98">98</th><td><i>  // the application of the loss function on and off.</i></td></tr>
+<tr><th id="99">99</th><td>  <em>bool</em> <dfn class="decl" id="_ZNK5ceres8internal13ResidualBlock8EvaluateEbPdS2_PS2_S2_" title='ceres::internal::ResidualBlock::Evaluate' data-ref="_ZNK5ceres8internal13ResidualBlock8EvaluateEbPdS2_PS2_S2_">Evaluate</dfn>(<em>bool</em> <dfn class="local col8 decl" id="468apply_loss_function" title='apply_loss_function' data-type='bool' data-ref="468apply_loss_function">apply_loss_function</dfn>,</td></tr>
+<tr><th id="100">100</th><td>                <em>double</em>* <dfn class="local col9 decl" id="469cost" title='cost' data-type='double *' data-ref="469cost">cost</dfn>,</td></tr>
+<tr><th id="101">101</th><td>                <em>double</em>* <dfn class="local col0 decl" id="470residuals" title='residuals' data-type='double *' data-ref="470residuals">residuals</dfn>,</td></tr>
+<tr><th id="102">102</th><td>                <em>double</em>** <dfn class="local col1 decl" id="471jacobians" title='jacobians' data-type='double **' data-ref="471jacobians">jacobians</dfn>,</td></tr>
+<tr><th id="103">103</th><td>                <em>double</em>* <dfn class="local col2 decl" id="472scratch" title='scratch' data-type='double *' data-ref="472scratch">scratch</dfn>) <em>const</em>;</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>  <em>const</em> <a class="type" href="../../include/ceres/cost_function.h.html#ceres::CostFunction" title='ceres::CostFunction' data-ref="ceres::CostFunction">CostFunction</a>* <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock13cost_functionEv" title='ceres::internal::ResidualBlock::cost_function' data-ref="_ZNK5ceres8internal13ResidualBlock13cost_functionEv">cost_function</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::ResidualBlock::cost_function_" title='ceres::internal::ResidualBlock::cost_function_' data-ref="ceres::internal::ResidualBlock::cost_function_">cost_function_</a>; }</td></tr>
+<tr><th id="107">107</th><td>  <em>const</em> <a class="type" href="#ceres::LossFunction" title='ceres::LossFunction' data-ref="ceres::LossFunction">LossFunction</a>* <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock13loss_functionEv" title='ceres::internal::ResidualBlock::loss_function' data-ref="_ZNK5ceres8internal13ResidualBlock13loss_functionEv">loss_function</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::ResidualBlock::loss_function_" title='ceres::internal::ResidualBlock::loss_function_' data-ref="ceres::internal::ResidualBlock::loss_function_">loss_function_</a>; }</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <i>// Access the parameter blocks for this residual. The array has size</i></td></tr>
+<tr><th id="110">110</th><td><i>  // NumParameterBlocks().</i></td></tr>
+<tr><th id="111">111</th><td>  <a class="type" href="parameter_block.h.html#ceres::internal::ParameterBlock" title='ceres::internal::ParameterBlock' data-ref="ceres::internal::ParameterBlock">ParameterBlock</a>* <em>const</em>* <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock16parameter_blocksEv" title='ceres::internal::ResidualBlock::parameter_blocks' data-ref="_ZNK5ceres8internal13ResidualBlock16parameter_blocksEv">parameter_blocks</dfn>() <em>const</em> {</td></tr>
+<tr><th id="112">112</th><td>    <b>return</b> <a class="member" href="#ceres::internal::ResidualBlock::parameter_blocks_" title='ceres::internal::ResidualBlock::parameter_blocks_' data-ref="ceres::internal::ResidualBlock::parameter_blocks_">parameter_blocks_</a>.<a class="ref" href="../../include/ceres/internal/scoped_ptr.h.html#_ZNK5ceres8internal12scoped_array3getEv" title='ceres::internal::scoped_array::get' data-ref="_ZNK5ceres8internal12scoped_array3getEv">get</a>();</td></tr>
+<tr><th id="113">113</th><td>  }</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>  <i>// Number of variable blocks that this residual term depends on.</i></td></tr>
+<tr><th id="116">116</th><td>  <em>int</em> <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock18NumParameterBlocksEv" title='ceres::internal::ResidualBlock::NumParameterBlocks' data-ref="_ZNK5ceres8internal13ResidualBlock18NumParameterBlocksEv">NumParameterBlocks</dfn>() <em>const</em> {</td></tr>
+<tr><th id="117">117</th><td>    <b>return</b> <a class="member" href="#ceres::internal::ResidualBlock::cost_function_" title='ceres::internal::ResidualBlock::cost_function_' data-ref="ceres::internal::ResidualBlock::cost_function_">cost_function_</a>-&gt;<a class="ref" href="../../include/ceres/cost_function.h.html#_ZNK5ceres12CostFunction21parameter_block_sizesEv" title='ceres::CostFunction::parameter_block_sizes' data-ref="_ZNK5ceres12CostFunction21parameter_block_sizesEv">parameter_block_sizes</a>().<a class="ref" href="../../../include/c++/4.8/bits/stl_vector.h.html#_ZNKSt6vector4sizeEv" title='std::vector::size' data-ref="_ZNKSt6vector4sizeEv">size</a>();</td></tr>
+<tr><th id="118">118</th><td>  }</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>  <i>// The size of the residual vector returned by this residual function.</i></td></tr>
+<tr><th id="121">121</th><td>  <em>int</em> <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock12NumResidualsEv" title='ceres::internal::ResidualBlock::NumResiduals' data-ref="_ZNK5ceres8internal13ResidualBlock12NumResidualsEv">NumResiduals</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::ResidualBlock::cost_function_" title='ceres::internal::ResidualBlock::cost_function_' data-ref="ceres::internal::ResidualBlock::cost_function_">cost_function_</a>-&gt;<a class="ref" href="../../include/ceres/cost_function.h.html#_ZNK5ceres12CostFunction13num_residualsEv" title='ceres::CostFunction::num_residuals' data-ref="_ZNK5ceres12CostFunction13num_residualsEv">num_residuals</a>(); }</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td>  <i>// The minimum amount of scratch space needed to pass to Evaluate().</i></td></tr>
+<tr><th id="124">124</th><td>  <em>int</em> <dfn class="decl" id="_ZNK5ceres8internal13ResidualBlock28NumScratchDoublesForEvaluateEv" title='ceres::internal::ResidualBlock::NumScratchDoublesForEvaluate' data-ref="_ZNK5ceres8internal13ResidualBlock28NumScratchDoublesForEvaluateEv">NumScratchDoublesForEvaluate</dfn>() <em>const</em>;</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>  <i>// This residual block's index in an array.</i></td></tr>
+<tr><th id="127">127</th><td>  <em>int</em> <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock5indexEv" title='ceres::internal::ResidualBlock::index' data-ref="_ZNK5ceres8internal13ResidualBlock5indexEv">index</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#ceres::internal::ResidualBlock::index_" title='ceres::internal::ResidualBlock::index_' data-ref="ceres::internal::ResidualBlock::index_">index_</a>; }</td></tr>
+<tr><th id="128">128</th><td>  <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal13ResidualBlock9set_indexEi" title='ceres::internal::ResidualBlock::set_index' data-ref="_ZN5ceres8internal13ResidualBlock9set_indexEi">set_index</dfn>(<em>int</em> <dfn class="local col3 decl" id="473index" title='index' data-type='int' data-ref="473index">index</dfn>) { <a class="member" href="#ceres::internal::ResidualBlock::index_" title='ceres::internal::ResidualBlock::index_' data-ref="ceres::internal::ResidualBlock::index_">index_</a> = <a class="local col3 ref" href="#473index" title='index' data-ref="473index">index</a>; }</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>  <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl def" id="_ZNK5ceres8internal13ResidualBlock8ToStringEv" title='ceres::internal::ResidualBlock::ToString' data-ref="_ZNK5ceres8internal13ResidualBlock8ToStringEv">ToString</dfn>() <em>const</em> {</td></tr>
+<tr><th id="131">131</th><td>    <b>return</b> <a class="ref" href="stringprintf.h.html#_ZN5ceres8internal12StringPrintfEPKcz" title='ceres::internal::StringPrintf' data-ref="_ZN5ceres8internal12StringPrintfEPKcz">StringPrintf</a>(<q>"{residual block; index=%d}"</q>, <a class="member" href="#ceres::internal::ResidualBlock::index_" title='ceres::internal::ResidualBlock::index_' data-ref="ceres::internal::ResidualBlock::index_">index_</a>);</td></tr>
+<tr><th id="132">132</th><td>  }</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td> <b>private</b>:</td></tr>
+<tr><th id="135">135</th><td>  <em>const</em> <a class="type" href="../../include/ceres/cost_function.h.html#ceres::CostFunction" title='ceres::CostFunction' data-ref="ceres::CostFunction">CostFunction</a>* <dfn class="decl" id="ceres::internal::ResidualBlock::cost_function_" title='ceres::internal::ResidualBlock::cost_function_' data-ref="ceres::internal::ResidualBlock::cost_function_">cost_function_</dfn>;</td></tr>
+<tr><th id="136">136</th><td>  <em>const</em> <a class="type" href="#ceres::LossFunction" title='ceres::LossFunction' data-ref="ceres::LossFunction">LossFunction</a>* <dfn class="decl" id="ceres::internal::ResidualBlock::loss_function_" title='ceres::internal::ResidualBlock::loss_function_' data-ref="ceres::internal::ResidualBlock::loss_function_">loss_function_</dfn>;</td></tr>
+<tr><th id="137">137</th><td>  <a class="type" href="../../include/ceres/internal/scoped_ptr.h.html#ceres::internal::scoped_array" title='ceres::internal::scoped_array' data-ref="ceres::internal::scoped_array">scoped_array</a>&lt;<a class="type" href="parameter_block.h.html#ceres::internal::ParameterBlock" title='ceres::internal::ParameterBlock' data-ref="ceres::internal::ParameterBlock">ParameterBlock</a>*&gt; <dfn class="decl" id="ceres::internal::ResidualBlock::parameter_blocks_" title='ceres::internal::ResidualBlock::parameter_blocks_' data-ref="ceres::internal::ResidualBlock::parameter_blocks_">parameter_blocks_</dfn>;</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>  <i>// The index of the residual, typically in a Program. This is only to permit</i></td></tr>
+<tr><th id="140">140</th><td><i>  // switching from a ResidualBlock* to an index in the Program's array, needed</i></td></tr>
+<tr><th id="141">141</th><td><i>  // to do efficient removals.</i></td></tr>
+<tr><th id="142">142</th><td>  <a class="typedef" href="integral_types.h.html#ceres::internal::int32" title='ceres::internal::int32' data-type='Integer&lt;32&gt;::type' data-ref="ceres::internal::int32">int32</a> <dfn class="decl" id="ceres::internal::ResidualBlock::index_" title='ceres::internal::ResidualBlock::index_' data-ref="ceres::internal::ResidualBlock::index_">index_</dfn>;</td></tr>
+<tr><th id="143">143</th><td>};</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="146">146</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td><u>#<span data-ppcond="34">endif</span>  // CERES_INTERNAL_RESIDUAL_BLOCK_H_</u></td></tr>
+<tr><th id="149">149</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='block_evaluate_preparer.cc.html'>ceres-solver/internal/ceres/block_evaluate_preparer.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

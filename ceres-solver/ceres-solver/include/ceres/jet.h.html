@@ -1,0 +1,921 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>jet.h source code [ceres-solver/include/ceres/jet.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::NumTraits,ceres::Jet "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/include/ceres/jet.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>include</a>/<a href='./'>ceres</a>/<a href='jet.h.html'>jet.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// A simple implementation of N-dimensional dual numbers, for automatically</i></td></tr>
+<tr><th id="32">32</th><td><i>// computing exact derivatives of functions.</i></td></tr>
+<tr><th id="33">33</th><td><i>//</i></td></tr>
+<tr><th id="34">34</th><td><i>// While a complete treatment of the mechanics of automatic differentation is</i></td></tr>
+<tr><th id="35">35</th><td><i>// beyond the scope of this header (see</i></td></tr>
+<tr><th id="36">36</th><td><i>// <a href="http://en.wikipedia.org/wiki/Automatic_differentiation">http://en.wikipedia.org/wiki/Automatic_differentiation</a> for details), the</i></td></tr>
+<tr><th id="37">37</th><td><i>// basic idea is to extend normal arithmetic with an extra element, "e," often</i></td></tr>
+<tr><th id="38">38</th><td><i>// denoted with the greek symbol epsilon, such that e != 0 but e^2 = 0. Dual</i></td></tr>
+<tr><th id="39">39</th><td><i>// numbers are extensions of the real numbers analogous to complex numbers:</i></td></tr>
+<tr><th id="40">40</th><td><i>// whereas complex numbers augment the reals by introducing an imaginary unit i</i></td></tr>
+<tr><th id="41">41</th><td><i>// such that i^2 = -1, dual numbers introduce an "infinitesimal" unit e such</i></td></tr>
+<tr><th id="42">42</th><td><i>// that e^2 = 0. Dual numbers have two components: the "real" component and the</i></td></tr>
+<tr><th id="43">43</th><td><i>// "infinitesimal" component, generally written as x + y*e. Surprisingly, this</i></td></tr>
+<tr><th id="44">44</th><td><i>// leads to a convenient method for computing exact derivatives without needing</i></td></tr>
+<tr><th id="45">45</th><td><i>// to manipulate complicated symbolic expressions.</i></td></tr>
+<tr><th id="46">46</th><td><i>//</i></td></tr>
+<tr><th id="47">47</th><td><i>// For example, consider the function</i></td></tr>
+<tr><th id="48">48</th><td><i>//</i></td></tr>
+<tr><th id="49">49</th><td><i>//   f(x) = x^2 ,</i></td></tr>
+<tr><th id="50">50</th><td><i>//</i></td></tr>
+<tr><th id="51">51</th><td><i>// evaluated at 10. Using normal arithmetic, f(10) = 100, and df/dx(10) = 20.</i></td></tr>
+<tr><th id="52">52</th><td><i>// Next, augument 10 with an infinitesimal to get:</i></td></tr>
+<tr><th id="53">53</th><td><i>//</i></td></tr>
+<tr><th id="54">54</th><td><i>//   f(10 + e) = (10 + e)^2</i></td></tr>
+<tr><th id="55">55</th><td><i>//             = 100 + 2 * 10 * e + e^2</i></td></tr>
+<tr><th id="56">56</th><td><i>//             = 100 + 20 * e       -+-</i></td></tr>
+<tr><th id="57">57</th><td><i>//                     --            |</i></td></tr>
+<tr><th id="58">58</th><td><i>//                     |             +--- This is zero, since e^2 = 0</i></td></tr>
+<tr><th id="59">59</th><td><i>//                     |</i></td></tr>
+<tr><th id="60">60</th><td><i>//                     +----------------- This is df/dx!</i></td></tr>
+<tr><th id="61">61</th><td><i>//</i></td></tr>
+<tr><th id="62">62</th><td><i>// Note that the derivative of f with respect to x is simply the infinitesimal</i></td></tr>
+<tr><th id="63">63</th><td><i>// component of the value of f(x + e). So, in order to take the derivative of</i></td></tr>
+<tr><th id="64">64</th><td><i>// any function, it is only necessary to replace the numeric "object" used in</i></td></tr>
+<tr><th id="65">65</th><td><i>// the function with one extended with infinitesimals. The class Jet, defined in</i></td></tr>
+<tr><th id="66">66</th><td><i>// this header, is one such example of this, where substitution is done with</i></td></tr>
+<tr><th id="67">67</th><td><i>// templates.</i></td></tr>
+<tr><th id="68">68</th><td><i>//</i></td></tr>
+<tr><th id="69">69</th><td><i>// To handle derivatives of functions taking multiple arguments, different</i></td></tr>
+<tr><th id="70">70</th><td><i>// infinitesimals are used, one for each variable to take the derivative of. For</i></td></tr>
+<tr><th id="71">71</th><td><i>// example, consider a scalar function of two scalar parameters x and y:</i></td></tr>
+<tr><th id="72">72</th><td><i>//</i></td></tr>
+<tr><th id="73">73</th><td><i>//   f(x, y) = x^2 + x * y</i></td></tr>
+<tr><th id="74">74</th><td><i>//</i></td></tr>
+<tr><th id="75">75</th><td><i>// Following the technique above, to compute the derivatives df/dx and df/dy for</i></td></tr>
+<tr><th id="76">76</th><td><i>// f(1, 3) involves doing two evaluations of f, the first time replacing x with</i></td></tr>
+<tr><th id="77">77</th><td><i>// x + e, the second time replacing y with y + e.</i></td></tr>
+<tr><th id="78">78</th><td><i>//</i></td></tr>
+<tr><th id="79">79</th><td><i>// For df/dx:</i></td></tr>
+<tr><th id="80">80</th><td><i>//</i></td></tr>
+<tr><th id="81">81</th><td><i>//   f(1 + e, y) = (1 + e)^2 + (1 + e) * 3</i></td></tr>
+<tr><th id="82">82</th><td><i>//               = 1 + 2 * e + 3 + 3 * e</i></td></tr>
+<tr><th id="83">83</th><td><i>//               = 4 + 5 * e</i></td></tr>
+<tr><th id="84">84</th><td><i>//</i></td></tr>
+<tr><th id="85">85</th><td><i>//               --&gt; df/dx = 5</i></td></tr>
+<tr><th id="86">86</th><td><i>//</i></td></tr>
+<tr><th id="87">87</th><td><i>// For df/dy:</i></td></tr>
+<tr><th id="88">88</th><td><i>//</i></td></tr>
+<tr><th id="89">89</th><td><i>//   f(1, 3 + e) = 1^2 + 1 * (3 + e)</i></td></tr>
+<tr><th id="90">90</th><td><i>//               = 1 + 3 + e</i></td></tr>
+<tr><th id="91">91</th><td><i>//               = 4 + e</i></td></tr>
+<tr><th id="92">92</th><td><i>//</i></td></tr>
+<tr><th id="93">93</th><td><i>//               --&gt; df/dy = 1</i></td></tr>
+<tr><th id="94">94</th><td><i>//</i></td></tr>
+<tr><th id="95">95</th><td><i>// To take the gradient of f with the implementation of dual numbers ("jets") in</i></td></tr>
+<tr><th id="96">96</th><td><i>// this file, it is necessary to create a single jet type which has components</i></td></tr>
+<tr><th id="97">97</th><td><i>// for the derivative in x and y, and passing them to a templated version of f:</i></td></tr>
+<tr><th id="98">98</th><td><i>//</i></td></tr>
+<tr><th id="99">99</th><td><i>//   template&lt;typename T&gt;</i></td></tr>
+<tr><th id="100">100</th><td><i>//   T f(const T &amp;x, const T &amp;y) {</i></td></tr>
+<tr><th id="101">101</th><td><i>//     return x * x + x * y;</i></td></tr>
+<tr><th id="102">102</th><td><i>//   }</i></td></tr>
+<tr><th id="103">103</th><td><i>//</i></td></tr>
+<tr><th id="104">104</th><td><i>//   // The "2" means there should be 2 dual number components.</i></td></tr>
+<tr><th id="105">105</th><td><i>//   Jet&lt;double, 2&gt; x(0);  // Pick the 0th dual number for x.</i></td></tr>
+<tr><th id="106">106</th><td><i>//   Jet&lt;double, 2&gt; y(1);  // Pick the 1st dual number for y.</i></td></tr>
+<tr><th id="107">107</th><td><i>//   Jet&lt;double, 2&gt; z = f(x, y);</i></td></tr>
+<tr><th id="108">108</th><td><i>//</i></td></tr>
+<tr><th id="109">109</th><td><i>//   LOG(INFO) &lt;&lt; "df/dx = " &lt;&lt; z.v[0]</i></td></tr>
+<tr><th id="110">110</th><td><i>//             &lt;&lt; "df/dy = " &lt;&lt; z.v[1];</i></td></tr>
+<tr><th id="111">111</th><td><i>//</i></td></tr>
+<tr><th id="112">112</th><td><i>// Most users should not use Jet objects directly; a wrapper around Jet objects,</i></td></tr>
+<tr><th id="113">113</th><td><i>// which makes computing the derivative, gradient, or jacobian of templated</i></td></tr>
+<tr><th id="114">114</th><td><i>// functors simple, is in autodiff.h. Even autodiff.h should not be used</i></td></tr>
+<tr><th id="115">115</th><td><i>// directly; instead autodiff_cost_function.h is typically the file of interest.</i></td></tr>
+<tr><th id="116">116</th><td><i>//</i></td></tr>
+<tr><th id="117">117</th><td><i>// For the more mathematically inclined, this file implements first-order</i></td></tr>
+<tr><th id="118">118</th><td><i>// "jets". A 1st order jet is an element of the ring</i></td></tr>
+<tr><th id="119">119</th><td><i>//</i></td></tr>
+<tr><th id="120">120</th><td><i>//   T[N] = T[t_1, ..., t_N] / (t_1, ..., t_N)^2</i></td></tr>
+<tr><th id="121">121</th><td><i>//</i></td></tr>
+<tr><th id="122">122</th><td><i>// which essentially means that each jet consists of a "scalar" value 'a' from T</i></td></tr>
+<tr><th id="123">123</th><td><i>// and a 1st order perturbation vector 'v' of length N:</i></td></tr>
+<tr><th id="124">124</th><td><i>//</i></td></tr>
+<tr><th id="125">125</th><td><i>//   x = a + \sum_i v[i] t_i</i></td></tr>
+<tr><th id="126">126</th><td><i>//</i></td></tr>
+<tr><th id="127">127</th><td><i>// A shorthand is to write an element as x = a + u, where u is the pertubation.</i></td></tr>
+<tr><th id="128">128</th><td><i>// Then, the main point about the arithmetic of jets is that the product of</i></td></tr>
+<tr><th id="129">129</th><td><i>// perturbations is zero:</i></td></tr>
+<tr><th id="130">130</th><td><i>//</i></td></tr>
+<tr><th id="131">131</th><td><i>//   (a + u) * (b + v) = ab + av + bu + uv</i></td></tr>
+<tr><th id="132">132</th><td><i>//                     = ab + (av + bu) + 0</i></td></tr>
+<tr><th id="133">133</th><td><i>//</i></td></tr>
+<tr><th id="134">134</th><td><i>// which is what operator* implements below. Addition is simpler:</i></td></tr>
+<tr><th id="135">135</th><td><i>//</i></td></tr>
+<tr><th id="136">136</th><td><i>//   (a + u) + (b + v) = (a + b) + (u + v).</i></td></tr>
+<tr><th id="137">137</th><td><i>//</i></td></tr>
+<tr><th id="138">138</th><td><i>// The only remaining question is how to evaluate the function of a jet, for</i></td></tr>
+<tr><th id="139">139</th><td><i>// which we use the chain rule:</i></td></tr>
+<tr><th id="140">140</th><td><i>//</i></td></tr>
+<tr><th id="141">141</th><td><i>//   f(a + u) = f(a) + f'(a) u</i></td></tr>
+<tr><th id="142">142</th><td><i>//</i></td></tr>
+<tr><th id="143">143</th><td><i>// where f'(a) is the (scalar) derivative of f at a.</i></td></tr>
+<tr><th id="144">144</th><td><i>//</i></td></tr>
+<tr><th id="145">145</th><td><i>// By pushing these things through sufficiently and suitably templated</i></td></tr>
+<tr><th id="146">146</th><td><i>// functions, we can do automatic differentiation. Just be sure to turn on</i></td></tr>
+<tr><th id="147">147</th><td><i>// function inlining and common-subexpression elimination, or it will be very</i></td></tr>
+<tr><th id="148">148</th><td><i>// slow!</i></td></tr>
+<tr><th id="149">149</th><td><i>//</i></td></tr>
+<tr><th id="150">150</th><td><i>// WARNING: Most Ceres users should not directly include this file or know the</i></td></tr>
+<tr><th id="151">151</th><td><i>// details of how jets work. Instead the suggested method for automatic</i></td></tr>
+<tr><th id="152">152</th><td><i>// derivatives is to use autodiff_cost_function.h, which is a wrapper around</i></td></tr>
+<tr><th id="153">153</th><td><i>// both jets.h and autodiff.h to make taking derivatives of cost functions for</i></td></tr>
+<tr><th id="154">154</th><td><i>// use in Ceres easier.</i></td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td><u>#<span data-ppcond="156">ifndef</span> <span class="macro" data-ref="_M/CERES_PUBLIC_JET_H_">CERES_PUBLIC_JET_H_</span></u></td></tr>
+<tr><th id="157">157</th><td><u>#define <dfn class="macro" id="_M/CERES_PUBLIC_JET_H_" data-ref="_M/CERES_PUBLIC_JET_H_">CERES_PUBLIC_JET_H_</dfn></u></td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td><u>#include <a href="../../../include/c++/4.8/cmath.html">&lt;cmath&gt;</a></u></td></tr>
+<tr><th id="160">160</th><td><u>#include <a href="../../../include/c++/4.8/iosfwd.html">&lt;iosfwd&gt;</a></u></td></tr>
+<tr><th id="161">161</th><td><u>#include <a href="../../../include/c++/4.8/iostream.html">&lt;iostream&gt;</a>  // NOLINT</u></td></tr>
+<tr><th id="162">162</th><td><u>#include <a href="../../../include/c++/4.8/limits.html">&lt;limits&gt;</a></u></td></tr>
+<tr><th id="163">163</th><td><u>#include <a href="../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td><u>#include <a href="../../../include/eigen3/Eigen/Core.html">"Eigen/Core"</a></u></td></tr>
+<tr><th id="166">166</th><td><u>#include <a href="fpclassify.h.html">"ceres/fpclassify.h"</a></u></td></tr>
+<tr><th id="167">167</th><td><u>#include <a href="internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="172">172</th><td><b>struct</b> <dfn class="type def" id="ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</dfn> {</td></tr>
+<tr><th id="173">173</th><td>  <b>enum</b> { <dfn class="enum" id="ceres::Jet::::DIMENSION" title='ceres::Jet::::DIMENSION' data-ref="ceres::Jet::::DIMENSION">DIMENSION</dfn> = <a class="tu ref" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a> };</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>  <i>// Default-construct "a" because otherwise this can lead to false errors about</i></td></tr>
+<tr><th id="176">176</th><td><i>  // uninitialized uses when other classes relying on default constructed T</i></td></tr>
+<tr><th id="177">177</th><td><i>  // (where T is a Jet&lt;T, N&gt;). This usually only happens in opt mode. Note that</i></td></tr>
+<tr><th id="178">178</th><td><i>  // the C++ standard mandates that e.g. default constructed doubles are</i></td></tr>
+<tr><th id="179">179</th><td><i>  // initialized to 0.0; see sections 8.5 of the C++03 standard.</i></td></tr>
+<tr><th id="180">180</th><td>  <dfn class="decl def" id="_ZN5ceres3JetC1Ev" title='ceres::Jet::Jet&lt;T, N&gt;' data-ref="_ZN5ceres3JetC1Ev">Jet</dfn>() : <a class="member" href="#ceres::Jet::a" title='ceres::Jet::a' data-ref="ceres::Jet::a">a</a>() {</td></tr>
+<tr><th id="181">181</th><td>    <a class="member" href="#ceres::Jet::v" title='ceres::Jet::v' data-ref="ceres::Jet::v">v</a>.setZero();</td></tr>
+<tr><th id="182">182</th><td>  }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>  <i>// Constructor from scalar: a + 0.</i></td></tr>
+<tr><th id="185">185</th><td>  <b>explicit</b> <dfn class="decl def" id="_ZN5ceres3JetC1ERKT_" title='ceres::Jet::Jet&lt;T, N&gt;' data-ref="_ZN5ceres3JetC1ERKT_">Jet</dfn>(<em>const</em> T&amp; <dfn class="local col1 decl" id="141value" title='value' data-type='const T &amp;' data-ref="141value">value</dfn>) {</td></tr>
+<tr><th id="186">186</th><td>    <a class="member" href="#ceres::Jet::a" title='ceres::Jet::a' data-ref="ceres::Jet::a">a</a> = <a class="local col1 ref" href="#141value" title='value' data-ref="141value">value</a>;</td></tr>
+<tr><th id="187">187</th><td>    <a class="member" href="#ceres::Jet::v" title='ceres::Jet::v' data-ref="ceres::Jet::v">v</a>.setZero();</td></tr>
+<tr><th id="188">188</th><td>  }</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>  <i>// Constructor from scalar plus variable: a + t_i.</i></td></tr>
+<tr><th id="191">191</th><td>  <dfn class="decl def" id="_ZN5ceres3JetC1ERKT_i" title='ceres::Jet::Jet&lt;T, N&gt;' data-ref="_ZN5ceres3JetC1ERKT_i">Jet</dfn>(<em>const</em> T&amp; <dfn class="local col2 decl" id="142value" title='value' data-type='const T &amp;' data-ref="142value">value</dfn>, <em>int</em> <dfn class="local col3 decl" id="143k" title='k' data-type='int' data-ref="143k">k</dfn>) {</td></tr>
+<tr><th id="192">192</th><td>    <a class="member" href="#ceres::Jet::a" title='ceres::Jet::a' data-ref="ceres::Jet::a">a</a> = <a class="local col2 ref" href="#142value" title='value' data-ref="142value">value</a>;</td></tr>
+<tr><th id="193">193</th><td>    <a class="member" href="#ceres::Jet::v" title='ceres::Jet::v' data-ref="ceres::Jet::v">v</a>.setZero();</td></tr>
+<tr><th id="194">194</th><td>    <a class="member" href="#ceres::Jet::v" title='ceres::Jet::v' data-ref="ceres::Jet::v">v</a>[<a class="local col3 ref" href="#143k" title='k' data-ref="143k">k</a>] = T(<var>1.0</var>);</td></tr>
+<tr><th id="195">195</th><td>  }</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>  <i>// Constructor from scalar and vector part</i></td></tr>
+<tr><th id="198">198</th><td><i>  // The use of Eigen::DenseBase allows Eigen expressions</i></td></tr>
+<tr><th id="199">199</th><td><i>  // to be passed in without being fully evaluated until</i></td></tr>
+<tr><th id="200">200</th><td><i>  // they are assigned to v</i></td></tr>
+<tr><th id="201">201</th><td>  <b>template</b>&lt;<b>typename</b> Derived&gt;</td></tr>
+<tr><th id="202">202</th><td>  <a class="macro" href="../../../include/eigen3/Eigen/src/Core/util/Macros.h.html#124" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <dfn class="decl def" id="_ZN5ceres3JetC1ERKT_RKN5Eigen9DenseBaseIT_EE" title='ceres::Jet::Jet&lt;T, N&gt;' data-ref="_ZN5ceres3JetC1ERKT_RKN5Eigen9DenseBaseIT_EE">Jet</dfn>(<em>const</em> T&amp; <dfn class="local col4 decl" id="144a" title='a' data-type='const T &amp;' data-ref="144a">a</dfn>, <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../../../include/eigen3/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::DenseBase" title='Eigen::DenseBase' data-ref="Eigen::DenseBase">DenseBase</a>&lt;Derived&gt; &amp;<dfn class="local col5 decl" id="145v" title='v' data-type='const Eigen::DenseBase&lt;Derived&gt; &amp;' data-ref="145v">v</dfn>)</td></tr>
+<tr><th id="203">203</th><td>      : <a class="member" href="#ceres::Jet::a" title='ceres::Jet::a' data-ref="ceres::Jet::a">a</a>(<a class="local col4 ref" href="#144a" title='a' data-ref="144a">a</a>), <a class="member" href="#ceres::Jet::v" title='ceres::Jet::v' data-ref="ceres::Jet::v">v</a>(<a class="local col5 ref" href="#145v" title='v' data-ref="145v">v</a>) {</td></tr>
+<tr><th id="204">204</th><td>  }</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>  <i>// Compound operators</i></td></tr>
+<tr><th id="207">207</th><td>  <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt;&amp; <dfn class="decl def" id="_ZN5ceres3JetpLERKNS_3JetIT_XT0_EEE" title='ceres::Jet::operator+=' data-ref="_ZN5ceres3JetpLERKNS_3JetIT_XT0_EEE"><b>operator</b>+=</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt; &amp;<dfn class="local col6 decl" id="146y" title='y' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="146y">y</dfn>) {</td></tr>
+<tr><th id="208">208</th><td>    *<b>this</b> = *<b>this</b> + <a class="local col6 ref" href="#146y" title='y' data-ref="146y">y</a>;</td></tr>
+<tr><th id="209">209</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="210">210</th><td>  }</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>  <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt;&amp; <dfn class="decl def" id="_ZN5ceres3JetmIERKNS_3JetIT_XT0_EEE" title='ceres::Jet::operator-=' data-ref="_ZN5ceres3JetmIERKNS_3JetIT_XT0_EEE"><b>operator</b>-=</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt; &amp;<dfn class="local col7 decl" id="147y" title='y' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="147y">y</dfn>) {</td></tr>
+<tr><th id="213">213</th><td>    *<b>this</b> = *<b>this</b> - <a class="local col7 ref" href="#147y" title='y' data-ref="147y">y</a>;</td></tr>
+<tr><th id="214">214</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="215">215</th><td>  }</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>  <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt;&amp; <dfn class="decl def" id="_ZN5ceres3JetmLERKNS_3JetIT_XT0_EEE" title='ceres::Jet::operator*=' data-ref="_ZN5ceres3JetmLERKNS_3JetIT_XT0_EEE"><b>operator</b>*=</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt; &amp;<dfn class="local col8 decl" id="148y" title='y' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="148y">y</dfn>) {</td></tr>
+<tr><th id="218">218</th><td>    *<b>this</b> = *<b>this</b> * <a class="local col8 ref" href="#148y" title='y' data-ref="148y">y</a>;</td></tr>
+<tr><th id="219">219</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="220">220</th><td>  }</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>  <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt;&amp; <dfn class="decl def" id="_ZN5ceres3JetdVERKNS_3JetIT_XT0_EEE" title='ceres::Jet::operator/=' data-ref="_ZN5ceres3JetdVERKNS_3JetIT_XT0_EEE"><b>operator</b>/=</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>&gt; &amp;<dfn class="local col9 decl" id="149y" title='y' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="149y">y</dfn>) {</td></tr>
+<tr><th id="223">223</th><td>    *<b>this</b> = *<b>this</b> / <a class="local col9 ref" href="#149y" title='y' data-ref="149y">y</a>;</td></tr>
+<tr><th id="224">224</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="225">225</th><td>  }</td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>  <i>// The scalar part.</i></td></tr>
+<tr><th id="228">228</th><td>  T <dfn class="decl" id="ceres::Jet::a" title='ceres::Jet::a' data-ref="ceres::Jet::a">a</dfn>;</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>  <i>// The infinitesimal part.</i></td></tr>
+<tr><th id="231">231</th><td><i>  //</i></td></tr>
+<tr><th id="232">232</th><td><i>  // We allocate Jets on the stack and other places they might not be aligned</i></td></tr>
+<tr><th id="233">233</th><td><i>  // to X(=16 [SSE], 32 [AVX] etc)-byte boundaries, which would prevent the safe</i></td></tr>
+<tr><th id="234">234</th><td><i>  // use of vectorisation.  If we have C++11, we can specify the alignment.</i></td></tr>
+<tr><th id="235">235</th><td><i>  // However, the standard gives wide lattitude as to what alignments are valid,</i></td></tr>
+<tr><th id="236">236</th><td><i>  // and it might be that the maximum supported alignment *guaranteed* to be</i></td></tr>
+<tr><th id="237">237</th><td><i>  // supported is &lt; 16, in which case we do not specify an alignment, as this</i></td></tr>
+<tr><th id="238">238</th><td><i>  // implies the host is not a modern x86 machine.  If using &lt; C++11, we cannot</i></td></tr>
+<tr><th id="239">239</th><td><i>  // specify alignment.</i></td></tr>
+<tr><th id="240">240</th><td><u>#<span data-ppcond="240">ifndef</span> <span class="macro" data-ref="_M/CERES_USE_CXX11">CERES_USE_CXX11</span></u></td></tr>
+<tr><th id="241">241</th><td>  <i>// Without &gt;= C++11, we cannot specify the alignment so fall back to safe,</i></td></tr>
+<tr><th id="242">242</th><td><i>  // unvectorised version.</i></td></tr>
+<tr><th id="243">243</th><td>  <span class="namespace">Eigen::</span><a class="type" href="../../../include/eigen3/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;T, <a class="tu ref" href="#ceres::Jet::N" title='ceres::Jet::N' data-ref="ceres::Jet::N">N</a>, <var>1</var>, <span class="namespace">Eigen::</span><a class="enum" href="../../../include/eigen3/Eigen/src/Core/util/Constants.h.html#Eigen::::DontAlign" title='Eigen::::DontAlign' data-ref="Eigen::::DontAlign">DontAlign</a>&gt; <dfn class="decl" id="ceres::Jet::v" title='ceres::Jet::v' data-ref="ceres::Jet::v">v</dfn>;</td></tr>
+<tr><th id="244">244</th><td><u>#<span data-ppcond="240">else</span></u></td></tr>
+<tr><th id="245">245</th><td>  <i>// Enable vectorisation iff the maximum supported scalar alignment is &gt;=</i></td></tr>
+<tr><th id="246">246</th><td><i>  // 16 bytes, as this is the minimum required by Eigen for any vectorisation.</i></td></tr>
+<tr><th id="247">247</th><td><i>  //</i></td></tr>
+<tr><th id="248">248</th><td><i>  // NOTE: It might be the case that we could get &gt;= 16-byte alignment even if</i></td></tr>
+<tr><th id="249">249</th><td><i>  //       kMaxAlignBytes &lt; 16.  However we can't guarantee that this</i></td></tr>
+<tr><th id="250">250</th><td><i>  //       would happen (and it should not for any modern x86 machine) and if it</i></td></tr>
+<tr><th id="251">251</th><td><i>  //       didn't, we could get misaligned Jets.</i></td></tr>
+<tr><th id="252">252</th><td>  <em>static</em> constexpr <em>int</em> kAlignOrNot =</td></tr>
+<tr><th id="253">253</th><td>      <var>16</var> &lt;= ::ceres::port_constants::kMaxAlignBytes</td></tr>
+<tr><th id="254">254</th><td>            ? Eigen::AutoAlign : Eigen::DontAlign;</td></tr>
+<tr><th id="255">255</th><td><u>#if defined(EIGEN_MAX_ALIGN_BYTES)</u></td></tr>
+<tr><th id="256">256</th><td>  <i>// Eigen &gt;= 3.3 supports AVX &amp; FMA instructions that require 32-byte alignment</i></td></tr>
+<tr><th id="257">257</th><td><i>  // (greater for AVX512).  Rather than duplicating the detection logic, use</i></td></tr>
+<tr><th id="258">258</th><td><i>  // Eigen's macro for the alignment size.</i></td></tr>
+<tr><th id="259">259</th><td><i>  //</i></td></tr>
+<tr><th id="260">260</th><td><i>  // NOTE: EIGEN_MAX_ALIGN_BYTES can be &gt; 16 (e.g. 32 for AVX), even though</i></td></tr>
+<tr><th id="261">261</th><td><i>  //       kMaxAlignBytes will max out at 16.  We are therefore relying on</i></td></tr>
+<tr><th id="262">262</th><td><i>  //       Eigen's detection logic to ensure that this does not result in</i></td></tr>
+<tr><th id="263">263</th><td><i>  //       misaligned Jets.</i></td></tr>
+<tr><th id="264">264</th><td><u>#define CERES_JET_ALIGN_BYTES EIGEN_MAX_ALIGN_BYTES</u></td></tr>
+<tr><th id="265">265</th><td><u>#else</u></td></tr>
+<tr><th id="266">266</th><td>  <i>// Eigen &lt; 3.3 only supported 16-byte alignment.</i></td></tr>
+<tr><th id="267">267</th><td><u>#define CERES_JET_ALIGN_BYTES 16</u></td></tr>
+<tr><th id="268">268</th><td><u>#endif</u></td></tr>
+<tr><th id="269">269</th><td>  <i>// Default to the native alignment if 16-byte alignment is not guaranteed to</i></td></tr>
+<tr><th id="270">270</th><td><i>  // be supported.  We cannot use alignof(T) as if we do, GCC 4.8 complains that</i></td></tr>
+<tr><th id="271">271</th><td><i>  // the alignment 'is not an integer constant', although Clang accepts it.</i></td></tr>
+<tr><th id="272">272</th><td>  <em>static</em> constexpr size_t kAlignment = kAlignOrNot == Eigen::AutoAlign</td></tr>
+<tr><th id="273">273</th><td>            ? CERES_JET_ALIGN_BYTES : alignof(<em>double</em>);</td></tr>
+<tr><th id="274">274</th><td><u>#undef CERES_JET_ALIGN_BYTES</u></td></tr>
+<tr><th id="275">275</th><td>  alignas(kAlignment) Eigen::Matrix&lt;T, N, <var>1</var>, kAlignOrNot&gt; v;</td></tr>
+<tr><th id="276">276</th><td><u>#<span data-ppcond="240">endif</span></u></td></tr>
+<tr><th id="277">277</th><td>};</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td><i>// Unary +</i></td></tr>
+<tr><th id="280">280</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="281">281</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <em>const</em>&amp; <dfn class="decl def" id="_ZN5cerespsERKNS_3JetIT_XT0_EEE" title='ceres::operator+' data-ref="_ZN5cerespsERKNS_3JetIT_XT0_EEE"><b>operator</b>+</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="150f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="150f">f</dfn>) {</td></tr>
+<tr><th id="282">282</th><td>  <b>return</b> <a class="local col0 ref" href="#150f" title='f' data-ref="150f">f</a>;</td></tr>
+<tr><th id="283">283</th><td>}</td></tr>
+<tr><th id="284">284</th><td></td></tr>
+<tr><th id="285">285</th><td><i>// TODO(keir): Try adding __attribute__((always_inline)) to these functions to</i></td></tr>
+<tr><th id="286">286</th><td><i>// see if it causes a performance increase.</i></td></tr>
+<tr><th id="287">287</th><td><i></i></td></tr>
+<tr><th id="288">288</th><td><i>// Unary -</i></td></tr>
+<tr><th id="289">289</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="290">290</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresngERKNS_3JetIT_XT0_EEE" title='ceres::operator-' data-ref="_ZN5ceresngERKNS_3JetIT_XT0_EEE"><b>operator</b>-</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp;<dfn class="local col1 decl" id="151f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="151f">f</dfn>) {</td></tr>
+<tr><th id="291">291</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(-<a class="local col1 ref" href="#151f" title='f' data-ref="151f">f</a>.a, -<a class="local col1 ref" href="#151f" title='f' data-ref="151f">f</a>.v);</td></tr>
+<tr><th id="292">292</th><td>}</td></tr>
+<tr><th id="293">293</th><td></td></tr>
+<tr><th id="294">294</th><td><i>// Binary +</i></td></tr>
+<tr><th id="295">295</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="296">296</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresplERKNS_3JetIT_XT0_EEES4_" title='ceres::operator+' data-ref="_ZN5ceresplERKNS_3JetIT_XT0_EEES4_"><b>operator</b>+</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col2 decl" id="152f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="152f">f</dfn>,</td></tr>
+<tr><th id="297">297</th><td>                    <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col3 decl" id="153g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="153g">g</dfn>) {</td></tr>
+<tr><th id="298">298</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col2 ref" href="#152f" title='f' data-ref="152f">f</a>.a + <a class="local col3 ref" href="#153g" title='g' data-ref="153g">g</a>.a, <a class="local col2 ref" href="#152f" title='f' data-ref="152f">f</a>.v + <a class="local col3 ref" href="#153g" title='g' data-ref="153g">g</a>.v);</td></tr>
+<tr><th id="299">299</th><td>}</td></tr>
+<tr><th id="300">300</th><td></td></tr>
+<tr><th id="301">301</th><td><i>// Binary + with a scalar: x + s</i></td></tr>
+<tr><th id="302">302</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="303">303</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresplERKNS_3JetIT_XT0_EEES1_" title='ceres::operator+' data-ref="_ZN5ceresplERKNS_3JetIT_XT0_EEES1_"><b>operator</b>+</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col4 decl" id="154f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="154f">f</dfn>, T <dfn class="local col5 decl" id="155s" title='s' data-type='T' data-ref="155s">s</dfn>) {</td></tr>
+<tr><th id="304">304</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col4 ref" href="#154f" title='f' data-ref="154f">f</a>.a + <a class="local col5 ref" href="#155s" title='s' data-ref="155s">s</a>, <a class="local col4 ref" href="#154f" title='f' data-ref="154f">f</a>.v);</td></tr>
+<tr><th id="305">305</th><td>}</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td><i>// Binary + with a scalar: s + x</i></td></tr>
+<tr><th id="308">308</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="309">309</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresplET_RKNS_3JetIS0_XT0_EEE" title='ceres::operator+' data-ref="_ZN5ceresplET_RKNS_3JetIS0_XT0_EEE"><b>operator</b>+</dfn>(T <dfn class="local col6 decl" id="156s" title='s' data-type='T' data-ref="156s">s</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col7 decl" id="157f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="157f">f</dfn>) {</td></tr>
+<tr><th id="310">310</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col7 ref" href="#157f" title='f' data-ref="157f">f</a>.a + <a class="local col6 ref" href="#156s" title='s' data-ref="156s">s</a>, <a class="local col7 ref" href="#157f" title='f' data-ref="157f">f</a>.v);</td></tr>
+<tr><th id="311">311</th><td>}</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td><i>// Binary -</i></td></tr>
+<tr><th id="314">314</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="315">315</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresmiERKNS_3JetIT_XT0_EEES4_" title='ceres::operator-' data-ref="_ZN5ceresmiERKNS_3JetIT_XT0_EEES4_"><b>operator</b>-</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="158f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="158f">f</dfn>,</td></tr>
+<tr><th id="316">316</th><td>                    <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="159g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="159g">g</dfn>) {</td></tr>
+<tr><th id="317">317</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col8 ref" href="#158f" title='f' data-ref="158f">f</a>.a - <a class="local col9 ref" href="#159g" title='g' data-ref="159g">g</a>.a, <a class="local col8 ref" href="#158f" title='f' data-ref="158f">f</a>.v - <a class="local col9 ref" href="#159g" title='g' data-ref="159g">g</a>.v);</td></tr>
+<tr><th id="318">318</th><td>}</td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td><i>// Binary - with a scalar: x - s</i></td></tr>
+<tr><th id="321">321</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="322">322</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresmiERKNS_3JetIT_XT0_EEES1_" title='ceres::operator-' data-ref="_ZN5ceresmiERKNS_3JetIT_XT0_EEES1_"><b>operator</b>-</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="160f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="160f">f</dfn>, T <dfn class="local col1 decl" id="161s" title='s' data-type='T' data-ref="161s">s</dfn>) {</td></tr>
+<tr><th id="323">323</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col0 ref" href="#160f" title='f' data-ref="160f">f</a>.a - <a class="local col1 ref" href="#161s" title='s' data-ref="161s">s</a>, <a class="local col0 ref" href="#160f" title='f' data-ref="160f">f</a>.v);</td></tr>
+<tr><th id="324">324</th><td>}</td></tr>
+<tr><th id="325">325</th><td></td></tr>
+<tr><th id="326">326</th><td><i>// Binary - with a scalar: s - x</i></td></tr>
+<tr><th id="327">327</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="328">328</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresmiET_RKNS_3JetIS0_XT0_EEE" title='ceres::operator-' data-ref="_ZN5ceresmiET_RKNS_3JetIS0_XT0_EEE"><b>operator</b>-</dfn>(T <dfn class="local col2 decl" id="162s" title='s' data-type='T' data-ref="162s">s</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col3 decl" id="163f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="163f">f</dfn>) {</td></tr>
+<tr><th id="329">329</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col2 ref" href="#162s" title='s' data-ref="162s">s</a> - <a class="local col3 ref" href="#163f" title='f' data-ref="163f">f</a>.a, -<a class="local col3 ref" href="#163f" title='f' data-ref="163f">f</a>.v);</td></tr>
+<tr><th id="330">330</th><td>}</td></tr>
+<tr><th id="331">331</th><td></td></tr>
+<tr><th id="332">332</th><td><i>// Binary *</i></td></tr>
+<tr><th id="333">333</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="334">334</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresmlERKNS_3JetIT_XT0_EEES4_" title='ceres::operator*' data-ref="_ZN5ceresmlERKNS_3JetIT_XT0_EEES4_"><b>operator</b>*</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col4 decl" id="164f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="164f">f</dfn>,</td></tr>
+<tr><th id="335">335</th><td>                    <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="165g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="165g">g</dfn>) {</td></tr>
+<tr><th id="336">336</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col4 ref" href="#164f" title='f' data-ref="164f">f</a>.a * <a class="local col5 ref" href="#165g" title='g' data-ref="165g">g</a>.a, <a class="local col4 ref" href="#164f" title='f' data-ref="164f">f</a>.a * <a class="local col5 ref" href="#165g" title='g' data-ref="165g">g</a>.v + <a class="local col4 ref" href="#164f" title='f' data-ref="164f">f</a>.v * <a class="local col5 ref" href="#165g" title='g' data-ref="165g">g</a>.a);</td></tr>
+<tr><th id="337">337</th><td>}</td></tr>
+<tr><th id="338">338</th><td></td></tr>
+<tr><th id="339">339</th><td><i>// Binary * with a scalar: x * s</i></td></tr>
+<tr><th id="340">340</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="341">341</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresmlERKNS_3JetIT_XT0_EEES1_" title='ceres::operator*' data-ref="_ZN5ceresmlERKNS_3JetIT_XT0_EEES1_"><b>operator</b>*</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="166f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="166f">f</dfn>, T <dfn class="local col7 decl" id="167s" title='s' data-type='T' data-ref="167s">s</dfn>) {</td></tr>
+<tr><th id="342">342</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col6 ref" href="#166f" title='f' data-ref="166f">f</a>.a * <a class="local col7 ref" href="#167s" title='s' data-ref="167s">s</a>, <a class="local col6 ref" href="#166f" title='f' data-ref="166f">f</a>.v * <a class="local col7 ref" href="#167s" title='s' data-ref="167s">s</a>);</td></tr>
+<tr><th id="343">343</th><td>}</td></tr>
+<tr><th id="344">344</th><td></td></tr>
+<tr><th id="345">345</th><td><i>// Binary * with a scalar: s * x</i></td></tr>
+<tr><th id="346">346</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="347">347</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresmlET_RKNS_3JetIS0_XT0_EEE" title='ceres::operator*' data-ref="_ZN5ceresmlET_RKNS_3JetIS0_XT0_EEE"><b>operator</b>*</dfn>(T <dfn class="local col8 decl" id="168s" title='s' data-type='T' data-ref="168s">s</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="169f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="169f">f</dfn>) {</td></tr>
+<tr><th id="348">348</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col9 ref" href="#169f" title='f' data-ref="169f">f</a>.a * <a class="local col8 ref" href="#168s" title='s' data-ref="168s">s</a>, <a class="local col9 ref" href="#169f" title='f' data-ref="169f">f</a>.v * <a class="local col8 ref" href="#168s" title='s' data-ref="168s">s</a>);</td></tr>
+<tr><th id="349">349</th><td>}</td></tr>
+<tr><th id="350">350</th><td></td></tr>
+<tr><th id="351">351</th><td><i>// Binary /</i></td></tr>
+<tr><th id="352">352</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="353">353</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresdvERKNS_3JetIT_XT0_EEES4_" title='ceres::operator/' data-ref="_ZN5ceresdvERKNS_3JetIT_XT0_EEES4_"><b>operator</b>/</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="170f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="170f">f</dfn>,</td></tr>
+<tr><th id="354">354</th><td>                    <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col1 decl" id="171g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="171g">g</dfn>) {</td></tr>
+<tr><th id="355">355</th><td>  <i>// This uses:</i></td></tr>
+<tr><th id="356">356</th><td><i>  //</i></td></tr>
+<tr><th id="357">357</th><td><i>  //   a + u   (a + u)(b - v)   (a + u)(b - v)</i></td></tr>
+<tr><th id="358">358</th><td><i>  //   ----- = -------------- = --------------</i></td></tr>
+<tr><th id="359">359</th><td><i>  //   b + v   (b + v)(b - v)        b^2</i></td></tr>
+<tr><th id="360">360</th><td><i>  //</i></td></tr>
+<tr><th id="361">361</th><td><i>  // which holds because v*v = 0.</i></td></tr>
+<tr><th id="362">362</th><td>  <em>const</em> T <dfn class="local col2 decl" id="172g_a_inverse" title='g_a_inverse' data-type='const T' data-ref="172g_a_inverse">g_a_inverse</dfn> = T(<var>1.0</var>) / <a class="local col1 ref" href="#171g" title='g' data-ref="171g">g</a>.a;</td></tr>
+<tr><th id="363">363</th><td>  <em>const</em> T <dfn class="local col3 decl" id="173f_a_by_g_a" title='f_a_by_g_a' data-type='const T' data-ref="173f_a_by_g_a">f_a_by_g_a</dfn> = <a class="local col0 ref" href="#170f" title='f' data-ref="170f">f</a>.a * <a class="local col2 ref" href="#172g_a_inverse" title='g_a_inverse' data-ref="172g_a_inverse">g_a_inverse</a>;</td></tr>
+<tr><th id="364">364</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col0 ref" href="#170f" title='f' data-ref="170f">f</a>.a * <a class="local col2 ref" href="#172g_a_inverse" title='g_a_inverse' data-ref="172g_a_inverse">g_a_inverse</a>, (<a class="local col0 ref" href="#170f" title='f' data-ref="170f">f</a>.v - <a class="local col3 ref" href="#173f_a_by_g_a" title='f_a_by_g_a' data-ref="173f_a_by_g_a">f_a_by_g_a</a> * <a class="local col1 ref" href="#171g" title='g' data-ref="171g">g</a>.v) * <a class="local col2 ref" href="#172g_a_inverse" title='g_a_inverse' data-ref="172g_a_inverse">g_a_inverse</a>);</td></tr>
+<tr><th id="365">365</th><td>}</td></tr>
+<tr><th id="366">366</th><td></td></tr>
+<tr><th id="367">367</th><td><i>// Binary / with a scalar: s / x</i></td></tr>
+<tr><th id="368">368</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="369">369</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresdvET_RKNS_3JetIS0_XT0_EEE" title='ceres::operator/' data-ref="_ZN5ceresdvET_RKNS_3JetIS0_XT0_EEE"><b>operator</b>/</dfn>(T <dfn class="local col4 decl" id="174s" title='s' data-type='T' data-ref="174s">s</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="175g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="175g">g</dfn>) {</td></tr>
+<tr><th id="370">370</th><td>  <em>const</em> T <dfn class="local col6 decl" id="176minus_s_g_a_inverse2" title='minus_s_g_a_inverse2' data-type='const T' data-ref="176minus_s_g_a_inverse2">minus_s_g_a_inverse2</dfn> = -<a class="local col4 ref" href="#174s" title='s' data-ref="174s">s</a> / (<a class="local col5 ref" href="#175g" title='g' data-ref="175g">g</a>.a * <a class="local col5 ref" href="#175g" title='g' data-ref="175g">g</a>.a);</td></tr>
+<tr><th id="371">371</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col4 ref" href="#174s" title='s' data-ref="174s">s</a> / <a class="local col5 ref" href="#175g" title='g' data-ref="175g">g</a>.a, <a class="local col5 ref" href="#175g" title='g' data-ref="175g">g</a>.v * <a class="local col6 ref" href="#176minus_s_g_a_inverse2" title='minus_s_g_a_inverse2' data-ref="176minus_s_g_a_inverse2">minus_s_g_a_inverse2</a>);</td></tr>
+<tr><th id="372">372</th><td>}</td></tr>
+<tr><th id="373">373</th><td></td></tr>
+<tr><th id="374">374</th><td><i>// Binary / with a scalar: x / s</i></td></tr>
+<tr><th id="375">375</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="376">376</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceresdvERKNS_3JetIT_XT0_EEES1_" title='ceres::operator/' data-ref="_ZN5ceresdvERKNS_3JetIT_XT0_EEES1_"><b>operator</b>/</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col7 decl" id="177f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="177f">f</dfn>, T <dfn class="local col8 decl" id="178s" title='s' data-type='T' data-ref="178s">s</dfn>) {</td></tr>
+<tr><th id="377">377</th><td>  <em>const</em> T <dfn class="local col9 decl" id="179s_inverse" title='s_inverse' data-type='const T' data-ref="179s_inverse">s_inverse</dfn> = T(<var>1.0</var>) / <a class="local col8 ref" href="#178s" title='s' data-ref="178s">s</a>;</td></tr>
+<tr><th id="378">378</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col7 ref" href="#177f" title='f' data-ref="177f">f</a>.a * <a class="local col9 ref" href="#179s_inverse" title='s_inverse' data-ref="179s_inverse">s_inverse</a>, <a class="local col7 ref" href="#177f" title='f' data-ref="177f">f</a>.v * <a class="local col9 ref" href="#179s_inverse" title='s_inverse' data-ref="179s_inverse">s_inverse</a>);</td></tr>
+<tr><th id="379">379</th><td>}</td></tr>
+<tr><th id="380">380</th><td></td></tr>
+<tr><th id="381">381</th><td><i>// Binary comparison operators for both scalars and jets.</i></td></tr>
+<tr><th id="382">382</th><td><u>#define <dfn class="macro" id="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</dfn>(op) \</u></td></tr>
+<tr><th id="383">383</th><td><u>template&lt;typename T, int N&gt; inline \</u></td></tr>
+<tr><th id="384">384</th><td><u>bool operator op(const <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#395" title='N' data-ref="N"><a class="tu ref" href="#396" title='N' data-ref="N"><a class="tu ref" href="#397" title='N' data-ref="N"><a class="tu ref" href="#398" title='N' data-ref="N"><a class="tu ref" href="#399" title='N' data-ref="N"><a class="tu ref" href="#400" title='N' data-ref="N">N</a></a></a></a></a></a>&gt;&amp; <dfn class="local col0 decl" id="180f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="180f"><dfn class="local col6 decl" id="186f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="186f"><dfn class="local col2 decl" id="192f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="192f"><dfn class="local col8 decl" id="198f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="198f"><dfn class="local col4 decl" id="204f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="204f"><dfn class="local col0 decl" id="210f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="210f">f</dfn></dfn></dfn></dfn></dfn></dfn>, const <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#395" title='N' data-ref="N"><a class="tu ref" href="#396" title='N' data-ref="N"><a class="tu ref" href="#397" title='N' data-ref="N"><a class="tu ref" href="#398" title='N' data-ref="N"><a class="tu ref" href="#399" title='N' data-ref="N"><a class="tu ref" href="#400" title='N' data-ref="N">N</a></a></a></a></a></a>&gt;&amp; <dfn class="local col1 decl" id="181g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="181g"><dfn class="local col7 decl" id="187g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="187g"><dfn class="local col3 decl" id="193g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="193g"><dfn class="local col9 decl" id="199g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="199g"><dfn class="local col5 decl" id="205g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="205g"><dfn class="local col1 decl" id="211g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="211g">g</dfn></dfn></dfn></dfn></dfn></dfn>) { \</u></td></tr>
+<tr><th id="385">385</th><td><u>  return <a class="local col0 ref" href="#395" title='f' data-ref="180f"><a class="local col6 ref" href="#396" title='f' data-ref="186f"><a class="local col2 ref" href="#397" title='f' data-ref="192f"><a class="local col8 ref" href="#398" title='f' data-ref="198f"><a class="local col4 ref" href="#399" title='f' data-ref="204f"><a class="local col0 ref" href="#400" title='f' data-ref="210f">f</a></a></a></a></a></a>.a op <a class="local col1 ref" href="#395" title='g' data-ref="181g"><a class="local col7 ref" href="#396" title='g' data-ref="187g"><a class="local col3 ref" href="#397" title='g' data-ref="193g"><a class="local col9 ref" href="#398" title='g' data-ref="199g"><a class="local col5 ref" href="#399" title='g' data-ref="205g"><a class="local col1 ref" href="#400" title='g' data-ref="211g">g</a></a></a></a></a></a>.a; \</u></td></tr>
+<tr><th id="386">386</th><td><u>} \</u></td></tr>
+<tr><th id="387">387</th><td><u>template&lt;typename T, int N&gt; inline \</u></td></tr>
+<tr><th id="388">388</th><td><u>bool operator op(const T&amp; <dfn class="local col2 decl" id="182s" title='s' data-type='const T &amp;' data-ref="182s"><dfn class="local col8 decl" id="188s" title='s' data-type='const T &amp;' data-ref="188s"><dfn class="local col4 decl" id="194s" title='s' data-type='const T &amp;' data-ref="194s"><dfn class="local col0 decl" id="200s" title='s' data-type='const T &amp;' data-ref="200s"><dfn class="local col6 decl" id="206s" title='s' data-type='const T &amp;' data-ref="206s"><dfn class="local col2 decl" id="212s" title='s' data-type='const T &amp;' data-ref="212s">s</dfn></dfn></dfn></dfn></dfn></dfn>, const <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#395" title='N' data-ref="N"><a class="tu ref" href="#396" title='N' data-ref="N"><a class="tu ref" href="#397" title='N' data-ref="N"><a class="tu ref" href="#398" title='N' data-ref="N"><a class="tu ref" href="#399" title='N' data-ref="N"><a class="tu ref" href="#400" title='N' data-ref="N">N</a></a></a></a></a></a>&gt;&amp; <dfn class="local col3 decl" id="183g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="183g"><dfn class="local col9 decl" id="189g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="189g"><dfn class="local col5 decl" id="195g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="195g"><dfn class="local col1 decl" id="201g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="201g"><dfn class="local col7 decl" id="207g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="207g"><dfn class="local col3 decl" id="213g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="213g">g</dfn></dfn></dfn></dfn></dfn></dfn>) { \</u></td></tr>
+<tr><th id="389">389</th><td><u>  return <a class="local col2 ref" href="#395" title='s' data-ref="182s"><a class="local col8 ref" href="#396" title='s' data-ref="188s"><a class="local col4 ref" href="#397" title='s' data-ref="194s"><a class="local col0 ref" href="#398" title='s' data-ref="200s"><a class="local col6 ref" href="#399" title='s' data-ref="206s"><a class="local col2 ref" href="#400" title='s' data-ref="212s">s</a></a></a></a></a></a> op <a class="local col3 ref" href="#395" title='g' data-ref="183g"><a class="local col9 ref" href="#396" title='g' data-ref="189g"><a class="local col5 ref" href="#397" title='g' data-ref="195g"><a class="local col1 ref" href="#398" title='g' data-ref="201g"><a class="local col7 ref" href="#399" title='g' data-ref="207g"><a class="local col3 ref" href="#400" title='g' data-ref="213g">g</a></a></a></a></a></a>.a; \</u></td></tr>
+<tr><th id="390">390</th><td><u>} \</u></td></tr>
+<tr><th id="391">391</th><td><u>template&lt;typename T, int N&gt; inline \</u></td></tr>
+<tr><th id="392">392</th><td><u>bool operator op(const <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#395" title='N' data-ref="N"><a class="tu ref" href="#396" title='N' data-ref="N"><a class="tu ref" href="#397" title='N' data-ref="N"><a class="tu ref" href="#398" title='N' data-ref="N"><a class="tu ref" href="#399" title='N' data-ref="N"><a class="tu ref" href="#400" title='N' data-ref="N">N</a></a></a></a></a></a>&gt;&amp; <dfn class="local col4 decl" id="184f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="184f"><dfn class="local col0 decl" id="190f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="190f"><dfn class="local col6 decl" id="196f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="196f"><dfn class="local col2 decl" id="202f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="202f"><dfn class="local col8 decl" id="208f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="208f"><dfn class="local col4 decl" id="214f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="214f">f</dfn></dfn></dfn></dfn></dfn></dfn>, const T&amp; <dfn class="local col5 decl" id="185s" title='s' data-type='const T &amp;' data-ref="185s"><dfn class="local col1 decl" id="191s" title='s' data-type='const T &amp;' data-ref="191s"><dfn class="local col7 decl" id="197s" title='s' data-type='const T &amp;' data-ref="197s"><dfn class="local col3 decl" id="203s" title='s' data-type='const T &amp;' data-ref="203s"><dfn class="local col9 decl" id="209s" title='s' data-type='const T &amp;' data-ref="209s"><dfn class="local col5 decl" id="215s" title='s' data-type='const T &amp;' data-ref="215s">s</dfn></dfn></dfn></dfn></dfn></dfn>) { \</u></td></tr>
+<tr><th id="393">393</th><td><u>  return <a class="local col4 ref" href="#395" title='f' data-ref="184f"><a class="local col0 ref" href="#396" title='f' data-ref="190f"><a class="local col6 ref" href="#397" title='f' data-ref="196f"><a class="local col2 ref" href="#398" title='f' data-ref="202f"><a class="local col8 ref" href="#399" title='f' data-ref="208f"><a class="local col4 ref" href="#400" title='f' data-ref="214f">f</a></a></a></a></a></a>.a op <a class="local col5 ref" href="#395" title='s' data-ref="185s"><a class="local col1 ref" href="#396" title='s' data-ref="191s"><a class="local col7 ref" href="#397" title='s' data-ref="197s"><a class="local col3 ref" href="#398" title='s' data-ref="203s"><a class="local col9 ref" href="#399" title='s' data-ref="209s"><a class="local col5 ref" href="#400" title='s' data-ref="215s">s</a></a></a></a></a></a>; \</u></td></tr>
+<tr><th id="394">394</th><td><u>}</u></td></tr>
+<tr><th id="395">395</th><td><a class="macro" href="#382" title="template&lt;typename T, int N&gt; inline bool operator &lt;(const Jet&lt;T, N&gt;&amp; f, const Jet&lt;T, N&gt;&amp; g) { return f.a &lt; g.a; } template&lt;typename T, int N&gt; inline bool operator &lt;(const T&amp; s, const Jet&lt;T, N&gt;&amp; g) { return s &lt; g.a; } template&lt;typename T, int N&gt; inline bool operator &lt;(const Jet&lt;T, N&gt;&amp; f, const T&amp; s) { return f.a &lt; s; }" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a>( &lt;  )  <i>// NOLINT</i></td></tr>
+<tr><th id="396">396</th><td><a class="macro" href="#382" title="template&lt;typename T, int N&gt; inline bool operator &lt;=(const Jet&lt;T, N&gt;&amp; f, const Jet&lt;T, N&gt;&amp; g) { return f.a &lt;= g.a; } template&lt;typename T, int N&gt; inline bool operator &lt;=(const T&amp; s, const Jet&lt;T, N&gt;&amp; g) { return s &lt;= g.a; } template&lt;typename T, int N&gt; inline bool operator &lt;=(const Jet&lt;T, N&gt;&amp; f, const T&amp; s) { return f.a &lt;= s; }" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a>( &lt;= )  <i>// NOLINT</i></td></tr>
+<tr><th id="397">397</th><td><a class="macro" href="#382" title="template&lt;typename T, int N&gt; inline bool operator &gt;(const Jet&lt;T, N&gt;&amp; f, const Jet&lt;T, N&gt;&amp; g) { return f.a &gt; g.a; } template&lt;typename T, int N&gt; inline bool operator &gt;(const T&amp; s, const Jet&lt;T, N&gt;&amp; g) { return s &gt; g.a; } template&lt;typename T, int N&gt; inline bool operator &gt;(const Jet&lt;T, N&gt;&amp; f, const T&amp; s) { return f.a &gt; s; }" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a>( &gt;  )  <i>// NOLINT</i></td></tr>
+<tr><th id="398">398</th><td><a class="macro" href="#382" title="template&lt;typename T, int N&gt; inline bool operator &gt;=(const Jet&lt;T, N&gt;&amp; f, const Jet&lt;T, N&gt;&amp; g) { return f.a &gt;= g.a; } template&lt;typename T, int N&gt; inline bool operator &gt;=(const T&amp; s, const Jet&lt;T, N&gt;&amp; g) { return s &gt;= g.a; } template&lt;typename T, int N&gt; inline bool operator &gt;=(const Jet&lt;T, N&gt;&amp; f, const T&amp; s) { return f.a &gt;= s; }" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a>( &gt;= )  <i>// NOLINT</i></td></tr>
+<tr><th id="399">399</th><td><a class="macro" href="#382" title="template&lt;typename T, int N&gt; inline bool operator ==(const Jet&lt;T, N&gt;&amp; f, const Jet&lt;T, N&gt;&amp; g) { return f.a == g.a; } template&lt;typename T, int N&gt; inline bool operator ==(const T&amp; s, const Jet&lt;T, N&gt;&amp; g) { return s == g.a; } template&lt;typename T, int N&gt; inline bool operator ==(const Jet&lt;T, N&gt;&amp; f, const T&amp; s) { return f.a == s; }" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a>( == )  <i>// NOLINT</i></td></tr>
+<tr><th id="400">400</th><td><a class="macro" href="#382" title="template&lt;typename T, int N&gt; inline bool operator !=(const Jet&lt;T, N&gt;&amp; f, const Jet&lt;T, N&gt;&amp; g) { return f.a != g.a; } template&lt;typename T, int N&gt; inline bool operator !=(const T&amp; s, const Jet&lt;T, N&gt;&amp; g) { return s != g.a; } template&lt;typename T, int N&gt; inline bool operator !=(const Jet&lt;T, N&gt;&amp; f, const T&amp; s) { return f.a != s; }" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a>( != )  <i>// NOLINT</i></td></tr>
+<tr><th id="401">401</th><td><u>#undef <a class="macro" href="#382" data-ref="_M/CERES_DEFINE_JET_COMPARISON_OPERATOR">CERES_DEFINE_JET_COMPARISON_OPERATOR</a></u></td></tr>
+<tr><th id="402">402</th><td></td></tr>
+<tr><th id="403">403</th><td><i>// Pull some functions from namespace std.</i></td></tr>
+<tr><th id="404">404</th><td><i>//</i></td></tr>
+<tr><th id="405">405</th><td><i>// This is necessary because we want to use the same name (e.g. 'sqrt') for</i></td></tr>
+<tr><th id="406">406</th><td><i>// double-valued and Jet-valued functions, but we are not allowed to put</i></td></tr>
+<tr><th id="407">407</th><td><i>// Jet-valued functions inside namespace std.</i></td></tr>
+<tr><th id="408">408</th><td><i>//</i></td></tr>
+<tr><th id="409">409</th><td><i>// TODO(keir): Switch to "using".</i></td></tr>
+<tr><th id="410">410</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3absEd" title='ceres::abs' data-ref="_ZN5ceres3absEd">abs</dfn>     (<em>double</em> <dfn class="local col6 decl" id="216x" title='x' data-type='double' data-ref="216x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/c++/4.8/cmath.html#_ZSt3absd" title='std::abs' data-ref="_ZSt3absd">abs</a>(<a class="local col6 ref" href="#216x" title='x' data-ref="216x">x</a>);      }</td></tr>
+<tr><th id="411">411</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3logEd" title='ceres::log' data-ref="_ZN5ceres3logEd">log</dfn>     (<em>double</em> <dfn class="local col7 decl" id="217x" title='x' data-type='double' data-ref="217x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#109" title='log' data-ref="log">log</a>(<a class="local col7 ref" href="#217x" title='x' data-ref="217x">x</a>);      }</td></tr>
+<tr><th id="412">412</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3expEd" title='ceres::exp' data-ref="_ZN5ceres3expEd">exp</dfn>     (<em>double</em> <dfn class="local col8 decl" id="218x" title='x' data-type='double' data-ref="218x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#100" title='exp' data-ref="exp">exp</a>(<a class="local col8 ref" href="#218x" title='x' data-ref="218x">x</a>);      }</td></tr>
+<tr><th id="413">413</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4sqrtEd" title='ceres::sqrt' data-ref="_ZN5ceres4sqrtEd">sqrt</dfn>    (<em>double</em> <dfn class="local col9 decl" id="219x" title='x' data-type='double' data-ref="219x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="local col9 ref" href="#219x" title='x' data-ref="219x">x</a>);     }</td></tr>
+<tr><th id="414">414</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3cosEd" title='ceres::cos' data-ref="_ZN5ceres3cosEd">cos</dfn>     (<em>double</em> <dfn class="local col0 decl" id="220x" title='x' data-type='double' data-ref="220x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#63" title='cos' data-ref="cos">cos</a>(<a class="local col0 ref" href="#220x" title='x' data-ref="220x">x</a>);      }</td></tr>
+<tr><th id="415">415</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4acosEd" title='ceres::acos' data-ref="_ZN5ceres4acosEd">acos</dfn>    (<em>double</em> <dfn class="local col1 decl" id="221x" title='x' data-type='double' data-ref="221x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#54" title='acos' data-ref="acos">acos</a>(<a class="local col1 ref" href="#221x" title='x' data-ref="221x">x</a>);     }</td></tr>
+<tr><th id="416">416</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3sinEd" title='ceres::sin' data-ref="_ZN5ceres3sinEd">sin</dfn>     (<em>double</em> <dfn class="local col2 decl" id="222x" title='x' data-type='double' data-ref="222x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#65" title='sin' data-ref="sin">sin</a>(<a class="local col2 ref" href="#222x" title='x' data-ref="222x">x</a>);      }</td></tr>
+<tr><th id="417">417</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4asinEd" title='ceres::asin' data-ref="_ZN5ceres4asinEd">asin</dfn>    (<em>double</em> <dfn class="local col3 decl" id="223x" title='x' data-type='double' data-ref="223x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#56" title='asin' data-ref="asin">asin</a>(<a class="local col3 ref" href="#223x" title='x' data-ref="223x">x</a>);     }</td></tr>
+<tr><th id="418">418</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3tanEd" title='ceres::tan' data-ref="_ZN5ceres3tanEd">tan</dfn>     (<em>double</em> <dfn class="local col4 decl" id="224x" title='x' data-type='double' data-ref="224x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#67" title='tan' data-ref="tan">tan</a>(<a class="local col4 ref" href="#224x" title='x' data-ref="224x">x</a>);      }</td></tr>
+<tr><th id="419">419</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4atanEd" title='ceres::atan' data-ref="_ZN5ceres4atanEd">atan</dfn>    (<em>double</em> <dfn class="local col5 decl" id="225x" title='x' data-type='double' data-ref="225x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#58" title='atan' data-ref="atan">atan</a>(<a class="local col5 ref" href="#225x" title='x' data-ref="225x">x</a>);     }</td></tr>
+<tr><th id="420">420</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4sinhEd" title='ceres::sinh' data-ref="_ZN5ceres4sinhEd">sinh</dfn>    (<em>double</em> <dfn class="local col6 decl" id="226x" title='x' data-type='double' data-ref="226x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#74" title='sinh' data-ref="sinh">sinh</a>(<a class="local col6 ref" href="#226x" title='x' data-ref="226x">x</a>);     }</td></tr>
+<tr><th id="421">421</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4coshEd" title='ceres::cosh' data-ref="_ZN5ceres4coshEd">cosh</dfn>    (<em>double</em> <dfn class="local col7 decl" id="227x" title='x' data-type='double' data-ref="227x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#72" title='cosh' data-ref="cosh">cosh</a>(<a class="local col7 ref" href="#227x" title='x' data-ref="227x">x</a>);     }</td></tr>
+<tr><th id="422">422</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4tanhEd" title='ceres::tanh' data-ref="_ZN5ceres4tanhEd">tanh</dfn>    (<em>double</em> <dfn class="local col8 decl" id="228x" title='x' data-type='double' data-ref="228x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#76" title='tanh' data-ref="tanh">tanh</a>(<a class="local col8 ref" href="#228x" title='x' data-ref="228x">x</a>);     }</td></tr>
+<tr><th id="423">423</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres5floorEd" title='ceres::floor' data-ref="_ZN5ceres5floorEd">floor</dfn>   (<em>double</em> <dfn class="local col9 decl" id="229x" title='x' data-type='double' data-ref="229x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#184" title='floor' data-ref="floor">floor</a>(<a class="local col9 ref" href="#229x" title='x' data-ref="229x">x</a>);    }</td></tr>
+<tr><th id="424">424</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres4ceilEd" title='ceres::ceil' data-ref="_ZN5ceres4ceilEd">ceil</dfn>    (<em>double</em> <dfn class="local col0 decl" id="230x" title='x' data-type='double' data-ref="230x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#178" title='ceil' data-ref="ceil">ceil</a>(<a class="local col0 ref" href="#230x" title='x' data-ref="230x">x</a>);     }</td></tr>
+<tr><th id="425">425</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres3powEdd" title='ceres::pow' data-ref="_ZN5ceres3powEdd">pow</dfn>  (<em>double</em> <dfn class="local col1 decl" id="231x" title='x' data-type='double' data-ref="231x">x</dfn>, <em>double</em> <dfn class="local col2 decl" id="232y" title='y' data-type='double' data-ref="232y">y</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#153" title='pow' data-ref="pow">pow</a>(<a class="local col1 ref" href="#231x" title='x' data-ref="231x">x</a>, <a class="local col2 ref" href="#232y" title='y' data-ref="232y">y</a>);   }</td></tr>
+<tr><th id="426">426</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres5atan2Edd" title='ceres::atan2' data-ref="_ZN5ceres5atan2Edd">atan2</dfn>(<em>double</em> <dfn class="local col3 decl" id="233y" title='y' data-type='double' data-ref="233y">y</dfn>, <em>double</em> <dfn class="local col4 decl" id="234x" title='x' data-type='double' data-ref="234x">x</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#60" title='atan2' data-ref="atan2">atan2</a>(<a class="local col3 ref" href="#233y" title='y' data-ref="233y">y</a>, <a class="local col4 ref" href="#234x" title='x' data-ref="234x">x</a>); }</td></tr>
+<tr><th id="427">427</th><td></td></tr>
+<tr><th id="428">428</th><td><i>// In general, f(a + h) ~= f(a) + f'(a) h, via the chain rule.</i></td></tr>
+<tr><th id="429">429</th><td><i></i></td></tr>
+<tr><th id="430">430</th><td><i>// abs(x + h) ~= x + h or -(x + h)</i></td></tr>
+<tr><th id="431">431</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="432">432</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3absERKNS_3JetIT_XT0_EEE" title='ceres::abs' data-ref="_ZN5ceres3absERKNS_3JetIT_XT0_EEE">abs</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="235f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="235f">f</dfn>) {</td></tr>
+<tr><th id="433">433</th><td>  <b>return</b> <a class="local col5 ref" href="#235f" title='f' data-ref="235f">f</a>.a &lt; T(<var>0.0</var>) ? -<a class="local col5 ref" href="#235f" title='f' data-ref="235f">f</a> : <a class="local col5 ref" href="#235f" title='f' data-ref="235f">f</a>;</td></tr>
+<tr><th id="434">434</th><td>}</td></tr>
+<tr><th id="435">435</th><td></td></tr>
+<tr><th id="436">436</th><td><i>// log(a + h) ~= log(a) + h / a</i></td></tr>
+<tr><th id="437">437</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="438">438</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3logERKNS_3JetIT_XT0_EEE" title='ceres::log' data-ref="_ZN5ceres3logERKNS_3JetIT_XT0_EEE">log</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="236f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="236f">f</dfn>) {</td></tr>
+<tr><th id="439">439</th><td>  <em>const</em> T <dfn class="local col7 decl" id="237a_inverse" title='a_inverse' data-type='const T' data-ref="237a_inverse">a_inverse</dfn> = T(<var>1.0</var>) / <a class="local col6 ref" href="#236f" title='f' data-ref="236f">f</a>.a;</td></tr>
+<tr><th id="440">440</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(log(<a class="local col6 ref" href="#236f" title='f' data-ref="236f">f</a>.a), <a class="local col6 ref" href="#236f" title='f' data-ref="236f">f</a>.v * <a class="local col7 ref" href="#237a_inverse" title='a_inverse' data-ref="237a_inverse">a_inverse</a>);</td></tr>
+<tr><th id="441">441</th><td>}</td></tr>
+<tr><th id="442">442</th><td></td></tr>
+<tr><th id="443">443</th><td><i>// exp(a + h) ~= exp(a) + exp(a) h</i></td></tr>
+<tr><th id="444">444</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="445">445</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3expERKNS_3JetIT_XT0_EEE" title='ceres::exp' data-ref="_ZN5ceres3expERKNS_3JetIT_XT0_EEE">exp</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="238f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="238f">f</dfn>) {</td></tr>
+<tr><th id="446">446</th><td>  <em>const</em> T <dfn class="local col9 decl" id="239tmp" title='tmp' data-type='const T' data-ref="239tmp">tmp</dfn> = exp(<a class="local col8 ref" href="#238f" title='f' data-ref="238f">f</a>.a);</td></tr>
+<tr><th id="447">447</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col9 ref" href="#239tmp" title='tmp' data-ref="239tmp">tmp</a>, <a class="local col9 ref" href="#239tmp" title='tmp' data-ref="239tmp">tmp</a> * <a class="local col8 ref" href="#238f" title='f' data-ref="238f">f</a>.v);</td></tr>
+<tr><th id="448">448</th><td>}</td></tr>
+<tr><th id="449">449</th><td></td></tr>
+<tr><th id="450">450</th><td><i>// sqrt(a + h) ~= sqrt(a) + h / (2 sqrt(a))</i></td></tr>
+<tr><th id="451">451</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="452">452</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4sqrtERKNS_3JetIT_XT0_EEE" title='ceres::sqrt' data-ref="_ZN5ceres4sqrtERKNS_3JetIT_XT0_EEE">sqrt</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="240f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="240f">f</dfn>) {</td></tr>
+<tr><th id="453">453</th><td>  <em>const</em> T <dfn class="local col1 decl" id="241tmp" title='tmp' data-type='const T' data-ref="241tmp">tmp</dfn> = sqrt(<a class="local col0 ref" href="#240f" title='f' data-ref="240f">f</a>.a);</td></tr>
+<tr><th id="454">454</th><td>  <em>const</em> T <dfn class="local col2 decl" id="242two_a_inverse" title='two_a_inverse' data-type='const T' data-ref="242two_a_inverse">two_a_inverse</dfn> = T(<var>1.0</var>) / (T(<var>2.0</var>) * <a class="local col1 ref" href="#241tmp" title='tmp' data-ref="241tmp">tmp</a>);</td></tr>
+<tr><th id="455">455</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col1 ref" href="#241tmp" title='tmp' data-ref="241tmp">tmp</a>, <a class="local col0 ref" href="#240f" title='f' data-ref="240f">f</a>.v * <a class="local col2 ref" href="#242two_a_inverse" title='two_a_inverse' data-ref="242two_a_inverse">two_a_inverse</a>);</td></tr>
+<tr><th id="456">456</th><td>}</td></tr>
+<tr><th id="457">457</th><td></td></tr>
+<tr><th id="458">458</th><td><i>// cos(a + h) ~= cos(a) - sin(a) h</i></td></tr>
+<tr><th id="459">459</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="460">460</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3cosERKNS_3JetIT_XT0_EEE" title='ceres::cos' data-ref="_ZN5ceres3cosERKNS_3JetIT_XT0_EEE">cos</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col3 decl" id="243f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="243f">f</dfn>) {</td></tr>
+<tr><th id="461">461</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(cos(<a class="local col3 ref" href="#243f" title='f' data-ref="243f">f</a>.a), - sin(<a class="local col3 ref" href="#243f" title='f' data-ref="243f">f</a>.a) * <a class="local col3 ref" href="#243f" title='f' data-ref="243f">f</a>.v);</td></tr>
+<tr><th id="462">462</th><td>}</td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td><i>// acos(a + h) ~= acos(a) - 1 / sqrt(1 - a^2) h</i></td></tr>
+<tr><th id="465">465</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="466">466</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4acosERKNS_3JetIT_XT0_EEE" title='ceres::acos' data-ref="_ZN5ceres4acosERKNS_3JetIT_XT0_EEE">acos</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col4 decl" id="244f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="244f">f</dfn>) {</td></tr>
+<tr><th id="467">467</th><td>  <em>const</em> T <dfn class="local col5 decl" id="245tmp" title='tmp' data-type='const T' data-ref="245tmp">tmp</dfn> = - T(<var>1.0</var>) / sqrt(T(<var>1.0</var>) - <a class="local col4 ref" href="#244f" title='f' data-ref="244f">f</a>.a * <a class="local col4 ref" href="#244f" title='f' data-ref="244f">f</a>.a);</td></tr>
+<tr><th id="468">468</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(acos(<a class="local col4 ref" href="#244f" title='f' data-ref="244f">f</a>.a), <a class="local col5 ref" href="#245tmp" title='tmp' data-ref="245tmp">tmp</a> * <a class="local col4 ref" href="#244f" title='f' data-ref="244f">f</a>.v);</td></tr>
+<tr><th id="469">469</th><td>}</td></tr>
+<tr><th id="470">470</th><td></td></tr>
+<tr><th id="471">471</th><td><i>// sin(a + h) ~= sin(a) + cos(a) h</i></td></tr>
+<tr><th id="472">472</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="473">473</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3sinERKNS_3JetIT_XT0_EEE" title='ceres::sin' data-ref="_ZN5ceres3sinERKNS_3JetIT_XT0_EEE">sin</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="246f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="246f">f</dfn>) {</td></tr>
+<tr><th id="474">474</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(sin(<a class="local col6 ref" href="#246f" title='f' data-ref="246f">f</a>.a), cos(<a class="local col6 ref" href="#246f" title='f' data-ref="246f">f</a>.a) * <a class="local col6 ref" href="#246f" title='f' data-ref="246f">f</a>.v);</td></tr>
+<tr><th id="475">475</th><td>}</td></tr>
+<tr><th id="476">476</th><td></td></tr>
+<tr><th id="477">477</th><td><i>// asin(a + h) ~= asin(a) + 1 / sqrt(1 - a^2) h</i></td></tr>
+<tr><th id="478">478</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="479">479</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4asinERKNS_3JetIT_XT0_EEE" title='ceres::asin' data-ref="_ZN5ceres4asinERKNS_3JetIT_XT0_EEE">asin</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col7 decl" id="247f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="247f">f</dfn>) {</td></tr>
+<tr><th id="480">480</th><td>  <em>const</em> T <dfn class="local col8 decl" id="248tmp" title='tmp' data-type='const T' data-ref="248tmp">tmp</dfn> = T(<var>1.0</var>) / sqrt(T(<var>1.0</var>) - <a class="local col7 ref" href="#247f" title='f' data-ref="247f">f</a>.a * <a class="local col7 ref" href="#247f" title='f' data-ref="247f">f</a>.a);</td></tr>
+<tr><th id="481">481</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(asin(<a class="local col7 ref" href="#247f" title='f' data-ref="247f">f</a>.a), <a class="local col8 ref" href="#248tmp" title='tmp' data-ref="248tmp">tmp</a> * <a class="local col7 ref" href="#247f" title='f' data-ref="247f">f</a>.v);</td></tr>
+<tr><th id="482">482</th><td>}</td></tr>
+<tr><th id="483">483</th><td></td></tr>
+<tr><th id="484">484</th><td><i>// tan(a + h) ~= tan(a) + (1 + tan(a)^2) h</i></td></tr>
+<tr><th id="485">485</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="486">486</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3tanERKNS_3JetIT_XT0_EEE" title='ceres::tan' data-ref="_ZN5ceres3tanERKNS_3JetIT_XT0_EEE">tan</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="249f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="249f">f</dfn>) {</td></tr>
+<tr><th id="487">487</th><td>  <em>const</em> T <dfn class="local col0 decl" id="250tan_a" title='tan_a' data-type='const T' data-ref="250tan_a">tan_a</dfn> = tan(<a class="local col9 ref" href="#249f" title='f' data-ref="249f">f</a>.a);</td></tr>
+<tr><th id="488">488</th><td>  <em>const</em> T <dfn class="local col1 decl" id="251tmp" title='tmp' data-type='const T' data-ref="251tmp">tmp</dfn> = T(<var>1.0</var>) + <a class="local col0 ref" href="#250tan_a" title='tan_a' data-ref="250tan_a">tan_a</a> * <a class="local col0 ref" href="#250tan_a" title='tan_a' data-ref="250tan_a">tan_a</a>;</td></tr>
+<tr><th id="489">489</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col0 ref" href="#250tan_a" title='tan_a' data-ref="250tan_a">tan_a</a>, <a class="local col1 ref" href="#251tmp" title='tmp' data-ref="251tmp">tmp</a> * <a class="local col9 ref" href="#249f" title='f' data-ref="249f">f</a>.v);</td></tr>
+<tr><th id="490">490</th><td>}</td></tr>
+<tr><th id="491">491</th><td></td></tr>
+<tr><th id="492">492</th><td><i>// atan(a + h) ~= atan(a) + 1 / (1 + a^2) h</i></td></tr>
+<tr><th id="493">493</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="494">494</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4atanERKNS_3JetIT_XT0_EEE" title='ceres::atan' data-ref="_ZN5ceres4atanERKNS_3JetIT_XT0_EEE">atan</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col2 decl" id="252f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="252f">f</dfn>) {</td></tr>
+<tr><th id="495">495</th><td>  <em>const</em> T <dfn class="local col3 decl" id="253tmp" title='tmp' data-type='const T' data-ref="253tmp">tmp</dfn> = T(<var>1.0</var>) / (T(<var>1.0</var>) + <a class="local col2 ref" href="#252f" title='f' data-ref="252f">f</a>.a * <a class="local col2 ref" href="#252f" title='f' data-ref="252f">f</a>.a);</td></tr>
+<tr><th id="496">496</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(atan(<a class="local col2 ref" href="#252f" title='f' data-ref="252f">f</a>.a), <a class="local col3 ref" href="#253tmp" title='tmp' data-ref="253tmp">tmp</a> * <a class="local col2 ref" href="#252f" title='f' data-ref="252f">f</a>.v);</td></tr>
+<tr><th id="497">497</th><td>}</td></tr>
+<tr><th id="498">498</th><td></td></tr>
+<tr><th id="499">499</th><td><i>// sinh(a + h) ~= sinh(a) + cosh(a) h</i></td></tr>
+<tr><th id="500">500</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="501">501</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4sinhERKNS_3JetIT_XT0_EEE" title='ceres::sinh' data-ref="_ZN5ceres4sinhERKNS_3JetIT_XT0_EEE">sinh</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col4 decl" id="254f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="254f">f</dfn>) {</td></tr>
+<tr><th id="502">502</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(sinh(<a class="local col4 ref" href="#254f" title='f' data-ref="254f">f</a>.a), cosh(<a class="local col4 ref" href="#254f" title='f' data-ref="254f">f</a>.a) * <a class="local col4 ref" href="#254f" title='f' data-ref="254f">f</a>.v);</td></tr>
+<tr><th id="503">503</th><td>}</td></tr>
+<tr><th id="504">504</th><td></td></tr>
+<tr><th id="505">505</th><td><i>// cosh(a + h) ~= cosh(a) + sinh(a) h</i></td></tr>
+<tr><th id="506">506</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="507">507</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4coshERKNS_3JetIT_XT0_EEE" title='ceres::cosh' data-ref="_ZN5ceres4coshERKNS_3JetIT_XT0_EEE">cosh</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="255f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="255f">f</dfn>) {</td></tr>
+<tr><th id="508">508</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(cosh(<a class="local col5 ref" href="#255f" title='f' data-ref="255f">f</a>.a), sinh(<a class="local col5 ref" href="#255f" title='f' data-ref="255f">f</a>.a) * <a class="local col5 ref" href="#255f" title='f' data-ref="255f">f</a>.v);</td></tr>
+<tr><th id="509">509</th><td>}</td></tr>
+<tr><th id="510">510</th><td></td></tr>
+<tr><th id="511">511</th><td><i>// tanh(a + h) ~= tanh(a) + (1 - tanh(a)^2) h</i></td></tr>
+<tr><th id="512">512</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="513">513</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4tanhERKNS_3JetIT_XT0_EEE" title='ceres::tanh' data-ref="_ZN5ceres4tanhERKNS_3JetIT_XT0_EEE">tanh</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="256f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="256f">f</dfn>) {</td></tr>
+<tr><th id="514">514</th><td>  <em>const</em> T <dfn class="local col7 decl" id="257tanh_a" title='tanh_a' data-type='const T' data-ref="257tanh_a">tanh_a</dfn> = tanh(<a class="local col6 ref" href="#256f" title='f' data-ref="256f">f</a>.a);</td></tr>
+<tr><th id="515">515</th><td>  <em>const</em> T <dfn class="local col8 decl" id="258tmp" title='tmp' data-type='const T' data-ref="258tmp">tmp</dfn> = T(<var>1.0</var>) - <a class="local col7 ref" href="#257tanh_a" title='tanh_a' data-ref="257tanh_a">tanh_a</a> * <a class="local col7 ref" href="#257tanh_a" title='tanh_a' data-ref="257tanh_a">tanh_a</a>;</td></tr>
+<tr><th id="516">516</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col7 ref" href="#257tanh_a" title='tanh_a' data-ref="257tanh_a">tanh_a</a>, <a class="local col8 ref" href="#258tmp" title='tmp' data-ref="258tmp">tmp</a> * <a class="local col6 ref" href="#256f" title='f' data-ref="256f">f</a>.v);</td></tr>
+<tr><th id="517">517</th><td>}</td></tr>
+<tr><th id="518">518</th><td></td></tr>
+<tr><th id="519">519</th><td><i>// The floor function should be used with extreme care as this operation will</i></td></tr>
+<tr><th id="520">520</th><td><i>// result in a zero derivative which provides no information to the solver.</i></td></tr>
+<tr><th id="521">521</th><td><i>//</i></td></tr>
+<tr><th id="522">522</th><td><i>// floor(a + h) ~= floor(a) + 0</i></td></tr>
+<tr><th id="523">523</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="524">524</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres5floorERKNS_3JetIT_XT0_EEE" title='ceres::floor' data-ref="_ZN5ceres5floorERKNS_3JetIT_XT0_EEE">floor</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="259f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="259f">f</dfn>) {</td></tr>
+<tr><th id="525">525</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(floor(<a class="local col9 ref" href="#259f" title='f' data-ref="259f">f</a>.a));</td></tr>
+<tr><th id="526">526</th><td>}</td></tr>
+<tr><th id="527">527</th><td></td></tr>
+<tr><th id="528">528</th><td><i>// The ceil function should be used with extreme care as this operation will</i></td></tr>
+<tr><th id="529">529</th><td><i>// result in a zero derivative which provides no information to the solver.</i></td></tr>
+<tr><th id="530">530</th><td><i>//</i></td></tr>
+<tr><th id="531">531</th><td><i>// ceil(a + h) ~= ceil(a) + 0</i></td></tr>
+<tr><th id="532">532</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="533">533</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres4ceilERKNS_3JetIT_XT0_EEE" title='ceres::ceil' data-ref="_ZN5ceres4ceilERKNS_3JetIT_XT0_EEE">ceil</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="260f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="260f">f</dfn>) {</td></tr>
+<tr><th id="534">534</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(ceil(<a class="local col0 ref" href="#260f" title='f' data-ref="260f">f</a>.a));</td></tr>
+<tr><th id="535">535</th><td>}</td></tr>
+<tr><th id="536">536</th><td></td></tr>
+<tr><th id="537">537</th><td><i>// Bessel functions of the first kind with integer order equal to 0, 1, n.</i></td></tr>
+<tr><th id="538">538</th><td><i>//</i></td></tr>
+<tr><th id="539">539</th><td><i>// Microsoft has deprecated the j[0,1,n]() POSIX Bessel functions in favour of</i></td></tr>
+<tr><th id="540">540</th><td><i>// _j[0,1,n]().  Where available on MSVC, use _j[0,1,n]() to avoid deprecated</i></td></tr>
+<tr><th id="541">541</th><td><i>// function errors in client code (the specific warning is suppressed when</i></td></tr>
+<tr><th id="542">542</th><td><i>// Ceres itself is built).</i></td></tr>
+<tr><th id="543">543</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres8BesselJ0Ed" title='ceres::BesselJ0' data-ref="_ZN5ceres8BesselJ0Ed">BesselJ0</dfn>(<em>double</em> <dfn class="local col1 decl" id="261x" title='x' data-type='double' data-ref="261x">x</dfn>) {</td></tr>
+<tr><th id="544">544</th><td><u>#<span data-ppcond="544">if</span> defined(<span class="macro" data-ref="_M/CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS">CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS</span>)</u></td></tr>
+<tr><th id="545">545</th><td>  <b>return</b> _j0(x);</td></tr>
+<tr><th id="546">546</th><td><u>#<span data-ppcond="544">else</span></u></td></tr>
+<tr><th id="547">547</th><td>  <b>return</b> <a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#237" title='j0' data-ref="j0">j0</a>(<a class="local col1 ref" href="#261x" title='x' data-ref="261x">x</a>);</td></tr>
+<tr><th id="548">548</th><td><u>#<span data-ppcond="544">endif</span></u></td></tr>
+<tr><th id="549">549</th><td>}</td></tr>
+<tr><th id="550">550</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres8BesselJ1Ed" title='ceres::BesselJ1' data-ref="_ZN5ceres8BesselJ1Ed">BesselJ1</dfn>(<em>double</em> <dfn class="local col2 decl" id="262x" title='x' data-type='double' data-ref="262x">x</dfn>) {</td></tr>
+<tr><th id="551">551</th><td><u>#<span data-ppcond="551">if</span> defined(<span class="macro" data-ref="_M/CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS">CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS</span>)</u></td></tr>
+<tr><th id="552">552</th><td>  <b>return</b> _j1(x);</td></tr>
+<tr><th id="553">553</th><td><u>#<span data-ppcond="551">else</span></u></td></tr>
+<tr><th id="554">554</th><td>  <b>return</b> <a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#238" title='j1' data-ref="j1">j1</a>(<a class="local col2 ref" href="#262x" title='x' data-ref="262x">x</a>);</td></tr>
+<tr><th id="555">555</th><td><u>#<span data-ppcond="551">endif</span></u></td></tr>
+<tr><th id="556">556</th><td>}</td></tr>
+<tr><th id="557">557</th><td><b>inline</b> <em>double</em> <dfn class="decl def" id="_ZN5ceres8BesselJnEid" title='ceres::BesselJn' data-ref="_ZN5ceres8BesselJnEid">BesselJn</dfn>(<em>int</em> <dfn class="local col3 decl" id="263n" title='n' data-type='int' data-ref="263n">n</dfn>, <em>double</em> <dfn class="local col4 decl" id="264x" title='x' data-type='double' data-ref="264x">x</dfn>) {</td></tr>
+<tr><th id="558">558</th><td><u>#<span data-ppcond="558">if</span> defined(<span class="macro" data-ref="_M/CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS">CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS</span>)</u></td></tr>
+<tr><th id="559">559</th><td>  <b>return</b> _jn(n, x);</td></tr>
+<tr><th id="560">560</th><td><u>#<span data-ppcond="558">else</span></u></td></tr>
+<tr><th id="561">561</th><td>  <b>return</b> <a class="ref" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#239" title='jn' data-ref="jn">jn</a>(<a class="local col3 ref" href="#263n" title='n' data-ref="263n">n</a>, <a class="local col4 ref" href="#264x" title='x' data-ref="264x">x</a>);</td></tr>
+<tr><th id="562">562</th><td><u>#<span data-ppcond="558">endif</span></u></td></tr>
+<tr><th id="563">563</th><td>}</td></tr>
+<tr><th id="564">564</th><td></td></tr>
+<tr><th id="565">565</th><td><i>// For the formulae of the derivatives of the Bessel functions see the book:</i></td></tr>
+<tr><th id="566">566</th><td><i>// Olver, Lozier, Boisvert, Clark, NIST Handbook of Mathematical Functions,</i></td></tr>
+<tr><th id="567">567</th><td><i>// Cambridge University Press 2010.</i></td></tr>
+<tr><th id="568">568</th><td><i>//</i></td></tr>
+<tr><th id="569">569</th><td><i>// Formulae are also available at <a href="http://dlmf.nist.gov">http://dlmf.nist.gov</a></i></td></tr>
+<tr><th id="570">570</th><td><i></i></td></tr>
+<tr><th id="571">571</th><td><i>// See formula <a href="http://dlmf.nist.gov/10.6#E3">http://dlmf.nist.gov/10.6#E3</a></i></td></tr>
+<tr><th id="572">572</th><td><i>// j0(a + h) ~= j0(a) - j1(a) h</i></td></tr>
+<tr><th id="573">573</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="574">574</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres8BesselJ0ERKNS_3JetIT_XT0_EEE" title='ceres::BesselJ0' data-ref="_ZN5ceres8BesselJ0ERKNS_3JetIT_XT0_EEE">BesselJ0</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="265f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="265f">f</dfn>) {</td></tr>
+<tr><th id="575">575</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(BesselJ0(<a class="local col5 ref" href="#265f" title='f' data-ref="265f">f</a>.a),</td></tr>
+<tr><th id="576">576</th><td>                   -BesselJ1(<a class="local col5 ref" href="#265f" title='f' data-ref="265f">f</a>.a) * <a class="local col5 ref" href="#265f" title='f' data-ref="265f">f</a>.v);</td></tr>
+<tr><th id="577">577</th><td>}</td></tr>
+<tr><th id="578">578</th><td></td></tr>
+<tr><th id="579">579</th><td><i>// See formula <a href="http://dlmf.nist.gov/10.6#E1">http://dlmf.nist.gov/10.6#E1</a></i></td></tr>
+<tr><th id="580">580</th><td><i>// j1(a + h) ~= j1(a) + 0.5 ( j0(a) - j2(a) ) h</i></td></tr>
+<tr><th id="581">581</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="582">582</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres8BesselJ1ERKNS_3JetIT_XT0_EEE" title='ceres::BesselJ1' data-ref="_ZN5ceres8BesselJ1ERKNS_3JetIT_XT0_EEE">BesselJ1</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="266f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="266f">f</dfn>) {</td></tr>
+<tr><th id="583">583</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(BesselJ1(<a class="local col6 ref" href="#266f" title='f' data-ref="266f">f</a>.a),</td></tr>
+<tr><th id="584">584</th><td>                   T(<var>0.5</var>) * (BesselJ0(<a class="local col6 ref" href="#266f" title='f' data-ref="266f">f</a>.a) - BesselJn(<var>2</var>, <a class="local col6 ref" href="#266f" title='f' data-ref="266f">f</a>.a)) * <a class="local col6 ref" href="#266f" title='f' data-ref="266f">f</a>.v);</td></tr>
+<tr><th id="585">585</th><td>}</td></tr>
+<tr><th id="586">586</th><td></td></tr>
+<tr><th id="587">587</th><td><i>// See formula <a href="http://dlmf.nist.gov/10.6#E1">http://dlmf.nist.gov/10.6#E1</a></i></td></tr>
+<tr><th id="588">588</th><td><i>// j_n(a + h) ~= j_n(a) + 0.5 ( j_{n-1}(a) - j_{n+1}(a) ) h</i></td></tr>
+<tr><th id="589">589</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="590">590</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres8BesselJnEiRKNS_3JetIT_XT0_EEE" title='ceres::BesselJn' data-ref="_ZN5ceres8BesselJnEiRKNS_3JetIT_XT0_EEE">BesselJn</dfn>(<em>int</em> <dfn class="local col7 decl" id="267n" title='n' data-type='int' data-ref="267n">n</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="268f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="268f">f</dfn>) {</td></tr>
+<tr><th id="591">591</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(BesselJn(<a class="local col7 ref" href="#267n" title='n' data-ref="267n">n</a>, <a class="local col8 ref" href="#268f" title='f' data-ref="268f">f</a>.a),</td></tr>
+<tr><th id="592">592</th><td>                   T(<var>0.5</var>) * (BesselJn(<a class="local col7 ref" href="#267n" title='n' data-ref="267n">n</a> - <var>1</var>, <a class="local col8 ref" href="#268f" title='f' data-ref="268f">f</a>.a) - BesselJn(<a class="local col7 ref" href="#267n" title='n' data-ref="267n">n</a> + <var>1</var>, <a class="local col8 ref" href="#268f" title='f' data-ref="268f">f</a>.a)) * <a class="local col8 ref" href="#268f" title='f' data-ref="268f">f</a>.v);</td></tr>
+<tr><th id="593">593</th><td>}</td></tr>
+<tr><th id="594">594</th><td></td></tr>
+<tr><th id="595">595</th><td><i>// Jet Classification. It is not clear what the appropriate semantics are for</i></td></tr>
+<tr><th id="596">596</th><td><i>// these classifications. This picks that IsFinite and isnormal are "all"</i></td></tr>
+<tr><th id="597">597</th><td><i>// operations, i.e. all elements of the jet must be finite for the jet itself</i></td></tr>
+<tr><th id="598">598</th><td><i>// to be finite (or normal). For IsNaN and IsInfinite, the answer is less</i></td></tr>
+<tr><th id="599">599</th><td><i>// clear. This takes a "any" approach for IsNaN and IsInfinite such that if any</i></td></tr>
+<tr><th id="600">600</th><td><i>// part of a jet is nan or inf, then the entire jet is nan or inf. This leads</i></td></tr>
+<tr><th id="601">601</th><td><i>// to strange situations like a jet can be both IsInfinite and IsNaN, but in</i></td></tr>
+<tr><th id="602">602</th><td><i>// practice the "any" semantics are the most useful for e.g. checking that</i></td></tr>
+<tr><th id="603">603</th><td><i>// derivatives are sane.</i></td></tr>
+<tr><th id="604">604</th><td><i></i></td></tr>
+<tr><th id="605">605</th><td><i>// The jet is finite if all parts of the jet are finite.</i></td></tr>
+<tr><th id="606">606</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="607">607</th><td><em>bool</em> <dfn class="decl def" id="_ZN5ceres8IsFiniteERKNS_3JetIT_XT0_EEE" title='ceres::IsFinite' data-ref="_ZN5ceres8IsFiniteERKNS_3JetIT_XT0_EEE">IsFinite</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="269f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="269f">f</dfn>) {</td></tr>
+<tr><th id="608">608</th><td>  <b>if</b> (!IsFinite(<a class="local col9 ref" href="#269f" title='f' data-ref="269f">f</a>.a)) {</td></tr>
+<tr><th id="609">609</th><td>    <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="610">610</th><td>  }</td></tr>
+<tr><th id="611">611</th><td>  <b>for</b> (<em>int</em> <dfn class="local col0 decl" id="270i" title='i' data-type='int' data-ref="270i">i</dfn> = <var>0</var>; <a class="local col0 ref" href="#270i" title='i' data-ref="270i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; ++<a class="local col0 ref" href="#270i" title='i' data-ref="270i">i</a>) {</td></tr>
+<tr><th id="612">612</th><td>    <b>if</b> (!IsFinite(<a class="local col9 ref" href="#269f" title='f' data-ref="269f">f</a>.v[<a class="local col0 ref" href="#270i" title='i' data-ref="270i">i</a>])) {</td></tr>
+<tr><th id="613">613</th><td>      <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="614">614</th><td>    }</td></tr>
+<tr><th id="615">615</th><td>  }</td></tr>
+<tr><th id="616">616</th><td>  <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="617">617</th><td>}</td></tr>
+<tr><th id="618">618</th><td></td></tr>
+<tr><th id="619">619</th><td><i>// The jet is infinite if any part of the jet is infinite.</i></td></tr>
+<tr><th id="620">620</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="621">621</th><td><em>bool</em> <dfn class="decl def" id="_ZN5ceres10IsInfiniteERKNS_3JetIT_XT0_EEE" title='ceres::IsInfinite' data-ref="_ZN5ceres10IsInfiniteERKNS_3JetIT_XT0_EEE">IsInfinite</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col1 decl" id="271f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="271f">f</dfn>) {</td></tr>
+<tr><th id="622">622</th><td>  <b>if</b> (IsInfinite(<a class="local col1 ref" href="#271f" title='f' data-ref="271f">f</a>.a)) {</td></tr>
+<tr><th id="623">623</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="624">624</th><td>  }</td></tr>
+<tr><th id="625">625</th><td>  <b>for</b> (<em>int</em> <dfn class="local col2 decl" id="272i" title='i' data-type='int' data-ref="272i">i</dfn> = <var>0</var>; <a class="local col2 ref" href="#272i" title='i' data-ref="272i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; <a class="local col2 ref" href="#272i" title='i' data-ref="272i">i</a>++) {</td></tr>
+<tr><th id="626">626</th><td>    <b>if</b> (IsInfinite(<a class="local col1 ref" href="#271f" title='f' data-ref="271f">f</a>.v[<a class="local col2 ref" href="#272i" title='i' data-ref="272i">i</a>])) {</td></tr>
+<tr><th id="627">627</th><td>      <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="628">628</th><td>    }</td></tr>
+<tr><th id="629">629</th><td>  }</td></tr>
+<tr><th id="630">630</th><td>  <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="631">631</th><td>}</td></tr>
+<tr><th id="632">632</th><td></td></tr>
+<tr><th id="633">633</th><td><i>// The jet is NaN if any part of the jet is NaN.</i></td></tr>
+<tr><th id="634">634</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="635">635</th><td><em>bool</em> <dfn class="decl def" id="_ZN5ceres5IsNaNERKNS_3JetIT_XT0_EEE" title='ceres::IsNaN' data-ref="_ZN5ceres5IsNaNERKNS_3JetIT_XT0_EEE">IsNaN</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col3 decl" id="273f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="273f">f</dfn>) {</td></tr>
+<tr><th id="636">636</th><td>  <b>if</b> (IsNaN(<a class="local col3 ref" href="#273f" title='f' data-ref="273f">f</a>.a)) {</td></tr>
+<tr><th id="637">637</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="638">638</th><td>  }</td></tr>
+<tr><th id="639">639</th><td>  <b>for</b> (<em>int</em> <dfn class="local col4 decl" id="274i" title='i' data-type='int' data-ref="274i">i</dfn> = <var>0</var>; <a class="local col4 ref" href="#274i" title='i' data-ref="274i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; ++<a class="local col4 ref" href="#274i" title='i' data-ref="274i">i</a>) {</td></tr>
+<tr><th id="640">640</th><td>    <b>if</b> (IsNaN(<a class="local col3 ref" href="#273f" title='f' data-ref="273f">f</a>.v[<a class="local col4 ref" href="#274i" title='i' data-ref="274i">i</a>])) {</td></tr>
+<tr><th id="641">641</th><td>      <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="642">642</th><td>    }</td></tr>
+<tr><th id="643">643</th><td>  }</td></tr>
+<tr><th id="644">644</th><td>  <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="645">645</th><td>}</td></tr>
+<tr><th id="646">646</th><td></td></tr>
+<tr><th id="647">647</th><td><i>// The jet is normal if all parts of the jet are normal.</i></td></tr>
+<tr><th id="648">648</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="649">649</th><td><em>bool</em> <dfn class="decl def" id="_ZN5ceres8IsNormalERKNS_3JetIT_XT0_EEE" title='ceres::IsNormal' data-ref="_ZN5ceres8IsNormalERKNS_3JetIT_XT0_EEE">IsNormal</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="275f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="275f">f</dfn>) {</td></tr>
+<tr><th id="650">650</th><td>  <b>if</b> (!IsNormal(<a class="local col5 ref" href="#275f" title='f' data-ref="275f">f</a>.a)) {</td></tr>
+<tr><th id="651">651</th><td>    <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="652">652</th><td>  }</td></tr>
+<tr><th id="653">653</th><td>  <b>for</b> (<em>int</em> <dfn class="local col6 decl" id="276i" title='i' data-type='int' data-ref="276i">i</dfn> = <var>0</var>; <a class="local col6 ref" href="#276i" title='i' data-ref="276i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; ++<a class="local col6 ref" href="#276i" title='i' data-ref="276i">i</a>) {</td></tr>
+<tr><th id="654">654</th><td>    <b>if</b> (!IsNormal(<a class="local col5 ref" href="#275f" title='f' data-ref="275f">f</a>.v[<a class="local col6 ref" href="#276i" title='i' data-ref="276i">i</a>])) {</td></tr>
+<tr><th id="655">655</th><td>      <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="656">656</th><td>    }</td></tr>
+<tr><th id="657">657</th><td>  }</td></tr>
+<tr><th id="658">658</th><td>  <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="659">659</th><td>}</td></tr>
+<tr><th id="660">660</th><td></td></tr>
+<tr><th id="661">661</th><td><i>// atan2(b + db, a + da) ~= atan2(b, a) + (- b da + a db) / (a^2 + b^2)</i></td></tr>
+<tr><th id="662">662</th><td><i>//</i></td></tr>
+<tr><th id="663">663</th><td><i>// In words: the rate of change of theta is 1/r times the rate of</i></td></tr>
+<tr><th id="664">664</th><td><i>// change of (x, y) in the positive angular direction.</i></td></tr>
+<tr><th id="665">665</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="666">666</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres5atan2ERKNS_3JetIT_XT0_EEES4_" title='ceres::atan2' data-ref="_ZN5ceres5atan2ERKNS_3JetIT_XT0_EEES4_">atan2</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col7 decl" id="277g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="277g">g</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="278f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="278f">f</dfn>) {</td></tr>
+<tr><th id="667">667</th><td>  <i>// Note order of arguments:</i></td></tr>
+<tr><th id="668">668</th><td><i>  //</i></td></tr>
+<tr><th id="669">669</th><td><i>  //   f = a + da</i></td></tr>
+<tr><th id="670">670</th><td><i>  //   g = b + db</i></td></tr>
+<tr><th id="671">671</th><td></td></tr>
+<tr><th id="672">672</th><td>  T <em>const</em> <dfn class="local col9 decl" id="279tmp" title='tmp' data-type='const T' data-ref="279tmp">tmp</dfn> = T(<var>1.0</var>) / (<a class="local col8 ref" href="#278f" title='f' data-ref="278f">f</a>.a * <a class="local col8 ref" href="#278f" title='f' data-ref="278f">f</a>.a + <a class="local col7 ref" href="#277g" title='g' data-ref="277g">g</a>.a * <a class="local col7 ref" href="#277g" title='g' data-ref="277g">g</a>.a);</td></tr>
+<tr><th id="673">673</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(atan2(<a class="local col7 ref" href="#277g" title='g' data-ref="277g">g</a>.a, <a class="local col8 ref" href="#278f" title='f' data-ref="278f">f</a>.a), <a class="local col9 ref" href="#279tmp" title='tmp' data-ref="279tmp">tmp</a> * (- <a class="local col7 ref" href="#277g" title='g' data-ref="277g">g</a>.a * <a class="local col8 ref" href="#278f" title='f' data-ref="278f">f</a>.v + <a class="local col8 ref" href="#278f" title='f' data-ref="278f">f</a>.a * <a class="local col7 ref" href="#277g" title='g' data-ref="277g">g</a>.v));</td></tr>
+<tr><th id="674">674</th><td>}</td></tr>
+<tr><th id="675">675</th><td></td></tr>
+<tr><th id="676">676</th><td></td></tr>
+<tr><th id="677">677</th><td><i>// pow -- base is a differentiable function, exponent is a constant.</i></td></tr>
+<tr><th id="678">678</th><td><i>// (a+da)^p ~= a^p + p*a^(p-1) da</i></td></tr>
+<tr><th id="679">679</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="680">680</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3powERKNS_3JetIT_XT0_EEEd" title='ceres::pow' data-ref="_ZN5ceres3powERKNS_3JetIT_XT0_EEEd">pow</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="280f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="280f">f</dfn>, <em>double</em> <dfn class="local col1 decl" id="281g" title='g' data-type='double' data-ref="281g">g</dfn>) {</td></tr>
+<tr><th id="681">681</th><td>  T <em>const</em> <dfn class="local col2 decl" id="282tmp" title='tmp' data-type='const T' data-ref="282tmp">tmp</dfn> = <a class="local col1 ref" href="#281g" title='g' data-ref="281g">g</a> * pow(<a class="local col0 ref" href="#280f" title='f' data-ref="280f">f</a>.a, <a class="local col1 ref" href="#281g" title='g' data-ref="281g">g</a> - T(<var>1.0</var>));</td></tr>
+<tr><th id="682">682</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(pow(<a class="local col0 ref" href="#280f" title='f' data-ref="280f">f</a>.a, <a class="local col1 ref" href="#281g" title='g' data-ref="281g">g</a>), <a class="local col2 ref" href="#282tmp" title='tmp' data-ref="282tmp">tmp</a> * <a class="local col0 ref" href="#280f" title='f' data-ref="280f">f</a>.v);</td></tr>
+<tr><th id="683">683</th><td>}</td></tr>
+<tr><th id="684">684</th><td></td></tr>
+<tr><th id="685">685</th><td><i>// pow -- base is a constant, exponent is a differentiable function.</i></td></tr>
+<tr><th id="686">686</th><td><i>// We have various special cases, see the comment for pow(Jet, Jet) for</i></td></tr>
+<tr><th id="687">687</th><td><i>// analysis:</i></td></tr>
+<tr><th id="688">688</th><td><i>//</i></td></tr>
+<tr><th id="689">689</th><td><i>// 1. For f &gt; 0 we have: (f)^(g + dg) ~= f^g + f^g log(f) dg</i></td></tr>
+<tr><th id="690">690</th><td><i>//</i></td></tr>
+<tr><th id="691">691</th><td><i>// 2. For f == 0 and g &gt; 0 we have: (f)^(g + dg) ~= f^g</i></td></tr>
+<tr><th id="692">692</th><td><i>//</i></td></tr>
+<tr><th id="693">693</th><td><i>// 3. For f &lt; 0 and integer g we have: (f)^(g + dg) ~= f^g but if dg</i></td></tr>
+<tr><th id="694">694</th><td><i>// != 0, the derivatives are not defined and we return NaN.</i></td></tr>
+<tr><th id="695">695</th><td></td></tr>
+<tr><th id="696">696</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="697">697</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3powEdRKNS_3JetIT_XT0_EEE" title='ceres::pow' data-ref="_ZN5ceres3powEdRKNS_3JetIT_XT0_EEE">pow</dfn>(<em>double</em> <dfn class="local col3 decl" id="283f" title='f' data-type='double' data-ref="283f">f</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col4 decl" id="284g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="284g">g</dfn>) {</td></tr>
+<tr><th id="698">698</th><td>  <b>if</b> (<a class="local col3 ref" href="#283f" title='f' data-ref="283f">f</a> == <var>0</var> &amp;&amp; <a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.a &gt; <var>0</var>) {</td></tr>
+<tr><th id="699">699</th><td>    <i>// Handle case 2.</i></td></tr>
+<tr><th id="700">700</th><td>    <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(T(<var>0.0</var>));</td></tr>
+<tr><th id="701">701</th><td>  }</td></tr>
+<tr><th id="702">702</th><td>  <b>if</b> (<a class="local col3 ref" href="#283f" title='f' data-ref="283f">f</a> &lt; <var>0</var> &amp;&amp; <a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.a == floor(<a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.a)) {</td></tr>
+<tr><th id="703">703</th><td>    <i>// Handle case 3.</i></td></tr>
+<tr><th id="704">704</th><td>    <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="local col5 decl" id="285ret" title='ret' data-type='Jet&lt;T, N&gt;' data-ref="285ret">ret</dfn>(pow(<a class="local col3 ref" href="#283f" title='f' data-ref="283f">f</a>, <a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.a));</td></tr>
+<tr><th id="705">705</th><td>    <b>for</b> (<em>int</em> <dfn class="local col6 decl" id="286i" title='i' data-type='int' data-ref="286i">i</dfn> = <var>0</var>; <a class="local col6 ref" href="#286i" title='i' data-ref="286i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; <a class="local col6 ref" href="#286i" title='i' data-ref="286i">i</a>++) {</td></tr>
+<tr><th id="706">706</th><td>      <b>if</b> (<a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.v[<a class="local col6 ref" href="#286i" title='i' data-ref="286i">i</a>] != T(<var>0.0</var>)) {</td></tr>
+<tr><th id="707">707</th><td>        <i>// Return a NaN when g.v != 0.</i></td></tr>
+<tr><th id="708">708</th><td>        <a class="local col5 ref" href="#285ret" title='ret' data-ref="285ret">ret</a>.v[<a class="local col6 ref" href="#286i" title='i' data-ref="286i">i</a>] = <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/limits.html#std::numeric_limits" title='std::numeric_limits' data-ref="std::numeric_limits">numeric_limits</a>&lt;T&gt;::quiet_NaN();</td></tr>
+<tr><th id="709">709</th><td>      }</td></tr>
+<tr><th id="710">710</th><td>    }</td></tr>
+<tr><th id="711">711</th><td>    <b>return</b> <a class="local col5 ref" href="#285ret" title='ret' data-ref="285ret">ret</a>;</td></tr>
+<tr><th id="712">712</th><td>  }</td></tr>
+<tr><th id="713">713</th><td>  <i>// Handle case 1.</i></td></tr>
+<tr><th id="714">714</th><td>  T <em>const</em> <dfn class="local col7 decl" id="287tmp" title='tmp' data-type='const T' data-ref="287tmp">tmp</dfn> = pow(<a class="local col3 ref" href="#283f" title='f' data-ref="283f">f</a>, <a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.a);</td></tr>
+<tr><th id="715">715</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col7 ref" href="#287tmp" title='tmp' data-ref="287tmp">tmp</a>, <a class="ref" href="#_ZN5ceres3logEd" title='ceres::log' data-ref="_ZN5ceres3logEd">log</a>(<a class="local col3 ref" href="#283f" title='f' data-ref="283f">f</a>) * <a class="local col7 ref" href="#287tmp" title='tmp' data-ref="287tmp">tmp</a> * <a class="local col4 ref" href="#284g" title='g' data-ref="284g">g</a>.v);</td></tr>
+<tr><th id="716">716</th><td>}</td></tr>
+<tr><th id="717">717</th><td></td></tr>
+<tr><th id="718">718</th><td><i>// pow -- both base and exponent are differentiable functions. This has a</i></td></tr>
+<tr><th id="719">719</th><td><i>// variety of special cases that require careful handling.</i></td></tr>
+<tr><th id="720">720</th><td><i>//</i></td></tr>
+<tr><th id="721">721</th><td><i>// 1. For f &gt; 0:</i></td></tr>
+<tr><th id="722">722</th><td><i>//    (f + df)^(g + dg) ~= f^g + f^(g - 1) * (g * df + f * log(f) * dg)</i></td></tr>
+<tr><th id="723">723</th><td><i>//    The numerical evaluation of f * log(f) for f &gt; 0 is well behaved, even for</i></td></tr>
+<tr><th id="724">724</th><td><i>//    extremely small values (e.g. 1e-99).</i></td></tr>
+<tr><th id="725">725</th><td><i>//</i></td></tr>
+<tr><th id="726">726</th><td><i>// 2. For f == 0 and g &gt; 1: (f + df)^(g + dg) ~= 0</i></td></tr>
+<tr><th id="727">727</th><td><i>//    This cases is needed because log(0) can not be evaluated in the f &gt; 0</i></td></tr>
+<tr><th id="728">728</th><td><i>//    expression. However the function f*log(f) is well behaved around f == 0</i></td></tr>
+<tr><th id="729">729</th><td><i>//    and its limit as f--&gt;0 is zero.</i></td></tr>
+<tr><th id="730">730</th><td><i>//</i></td></tr>
+<tr><th id="731">731</th><td><i>// 3. For f == 0 and g == 1: (f + df)^(g + dg) ~= 0 + df</i></td></tr>
+<tr><th id="732">732</th><td><i>//</i></td></tr>
+<tr><th id="733">733</th><td><i>// 4. For f == 0 and 0 &lt; g &lt; 1: The value is finite but the derivatives are not.</i></td></tr>
+<tr><th id="734">734</th><td><i>//</i></td></tr>
+<tr><th id="735">735</th><td><i>// 5. For f == 0 and g &lt; 0: The value and derivatives of f^g are not finite.</i></td></tr>
+<tr><th id="736">736</th><td><i>//</i></td></tr>
+<tr><th id="737">737</th><td><i>// 6. For f == 0 and g == 0: The C standard incorrectly defines 0^0 to be 1</i></td></tr>
+<tr><th id="738">738</th><td><i>//    "because there are applications that can exploit this definition". We</i></td></tr>
+<tr><th id="739">739</th><td><i>//    (arbitrarily) decree that derivatives here will be nonfinite, since that</i></td></tr>
+<tr><th id="740">740</th><td><i>//    is consistent with the behavior for f == 0, g &lt; 0 and 0 &lt; g &lt; 1.</i></td></tr>
+<tr><th id="741">741</th><td><i>//    Practically any definition could have been justified because mathematical</i></td></tr>
+<tr><th id="742">742</th><td><i>//    consistency has been lost at this point.</i></td></tr>
+<tr><th id="743">743</th><td><i>//</i></td></tr>
+<tr><th id="744">744</th><td><i>// 7. For f &lt; 0, g integer, dg == 0: (f + df)^(g + dg) ~= f^g + g * f^(g - 1) df</i></td></tr>
+<tr><th id="745">745</th><td><i>//    This is equivalent to the case where f is a differentiable function and g</i></td></tr>
+<tr><th id="746">746</th><td><i>//    is a constant (to first order).</i></td></tr>
+<tr><th id="747">747</th><td><i>//</i></td></tr>
+<tr><th id="748">748</th><td><i>// 8. For f &lt; 0, g integer, dg != 0: The value is finite but the derivatives are</i></td></tr>
+<tr><th id="749">749</th><td><i>//    not, because any change in the value of g moves us away from the point</i></td></tr>
+<tr><th id="750">750</th><td><i>//    with a real-valued answer into the region with complex-valued answers.</i></td></tr>
+<tr><th id="751">751</th><td><i>//</i></td></tr>
+<tr><th id="752">752</th><td><i>// 9. For f &lt; 0, g noninteger: The value and derivatives of f^g are not finite.</i></td></tr>
+<tr><th id="753">753</th><td></td></tr>
+<tr><th id="754">754</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b></td></tr>
+<tr><th id="755">755</th><td><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="decl def" id="_ZN5ceres3powERKNS_3JetIT_XT0_EEES4_" title='ceres::pow' data-ref="_ZN5ceres3powERKNS_3JetIT_XT0_EEES4_">pow</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="288f" title='f' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="288f">f</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="289g" title='g' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="289g">g</dfn>) {</td></tr>
+<tr><th id="756">756</th><td>  <b>if</b> (<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a == <var>0</var> &amp;&amp; <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a &gt;= <var>1</var>) {</td></tr>
+<tr><th id="757">757</th><td>    <i>// Handle cases 2 and 3.</i></td></tr>
+<tr><th id="758">758</th><td>    <b>if</b> (<a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a &gt; <var>1</var>) {</td></tr>
+<tr><th id="759">759</th><td>      <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(T(<var>0.0</var>));</td></tr>
+<tr><th id="760">760</th><td>    }</td></tr>
+<tr><th id="761">761</th><td>    <b>return</b> <a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>;</td></tr>
+<tr><th id="762">762</th><td>  }</td></tr>
+<tr><th id="763">763</th><td>  <b>if</b> (<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a &lt; <var>0</var> &amp;&amp; <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a == floor(<a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a)) {</td></tr>
+<tr><th id="764">764</th><td>    <i>// Handle cases 7 and 8.</i></td></tr>
+<tr><th id="765">765</th><td>    T <em>const</em> <dfn class="local col0 decl" id="290tmp" title='tmp' data-type='const T' data-ref="290tmp">tmp</dfn> = <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a * pow(<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a, <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a - T(<var>1.0</var>));</td></tr>
+<tr><th id="766">766</th><td>    <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="local col1 decl" id="291ret" title='ret' data-type='Jet&lt;T, N&gt;' data-ref="291ret">ret</dfn>(pow(<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a, <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a), <a class="local col0 ref" href="#290tmp" title='tmp' data-ref="290tmp">tmp</a> * <a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.v);</td></tr>
+<tr><th id="767">767</th><td>    <b>for</b> (<em>int</em> <dfn class="local col2 decl" id="292i" title='i' data-type='int' data-ref="292i">i</dfn> = <var>0</var>; <a class="local col2 ref" href="#292i" title='i' data-ref="292i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; <a class="local col2 ref" href="#292i" title='i' data-ref="292i">i</a>++) {</td></tr>
+<tr><th id="768">768</th><td>      <b>if</b> (<a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.v[<a class="local col2 ref" href="#292i" title='i' data-ref="292i">i</a>] != T(<var>0.0</var>)) {</td></tr>
+<tr><th id="769">769</th><td>        <i>// Return a NaN when g.v != 0.</i></td></tr>
+<tr><th id="770">770</th><td>        <a class="local col1 ref" href="#291ret" title='ret' data-ref="291ret">ret</a>.v[<a class="local col2 ref" href="#292i" title='i' data-ref="292i">i</a>] = <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/limits.html#std::numeric_limits" title='std::numeric_limits' data-ref="std::numeric_limits">numeric_limits</a>&lt;T&gt;::quiet_NaN();</td></tr>
+<tr><th id="771">771</th><td>      }</td></tr>
+<tr><th id="772">772</th><td>    }</td></tr>
+<tr><th id="773">773</th><td>    <b>return</b> <a class="local col1 ref" href="#291ret" title='ret' data-ref="291ret">ret</a>;</td></tr>
+<tr><th id="774">774</th><td>  }</td></tr>
+<tr><th id="775">775</th><td>  <i>// Handle the remaining cases. For cases 4,5,6,9 we allow the log() function</i></td></tr>
+<tr><th id="776">776</th><td><i>  // to generate -HUGE_VAL or NaN, since those cases result in a nonfinite</i></td></tr>
+<tr><th id="777">777</th><td><i>  // derivative.</i></td></tr>
+<tr><th id="778">778</th><td>  T <em>const</em> <dfn class="local col3 decl" id="293tmp1" title='tmp1' data-type='const T' data-ref="293tmp1">tmp1</dfn> = pow(<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a, <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a);</td></tr>
+<tr><th id="779">779</th><td>  T <em>const</em> <dfn class="local col4 decl" id="294tmp2" title='tmp2' data-type='const T' data-ref="294tmp2">tmp2</dfn> = <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a * pow(<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a, <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.a - T(<var>1.0</var>));</td></tr>
+<tr><th id="780">780</th><td>  T <em>const</em> <dfn class="local col5 decl" id="295tmp3" title='tmp3' data-type='const T' data-ref="295tmp3">tmp3</dfn> = <a class="local col3 ref" href="#293tmp1" title='tmp1' data-ref="293tmp1">tmp1</a> * log(<a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.a);</td></tr>
+<tr><th id="781">781</th><td>  <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<a class="local col3 ref" href="#293tmp1" title='tmp1' data-ref="293tmp1">tmp1</a>, <a class="local col4 ref" href="#294tmp2" title='tmp2' data-ref="294tmp2">tmp2</a> * <a class="local col8 ref" href="#288f" title='f' data-ref="288f">f</a>.v + <a class="local col5 ref" href="#295tmp3" title='tmp3' data-ref="295tmp3">tmp3</a> * <a class="local col9 ref" href="#289g" title='g' data-ref="289g">g</a>.v);</td></tr>
+<tr><th id="782">782</th><td>}</td></tr>
+<tr><th id="783">783</th><td></td></tr>
+<tr><th id="784">784</th><td><i>// Define the helper functions Eigen needs to embed Jet types.</i></td></tr>
+<tr><th id="785">785</th><td><i>//</i></td></tr>
+<tr><th id="786">786</th><td><i>// NOTE(keir): machine_epsilon() and precision() are missing, because they don't</i></td></tr>
+<tr><th id="787">787</th><td><i>// work with nested template types (e.g. where the scalar is itself templated).</i></td></tr>
+<tr><th id="788">788</th><td><i>// Among other things, this means that decompositions of Jet's does not work,</i></td></tr>
+<tr><th id="789">789</th><td><i>// for example</i></td></tr>
+<tr><th id="790">790</th><td><i>//</i></td></tr>
+<tr><th id="791">791</th><td><i>//   Matrix&lt;Jet&lt;T, N&gt; ... &gt; A, x, b;</i></td></tr>
+<tr><th id="792">792</th><td><i>//   ...</i></td></tr>
+<tr><th id="793">793</th><td><i>//   A.solve(b, &amp;x)</i></td></tr>
+<tr><th id="794">794</th><td><i>//</i></td></tr>
+<tr><th id="795">795</th><td><i>// does not work and will fail with a strange compiler error.</i></td></tr>
+<tr><th id="796">796</th><td><i>//</i></td></tr>
+<tr><th id="797">797</th><td><i>// TODO(keir): This is an Eigen 2.0 limitation that is lifted in 3.0. When we</i></td></tr>
+<tr><th id="798">798</th><td><i>// switch to 3.0, also add the rest of the specialization functionality.</i></td></tr>
+<tr><th id="799">799</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b> <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="decl def" id="_ZN5ceres7ei_conjERKNS_3JetIT_XT0_EEE" title='ceres::ei_conj' data-ref="_ZN5ceres7ei_conjERKNS_3JetIT_XT0_EEE">ei_conj</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="296x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="296x">x</dfn>) { <b>return</b> <a class="local col6 ref" href="#296x" title='x' data-ref="296x">x</a>;              }  <i>// NOLINT</i></td></tr>
+<tr><th id="800">800</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b> <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="decl def" id="_ZN5ceres7ei_realERKNS_3JetIT_XT0_EEE" title='ceres::ei_real' data-ref="_ZN5ceres7ei_realERKNS_3JetIT_XT0_EEE">ei_real</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col7 decl" id="297x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="297x">x</dfn>) { <b>return</b> <a class="local col7 ref" href="#297x" title='x' data-ref="297x">x</a>;              }  <i>// NOLINT</i></td></tr>
+<tr><th id="801">801</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_imagERKNS_3JetIT_XT0_EEE" title='ceres::ei_imag' data-ref="_ZN5ceres7ei_imagERKNS_3JetIT_XT0_EEE">ei_imag</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp;  ) { <b>return</b> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>&gt;(<var>0.0</var>); }  <i>// NOLINT</i></td></tr>
+<tr><th id="802">802</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_absERKNS_3JetIT_XT0_EEE" title='ceres::ei_abs' data-ref="_ZN5ceres6ei_absERKNS_3JetIT_XT0_EEE">ei_abs</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="298x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="298x">x</dfn>) { <b>return</b> fabs(<a class="local col8 ref" href="#298x" title='x' data-ref="298x">x</a>);        }  <i>// NOLINT</i></td></tr>
+<tr><th id="803">803</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_abs2ERKNS_3JetIT_XT0_EEE" title='ceres::ei_abs2' data-ref="_ZN5ceres7ei_abs2ERKNS_3JetIT_XT0_EEE">ei_abs2</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="299x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="299x">x</dfn>) { <b>return</b> <a class="local col9 ref" href="#299x" title='x' data-ref="299x">x</a> * <a class="local col9 ref" href="#299x" title='x' data-ref="299x">x</a>;          }  <i>// NOLINT</i></td></tr>
+<tr><th id="804">804</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_sqrtERKNS_3JetIT_XT0_EEE" title='ceres::ei_sqrt' data-ref="_ZN5ceres7ei_sqrtERKNS_3JetIT_XT0_EEE">ei_sqrt</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="300x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="300x">x</dfn>) { <b>return</b> sqrt(<a class="local col0 ref" href="#300x" title='x' data-ref="300x">x</a>);        }  <i>// NOLINT</i></td></tr>
+<tr><th id="805">805</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_expERKNS_3JetIT_XT0_EEE" title='ceres::ei_exp' data-ref="_ZN5ceres6ei_expERKNS_3JetIT_XT0_EEE">ei_exp</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col1 decl" id="301x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="301x">x</dfn>) { <b>return</b> exp(<a class="local col1 ref" href="#301x" title='x' data-ref="301x">x</a>);         }  <i>// NOLINT</i></td></tr>
+<tr><th id="806">806</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_logERKNS_3JetIT_XT0_EEE" title='ceres::ei_log' data-ref="_ZN5ceres6ei_logERKNS_3JetIT_XT0_EEE">ei_log</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col2 decl" id="302x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="302x">x</dfn>) { <b>return</b> log(<a class="local col2 ref" href="#302x" title='x' data-ref="302x">x</a>);         }  <i>// NOLINT</i></td></tr>
+<tr><th id="807">807</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_sinERKNS_3JetIT_XT0_EEE" title='ceres::ei_sin' data-ref="_ZN5ceres6ei_sinERKNS_3JetIT_XT0_EEE">ei_sin</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col3 decl" id="303x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="303x">x</dfn>) { <b>return</b> sin(<a class="local col3 ref" href="#303x" title='x' data-ref="303x">x</a>);         }  <i>// NOLINT</i></td></tr>
+<tr><th id="808">808</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_cosERKNS_3JetIT_XT0_EEE" title='ceres::ei_cos' data-ref="_ZN5ceres6ei_cosERKNS_3JetIT_XT0_EEE">ei_cos</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col4 decl" id="304x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="304x">x</dfn>) { <b>return</b> cos(<a class="local col4 ref" href="#304x" title='x' data-ref="304x">x</a>);         }  <i>// NOLINT</i></td></tr>
+<tr><th id="809">809</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_tanERKNS_3JetIT_XT0_EEE" title='ceres::ei_tan' data-ref="_ZN5ceres6ei_tanERKNS_3JetIT_XT0_EEE">ei_tan</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col5 decl" id="305x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="305x">x</dfn>) { <b>return</b> tan(<a class="local col5 ref" href="#305x" title='x' data-ref="305x">x</a>);         }  <i>// NOLINT</i></td></tr>
+<tr><th id="810">810</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_atanERKNS_3JetIT_XT0_EEE" title='ceres::ei_atan' data-ref="_ZN5ceres7ei_atanERKNS_3JetIT_XT0_EEE">ei_atan</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col6 decl" id="306x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="306x">x</dfn>) { <b>return</b> atan(<a class="local col6 ref" href="#306x" title='x' data-ref="306x">x</a>);        }  <i>// NOLINT</i></td></tr>
+<tr><th id="811">811</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_sinhERKNS_3JetIT_XT0_EEE" title='ceres::ei_sinh' data-ref="_ZN5ceres7ei_sinhERKNS_3JetIT_XT0_EEE">ei_sinh</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col7 decl" id="307x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="307x">x</dfn>) { <b>return</b> sinh(<a class="local col7 ref" href="#307x" title='x' data-ref="307x">x</a>);        }  <i>// NOLINT</i></td></tr>
+<tr><th id="812">812</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_coshERKNS_3JetIT_XT0_EEE" title='ceres::ei_cosh' data-ref="_ZN5ceres7ei_coshERKNS_3JetIT_XT0_EEE">ei_cosh</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col8 decl" id="308x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="308x">x</dfn>) { <b>return</b> cosh(<a class="local col8 ref" href="#308x" title='x' data-ref="308x">x</a>);        }  <i>// NOLINT</i></td></tr>
+<tr><th id="813">813</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres7ei_tanhERKNS_3JetIT_XT0_EEE" title='ceres::ei_tanh' data-ref="_ZN5ceres7ei_tanhERKNS_3JetIT_XT0_EEE">ei_tanh</dfn>(<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col9 decl" id="309x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="309x">x</dfn>) { <b>return</b> tanh(<a class="local col9 ref" href="#309x" title='x' data-ref="309x">x</a>);        }  <i>// NOLINT</i></td></tr>
+<tr><th id="814">814</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>inline</b>       <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;  <dfn class="decl def" id="_ZN5ceres6ei_powERKNS_3JetIT_XT0_EEES2_" title='ceres::ei_pow' data-ref="_ZN5ceres6ei_powERKNS_3JetIT_XT0_EEES2_">ei_pow</dfn> (<em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col0 decl" id="310x" title='x' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="310x">x</dfn>, <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt; <dfn class="local col1 decl" id="311y" title='y' data-type='Jet&lt;T, N&gt;' data-ref="311y">y</dfn>) { <b>return</b> pow(<a class="local col0 ref" href="#310x" title='x' data-ref="310x">x</a>, <a class="local col1 ref" href="#311y" title='y' data-ref="311y">y</a>); }  <i>// NOLINT</i></td></tr>
+<tr><th id="815">815</th><td></td></tr>
+<tr><th id="816">816</th><td><i>// Note: This has to be in the ceres namespace for argument dependent lookup to</i></td></tr>
+<tr><th id="817">817</th><td><i>// function correctly. Otherwise statements like CHECK_LE(x, 2.0) fail with</i></td></tr>
+<tr><th id="818">818</th><td><i>// strange compile errors.</i></td></tr>
+<tr><th id="819">819</th><td><b>template</b> &lt;<b>typename</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="820">820</th><td><b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a> &amp;<dfn class="decl def" id="_ZN5cereslsERSoRKNS_3JetIT_XT0_EEE" title='ceres::operator&lt;&lt;' data-ref="_ZN5cereslsERSoRKNS_3JetIT_XT0_EEE"><b>operator</b>&lt;&lt;</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a> &amp;<dfn class="local col2 decl" id="312s" title='s' data-type='std::ostream &amp;' data-ref="312s">s</dfn>, <em>const</em> <a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#N" title='N' data-ref="N">N</a>&gt;&amp; <dfn class="local col3 decl" id="313z" title='z' data-type='const Jet&lt;T, N&gt; &amp;' data-ref="313z">z</dfn>) {</td></tr>
+<tr><th id="821">821</th><td>  <a class="local col2 ref" href="#312s" title='s' data-ref="312s">s</a> <a class="ref" href="../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"["</q> &lt;&lt; <a class="local col3 ref" href="#313z" title='z' data-ref="313z">z</a>.a &lt;&lt; <q>" ; "</q>;</td></tr>
+<tr><th id="822">822</th><td>  <b>for</b> (<em>int</em> <dfn class="local col4 decl" id="314i" title='i' data-type='int' data-ref="314i">i</dfn> = <var>0</var>; <a class="local col4 ref" href="#314i" title='i' data-ref="314i">i</a> &lt; <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; ++<a class="local col4 ref" href="#314i" title='i' data-ref="314i">i</a>) {</td></tr>
+<tr><th id="823">823</th><td>    <a class="local col2 ref" href="#312s" title='s' data-ref="312s">s</a> &lt;&lt; <a class="local col3 ref" href="#313z" title='z' data-ref="313z">z</a>.v[<a class="local col4 ref" href="#314i" title='i' data-ref="314i">i</a>];</td></tr>
+<tr><th id="824">824</th><td>    <b>if</b> (<a class="local col4 ref" href="#314i" title='i' data-ref="314i">i</a> != <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a> - <var>1</var>) {</td></tr>
+<tr><th id="825">825</th><td>      <a class="local col2 ref" href="#312s" title='s' data-ref="312s">s</a> <a class="ref" href="../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>", "</q>;</td></tr>
+<tr><th id="826">826</th><td>    }</td></tr>
+<tr><th id="827">827</th><td>  }</td></tr>
+<tr><th id="828">828</th><td>  <a class="local col2 ref" href="#312s" title='s' data-ref="312s">s</a> <a class="ref" href="../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"]"</q>;</td></tr>
+<tr><th id="829">829</th><td>  <b>return</b> <a class="local col2 ref" href="#312s" title='s' data-ref="312s">s</a>;</td></tr>
+<tr><th id="830">830</th><td>}</td></tr>
+<tr><th id="831">831</th><td></td></tr>
+<tr><th id="832">832</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="833">833</th><td></td></tr>
+<tr><th id="834">834</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="835">835</th><td></td></tr>
+<tr><th id="836">836</th><td><i>// Creating a specialization of NumTraits enables placing Jet objects inside</i></td></tr>
+<tr><th id="837">837</th><td><i>// Eigen arrays, getting all the goodness of Eigen combined with autodiff.</i></td></tr>
+<tr><th id="838">838</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="839">839</th><td><b>struct</b> <dfn class="type def" id="Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</dfn>&lt;<span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt; &gt; {</td></tr>
+<tr><th id="840">840</th><td>  <b>typedef</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt; <dfn class="typedef" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Real" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Real' data-type='ceres::Jet&lt;T, N&gt;' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Real">Real</dfn>;</td></tr>
+<tr><th id="841">841</th><td>  <b>typedef</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt; <dfn class="typedef" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::NonInteger" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::NonInteger' data-type='ceres::Jet&lt;T, N&gt;' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::NonInteger">NonInteger</dfn>;</td></tr>
+<tr><th id="842">842</th><td>  <b>typedef</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt; <dfn class="typedef" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Nested" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Nested' data-type='ceres::Jet&lt;T, N&gt;' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Nested">Nested</dfn>;</td></tr>
+<tr><th id="843">843</th><td>  <b>typedef</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu ref" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt; <dfn class="typedef" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Literal" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Literal' data-type='ceres::Jet&lt;T, N&gt;' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Literal">Literal</dfn>;</td></tr>
+<tr><th id="844">844</th><td></td></tr>
+<tr><th id="845">845</th><td>  <em>static</em> <b>typename</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt; <dfn class="decl def" id="_ZN5Eigen9NumTraitsIN5ceres3JetIT_XT0_EEEE15dummy_precisionEv" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::dummy_precision' data-ref="_ZN5Eigen9NumTraitsIN5ceres3JetIT_XT0_EEEE15dummy_precisionEv">dummy_precision</dfn>() {</td></tr>
+<tr><th id="846">846</th><td>    <b>return</b> <span class="namespace">ceres::</span><a class="type" href="#ceres::Jet" title='ceres::Jet' data-ref="ceres::Jet">Jet</a>&lt;T, <a class="tu member" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::N' data-use='r' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::N">N</a>&gt;(<var>1e-12</var>);</td></tr>
+<tr><th id="847">847</th><td>  }</td></tr>
+<tr><th id="848">848</th><td></td></tr>
+<tr><th id="849">849</th><td>  <em>static</em> <b>inline</b> <a class="typedef" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Real" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Real' data-type='ceres::Jet&lt;T, N&gt;' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Real">Real</a> <dfn class="decl def" id="_ZN5Eigen9NumTraitsIN5ceres3JetIT_XT0_EEEE7epsilonEv" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::epsilon' data-ref="_ZN5Eigen9NumTraitsIN5ceres3JetIT_XT0_EEEE7epsilonEv">epsilon</dfn>() {</td></tr>
+<tr><th id="850">850</th><td>    <b>return</b> <a class="typedef" href="#Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Real" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Real' data-type='ceres::Jet&lt;T, N&gt;' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Real">Real</a>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/limits.html#std::numeric_limits" title='std::numeric_limits' data-ref="std::numeric_limits">numeric_limits</a>&lt;T&gt;::epsilon());</td></tr>
+<tr><th id="851">851</th><td>  }</td></tr>
+<tr><th id="852">852</th><td></td></tr>
+<tr><th id="853">853</th><td>  <em>static</em> <b>inline</b> <em>int</em> <dfn class="decl def" id="_ZN5Eigen9NumTraitsIN5ceres3JetIT_XT0_EEEE8digits10Ev" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::digits10' data-ref="_ZN5Eigen9NumTraitsIN5ceres3JetIT_XT0_EEEE8digits10Ev">digits10</dfn>() { <b>return</b> <a class="type" href="../../../include/eigen3/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::digits10(); }</td></tr>
+<tr><th id="854">854</th><td></td></tr>
+<tr><th id="855">855</th><td>  <b>enum</b> {</td></tr>
+<tr><th id="856">856</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::IsComplex" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::IsComplex' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::IsComplex">IsComplex</dfn> = <var>0</var>,</td></tr>
+<tr><th id="857">857</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::IsInteger" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::IsInteger' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::IsInteger">IsInteger</dfn> = <var>0</var>,</td></tr>
+<tr><th id="858">858</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::IsSigned" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::IsSigned' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::IsSigned">IsSigned</dfn>,</td></tr>
+<tr><th id="859">859</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::ReadCost" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::ReadCost' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::ReadCost">ReadCost</dfn> = <var>1</var>,</td></tr>
+<tr><th id="860">860</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::AddCost" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::AddCost' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::AddCost">AddCost</dfn> = <var>1</var>,</td></tr>
+<tr><th id="861">861</th><td>    <i>// For Jet types, multiplication is more expensive than addition.</i></td></tr>
+<tr><th id="862">862</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::MulCost" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::MulCost' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::MulCost">MulCost</dfn> = <var>3</var>,</td></tr>
+<tr><th id="863">863</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::HasFloatingPoint" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::HasFloatingPoint' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::HasFloatingPoint">HasFloatingPoint</dfn> = <var>1</var>,</td></tr>
+<tr><th id="864">864</th><td>    <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::RequireInitialization" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::::RequireInitialization' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::::RequireInitialization">RequireInitialization</dfn> = <var>1</var></td></tr>
+<tr><th id="865">865</th><td>  };</td></tr>
+<tr><th id="866">866</th><td></td></tr>
+<tr><th id="867">867</th><td>  <b>template</b>&lt;<em>bool</em> Vectorized&gt;</td></tr>
+<tr><th id="868">868</th><td>  <b>struct</b> <dfn class="type def" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Div" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Div' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Div">Div</dfn> {</td></tr>
+<tr><th id="869">869</th><td>    <b>enum</b> {</td></tr>
+<tr><th id="870">870</th><td><u>#<span data-ppcond="870">if</span> defined(<span class="macro" data-ref="_M/EIGEN_VECTORIZE_AVX">EIGEN_VECTORIZE_AVX</span>)</u></td></tr>
+<tr><th id="871">871</th><td>      AVX = <b>true</b>,</td></tr>
+<tr><th id="872">872</th><td><u>#<span data-ppcond="870">else</span></u></td></tr>
+<tr><th id="873">873</th><td>      <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Div::::AVX" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Div::::AVX' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Div::::AVX">AVX</dfn> = <b>false</b>,</td></tr>
+<tr><th id="874">874</th><td><u>#<span data-ppcond="870">endif</span></u></td></tr>
+<tr><th id="875">875</th><td></td></tr>
+<tr><th id="876">876</th><td>      <i>// Assuming that for Jets, division is as expensive as</i></td></tr>
+<tr><th id="877">877</th><td><i>      // multiplication.</i></td></tr>
+<tr><th id="878">878</th><td>      <dfn class="enum" id="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Div::::Cost" title='Eigen::NumTraits&lt;Jet&lt;type-parameter-0-0, N&gt; &gt;::Div::::Cost' data-ref="Eigen::NumTraits{Jet{type-parameter-0-0,N}}::Div::::Cost">Cost</dfn> = <var>3</var></td></tr>
+<tr><th id="879">879</th><td>    };</td></tr>
+<tr><th id="880">880</th><td>  };</td></tr>
+<tr><th id="881">881</th><td>};</td></tr>
+<tr><th id="882">882</th><td></td></tr>
+<tr><th id="883">883</th><td><u>#<span data-ppcond="883">if</span> <a class="macro" href="../../../include/eigen3/Eigen/src/Core/util/Macros.h.html#18" title="(3&gt;3 || (3&gt;=3 &amp;&amp; (2&gt;3 || (2&gt;=3 &amp;&amp; 0&gt;=0))))" data-ref="_M/EIGEN_VERSION_AT_LEAST">EIGEN_VERSION_AT_LEAST</a>(3, 3, 0)</u></td></tr>
+<tr><th id="884">884</th><td><i>// Specifying the return type of binary operations between Jets and scalar types</i></td></tr>
+<tr><th id="885">885</th><td><i>// allows you to perform matrix/array operations with Eigen matrices and arrays</i></td></tr>
+<tr><th id="886">886</th><td><i>// such as addition, subtraction, multiplication, and division where one Eigen</i></td></tr>
+<tr><th id="887">887</th><td><i>// matrix/array is of type Jet and the other is a scalar type. This improves</i></td></tr>
+<tr><th id="888">888</th><td><i>// performance by using the optimized scalar-to-Jet binary operations but</i></td></tr>
+<tr><th id="889">889</th><td><i>// is only available on Eigen versions &gt;= 3.3</i></td></tr>
+<tr><th id="890">890</th><td><b>template</b> &lt;<b>typename</b> BinaryOp, <b>typename</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="891">891</th><td><b>struct</b> ScalarBinaryOpTraits&lt;ceres::Jet&lt;T, N&gt;, T, BinaryOp&gt; {</td></tr>
+<tr><th id="892">892</th><td>  <b>typedef</b> ceres::Jet&lt;T, N&gt; ReturnType;</td></tr>
+<tr><th id="893">893</th><td>};</td></tr>
+<tr><th id="894">894</th><td><b>template</b> &lt;<b>typename</b> BinaryOp, <b>typename</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="895">895</th><td><b>struct</b> ScalarBinaryOpTraits&lt;T, ceres::Jet&lt;T, N&gt;, BinaryOp&gt; {</td></tr>
+<tr><th id="896">896</th><td>  <b>typedef</b> ceres::Jet&lt;T, N&gt; ReturnType;</td></tr>
+<tr><th id="897">897</th><td>};</td></tr>
+<tr><th id="898">898</th><td><u>#<span data-ppcond="883">endif</span>  // EIGEN_VERSION_AT_LEAST(3, 3, 0)</u></td></tr>
+<tr><th id="899">899</th><td></td></tr>
+<tr><th id="900">900</th><td>}  <i>// namespace Eigen</i></td></tr>
+<tr><th id="901">901</th><td></td></tr>
+<tr><th id="902">902</th><td><u>#<span data-ppcond="156">endif</span>  // CERES_PUBLIC_JET_H_</u></td></tr>
+<tr><th id="903">903</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/bundle_adjuster.cc.html'>ceres-solver/examples/bundle_adjuster.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

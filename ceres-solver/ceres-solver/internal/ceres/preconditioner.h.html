@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>preconditioner.h source code [ceres-solver/internal/ceres/preconditioner.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::Preconditioner,ceres::internal::SparseMatrixPreconditionerWrapper,ceres::internal::TypedPreconditioner "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/preconditioner.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='preconditioner.h.html'>preconditioner.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_PRECONDITIONER_H_">CERES_INTERNAL_PRECONDITIONER_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_PRECONDITIONER_H_" data-ref="_M/CERES_INTERNAL_PRECONDITIONER_H_">CERES_INTERNAL_PRECONDITIONER_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="casts.h.html">"ceres/casts.h"</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="compressed_row_sparse_matrix.h.html">"ceres/compressed_row_sparse_matrix.h"</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="linear_operator.h.html">"ceres/linear_operator.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="sparse_matrix.h.html">"ceres/sparse_matrix.h"</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../include/ceres/types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><b>class</b> <a class="type" href="block_sparse_matrix.h.html#ceres::internal::BlockSparseMatrix" title='ceres::internal::BlockSparseMatrix' data-ref="ceres::internal::BlockSparseMatrix" id="ceres::internal::BlockSparseMatrix">BlockSparseMatrix</a>;</td></tr>
+<tr><th id="45">45</th><td><b>class</b> <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix" id="ceres::internal::SparseMatrix">SparseMatrix</a>;</td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><b>class</b> <dfn class="type def" id="ceres::internal::Preconditioner" title='ceres::internal::Preconditioner' data-ref="ceres::internal::Preconditioner">Preconditioner</dfn> : <b>public</b> <a class="type" href="linear_operator.h.html#ceres::internal::LinearOperator" title='ceres::internal::LinearOperator' data-ref="ceres::internal::LinearOperator">LinearOperator</a> {</td></tr>
+<tr><th id="48">48</th><td> <b>public</b>:</td></tr>
+<tr><th id="49">49</th><td>  <b>struct</b> <dfn class="type def" id="ceres::internal::Preconditioner::Options" title='ceres::internal::Preconditioner::Options' data-ref="ceres::internal::Preconditioner::Options">Options</dfn> {</td></tr>
+<tr><th id="50">50</th><td>    <dfn class="decl def" id="_ZN5ceres8internal14Preconditioner7OptionsC1Ev" title='ceres::internal::Preconditioner::Options::Options' data-ref="_ZN5ceres8internal14Preconditioner7OptionsC1Ev">Options</dfn>()</td></tr>
+<tr><th id="51">51</th><td>        : <a class="member" href="#ceres::internal::Preconditioner::Options::type" title='ceres::internal::Preconditioner::Options::type' data-ref="ceres::internal::Preconditioner::Options::type">type</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::PreconditionerType::JACOBI" title='ceres::PreconditionerType::JACOBI' data-ref="ceres::PreconditionerType::JACOBI">JACOBI</a>),</td></tr>
+<tr><th id="52">52</th><td>          <a class="member" href="#ceres::internal::Preconditioner::Options::visibility_clustering_type" title='ceres::internal::Preconditioner::Options::visibility_clustering_type' data-ref="ceres::internal::Preconditioner::Options::visibility_clustering_type">visibility_clustering_type</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::VisibilityClusteringType::CANONICAL_VIEWS" title='ceres::VisibilityClusteringType::CANONICAL_VIEWS' data-ref="ceres::VisibilityClusteringType::CANONICAL_VIEWS">CANONICAL_VIEWS</a>),</td></tr>
+<tr><th id="53">53</th><td>          <a class="member" href="#ceres::internal::Preconditioner::Options::sparse_linear_algebra_library_type" title='ceres::internal::Preconditioner::Options::sparse_linear_algebra_library_type' data-ref="ceres::internal::Preconditioner::Options::sparse_linear_algebra_library_type">sparse_linear_algebra_library_type</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE" title='ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE' data-ref="ceres::SparseLinearAlgebraLibraryType::SUITE_SPARSE">SUITE_SPARSE</a>),</td></tr>
+<tr><th id="54">54</th><td>          <a class="member" href="#ceres::internal::Preconditioner::Options::num_threads" title='ceres::internal::Preconditioner::Options::num_threads' data-ref="ceres::internal::Preconditioner::Options::num_threads">num_threads</a>(<var>1</var>),</td></tr>
+<tr><th id="55">55</th><td>          <a class="member" href="#ceres::internal::Preconditioner::Options::row_block_size" title='ceres::internal::Preconditioner::Options::row_block_size' data-ref="ceres::internal::Preconditioner::Options::row_block_size">row_block_size</a>(<span class="namespace">Eigen::</span><a class="ref" href="../../../include/eigen3/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>),</td></tr>
+<tr><th id="56">56</th><td>          <a class="member" href="#ceres::internal::Preconditioner::Options::e_block_size" title='ceres::internal::Preconditioner::Options::e_block_size' data-ref="ceres::internal::Preconditioner::Options::e_block_size">e_block_size</a>(<span class="namespace">Eigen::</span><a class="ref" href="../../../include/eigen3/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>),</td></tr>
+<tr><th id="57">57</th><td>          <a class="member" href="#ceres::internal::Preconditioner::Options::f_block_size" title='ceres::internal::Preconditioner::Options::f_block_size' data-ref="ceres::internal::Preconditioner::Options::f_block_size">f_block_size</a>(<span class="namespace">Eigen::</span><a class="ref" href="../../../include/eigen3/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="58">58</th><td>    }</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>    <a class="type" href="../../include/ceres/types.h.html#ceres::PreconditionerType" title='ceres::PreconditionerType' data-ref="ceres::PreconditionerType">PreconditionerType</a> <dfn class="decl" id="ceres::internal::Preconditioner::Options::type" title='ceres::internal::Preconditioner::Options::type' data-ref="ceres::internal::Preconditioner::Options::type">type</dfn>;</td></tr>
+<tr><th id="61">61</th><td>    <a class="type" href="../../include/ceres/types.h.html#ceres::VisibilityClusteringType" title='ceres::VisibilityClusteringType' data-ref="ceres::VisibilityClusteringType">VisibilityClusteringType</a> <dfn class="decl" id="ceres::internal::Preconditioner::Options::visibility_clustering_type" title='ceres::internal::Preconditioner::Options::visibility_clustering_type' data-ref="ceres::internal::Preconditioner::Options::visibility_clustering_type">visibility_clustering_type</dfn>;</td></tr>
+<tr><th id="62">62</th><td>    <a class="type" href="../../include/ceres/types.h.html#ceres::SparseLinearAlgebraLibraryType" title='ceres::SparseLinearAlgebraLibraryType' data-ref="ceres::SparseLinearAlgebraLibraryType">SparseLinearAlgebraLibraryType</a> <dfn class="decl" id="ceres::internal::Preconditioner::Options::sparse_linear_algebra_library_type" title='ceres::internal::Preconditioner::Options::sparse_linear_algebra_library_type' data-ref="ceres::internal::Preconditioner::Options::sparse_linear_algebra_library_type">sparse_linear_algebra_library_type</dfn>;</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>    <i>// If possible, how many threads the preconditioner can use.</i></td></tr>
+<tr><th id="65">65</th><td>    <em>int</em> <dfn class="decl" id="ceres::internal::Preconditioner::Options::num_threads" title='ceres::internal::Preconditioner::Options::num_threads' data-ref="ceres::internal::Preconditioner::Options::num_threads">num_threads</dfn>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>    <i>// Hints about the order in which the parameter blocks should be</i></td></tr>
+<tr><th id="68">68</th><td><i>    // eliminated by the linear solver.</i></td></tr>
+<tr><th id="69">69</th><td><i>    //</i></td></tr>
+<tr><th id="70">70</th><td><i>    // For example if elimination_groups is a vector of size k, then</i></td></tr>
+<tr><th id="71">71</th><td><i>    // the linear solver is informed that it should eliminate the</i></td></tr>
+<tr><th id="72">72</th><td><i>    // parameter blocks 0 ... elimination_groups[0] - 1 first, and</i></td></tr>
+<tr><th id="73">73</th><td><i>    // then elimination_groups[0] ... elimination_groups[1] - 1 and so</i></td></tr>
+<tr><th id="74">74</th><td><i>    // on. Within each elimination group, the linear solver is free to</i></td></tr>
+<tr><th id="75">75</th><td><i>    // choose how the parameter blocks are ordered. Different linear</i></td></tr>
+<tr><th id="76">76</th><td><i>    // solvers have differing requirements on elimination_groups.</i></td></tr>
+<tr><th id="77">77</th><td><i>    //</i></td></tr>
+<tr><th id="78">78</th><td><i>    // The most common use is for Schur type solvers, where there</i></td></tr>
+<tr><th id="79">79</th><td><i>    // should be at least two elimination groups and the first</i></td></tr>
+<tr><th id="80">80</th><td><i>    // elimination group must form an independent set in the normal</i></td></tr>
+<tr><th id="81">81</th><td><i>    // equations. The first elimination group corresponds to the</i></td></tr>
+<tr><th id="82">82</th><td><i>    // num_eliminate_blocks in the Schur type solvers.</i></td></tr>
+<tr><th id="83">83</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt; <dfn class="decl" id="ceres::internal::Preconditioner::Options::elimination_groups" title='ceres::internal::Preconditioner::Options::elimination_groups' data-ref="ceres::internal::Preconditioner::Options::elimination_groups">elimination_groups</dfn>;</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>    <i>// If the block sizes in a BlockSparseMatrix are fixed, then in</i></td></tr>
+<tr><th id="86">86</th><td><i>    // some cases the Schur complement based solvers can detect and</i></td></tr>
+<tr><th id="87">87</th><td><i>    // specialize on them.</i></td></tr>
+<tr><th id="88">88</th><td><i>    //</i></td></tr>
+<tr><th id="89">89</th><td><i>    // It is expected that these parameters are set programmatically</i></td></tr>
+<tr><th id="90">90</th><td><i>    // rather than manually.</i></td></tr>
+<tr><th id="91">91</th><td><i>    //</i></td></tr>
+<tr><th id="92">92</th><td><i>    // Please see schur_complement_solver.h and schur_eliminator.h for</i></td></tr>
+<tr><th id="93">93</th><td><i>    // more details.</i></td></tr>
+<tr><th id="94">94</th><td>    <em>int</em> <dfn class="decl" id="ceres::internal::Preconditioner::Options::row_block_size" title='ceres::internal::Preconditioner::Options::row_block_size' data-ref="ceres::internal::Preconditioner::Options::row_block_size">row_block_size</dfn>;</td></tr>
+<tr><th id="95">95</th><td>    <em>int</em> <dfn class="decl" id="ceres::internal::Preconditioner::Options::e_block_size" title='ceres::internal::Preconditioner::Options::e_block_size' data-ref="ceres::internal::Preconditioner::Options::e_block_size">e_block_size</dfn>;</td></tr>
+<tr><th id="96">96</th><td>    <em>int</em> <dfn class="decl" id="ceres::internal::Preconditioner::Options::f_block_size" title='ceres::internal::Preconditioner::Options::f_block_size' data-ref="ceres::internal::Preconditioner::Options::f_block_size">f_block_size</dfn>;</td></tr>
+<tr><th id="97">97</th><td>  };</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>  <i>// If the optimization problem is such that there are no remaining</i></td></tr>
+<tr><th id="100">100</th><td><i>  // e-blocks, ITERATIVE_SCHUR with a Schur type preconditioner cannot</i></td></tr>
+<tr><th id="101">101</th><td><i>  // be used. This function returns JACOBI if a preconditioner for</i></td></tr>
+<tr><th id="102">102</th><td><i>  // ITERATIVE_SCHUR is used. The input preconditioner_type is</i></td></tr>
+<tr><th id="103">103</th><td><i>  // returned otherwise.</i></td></tr>
+<tr><th id="104">104</th><td>  <em>static</em> <a class="type" href="../../include/ceres/types.h.html#ceres::PreconditionerType" title='ceres::PreconditionerType' data-ref="ceres::PreconditionerType">PreconditionerType</a> <dfn class="decl" id="_ZN5ceres8internal14Preconditioner28PreconditionerForZeroEBlocksENS_18PreconditionerTypeE" title='ceres::internal::Preconditioner::PreconditionerForZeroEBlocks' data-ref="_ZN5ceres8internal14Preconditioner28PreconditionerForZeroEBlocksENS_18PreconditionerTypeE">PreconditionerForZeroEBlocks</dfn>(</td></tr>
+<tr><th id="105">105</th><td>      <a class="type" href="../../include/ceres/types.h.html#ceres::PreconditionerType" title='ceres::PreconditionerType' data-ref="ceres::PreconditionerType">PreconditionerType</a> <dfn class="local col1 decl" id="81preconditioner_type" title='preconditioner_type' data-type='ceres::PreconditionerType' data-ref="81preconditioner_type">preconditioner_type</dfn>);</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres8internal14PreconditionerD1Ev" title='ceres::internal::Preconditioner::~Preconditioner' data-ref="_ZN5ceres8internal14PreconditionerD1Ev">~</dfn>Preconditioner();</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <i>// Update the numerical value of the preconditioner for the linear</i></td></tr>
+<tr><th id="110">110</th><td><i>  // system:</i></td></tr>
+<tr><th id="111">111</th><td><i>  //</i></td></tr>
+<tr><th id="112">112</th><td><i>  //  |   A   | x = |b|</i></td></tr>
+<tr><th id="113">113</th><td><i>  //  |diag(D)|     |0|</i></td></tr>
+<tr><th id="114">114</th><td><i>  //</i></td></tr>
+<tr><th id="115">115</th><td><i>  // for some vector b. It is important that the matrix A have the</i></td></tr>
+<tr><th id="116">116</th><td><i>  // same block structure as the one used to construct this object.</i></td></tr>
+<tr><th id="117">117</th><td><i>  //</i></td></tr>
+<tr><th id="118">118</th><td><i>  // D can be NULL, in which case its interpreted as a diagonal matrix</i></td></tr>
+<tr><th id="119">119</th><td><i>  // of size zero.</i></td></tr>
+<tr><th id="120">120</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZN5ceres8internal14Preconditioner6UpdateERKNS0_14LinearOperatorEPKd" title='ceres::internal::Preconditioner::Update' data-ref="_ZN5ceres8internal14Preconditioner6UpdateERKNS0_14LinearOperatorEPKd">Update</dfn>(<em>const</em> <a class="type" href="linear_operator.h.html#ceres::internal::LinearOperator" title='ceres::internal::LinearOperator' data-ref="ceres::internal::LinearOperator">LinearOperator</a>&amp; <dfn class="local col2 decl" id="82A" title='A' data-type='const ceres::internal::LinearOperator &amp;' data-ref="82A">A</dfn>, <em>const</em> <em>double</em>* <dfn class="local col3 decl" id="83D" title='D' data-type='const double *' data-ref="83D">D</dfn>) = <var>0</var>;</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>  <i>// LinearOperator interface. Since the operator is symmetric,</i></td></tr>
+<tr><th id="123">123</th><td><i>  // LeftMultiply and num_cols are just calls to RightMultiply and</i></td></tr>
+<tr><th id="124">124</th><td><i>  // num_rows respectively. Update() must be called before</i></td></tr>
+<tr><th id="125">125</th><td><i>  // RightMultiply can be called.</i></td></tr>
+<tr><th id="126">126</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal14Preconditioner13RightMultiplyEPKdPd" title='ceres::internal::Preconditioner::RightMultiply' data-ref="_ZNK5ceres8internal14Preconditioner13RightMultiplyEPKdPd">RightMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col4 decl" id="84x" title='x' data-type='const double *' data-ref="84x">x</dfn>, <em>double</em>* <dfn class="local col5 decl" id="85y" title='y' data-type='double *' data-ref="85y">y</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="127">127</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal14Preconditioner12LeftMultiplyEPKdPd" title='ceres::internal::Preconditioner::LeftMultiply' data-ref="_ZNK5ceres8internal14Preconditioner12LeftMultiplyEPKdPd">LeftMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col6 decl" id="86x" title='x' data-type='const double *' data-ref="86x">x</dfn>, <em>double</em>* <dfn class="local col7 decl" id="87y" title='y' data-type='double *' data-ref="87y">y</dfn>) <em>const</em> {</td></tr>
+<tr><th id="128">128</th><td>    <b>return</b> <a class="virtual member" href="#_ZNK5ceres8internal14Preconditioner13RightMultiplyEPKdPd" title='ceres::internal::Preconditioner::RightMultiply' data-ref="_ZNK5ceres8internal14Preconditioner13RightMultiplyEPKdPd">RightMultiply</a>(<a class="local col6 ref" href="#86x" title='x' data-ref="86x">x</a>, <a class="local col7 ref" href="#87y" title='y' data-ref="87y">y</a>);</td></tr>
+<tr><th id="129">129</th><td>  }</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal14Preconditioner8num_rowsEv" title='ceres::internal::Preconditioner::num_rows' data-ref="_ZNK5ceres8internal14Preconditioner8num_rowsEv">num_rows</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="132">132</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal14Preconditioner8num_colsEv" title='ceres::internal::Preconditioner::num_cols' data-ref="_ZNK5ceres8internal14Preconditioner8num_colsEv">num_cols</dfn>() <em>const</em> {</td></tr>
+<tr><th id="133">133</th><td>    <b>return</b> <a class="virtual member" href="#_ZNK5ceres8internal14Preconditioner8num_rowsEv" title='ceres::internal::Preconditioner::num_rows' data-ref="_ZNK5ceres8internal14Preconditioner8num_rowsEv">num_rows</a>();</td></tr>
+<tr><th id="134">134</th><td>  }</td></tr>
+<tr><th id="135">135</th><td>};</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td><i>// This templated subclass of Preconditioner serves as a base class for</i></td></tr>
+<tr><th id="138">138</th><td><i>// other preconditioners that depend on the particular matrix layout of</i></td></tr>
+<tr><th id="139">139</th><td><i>// the underlying linear operator.</i></td></tr>
+<tr><th id="140">140</th><td><b>template</b> &lt;<b>typename</b> MatrixType&gt;</td></tr>
+<tr><th id="141">141</th><td><b>class</b> <dfn class="type def" id="ceres::internal::TypedPreconditioner" title='ceres::internal::TypedPreconditioner' data-ref="ceres::internal::TypedPreconditioner">TypedPreconditioner</dfn> : <b>public</b> <a class="type" href="#ceres::internal::Preconditioner" title='ceres::internal::Preconditioner' data-ref="ceres::internal::Preconditioner">Preconditioner</a> {</td></tr>
+<tr><th id="142">142</th><td> <b>public</b>:</td></tr>
+<tr><th id="143">143</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres8internal19TypedPreconditionerD1Ev" title='ceres::internal::TypedPreconditioner::~TypedPreconditioner&lt;MatrixType&gt;' data-ref="_ZN5ceres8internal19TypedPreconditionerD1Ev">~</dfn>TypedPreconditioner() {}</td></tr>
+<tr><th id="144">144</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl def" id="_ZN5ceres8internal19TypedPreconditioner6UpdateERKNS0_14LinearOperatorEPKd" title='ceres::internal::TypedPreconditioner::Update' data-ref="_ZN5ceres8internal19TypedPreconditioner6UpdateERKNS0_14LinearOperatorEPKd">Update</dfn>(<em>const</em> <a class="type" href="linear_operator.h.html#ceres::internal::LinearOperator" title='ceres::internal::LinearOperator' data-ref="ceres::internal::LinearOperator">LinearOperator</a>&amp; <dfn class="local col8 decl" id="88A" title='A' data-type='const ceres::internal::LinearOperator &amp;' data-ref="88A">A</dfn>, <em>const</em> <em>double</em>* <dfn class="local col9 decl" id="89D" title='D' data-type='const double *' data-ref="89D">D</dfn>) {</td></tr>
+<tr><th id="145">145</th><td>    <b>return</b> <a class="virtual member" href="#_ZN5ceres8internal19TypedPreconditioner10UpdateImplERKT_PKd" title='ceres::internal::TypedPreconditioner::UpdateImpl' data-ref="_ZN5ceres8internal19TypedPreconditioner10UpdateImplERKT_PKd">UpdateImpl</a>(*down_cast&lt;<em>const</em> MatrixType*&gt;(&amp;<a class="local col8 ref" href="#88A" title='A' data-ref="88A">A</a>), <a class="local col9 ref" href="#89D" title='D' data-ref="89D">D</a>);</td></tr>
+<tr><th id="146">146</th><td>  }</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td> <b>private</b>:</td></tr>
+<tr><th id="149">149</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZN5ceres8internal19TypedPreconditioner10UpdateImplERKT_PKd" title='ceres::internal::TypedPreconditioner::UpdateImpl' data-ref="_ZN5ceres8internal19TypedPreconditioner10UpdateImplERKT_PKd">UpdateImpl</dfn>(<em>const</em> MatrixType&amp; <dfn class="local col0 decl" id="90A" title='A' data-type='const MatrixType &amp;' data-ref="90A">A</dfn>, <em>const</em> <em>double</em>* <dfn class="local col1 decl" id="91D" title='D' data-type='const double *' data-ref="91D">D</dfn>) = <var>0</var>;</td></tr>
+<tr><th id="150">150</th><td>};</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td><i>// Preconditioners that depend on acccess to the low level structure</i></td></tr>
+<tr><th id="153">153</th><td><i>// of a SparseMatrix.</i></td></tr>
+<tr><th id="154">154</th><td><b>typedef</b> <a class="type" href="#ceres::internal::TypedPreconditioner" title='ceres::internal::TypedPreconditioner' data-ref="ceres::internal::TypedPreconditioner">TypedPreconditioner</a>&lt;<a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>&gt;              <dfn class="typedef" id="ceres::internal::SparseMatrixPreconditioner" title='ceres::internal::SparseMatrixPreconditioner' data-type='TypedPreconditioner&lt;ceres::internal::SparseMatrix&gt;' data-ref="ceres::internal::SparseMatrixPreconditioner">SparseMatrixPreconditioner</dfn>;               <i>// NOLINT</i></td></tr>
+<tr><th id="155">155</th><td><b>typedef</b> <a class="type" href="#ceres::internal::TypedPreconditioner" title='ceres::internal::TypedPreconditioner' data-ref="ceres::internal::TypedPreconditioner">TypedPreconditioner</a>&lt;<a class="type" href="block_sparse_matrix.h.html#ceres::internal::BlockSparseMatrix" title='ceres::internal::BlockSparseMatrix' data-ref="ceres::internal::BlockSparseMatrix">BlockSparseMatrix</a>&gt;         <dfn class="typedef" id="ceres::internal::BlockSparseMatrixPreconditioner" title='ceres::internal::BlockSparseMatrixPreconditioner' data-type='TypedPreconditioner&lt;ceres::internal::BlockSparseMatrix&gt;' data-ref="ceres::internal::BlockSparseMatrixPreconditioner">BlockSparseMatrixPreconditioner</dfn>;          <i>// NOLINT</i></td></tr>
+<tr><th id="156">156</th><td><b>typedef</b> <a class="type" href="#ceres::internal::TypedPreconditioner" title='ceres::internal::TypedPreconditioner' data-ref="ceres::internal::TypedPreconditioner">TypedPreconditioner</a>&lt;<a class="type" href="compressed_row_sparse_matrix.h.html#ceres::internal::CompressedRowSparseMatrix" title='ceres::internal::CompressedRowSparseMatrix' data-ref="ceres::internal::CompressedRowSparseMatrix">CompressedRowSparseMatrix</a>&gt; <dfn class="typedef" id="ceres::internal::CompressedRowSparseMatrixPreconditioner" title='ceres::internal::CompressedRowSparseMatrixPreconditioner' data-type='TypedPreconditioner&lt;ceres::internal::CompressedRowSparseMatrix&gt;' data-ref="ceres::internal::CompressedRowSparseMatrixPreconditioner">CompressedRowSparseMatrixPreconditioner</dfn>;  <i>// NOLINT</i></td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td><i>// Wrap a SparseMatrix object as a preconditioner.</i></td></tr>
+<tr><th id="159">159</th><td><b>class</b> <dfn class="type def" id="ceres::internal::SparseMatrixPreconditionerWrapper" title='ceres::internal::SparseMatrixPreconditionerWrapper' data-ref="ceres::internal::SparseMatrixPreconditionerWrapper">SparseMatrixPreconditionerWrapper</dfn> : <b>public</b> <a class="typedef" href="#ceres::internal::SparseMatrixPreconditioner" title='ceres::internal::SparseMatrixPreconditioner' data-type='TypedPreconditioner&lt;ceres::internal::SparseMatrix&gt;' data-ref="ceres::internal::SparseMatrixPreconditioner">SparseMatrixPreconditioner</a> {</td></tr>
+<tr><th id="160">160</th><td> <b>public</b>:</td></tr>
+<tr><th id="161">161</th><td>  <i>// Wrapper does NOT take ownership of the matrix pointer.</i></td></tr>
+<tr><th id="162">162</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres8internal33SparseMatrixPreconditionerWrapperC1EPKNS0_12SparseMatrixE" title='ceres::internal::SparseMatrixPreconditionerWrapper::SparseMatrixPreconditionerWrapper' data-ref="_ZN5ceres8internal33SparseMatrixPreconditionerWrapperC1EPKNS0_12SparseMatrixE">SparseMatrixPreconditionerWrapper</dfn>(<em>const</em> <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>* <dfn class="local col2 decl" id="92matrix" title='matrix' data-type='const ceres::internal::SparseMatrix *' data-ref="92matrix">matrix</dfn>);</td></tr>
+<tr><th id="163">163</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres8internal33SparseMatrixPreconditionerWrapperD1Ev" title='ceres::internal::SparseMatrixPreconditionerWrapper::~SparseMatrixPreconditionerWrapper' data-ref="_ZN5ceres8internal33SparseMatrixPreconditionerWrapperD1Ev">~</dfn>SparseMatrixPreconditionerWrapper();</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>  <i>// Preconditioner interface</i></td></tr>
+<tr><th id="166">166</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK5ceres8internal33SparseMatrixPreconditionerWrapper13RightMultiplyEPKdPd" title='ceres::internal::SparseMatrixPreconditionerWrapper::RightMultiply' data-ref="_ZNK5ceres8internal33SparseMatrixPreconditionerWrapper13RightMultiplyEPKdPd">RightMultiply</dfn>(<em>const</em> <em>double</em>* <dfn class="local col3 decl" id="93x" title='x' data-type='const double *' data-ref="93x">x</dfn>, <em>double</em>* <dfn class="local col4 decl" id="94y" title='y' data-type='double *' data-ref="94y">y</dfn>) <em>const</em>;</td></tr>
+<tr><th id="167">167</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl" id="_ZNK5ceres8internal33SparseMatrixPreconditionerWrapper8num_rowsEv" title='ceres::internal::SparseMatrixPreconditionerWrapper::num_rows' data-ref="_ZNK5ceres8internal33SparseMatrixPreconditionerWrapper8num_rowsEv">num_rows</dfn>() <em>const</em>;</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td> <b>private</b>:</td></tr>
+<tr><th id="170">170</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl" id="_ZN5ceres8internal33SparseMatrixPreconditionerWrapper10UpdateImplERKNS0_12SparseMatrixEPKd" title='ceres::internal::SparseMatrixPreconditionerWrapper::UpdateImpl' data-ref="_ZN5ceres8internal33SparseMatrixPreconditionerWrapper10UpdateImplERKNS0_12SparseMatrixEPKd">UpdateImpl</dfn>(<em>const</em> <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>&amp; <dfn class="local col5 decl" id="95A" title='A' data-type='const ceres::internal::SparseMatrix &amp;' data-ref="95A">A</dfn>, <em>const</em> <em>double</em>* <dfn class="local col6 decl" id="96D" title='D' data-type='const double *' data-ref="96D">D</dfn>);</td></tr>
+<tr><th id="171">171</th><td>  <em>const</em> <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>* <dfn class="decl" id="ceres::internal::SparseMatrixPreconditionerWrapper::matrix_" title='ceres::internal::SparseMatrixPreconditionerWrapper::matrix_' data-ref="ceres::internal::SparseMatrixPreconditionerWrapper::matrix_">matrix_</dfn>;</td></tr>
+<tr><th id="172">172</th><td>};</td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="175">175</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_INTERNAL_PRECONDITIONER_H_</u></td></tr>
+<tr><th id="178">178</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='block_jacobi_preconditioner.cc.html'>ceres-solver/internal/ceres/block_jacobi_preconditioner.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

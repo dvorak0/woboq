@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>read_g2o.h source code [ceres-solver/examples/slam/common/read_g2o.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/examples/slam/common/read_g2o.h'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>ceres-solver</a>/<a href='../..'>examples</a>/<a href='..'>slam</a>/<a href='./'>common</a>/<a href='read_g2o.h.html'>read_g2o.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2016 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: vitus@google.com (Michael Vitus)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// Reads a file in the g2o filename format that describes a pose graph problem.</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">ifndef</span> <span class="macro" data-ref="_M/EXAMPLES_CERES_READ_G2O_H_">EXAMPLES_CERES_READ_G2O_H_</span></u></td></tr>
+<tr><th id="34">34</th><td><u>#define <dfn class="macro" id="_M/EXAMPLES_CERES_READ_G2O_H_" data-ref="_M/EXAMPLES_CERES_READ_G2O_H_">EXAMPLES_CERES_READ_G2O_H_</dfn></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../../include/c++/4.8/fstream.html">&lt;fstream&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../../../include/glog/logging.h.html">"glog/logging.h"</a></u></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">examples</span> {</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i>// Reads a single pose from the input and inserts it into the map. Returns false</i></td></tr>
+<tr><th id="45">45</th><td><i>// if there is a duplicate entry.</i></td></tr>
+<tr><th id="46">46</th><td><b>template</b> &lt;<b>typename</b> Pose, <b>typename</b> Allocator&gt;</td></tr>
+<tr><th id="47">47</th><td><em>bool</em> <dfn class="decl def" id="_ZN5ceres8examples10ReadVertexEPSt14basic_ifstreamIcSt11char_traitsIcEEPSt3mapIiT_St4lessIiET0_E" title='ceres::examples::ReadVertex' data-ref="_ZN5ceres8examples10ReadVertexEPSt14basic_ifstreamIcSt11char_traitsIcEEPSt3mapIiT_St4lessIiET0_E">ReadVertex</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../../include/c++/4.8/iosfwd.html#std::ifstream" title='std::ifstream' data-type='basic_ifstream&lt;char&gt;' data-ref="std::ifstream">ifstream</a>* <dfn class="local col6 decl" id="6infile" title='infile' data-type='std::ifstream *' data-ref="6infile">infile</dfn>,</td></tr>
+<tr><th id="48">48</th><td>                <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<em>int</em>, Pose, <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_function.h.html#std::less" title='std::less' data-ref="std::less">less</a>&lt;<em>int</em>&gt;, Allocator&gt;* <dfn class="local col7 decl" id="7poses" title='poses' data-type='std::map&lt;int, Pose, std::less&lt;int&gt;, Allocator&gt; *' data-ref="7poses">poses</dfn>) {</td></tr>
+<tr><th id="49">49</th><td>  <em>int</em> <dfn class="local col8 decl" id="8id" title='id' data-type='int' data-ref="8id">id</dfn>;</td></tr>
+<tr><th id="50">50</th><td>  Pose <dfn class="local col9 decl" id="9pose" title='pose' data-type='Pose' data-ref="9pose">pose</dfn>;</td></tr>
+<tr><th id="51">51</th><td>  *<a class="local col6 ref" href="#6infile" title='infile' data-ref="6infile">infile</a> <a class="ref" href="../../../../include/c++/4.8/istream.html#_ZNSt13basic_istreamrsERi" title='std::basic_istream::operator&gt;&gt;' data-ref="_ZNSt13basic_istreamrsERi">&gt;&gt;</a> <a class="local col8 ref" href="#8id" title='id' data-ref="8id">id</a> &gt;&gt; <a class="local col9 ref" href="#9pose" title='pose' data-ref="9pose">pose</a>;</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td>  <i>// Ensure we don't have duplicate poses.</i></td></tr>
+<tr><th id="54">54</th><td>  <b>if</b> (<a class="local col7 ref" href="#7poses" title='poses' data-ref="7poses">poses</a>-&gt;find(<a class="local col8 ref" href="#8id" title='id' data-ref="8id">id</a>) != <a class="local col7 ref" href="#7poses" title='poses' data-ref="7poses">poses</a>-&gt;end()) {</td></tr>
+<tr><th id="55">55</th><td>    <a class="macro" href="../../../../include/glog/logging.h.html#483" title="google::LogMessage( &quot;/home/yzf/code/ceres-solver/examples/slam/./common/read_g2o.h&quot;, 55, google::GLOG_ERROR).stream()" data-ref="_M/LOG">LOG</a>(ERROR) <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Duplicate vertex with ID: "</q> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEi" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEi">&lt;&lt;</a> <a class="local col8 ref" href="#8id" title='id' data-ref="8id">id</a>;</td></tr>
+<tr><th id="56">56</th><td>    <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="57">57</th><td>  }</td></tr>
+<tr><th id="58">58</th><td>  (*<a class="local col7 ref" href="#7poses" title='poses' data-ref="7poses">poses</a>)[<a class="local col8 ref" href="#8id" title='id' data-ref="8id">id</a>] = <a class="local col9 ref" href="#9pose" title='pose' data-ref="9pose">pose</a>;</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="61">61</th><td>}</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td><i>// Reads the contraints between two vertices in the pose graph</i></td></tr>
+<tr><th id="64">64</th><td><b>template</b> &lt;<b>typename</b> Constraint, <b>typename</b> Allocator&gt;</td></tr>
+<tr><th id="65">65</th><td><em>void</em> <dfn class="decl def" id="_ZN5ceres8examples14ReadConstraintEPSt14basic_ifstreamIcSt11char_traitsIcEEPSt6vectorIT_T0_E" title='ceres::examples::ReadConstraint' data-ref="_ZN5ceres8examples14ReadConstraintEPSt14basic_ifstreamIcSt11char_traitsIcEEPSt6vectorIT_T0_E">ReadConstraint</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../../include/c++/4.8/iosfwd.html#std::ifstream" title='std::ifstream' data-type='basic_ifstream&lt;char&gt;' data-ref="std::ifstream">ifstream</a>* <dfn class="local col0 decl" id="10infile" title='infile' data-type='std::ifstream *' data-ref="10infile">infile</dfn>,</td></tr>
+<tr><th id="66">66</th><td>                    <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;Constraint, Allocator&gt;* <dfn class="local col1 decl" id="11constraints" title='constraints' data-type='std::vector&lt;Constraint, Allocator&gt; *' data-ref="11constraints">constraints</dfn>) {</td></tr>
+<tr><th id="67">67</th><td>  Constraint <dfn class="local col2 decl" id="12constraint" title='constraint' data-type='Constraint' data-ref="12constraint">constraint</dfn>;</td></tr>
+<tr><th id="68">68</th><td>  *<a class="local col0 ref" href="#10infile" title='infile' data-ref="10infile">infile</a> &gt;&gt; <a class="local col2 ref" href="#12constraint" title='constraint' data-ref="12constraint">constraint</a>;</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>  <a class="local col1 ref" href="#11constraints" title='constraints' data-ref="11constraints">constraints</a>-&gt;push_back(<a class="local col2 ref" href="#12constraint" title='constraint' data-ref="12constraint">constraint</a>);</td></tr>
+<tr><th id="71">71</th><td>}</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td><i>// Reads a file in the g2o filename format that describes a pose graph</i></td></tr>
+<tr><th id="74">74</th><td><i>// problem. The g2o format consists of two entries, vertices and constraints.</i></td></tr>
+<tr><th id="75">75</th><td><i>//</i></td></tr>
+<tr><th id="76">76</th><td><i>// In 2D, a vertex is defined as follows:</i></td></tr>
+<tr><th id="77">77</th><td><i>//</i></td></tr>
+<tr><th id="78">78</th><td><i>// VERTEX_SE2 ID x_meters y_meters yaw_radians</i></td></tr>
+<tr><th id="79">79</th><td><i>//</i></td></tr>
+<tr><th id="80">80</th><td><i>// A constraint is defined as follows:</i></td></tr>
+<tr><th id="81">81</th><td><i>//</i></td></tr>
+<tr><th id="82">82</th><td><i>// EDGE_SE2 ID_A ID_B A_x_B A_y_B A_yaw_B I_11 I_12 I_13 I_22 I_23 I_33</i></td></tr>
+<tr><th id="83">83</th><td><i>//</i></td></tr>
+<tr><th id="84">84</th><td><i>// where I_ij is the (i, j)-th entry of the information matrix for the</i></td></tr>
+<tr><th id="85">85</th><td><i>// measurement.</i></td></tr>
+<tr><th id="86">86</th><td><i>//</i></td></tr>
+<tr><th id="87">87</th><td><i>//</i></td></tr>
+<tr><th id="88">88</th><td><i>// In 3D, a vertex is defined as follows:</i></td></tr>
+<tr><th id="89">89</th><td><i>//</i></td></tr>
+<tr><th id="90">90</th><td><i>// VERTEX_SE3:QUAT ID x y z q_x q_y q_z q_w</i></td></tr>
+<tr><th id="91">91</th><td><i>//</i></td></tr>
+<tr><th id="92">92</th><td><i>// where the quaternion is in Hamilton form.</i></td></tr>
+<tr><th id="93">93</th><td><i>// A constraint is defined as follows:</i></td></tr>
+<tr><th id="94">94</th><td><i>//</i></td></tr>
+<tr><th id="95">95</th><td><i>// EDGE_SE3:QUAT ID_a ID_b x_ab y_ab z_ab q_x_ab q_y_ab q_z_ab q_w_ab I_11 I_12 I_13 ... I_16 I_22 I_23 ... I_26 ... I_66 // NOLINT</i></td></tr>
+<tr><th id="96">96</th><td><i>//</i></td></tr>
+<tr><th id="97">97</th><td><i>// where I_ij is the (i, j)-th entry of the information matrix for the</i></td></tr>
+<tr><th id="98">98</th><td><i>// measurement. Only the upper-triangular part is stored. The measurement order</i></td></tr>
+<tr><th id="99">99</th><td><i>// is the delta position followed by the delta orientation.</i></td></tr>
+<tr><th id="100">100</th><td><b>template</b> &lt;<b>typename</b> Pose, <b>typename</b> Constraint, <b>typename</b> MapAllocator,</td></tr>
+<tr><th id="101">101</th><td>          <b>typename</b> VectorAllocator&gt;</td></tr>
+<tr><th id="102">102</th><td><em>bool</em> <dfn class="decl def" id="_ZN5ceres8examples11ReadG2oFileERKSsPSt3mapIiT_St4lessIiET1_EPSt6vectorIT0_T2_E" title='ceres::examples::ReadG2oFile' data-ref="_ZN5ceres8examples11ReadG2oFileERKSsPSt3mapIiT_St4lessIiET1_EPSt6vectorIT0_T2_E">ReadG2oFile</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col3 decl" id="13filename" title='filename' data-type='const std::string &amp;' data-ref="13filename">filename</dfn>,</td></tr>
+<tr><th id="103">103</th><td>                 <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<em>int</em>, Pose, <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_function.h.html#std::less" title='std::less' data-ref="std::less">less</a>&lt;<em>int</em>&gt;, MapAllocator&gt;* <dfn class="local col4 decl" id="14poses" title='poses' data-type='std::map&lt;int, Pose, std::less&lt;int&gt;, MapAllocator&gt; *' data-ref="14poses">poses</dfn>,</td></tr>
+<tr><th id="104">104</th><td>                 <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;Constraint, VectorAllocator&gt;* <dfn class="local col5 decl" id="15constraints" title='constraints' data-type='std::vector&lt;Constraint, VectorAllocator&gt; *' data-ref="15constraints">constraints</dfn>) {</td></tr>
+<tr><th id="105">105</th><td>  <a class="macro" href="../../../../include/glog/logging.h.html#561" title="!((__builtin_expect(!(poses != __null), 0))) ? (void) 0 : google::LogMessageVoidify() &amp; google::LogMessageFatal( &quot;/home/yzf/code/ceres-solver/examples/slam/./common/read_g2o.h&quot;, 105).stream() &lt;&lt; &quot;Check failed: &quot; &quot;poses != NULL&quot; &quot; &quot;" data-ref="_M/CHECK">CHECK</a>(<a class="local col4 ref" href="#14poses" title='poses' data-ref="14poses">poses</a> != <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="106">106</th><td>  <a class="macro" href="../../../../include/glog/logging.h.html#561" title="!((__builtin_expect(!(constraints != __null), 0))) ? (void) 0 : google::LogMessageVoidify() &amp; google::LogMessageFatal( &quot;/home/yzf/code/ceres-solver/examples/slam/./common/read_g2o.h&quot;, 106).stream() &lt;&lt; &quot;Check failed: &quot; &quot;constraints != NULL&quot; &quot; &quot;" data-ref="_M/CHECK">CHECK</a>(<a class="local col5 ref" href="#15constraints" title='constraints' data-ref="15constraints">constraints</a> != <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td>  <a class="local col4 ref" href="#14poses" title='poses' data-ref="14poses">poses</a>-&gt;clear();</td></tr>
+<tr><th id="109">109</th><td>  <a class="local col5 ref" href="#15constraints" title='constraints' data-ref="15constraints">constraints</a>-&gt;clear();</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>  <span class="namespace">std::</span><a class="typedef" href="../../../../include/c++/4.8/iosfwd.html#std::ifstream" title='std::ifstream' data-type='basic_ifstream&lt;char&gt;' data-ref="std::ifstream">ifstream</a> <dfn class="local col6 decl" id="16infile" title='infile' data-type='std::ifstream' data-ref="16infile">infile</dfn><a class="ref" href="../../../../include/c++/4.8/fstream.html#_ZNSt14basic_ifstreamC1EPKcSt13_Ios_Openmode" title='std::basic_ifstream::basic_ifstream&lt;_CharT, _Traits&gt;' data-ref="_ZNSt14basic_ifstreamC1EPKcSt13_Ios_Openmode">(</a><a class="local col3 ref" href="#13filename" title='filename' data-ref="13filename">filename</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>());</td></tr>
+<tr><th id="112">112</th><td>  <b>if</b> (<a class="ref" href="../../../../include/c++/4.8/bits/basic_ios.h.html#_ZNKSt9basic_iosntEv" title='std::basic_ios::operator!' data-ref="_ZNKSt9basic_iosntEv">!</a><a class="local col6 ref" href="#16infile" title='infile' data-ref="16infile">infile</a>) {</td></tr>
+<tr><th id="113">113</th><td>    <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="114">114</th><td>  }</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <span class="namespace">std::</span><a class="typedef" href="../../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1Ev" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1Ev"></a><dfn class="local col7 decl" id="17data_type" title='data_type' data-type='std::string' data-ref="17data_type">data_type</dfn>;</td></tr>
+<tr><th id="117">117</th><td>  <b>while</b> (<a class="local col6 ref" href="#16infile" title='infile' data-ref="16infile">infile</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_ios.h.html#_ZNKSt9basic_ios4goodEv" title='std::basic_ios::good' data-ref="_ZNKSt9basic_ios4goodEv">good</a>()) {</td></tr>
+<tr><th id="118">118</th><td>    <i>// Read whether the type is a node or a constraint.</i></td></tr>
+<tr><th id="119">119</th><td>    <a class="local col6 ref" href="#16infile" title='infile' data-ref="16infile">infile</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZStrsRSt13basic_istreamIT_T0_ERSbIS0_S1_T1_E" title='std::operator&gt;&gt;' data-ref="_ZStrsRSt13basic_istreamIT_T0_ERSbIS0_S1_T1_E">&gt;&gt;</a> <a class="local col7 ref" href="#17data_type" title='data_type' data-ref="17data_type">data_type</a>;</td></tr>
+<tr><th id="120">120</th><td>    <b>if</b> (<a class="local col7 ref" href="#17data_type" title='data_type' data-ref="17data_type">data_type</a> == Pose::name()) {</td></tr>
+<tr><th id="121">121</th><td>      <b>if</b> (!ReadVertex(&amp;<a class="local col6 ref" href="#16infile" title='infile' data-ref="16infile">infile</a>, <a class="local col4 ref" href="#14poses" title='poses' data-ref="14poses">poses</a>)) {</td></tr>
+<tr><th id="122">122</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="123">123</th><td>      }</td></tr>
+<tr><th id="124">124</th><td>    } <b>else</b> <b>if</b> (<a class="local col7 ref" href="#17data_type" title='data_type' data-ref="17data_type">data_type</a> == Constraint::name()) {</td></tr>
+<tr><th id="125">125</th><td>      ReadConstraint(&amp;<a class="local col6 ref" href="#16infile" title='infile' data-ref="16infile">infile</a>, <a class="local col5 ref" href="#15constraints" title='constraints' data-ref="15constraints">constraints</a>);</td></tr>
+<tr><th id="126">126</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="127">127</th><td>      <a class="macro" href="../../../../include/glog/logging.h.html#483" title="google::LogMessage( &quot;/home/yzf/code/ceres-solver/examples/slam/./common/read_g2o.h&quot;, 127, google::GLOG_ERROR).stream()" data-ref="_M/LOG">LOG</a>(ERROR) <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Unknown data type: "</q> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKSbIS0_S1_T1_E" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKSbIS0_S1_T1_E">&lt;&lt;</a> <a class="local col7 ref" href="#17data_type" title='data_type' data-ref="17data_type">data_type</a>;</td></tr>
+<tr><th id="128">128</th><td>      <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="129">129</th><td>    }</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>    <i>// Clear any trailing whitespace from the line.</i></td></tr>
+<tr><th id="132">132</th><td>    <a class="local col6 ref" href="#16infile" title='infile' data-ref="16infile">infile</a> <a class="ref" href="../../../../include/c++/4.8/istream.html#_ZNSt13basic_istreamrsEPFRSt13basic_istreamIT_T0_ES5_E" title='std::basic_istream::operator&gt;&gt;' data-ref="_ZNSt13basic_istreamrsEPFRSt13basic_istreamIT_T0_ES5_E">&gt;&gt;</a> <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/bits/istream.tcc.html#_ZSt2wsRSt13basic_istreamIT_T0_E" title='std::ws' data-ref="_ZSt2wsRSt13basic_istreamIT_T0_E">ws</a>;</td></tr>
+<tr><th id="133">133</th><td>  }</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>  <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="136">136</th><td>}</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>}  <i>// namespace examples</i></td></tr>
+<tr><th id="139">139</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td><u>#<span data-ppcond="33">endif</span>  // EXAMPLES_CERES_READ_G2O_H_</u></td></tr>
+<tr><th id="142">142</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../pose_graph_2d/pose_graph_2d.cc.html'>ceres-solver/examples/slam/pose_graph_2d/pose_graph_2d.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

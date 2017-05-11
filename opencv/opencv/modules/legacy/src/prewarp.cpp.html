@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>prewarp.cpp source code [opencv/modules/legacy/src/prewarp.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/legacy/src/prewarp.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>legacy</a>/<a href='./'>src</a>/<a href='prewarp.cpp.html'>prewarp.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                        Intel License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="15">15</th><td><i>//</i></td></tr>
+<tr><th id="16">16</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="17">17</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="18">18</th><td><i>//</i></td></tr>
+<tr><th id="19">19</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="20">20</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="21">21</th><td><i>//</i></td></tr>
+<tr><th id="22">22</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="23">23</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="24">24</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="25">25</th><td><i>//</i></td></tr>
+<tr><th id="26">26</th><td><i>//   * The name of Intel Corporation may not be used to endorse or promote products</i></td></tr>
+<tr><th id="27">27</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="30">30</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="31">31</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="32">32</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="33">33</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="34">34</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="35">35</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="36">36</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="37">37</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="38">38</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="39">39</th><td><i>//</i></td></tr>
+<tr><th id="40">40</th><td><i>//M*/</i></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="_vm.h.html">"_vm.h"</a></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i  data-doc="_ZL11icvFindRunsiPhS_PiS0_S0_S0_S0_S0_">/* Valery Mosyagin */</i></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><em>static</em> <a class="typedef" href="../../core/include/opencv2/core/internal.hpp.html#CvStatus" title='CvStatus' data-type='enum CvStatus' data-ref="CvStatus">CvStatus</a></td></tr>
+<tr><th id="47">47</th><td><dfn class="tu decl def" id="_ZL11icvFindRunsiPhS_PiS0_S0_S0_S0_S0_" title='icvFindRuns' data-type='CvStatus icvFindRuns(int numLines, uchar * prewarp_1, uchar * prewarp_2, int * line_lens_1, int * line_lens_2, int * runs_1, int * runs_2, int * num_runs_1, int * num_runs_2)' data-ref="_ZL11icvFindRunsiPhS_PiS0_S0_S0_S0_S0_">icvFindRuns</dfn>( <em>int</em> <dfn class="local col1 decl" id="1numLines" title='numLines' data-type='int' data-ref="1numLines">numLines</dfn>,      <i>/* number of scanlines      */</i></td></tr>
+<tr><th id="48">48</th><td>             <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> * <dfn class="local col2 decl" id="2prewarp_1" title='prewarp_1' data-type='uchar *' data-ref="2prewarp_1">prewarp_1</dfn>, <i>/* prewarp image 1          */</i></td></tr>
+<tr><th id="49">49</th><td>             <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> * <dfn class="local col3 decl" id="3prewarp_2" title='prewarp_2' data-type='uchar *' data-ref="3prewarp_2">prewarp_2</dfn>, <i>/* prewarp image 2          */</i></td></tr>
+<tr><th id="50">50</th><td>             <em>int</em> *<dfn class="local col4 decl" id="4line_lens_1" title='line_lens_1' data-type='int *' data-ref="4line_lens_1">line_lens_1</dfn>,  <i>/* line lengths 1           */</i></td></tr>
+<tr><th id="51">51</th><td>             <em>int</em> *<dfn class="local col5 decl" id="5line_lens_2" title='line_lens_2' data-type='int *' data-ref="5line_lens_2">line_lens_2</dfn>,  <i>/* line lengths 2           */</i></td></tr>
+<tr><th id="52">52</th><td>             <em>int</em> *<dfn class="local col6 decl" id="6runs_1" title='runs_1' data-type='int *' data-ref="6runs_1">runs_1</dfn>,       <i>/* result runs  1           */</i></td></tr>
+<tr><th id="53">53</th><td>             <em>int</em> *<dfn class="local col7 decl" id="7runs_2" title='runs_2' data-type='int *' data-ref="7runs_2">runs_2</dfn>,       <i>/* result runs  2           */</i></td></tr>
+<tr><th id="54">54</th><td>             <em>int</em> *<dfn class="local col8 decl" id="8num_runs_1" title='num_runs_1' data-type='int *' data-ref="8num_runs_1">num_runs_1</dfn>,   <i>/* numbers of first runs    */</i></td></tr>
+<tr><th id="55">55</th><td>             <em>int</em> *<dfn class="local col9 decl" id="9num_runs_2" title='num_runs_2' data-type='int *' data-ref="9num_runs_2">num_runs_2</dfn> )</td></tr>
+<tr><th id="56">56</th><td>{</td></tr>
+<tr><th id="57">57</th><td>    <a class="typedef" href="../../core/include/opencv2/core/internal.hpp.html#CvStatus" title='CvStatus' data-type='enum CvStatus' data-ref="CvStatus">CvStatus</a> <dfn class="local col0 decl" id="10err" title='err' data-type='CvStatus' data-ref="10err">err</dfn>;</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td>    <a class="local col0 ref" href="#10err" title='err' data-ref="10err">err</a> = <a class="ref" href="#_Z21icvFindRunsInOneImageiPhPiS0_S0_" title='icvFindRunsInOneImage' data-ref="_Z21icvFindRunsInOneImageiPhPiS0_S0_">icvFindRunsInOneImage</a>( <a class="local col1 ref" href="#1numLines" title='numLines' data-ref="1numLines">numLines</a>, <a class="local col2 ref" href="#2prewarp_1" title='prewarp_1' data-ref="2prewarp_1">prewarp_1</a>, <a class="local col4 ref" href="#4line_lens_1" title='line_lens_1' data-ref="4line_lens_1">line_lens_1</a>, <a class="local col6 ref" href="#6runs_1" title='runs_1' data-ref="6runs_1">runs_1</a>, <a class="local col8 ref" href="#8num_runs_1" title='num_runs_1' data-ref="8num_runs_1">num_runs_1</a> );</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td>    <b>if</b>( <a class="local col0 ref" href="#10err" title='err' data-ref="10err">err</a> != <a class="enum" href="../../core/include/opencv2/core/internal.hpp.html#CvStatus::CV_NO_ERR" title='CvStatus::CV_NO_ERR' data-ref="CvStatus::CV_NO_ERR">CV_NO_ERR</a> )</td></tr>
+<tr><th id="62">62</th><td>        <b>return</b> <a class="local col0 ref" href="#10err" title='err' data-ref="10err">err</a>;</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>    <a class="local col0 ref" href="#10err" title='err' data-ref="10err">err</a> = <a class="ref" href="#_Z21icvFindRunsInOneImageiPhPiS0_S0_" title='icvFindRunsInOneImage' data-ref="_Z21icvFindRunsInOneImageiPhPiS0_S0_">icvFindRunsInOneImage</a>( <a class="local col1 ref" href="#1numLines" title='numLines' data-ref="1numLines">numLines</a>, <a class="local col3 ref" href="#3prewarp_2" title='prewarp_2' data-ref="3prewarp_2">prewarp_2</a>, <a class="local col5 ref" href="#5line_lens_2" title='line_lens_2' data-ref="5line_lens_2">line_lens_2</a>, <a class="local col7 ref" href="#7runs_2" title='runs_2' data-ref="7runs_2">runs_2</a>, <a class="local col9 ref" href="#9num_runs_2" title='num_runs_2' data-ref="9num_runs_2">num_runs_2</a> );</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>    <b>return</b> <a class="local col0 ref" href="#10err" title='err' data-ref="10err">err</a>;</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td>}</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td><i>/*======================================================================================*/</i></td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td><a class="macro" href="../../core/include/opencv2/core/types_c.h.html#148" title="inline" data-ref="_M/CV_INLINE">CV_INLINE</a> <em>int</em></td></tr>
+<tr><th id="74">74</th><td><dfn class="decl def" id="_Z11icvGetColorPh" title='icvGetColor' data-ref="_Z11icvGetColorPh">icvGetColor</dfn>( <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> * <dfn class="local col1 decl" id="11valueRGB" title='valueRGB' data-type='uchar *' data-ref="11valueRGB">valueRGB</dfn> )</td></tr>
+<tr><th id="75">75</th><td>{</td></tr>
+<tr><th id="76">76</th><td>    <em>int</em> <dfn class="local col2 decl" id="12R" title='R' data-type='int' data-ref="12R">R</dfn> = *<a class="local col1 ref" href="#11valueRGB" title='valueRGB' data-ref="11valueRGB">valueRGB</a>;</td></tr>
+<tr><th id="77">77</th><td>    <em>int</em> <dfn class="local col3 decl" id="13G" title='G' data-type='int' data-ref="13G">G</dfn> = *(<a class="local col1 ref" href="#11valueRGB" title='valueRGB' data-ref="11valueRGB">valueRGB</a> + <var>1</var>);</td></tr>
+<tr><th id="78">78</th><td>    <em>int</em> <dfn class="local col4 decl" id="14B" title='B' data-type='int' data-ref="14B">B</dfn> = *(<a class="local col1 ref" href="#11valueRGB" title='valueRGB' data-ref="11valueRGB">valueRGB</a> + <var>2</var>);</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>    <b>return</b> ( ((<a class="local col2 ref" href="#12R" title='R' data-ref="12R">R</a> + <a class="local col3 ref" href="#13G" title='G' data-ref="13G">G</a> + <a class="local col4 ref" href="#14B" title='B' data-ref="14B">B</a>) &gt;&gt; <var>3</var>) &amp; <var>0xFFFC</var> );</td></tr>
+<tr><th id="81">81</th><td>}                               <i>/* vm_GetColor */</i></td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td><i>/*======================================================================================*/</i></td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td><a class="typedef" href="../../core/include/opencv2/core/internal.hpp.html#CvStatus" title='CvStatus' data-type='enum CvStatus' data-ref="CvStatus">CvStatus</a></td></tr>
+<tr><th id="87">87</th><td><dfn class="decl def" id="_Z21icvFindRunsInOneImageiPhPiS0_S0_" title='icvFindRunsInOneImage' data-ref="_Z21icvFindRunsInOneImageiPhPiS0_S0_">icvFindRunsInOneImage</dfn>( <em>int</em> <dfn class="local col5 decl" id="15numLines" title='numLines' data-type='int' data-ref="15numLines">numLines</dfn>,    <i>/* number of scanlines      */</i></td></tr>
+<tr><th id="88">88</th><td>                       <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> * <dfn class="local col6 decl" id="16prewarp" title='prewarp' data-type='uchar *' data-ref="16prewarp">prewarp</dfn>, <i>/* prewarp image            */</i></td></tr>
+<tr><th id="89">89</th><td>                       <em>int</em> *<dfn class="local col7 decl" id="17line_lens" title='line_lens' data-type='int *' data-ref="17line_lens">line_lens</dfn>,  <i>/* line lengths in pixels   */</i></td></tr>
+<tr><th id="90">90</th><td>                       <em>int</em> *<dfn class="local col8 decl" id="18runs" title='runs' data-type='int *' data-ref="18runs">runs</dfn>,       <i>/* result runs              */</i></td></tr>
+<tr><th id="91">91</th><td>                       <em>int</em> *<dfn class="local col9 decl" id="19num_runs" title='num_runs' data-type='int *' data-ref="19num_runs">num_runs</dfn> )</td></tr>
+<tr><th id="92">92</th><td>{</td></tr>
+<tr><th id="93">93</th><td>    <em>int</em> <dfn class="local col0 decl" id="20epiLine" title='epiLine' data-type='int' data-ref="20epiLine">epiLine</dfn>;</td></tr>
+<tr><th id="94">94</th><td>    <em>int</em> <dfn class="local col1 decl" id="21run_index" title='run_index' data-type='int' data-ref="21run_index">run_index</dfn>;</td></tr>
+<tr><th id="95">95</th><td>    <em>int</em> <dfn class="local col2 decl" id="22curr_color" title='curr_color' data-type='int' data-ref="22curr_color">curr_color</dfn>;</td></tr>
+<tr><th id="96">96</th><td>    <em>int</em> <dfn class="local col3 decl" id="23index" title='index' data-type='int' data-ref="23index">index</dfn>;</td></tr>
+<tr><th id="97">97</th><td>    <em>int</em> <dfn class="local col4 decl" id="24color" title='color' data-type='int' data-ref="24color">color</dfn>;</td></tr>
+<tr><th id="98">98</th><td>    <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> *<dfn class="local col5 decl" id="25curr_point" title='curr_point' data-type='uchar *' data-ref="25curr_point">curr_point</dfn>;</td></tr>
+<tr><th id="99">99</th><td>    <em>int</em> <dfn class="local col6 decl" id="26num" title='num' data-type='int' data-ref="26num">num</dfn>;</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <a class="local col1 ref" href="#21run_index" title='run_index' data-ref="21run_index">run_index</a> = <var>0</var>;</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>    <a class="local col5 ref" href="#25curr_point" title='curr_point' data-ref="25curr_point">curr_point</a> = <a class="local col6 ref" href="#16prewarp" title='prewarp' data-ref="16prewarp">prewarp</a>;</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>    <b>for</b>( <a class="local col0 ref" href="#20epiLine" title='epiLine' data-ref="20epiLine">epiLine</a> = <var>0</var>; <a class="local col0 ref" href="#20epiLine" title='epiLine' data-ref="20epiLine">epiLine</a> &lt; <a class="local col5 ref" href="#15numLines" title='numLines' data-ref="15numLines">numLines</a>; <a class="local col0 ref" href="#20epiLine" title='epiLine' data-ref="20epiLine">epiLine</a>++ )</td></tr>
+<tr><th id="107">107</th><td>    {</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>        <a class="local col2 ref" href="#22curr_color" title='curr_color' data-ref="22curr_color">curr_color</a> = <a class="ref" href="#_Z11icvGetColorPh" title='icvGetColor' data-ref="_Z11icvGetColorPh">icvGetColor</a>( <a class="local col5 ref" href="#25curr_point" title='curr_point' data-ref="25curr_point">curr_point</a> );</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>        <a class="local col8 ref" href="#18runs" title='runs' data-ref="18runs">runs</a>[<a class="local col1 ref" href="#21run_index" title='run_index' data-ref="21run_index">run_index</a>++] = <var>0</var>;</td></tr>
+<tr><th id="112">112</th><td>        <a class="local col8 ref" href="#18runs" title='runs' data-ref="18runs">runs</a>[<a class="local col1 ref" href="#21run_index" title='run_index' data-ref="21run_index">run_index</a>++] = <a class="local col2 ref" href="#22curr_color" title='curr_color' data-ref="22curr_color">curr_color</a>;</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>        <a class="local col5 ref" href="#25curr_point" title='curr_point' data-ref="25curr_point">curr_point</a> += <var>3</var>;</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>        <a class="local col6 ref" href="#26num" title='num' data-ref="26num">num</a> = <var>1</var>;</td></tr>
+<tr><th id="117">117</th><td>        <b>for</b>( <a class="local col3 ref" href="#23index" title='index' data-ref="23index">index</a> = <var>1</var>; <a class="local col3 ref" href="#23index" title='index' data-ref="23index">index</a> &lt; <a class="local col7 ref" href="#17line_lens" title='line_lens' data-ref="17line_lens">line_lens</a>[<a class="local col0 ref" href="#20epiLine" title='epiLine' data-ref="20epiLine">epiLine</a>]; <a class="local col3 ref" href="#23index" title='index' data-ref="23index">index</a>++ )</td></tr>
+<tr><th id="118">118</th><td>        {</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>            <a class="local col4 ref" href="#24color" title='color' data-ref="24color">color</a> = <a class="ref" href="#_Z11icvGetColorPh" title='icvGetColor' data-ref="_Z11icvGetColorPh">icvGetColor</a>( <a class="local col5 ref" href="#25curr_point" title='curr_point' data-ref="25curr_point">curr_point</a> );</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>            <b>if</b>( <a class="local col4 ref" href="#24color" title='color' data-ref="24color">color</a> != <a class="local col2 ref" href="#22curr_color" title='curr_color' data-ref="22curr_color">curr_color</a> )</td></tr>
+<tr><th id="123">123</th><td>            {</td></tr>
+<tr><th id="124">124</th><td>                <a class="local col8 ref" href="#18runs" title='runs' data-ref="18runs">runs</a>[<a class="local col1 ref" href="#21run_index" title='run_index' data-ref="21run_index">run_index</a>++] = <a class="local col3 ref" href="#23index" title='index' data-ref="23index">index</a>;</td></tr>
+<tr><th id="125">125</th><td>                <a class="local col8 ref" href="#18runs" title='runs' data-ref="18runs">runs</a>[<a class="local col1 ref" href="#21run_index" title='run_index' data-ref="21run_index">run_index</a>++] = <a class="local col4 ref" href="#24color" title='color' data-ref="24color">color</a>;</td></tr>
+<tr><th id="126">126</th><td>                <a class="local col2 ref" href="#22curr_color" title='curr_color' data-ref="22curr_color">curr_color</a> = <a class="local col4 ref" href="#24color" title='color' data-ref="24color">color</a>;</td></tr>
+<tr><th id="127">127</th><td>                <a class="local col6 ref" href="#26num" title='num' data-ref="26num">num</a>++;</td></tr>
+<tr><th id="128">128</th><td>            }</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>            <a class="local col5 ref" href="#25curr_point" title='curr_point' data-ref="25curr_point">curr_point</a> += <var>3</var>;</td></tr>
+<tr><th id="131">131</th><td>        }</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td>        <a class="local col8 ref" href="#18runs" title='runs' data-ref="18runs">runs</a>[<a class="local col1 ref" href="#21run_index" title='run_index' data-ref="21run_index">run_index</a>++] = <a class="local col3 ref" href="#23index" title='index' data-ref="23index">index</a>;</td></tr>
+<tr><th id="134">134</th><td>        <a class="local col9 ref" href="#19num_runs" title='num_runs' data-ref="19num_runs">num_runs</a>[<a class="local col0 ref" href="#20epiLine" title='epiLine' data-ref="20epiLine">epiLine</a>] = <a class="local col6 ref" href="#26num" title='num' data-ref="26num">num</a>;</td></tr>
+<tr><th id="135">135</th><td>    }</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>    <b>return</b> <a class="enum" href="../../core/include/opencv2/core/internal.hpp.html#CvStatus::CV_NO_ERR" title='CvStatus::CV_NO_ERR' data-ref="CvStatus::CV_NO_ERR">CV_NO_ERR</a>;</td></tr>
+<tr><th id="138">138</th><td>}</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td><i>/*======================================================================================*/</i></td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td><a class="macro" href="../../core/include/opencv2/core/internal.hpp.html#376" title="extern &quot;C&quot;" data-ref="_M/CV_IMPL">CV_IMPL</a> <em>void</em></td></tr>
+<tr><th id="144">144</th><td><dfn class="decl def" id="cvFindRuns" title='cvFindRuns' data-ref="cvFindRuns">cvFindRuns</dfn>( <em>int</em> <dfn class="local col7 decl" id="27numLines" title='numLines' data-type='int' data-ref="27numLines">numLines</dfn>,       <i>/* number of scanlines   */</i></td></tr>
+<tr><th id="145">145</th><td>            <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> * <dfn class="local col8 decl" id="28prewarp_1" title='prewarp_1' data-type='uchar *' data-ref="28prewarp_1">prewarp_1</dfn>,  <i>/* prewarp image 1       */</i></td></tr>
+<tr><th id="146">146</th><td>            <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a> * <dfn class="local col9 decl" id="29prewarp_2" title='prewarp_2' data-type='uchar *' data-ref="29prewarp_2">prewarp_2</dfn>,  <i>/* prewarp image 2       */</i></td></tr>
+<tr><th id="147">147</th><td>            <em>int</em> *<dfn class="local col0 decl" id="30line_lens_1" title='line_lens_1' data-type='int *' data-ref="30line_lens_1">line_lens_1</dfn>,   <i>/* line lengths 1        */</i></td></tr>
+<tr><th id="148">148</th><td>            <em>int</em> *<dfn class="local col1 decl" id="31line_lens_2" title='line_lens_2' data-type='int *' data-ref="31line_lens_2">line_lens_2</dfn>,   <i>/* line lengths 2        */</i></td></tr>
+<tr><th id="149">149</th><td>            <em>int</em> *<dfn class="local col2 decl" id="32runs_1" title='runs_1' data-type='int *' data-ref="32runs_1">runs_1</dfn>,        <i>/* result runs  1        */</i></td></tr>
+<tr><th id="150">150</th><td>            <em>int</em> *<dfn class="local col3 decl" id="33runs_2" title='runs_2' data-type='int *' data-ref="33runs_2">runs_2</dfn>,        <i>/* result runs  2        */</i></td></tr>
+<tr><th id="151">151</th><td>            <em>int</em> *<dfn class="local col4 decl" id="34num_runs_1" title='num_runs_1' data-type='int *' data-ref="34num_runs_1">num_runs_1</dfn>,    <i>/* numbers of first runs */</i></td></tr>
+<tr><th id="152">152</th><td>            <em>int</em> *<dfn class="local col5 decl" id="35num_runs_2" title='num_runs_2' data-type='int *' data-ref="35num_runs_2">num_runs_2</dfn> )</td></tr>
+<tr><th id="153">153</th><td>{</td></tr>
+<tr><th id="154">154</th><td>    <a class="macro" href="../../core/include/opencv2/core/internal.hpp.html#114" title="if(!!((icvFindRuns( numLines, prewarp_1, prewarp_2, line_lens_1, line_lens_2, runs_1, runs_2, num_runs_1, num_runs_2 )) &gt;= 0)) ; else cv::error( cv::Exception(CV_StsAssert, &quot;(icvFindRuns( numLines, prewarp_1, prewarp_2, line_lens_1, line_lens_2, runs_1, runs_2, num_runs_1, num_runs_2 )) &gt;= 0&quot;, __func__, &quot;/home/yzf/code/opencv/modules/legacy/src/prewarp.cpp&quot;, 162) )" data-ref="_M/IPPI_CALL">IPPI_CALL</a>( <a class="tu ref" href="#_ZL11icvFindRunsiPhS_PiS0_S0_S0_S0_S0_" title='icvFindRuns' data-use='c' data-ref="_ZL11icvFindRunsiPhS_PiS0_S0_S0_S0_S0_">icvFindRuns</a>( <a class="local col7 ref" href="#27numLines" title='numLines' data-ref="27numLines">numLines</a>,   <i>/* number of scanlines   */</i></td></tr>
+<tr><th id="155">155</th><td>                            <a class="local col8 ref" href="#28prewarp_1" title='prewarp_1' data-ref="28prewarp_1">prewarp_1</a>,  <i>/* prewarp image 1       */</i></td></tr>
+<tr><th id="156">156</th><td>                            <a class="local col9 ref" href="#29prewarp_2" title='prewarp_2' data-ref="29prewarp_2">prewarp_2</a>,  <i>/* prewarp image 2       */</i></td></tr>
+<tr><th id="157">157</th><td>                            <a class="local col0 ref" href="#30line_lens_1" title='line_lens_1' data-ref="30line_lens_1">line_lens_1</a>,        <i>/* line lengths 1        */</i></td></tr>
+<tr><th id="158">158</th><td>                            <a class="local col1 ref" href="#31line_lens_2" title='line_lens_2' data-ref="31line_lens_2">line_lens_2</a>,        <i>/* line lengths 2        */</i></td></tr>
+<tr><th id="159">159</th><td>                            <a class="local col2 ref" href="#32runs_1" title='runs_1' data-ref="32runs_1">runs_1</a>,     <i>/* result runs  1        */</i></td></tr>
+<tr><th id="160">160</th><td>                            <a class="local col3 ref" href="#33runs_2" title='runs_2' data-ref="33runs_2">runs_2</a>,     <i>/* result runs  2        */</i></td></tr>
+<tr><th id="161">161</th><td>                            <a class="local col4 ref" href="#34num_runs_1" title='num_runs_1' data-ref="34num_runs_1">num_runs_1</a>, <i>/* numbers of first runs */</i></td></tr>
+<tr><th id="162">162</th><td>                            <a class="local col5 ref" href="#35num_runs_2" title='num_runs_2' data-ref="35num_runs_2">num_runs_2</a> ));</td></tr>
+<tr><th id="163">163</th><td>}</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

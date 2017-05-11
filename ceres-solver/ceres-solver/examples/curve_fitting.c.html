@@ -1,0 +1,206 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>curve_fitting.c source code [ceres-solver/examples/curve_fitting.c] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="main "/>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/examples/curve_fitting.c'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>ceres-solver</a>/<a href='./'>examples</a>/<a href='curve_fitting.c.html'>curve_fitting.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i> * Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i> * <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> * Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i> * modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i> *</i></td></tr>
+<tr><th id="8">8</th><td><i> * - Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i> *   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i> * - Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i> *   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i> *   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i> * - Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i> *   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i> *   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i> * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i> * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i> * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i> * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i> * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i> * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i> * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i> * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i> * POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i> *</i></td></tr>
+<tr><th id="29">29</th><td><i> * Author: mierle@gmail.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td><i> *</i></td></tr>
+<tr><th id="31">31</th><td><i> * This is a port of curve_fitting.cc to the minimal C API for Ceres.</i></td></tr>
+<tr><th id="32">32</th><td><i> */</i></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../include/math.h.html">&lt;math.h&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../include/stdio.h.html">&lt;stdio.h&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../include/string.h.html">&lt;string.h&gt;</a>  // For NULL</u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../include/ceres/c_api.h.html">"ceres/c_api.h"</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><i>/* Data generated using the following octave code.</i></td></tr>
+<tr><th id="40">40</th><td><i> *</i></td></tr>
+<tr><th id="41">41</th><td><i> *   randn('seed', 23497);</i></td></tr>
+<tr><th id="42">42</th><td><i> *   m = 0.3;</i></td></tr>
+<tr><th id="43">43</th><td><i> *   c = 0.1;</i></td></tr>
+<tr><th id="44">44</th><td><i> *   x=[0:0.075:5];</i></td></tr>
+<tr><th id="45">45</th><td><i> *   y = exp(m * x + c);</i></td></tr>
+<tr><th id="46">46</th><td><i> *   noise = randn(size(x)) * 0.2;</i></td></tr>
+<tr><th id="47">47</th><td><i> *   y_observed = y + noise;</i></td></tr>
+<tr><th id="48">48</th><td><i> *   data = [x', y_observed'];</i></td></tr>
+<tr><th id="49">49</th><td><i> *</i></td></tr>
+<tr><th id="50">50</th><td><i> */</i></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><em>int</em> <dfn class="decl def" id="num_observations" title='num_observations' data-ref="num_observations">num_observations</dfn> = <var>67</var>;</td></tr>
+<tr><th id="53">53</th><td><em>double</em> <dfn class="decl def" id="data" title='data' data-ref="data">data</dfn>[] = {</td></tr>
+<tr><th id="54">54</th><td>  <var>0.000000e+00</var>, <var>1.133898e+00</var>,</td></tr>
+<tr><th id="55">55</th><td>  <var>7.500000e-02</var>, <var>1.334902e+00</var>,</td></tr>
+<tr><th id="56">56</th><td>  <var>1.500000e-01</var>, <var>1.213546e+00</var>,</td></tr>
+<tr><th id="57">57</th><td>  <var>2.250000e-01</var>, <var>1.252016e+00</var>,</td></tr>
+<tr><th id="58">58</th><td>  <var>3.000000e-01</var>, <var>1.392265e+00</var>,</td></tr>
+<tr><th id="59">59</th><td>  <var>3.750000e-01</var>, <var>1.314458e+00</var>,</td></tr>
+<tr><th id="60">60</th><td>  <var>4.500000e-01</var>, <var>1.472541e+00</var>,</td></tr>
+<tr><th id="61">61</th><td>  <var>5.250000e-01</var>, <var>1.536218e+00</var>,</td></tr>
+<tr><th id="62">62</th><td>  <var>6.000000e-01</var>, <var>1.355679e+00</var>,</td></tr>
+<tr><th id="63">63</th><td>  <var>6.750000e-01</var>, <var>1.463566e+00</var>,</td></tr>
+<tr><th id="64">64</th><td>  <var>7.500000e-01</var>, <var>1.490201e+00</var>,</td></tr>
+<tr><th id="65">65</th><td>  <var>8.250000e-01</var>, <var>1.658699e+00</var>,</td></tr>
+<tr><th id="66">66</th><td>  <var>9.000000e-01</var>, <var>1.067574e+00</var>,</td></tr>
+<tr><th id="67">67</th><td>  <var>9.750000e-01</var>, <var>1.464629e+00</var>,</td></tr>
+<tr><th id="68">68</th><td>  <var>1.050000e+00</var>, <var>1.402653e+00</var>,</td></tr>
+<tr><th id="69">69</th><td>  <var>1.125000e+00</var>, <var>1.713141e+00</var>,</td></tr>
+<tr><th id="70">70</th><td>  <var>1.200000e+00</var>, <var>1.527021e+00</var>,</td></tr>
+<tr><th id="71">71</th><td>  <var>1.275000e+00</var>, <var>1.702632e+00</var>,</td></tr>
+<tr><th id="72">72</th><td>  <var>1.350000e+00</var>, <var>1.423899e+00</var>,</td></tr>
+<tr><th id="73">73</th><td>  <var>1.425000e+00</var>, <var>1.543078e+00</var>,</td></tr>
+<tr><th id="74">74</th><td>  <var>1.500000e+00</var>, <var>1.664015e+00</var>,</td></tr>
+<tr><th id="75">75</th><td>  <var>1.575000e+00</var>, <var>1.732484e+00</var>,</td></tr>
+<tr><th id="76">76</th><td>  <var>1.650000e+00</var>, <var>1.543296e+00</var>,</td></tr>
+<tr><th id="77">77</th><td>  <var>1.725000e+00</var>, <var>1.959523e+00</var>,</td></tr>
+<tr><th id="78">78</th><td>  <var>1.800000e+00</var>, <var>1.685132e+00</var>,</td></tr>
+<tr><th id="79">79</th><td>  <var>1.875000e+00</var>, <var>1.951791e+00</var>,</td></tr>
+<tr><th id="80">80</th><td>  <var>1.950000e+00</var>, <var>2.095346e+00</var>,</td></tr>
+<tr><th id="81">81</th><td>  <var>2.025000e+00</var>, <var>2.361460e+00</var>,</td></tr>
+<tr><th id="82">82</th><td>  <var>2.100000e+00</var>, <var>2.169119e+00</var>,</td></tr>
+<tr><th id="83">83</th><td>  <var>2.175000e+00</var>, <var>2.061745e+00</var>,</td></tr>
+<tr><th id="84">84</th><td>  <var>2.250000e+00</var>, <var>2.178641e+00</var>,</td></tr>
+<tr><th id="85">85</th><td>  <var>2.325000e+00</var>, <var>2.104346e+00</var>,</td></tr>
+<tr><th id="86">86</th><td>  <var>2.400000e+00</var>, <var>2.584470e+00</var>,</td></tr>
+<tr><th id="87">87</th><td>  <var>2.475000e+00</var>, <var>1.914158e+00</var>,</td></tr>
+<tr><th id="88">88</th><td>  <var>2.550000e+00</var>, <var>2.368375e+00</var>,</td></tr>
+<tr><th id="89">89</th><td>  <var>2.625000e+00</var>, <var>2.686125e+00</var>,</td></tr>
+<tr><th id="90">90</th><td>  <var>2.700000e+00</var>, <var>2.712395e+00</var>,</td></tr>
+<tr><th id="91">91</th><td>  <var>2.775000e+00</var>, <var>2.499511e+00</var>,</td></tr>
+<tr><th id="92">92</th><td>  <var>2.850000e+00</var>, <var>2.558897e+00</var>,</td></tr>
+<tr><th id="93">93</th><td>  <var>2.925000e+00</var>, <var>2.309154e+00</var>,</td></tr>
+<tr><th id="94">94</th><td>  <var>3.000000e+00</var>, <var>2.869503e+00</var>,</td></tr>
+<tr><th id="95">95</th><td>  <var>3.075000e+00</var>, <var>3.116645e+00</var>,</td></tr>
+<tr><th id="96">96</th><td>  <var>3.150000e+00</var>, <var>3.094907e+00</var>,</td></tr>
+<tr><th id="97">97</th><td>  <var>3.225000e+00</var>, <var>2.471759e+00</var>,</td></tr>
+<tr><th id="98">98</th><td>  <var>3.300000e+00</var>, <var>3.017131e+00</var>,</td></tr>
+<tr><th id="99">99</th><td>  <var>3.375000e+00</var>, <var>3.232381e+00</var>,</td></tr>
+<tr><th id="100">100</th><td>  <var>3.450000e+00</var>, <var>2.944596e+00</var>,</td></tr>
+<tr><th id="101">101</th><td>  <var>3.525000e+00</var>, <var>3.385343e+00</var>,</td></tr>
+<tr><th id="102">102</th><td>  <var>3.600000e+00</var>, <var>3.199826e+00</var>,</td></tr>
+<tr><th id="103">103</th><td>  <var>3.675000e+00</var>, <var>3.423039e+00</var>,</td></tr>
+<tr><th id="104">104</th><td>  <var>3.750000e+00</var>, <var>3.621552e+00</var>,</td></tr>
+<tr><th id="105">105</th><td>  <var>3.825000e+00</var>, <var>3.559255e+00</var>,</td></tr>
+<tr><th id="106">106</th><td>  <var>3.900000e+00</var>, <var>3.530713e+00</var>,</td></tr>
+<tr><th id="107">107</th><td>  <var>3.975000e+00</var>, <var>3.561766e+00</var>,</td></tr>
+<tr><th id="108">108</th><td>  <var>4.050000e+00</var>, <var>3.544574e+00</var>,</td></tr>
+<tr><th id="109">109</th><td>  <var>4.125000e+00</var>, <var>3.867945e+00</var>,</td></tr>
+<tr><th id="110">110</th><td>  <var>4.200000e+00</var>, <var>4.049776e+00</var>,</td></tr>
+<tr><th id="111">111</th><td>  <var>4.275000e+00</var>, <var>3.885601e+00</var>,</td></tr>
+<tr><th id="112">112</th><td>  <var>4.350000e+00</var>, <var>4.110505e+00</var>,</td></tr>
+<tr><th id="113">113</th><td>  <var>4.425000e+00</var>, <var>4.345320e+00</var>,</td></tr>
+<tr><th id="114">114</th><td>  <var>4.500000e+00</var>, <var>4.161241e+00</var>,</td></tr>
+<tr><th id="115">115</th><td>  <var>4.575000e+00</var>, <var>4.363407e+00</var>,</td></tr>
+<tr><th id="116">116</th><td>  <var>4.650000e+00</var>, <var>4.161576e+00</var>,</td></tr>
+<tr><th id="117">117</th><td>  <var>4.725000e+00</var>, <var>4.619728e+00</var>,</td></tr>
+<tr><th id="118">118</th><td>  <var>4.800000e+00</var>, <var>4.737410e+00</var>,</td></tr>
+<tr><th id="119">119</th><td>  <var>4.875000e+00</var>, <var>4.727863e+00</var>,</td></tr>
+<tr><th id="120">120</th><td>  <var>4.950000e+00</var>, <var>4.669206e+00</var>,</td></tr>
+<tr><th id="121">121</th><td>};</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td><i>/* This is the equivalent of a use-defined CostFunction in the C++ Ceres API.</i></td></tr>
+<tr><th id="124">124</th><td><i> * This is passed as a callback to the Ceres C API, which internally converts</i></td></tr>
+<tr><th id="125">125</th><td><i> * the callback into a CostFunction. */</i></td></tr>
+<tr><th id="126">126</th><td><em>int</em> <dfn class="decl def" id="exponential_residual" title='exponential_residual' data-ref="exponential_residual">exponential_residual</dfn>(<em>void</em>* <dfn class="local col2 decl" id="122user_data" title='user_data' data-type='void *' data-ref="122user_data">user_data</dfn>,</td></tr>
+<tr><th id="127">127</th><td>                         <em>double</em>** <dfn class="local col3 decl" id="123parameters" title='parameters' data-type='double **' data-ref="123parameters">parameters</dfn>,</td></tr>
+<tr><th id="128">128</th><td>                         <em>double</em>* <dfn class="local col4 decl" id="124residuals" title='residuals' data-type='double *' data-ref="124residuals">residuals</dfn>,</td></tr>
+<tr><th id="129">129</th><td>                         <em>double</em>** <dfn class="local col5 decl" id="125jacobians" title='jacobians' data-type='double **' data-ref="125jacobians">jacobians</dfn>) {</td></tr>
+<tr><th id="130">130</th><td>  <em>double</em>* <dfn class="local col6 decl" id="126measurement" title='measurement' data-type='double *' data-ref="126measurement">measurement</dfn> = (<em>double</em>*) <a class="local col2 ref" href="#122user_data" title='user_data' data-ref="122user_data">user_data</a>;</td></tr>
+<tr><th id="131">131</th><td>  <em>double</em> <dfn class="local col7 decl" id="127x" title='x' data-type='double' data-ref="127x">x</dfn> = <a class="local col6 ref" href="#126measurement" title='measurement' data-ref="126measurement">measurement</a>[<var>0</var>];</td></tr>
+<tr><th id="132">132</th><td>  <em>double</em> <dfn class="local col8 decl" id="128y" title='y' data-type='double' data-ref="128y">y</dfn> = <a class="local col6 ref" href="#126measurement" title='measurement' data-ref="126measurement">measurement</a>[<var>1</var>];</td></tr>
+<tr><th id="133">133</th><td>  <em>double</em> <dfn class="local col9 decl" id="129m" title='m' data-type='double' data-ref="129m">m</dfn> = <a class="local col3 ref" href="#123parameters" title='parameters' data-ref="123parameters">parameters</a>[<var>0</var>][<var>0</var>];</td></tr>
+<tr><th id="134">134</th><td>  <em>double</em> <dfn class="local col0 decl" id="130c" title='c' data-type='double' data-ref="130c">c</dfn> = <a class="local col3 ref" href="#123parameters" title='parameters' data-ref="123parameters">parameters</a>[<var>1</var>][<var>0</var>];</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>  <a class="local col4 ref" href="#124residuals" title='residuals' data-ref="124residuals">residuals</a>[<var>0</var>] = <a class="local col8 ref" href="#128y" title='y' data-ref="128y">y</a> - <a class="ref" href="../../include/x86_64-linux-gnu/bits/mathcalls.h.html#100" title='exp' data-ref="exp">exp</a>(<a class="local col9 ref" href="#129m" title='m' data-ref="129m">m</a> * <a class="local col7 ref" href="#127x" title='x' data-ref="127x">x</a> + <a class="local col0 ref" href="#130c" title='c' data-ref="130c">c</a>);</td></tr>
+<tr><th id="137">137</th><td>  <b>if</b> (<a class="local col5 ref" href="#125jacobians" title='jacobians' data-ref="125jacobians">jacobians</a> == <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="138">138</th><td>    <b>return</b> <var>1</var>;</td></tr>
+<tr><th id="139">139</th><td>  }</td></tr>
+<tr><th id="140">140</th><td>  <b>if</b> (<a class="local col5 ref" href="#125jacobians" title='jacobians' data-ref="125jacobians">jacobians</a>[<var>0</var>] != <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="141">141</th><td>    <a class="local col5 ref" href="#125jacobians" title='jacobians' data-ref="125jacobians">jacobians</a>[<var>0</var>][<var>0</var>] = - <a class="local col7 ref" href="#127x" title='x' data-ref="127x">x</a> * <a class="ref" href="../../include/x86_64-linux-gnu/bits/mathcalls.h.html#100" title='exp' data-ref="exp">exp</a>(<a class="local col9 ref" href="#129m" title='m' data-ref="129m">m</a> * <a class="local col7 ref" href="#127x" title='x' data-ref="127x">x</a> + <a class="local col0 ref" href="#130c" title='c' data-ref="130c">c</a>);  <i>/* dr/dm */</i></td></tr>
+<tr><th id="142">142</th><td>  }</td></tr>
+<tr><th id="143">143</th><td>  <b>if</b> (<a class="local col5 ref" href="#125jacobians" title='jacobians' data-ref="125jacobians">jacobians</a>[<var>1</var>] != <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="144">144</th><td>    <a class="local col5 ref" href="#125jacobians" title='jacobians' data-ref="125jacobians">jacobians</a>[<var>1</var>][<var>0</var>] =     - <a class="ref" href="../../include/x86_64-linux-gnu/bits/mathcalls.h.html#100" title='exp' data-ref="exp">exp</a>(<a class="local col9 ref" href="#129m" title='m' data-ref="129m">m</a> * <a class="local col7 ref" href="#127x" title='x' data-ref="127x">x</a> + <a class="local col0 ref" href="#130c" title='c' data-ref="130c">c</a>);  <i>/* dr/dc */</i></td></tr>
+<tr><th id="145">145</th><td>  }</td></tr>
+<tr><th id="146">146</th><td>  <b>return</b> <var>1</var>;</td></tr>
+<tr><th id="147">147</th><td>}</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td><em>int</em> <dfn class="decl def" id="main" title='main' data-ref="main">main</dfn>(<em>int</em> <dfn class="local col1 decl" id="131argc" title='argc' data-type='int' data-ref="131argc">argc</dfn>, <em>char</em>** <dfn class="local col2 decl" id="132argv" title='argv' data-type='char **' data-ref="132argv">argv</dfn>) {</td></tr>
+<tr><th id="150">150</th><td>  <i>/* Note: Typically it is better to compact m and c into one block,</i></td></tr>
+<tr><th id="151">151</th><td><i>   * but in this case use separate blocks to illustrate the use of</i></td></tr>
+<tr><th id="152">152</th><td><i>   * multiple parameter blocks. */</i></td></tr>
+<tr><th id="153">153</th><td>  <em>double</em> <dfn class="local col3 decl" id="133m" title='m' data-type='double' data-ref="133m">m</dfn> = <var>0.0</var>;</td></tr>
+<tr><th id="154">154</th><td>  <em>double</em> <dfn class="local col4 decl" id="134c" title='c' data-type='double' data-ref="134c">c</dfn> = <var>0.0</var>;</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>  <em>double</em> *<dfn class="local col5 decl" id="135parameter_pointers" title='parameter_pointers' data-type='double *[2]' data-ref="135parameter_pointers">parameter_pointers</dfn>[] = { &amp;<a class="local col3 ref" href="#133m" title='m' data-ref="133m">m</a>, &amp;<a class="local col4 ref" href="#134c" title='c' data-ref="134c">c</a> };</td></tr>
+<tr><th id="157">157</th><td>  <em>int</em> <dfn class="local col6 decl" id="136parameter_sizes" title='parameter_sizes' data-type='int [2]' data-ref="136parameter_sizes">parameter_sizes</dfn>[] = { <var>1</var>, <var>1</var> };</td></tr>
+<tr><th id="158">158</th><td>  <em>int</em> <dfn class="local col7 decl" id="137i" title='i' data-type='int' data-ref="137i">i</dfn>;</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td>  <a class="typedef" href="../include/ceres/c_api.h.html#ceres_problem_t" title='ceres_problem_t' data-type='struct ceres_problem_s' data-ref="ceres_problem_t">ceres_problem_t</a>* <dfn class="local col8 decl" id="138problem" title='problem' data-type='ceres_problem_t *' data-ref="138problem">problem</dfn>;</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td>  <i>/* Ceres has some internal stuff that needs to get initialized. */</i></td></tr>
+<tr><th id="163">163</th><td>  <a class="ref" href="../include/ceres/c_api.h.html#ceres_init" title='ceres_init' data-ref="ceres_init">ceres_init</a>();</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>  <a class="local col8 ref" href="#138problem" title='problem' data-ref="138problem">problem</a> = <a class="ref" href="../include/ceres/c_api.h.html#ceres_create_problem" title='ceres_create_problem' data-ref="ceres_create_problem">ceres_create_problem</a>();</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>  <i>/* Add all the residuals. */</i></td></tr>
+<tr><th id="168">168</th><td>  <b>for</b> (<a class="local col7 ref" href="#137i" title='i' data-ref="137i">i</a> = <var>0</var>; <a class="local col7 ref" href="#137i" title='i' data-ref="137i">i</a> &lt; <a class="ref" href="#num_observations" title='num_observations' data-ref="num_observations">num_observations</a>; ++<a class="local col7 ref" href="#137i" title='i' data-ref="137i">i</a>) {</td></tr>
+<tr><th id="169">169</th><td>    <a class="ref" href="../include/ceres/c_api.h.html#ceres_problem_add_residual_block" title='ceres_problem_add_residual_block' data-ref="ceres_problem_add_residual_block">ceres_problem_add_residual_block</a>(</td></tr>
+<tr><th id="170">170</th><td>        <a class="local col8 ref" href="#138problem" title='problem' data-ref="138problem">problem</a>,</td></tr>
+<tr><th id="171">171</th><td>        <a class="ref" href="#exponential_residual" title='exponential_residual' data-ref="exponential_residual">exponential_residual</a>,  <i>/* Cost function */</i></td></tr>
+<tr><th id="172">172</th><td>        &amp;<a class="ref" href="#data" title='data' data-ref="data">data</a>[<var>2</var> * <a class="local col7 ref" href="#137i" title='i' data-ref="137i">i</a>],          <i>/* Points to the (x,y) measurement */</i></td></tr>
+<tr><th id="173">173</th><td>        <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>,                  <i>/* No loss function */</i></td></tr>
+<tr><th id="174">174</th><td>        <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>,                  <i>/* No loss function user data */</i></td></tr>
+<tr><th id="175">175</th><td>        <var>1</var>,                     <i>/* Number of residuals */</i></td></tr>
+<tr><th id="176">176</th><td>        <var>2</var>,                     <i>/* Number of parameter blocks */</i></td></tr>
+<tr><th id="177">177</th><td>        <a class="local col6 ref" href="#136parameter_sizes" title='parameter_sizes' data-ref="136parameter_sizes">parameter_sizes</a>,</td></tr>
+<tr><th id="178">178</th><td>        <a class="local col5 ref" href="#135parameter_pointers" title='parameter_pointers' data-ref="135parameter_pointers">parameter_pointers</a>);</td></tr>
+<tr><th id="179">179</th><td>  }</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>  <a class="ref" href="../include/ceres/c_api.h.html#ceres_solve" title='ceres_solve' data-ref="ceres_solve">ceres_solve</a>(<a class="local col8 ref" href="#138problem" title='problem' data-ref="138problem">problem</a>);</td></tr>
+<tr><th id="182">182</th><td>  <a class="ref" href="../include/ceres/c_api.h.html#ceres_free_problem" title='ceres_free_problem' data-ref="ceres_free_problem">ceres_free_problem</a>(<a class="local col8 ref" href="#138problem" title='problem' data-ref="138problem">problem</a>);</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>  <a class="ref" href="../../include/stdio.h.html#printf" title='printf' data-ref="printf">printf</a>(<q>"Initial m: 0.0, c: 0.0\n"</q>);</td></tr>
+<tr><th id="185">185</th><td>  <a class="ref" href="../../include/stdio.h.html#printf" title='printf' data-ref="printf">printf</a>(<q>"Final m: %g, c: %g\n"</q>, <a class="local col3 ref" href="#133m" title='m' data-ref="133m">m</a>, <a class="local col4 ref" href="#134c" title='c' data-ref="134c">c</a>);</td></tr>
+<tr><th id="186">186</th><td>  <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="187">187</th><td>}</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

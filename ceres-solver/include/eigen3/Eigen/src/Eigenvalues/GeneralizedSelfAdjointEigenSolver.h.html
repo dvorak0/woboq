@@ -1,0 +1,246 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>GeneralizedSelfAdjointEigenSolver.h source code [include/eigen3/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::GeneralizedSelfAdjointEigenSolver "/>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/eigen3/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h'; var root_path = '../../../../..'; var data_path = '../../../../../../data';</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>include</a>/<a href='../../..'>eigen3</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>Eigenvalues</a>/<a href='GeneralizedSelfAdjointEigenSolver.h.html'>GeneralizedSelfAdjointEigenSolver.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2008-2010 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2010 Jitse Niesen &lt;jitse@maths.leeds.ac.uk&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>//</i></td></tr>
+<tr><th id="7">7</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="8">8</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="9">9</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifndef</span> <span class="macro" data-ref="_M/EIGEN_GENERALIZEDSELFADJOINTEIGENSOLVER_H">EIGEN_GENERALIZEDSELFADJOINTEIGENSOLVER_H</span></u></td></tr>
+<tr><th id="12">12</th><td><u>#define <dfn class="macro" id="_M/EIGEN_GENERALIZEDSELFADJOINTEIGENSOLVER_H" data-ref="_M/EIGEN_GENERALIZEDSELFADJOINTEIGENSOLVER_H">EIGEN_GENERALIZEDSELFADJOINTEIGENSOLVER_H</dfn></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="Tridiagonalization.h.html">"./Tridiagonalization.h"</a></u></td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><b>namespace</b> <span class="namespace">Eigen</span> { </td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><i class="doc">/**<span class="command"> \eigenvalues</span>_module <span class="command">\ingroup</span> <span class="verb">Eigenvalues_Module</span></i></td></tr>
+<tr><th id="19">19</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc">  * <span class="command">\class</span> <span class="verb">GeneralizedSelfAdjointEigenSolver</span></i></td></tr>
+<tr><th id="22">22</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc">  * <span class="command">\brief</span> Computes eigenvalues and eigenvectors of the generalized selfadjoint eigen problem</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="25">25</th><td><i class="doc">  * <span class="command">\tparam</span> <span class="arg">_MatrixType</span> the type of the matrix of which we are computing the</i></td></tr>
+<tr><th id="26">26</th><td><i class="doc">  * eigendecomposition; this is expected to be an instantiation of the Matrix</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc">  * class template.</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc">  * This class solves the generalized eigenvalue problem</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc">  * <span class="command">\f$</span><span class="verb"> Av = \lambda Bv \</span>f$. In this case, the matrix <span class="command">\f$</span><span class="verb"> A \</span>f$ should be</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc">  * selfadjoint and the matrix <span class="command">\f$</span><span class="verb"> B \</span>f$ should be positive definite.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc">  * Only the<span class="command"> \b</span> <span class="arg">lower</span><span class="command"> \b</span> <span class="arg">triangular</span><span class="command"> \b</span> <span class="arg">part</span> of the input matrix is referenced.</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc">  * Call the function compute() to compute the eigenvalues and eigenvectors of</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc">  * a given matrix. Alternatively, you can use the</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc">  * GeneralizedSelfAdjointEigenSolver(const MatrixType&amp;, const MatrixType&amp;, int)</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc">  * constructor which computes the eigenvalues and eigenvectors at construction time.</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">  * Once the eigenvalue and eigenvectors are computed, they can be retrieved with the eigenvalues()</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">  * and eigenvectors() functions.</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc">  * The documentation for GeneralizedSelfAdjointEigenSolver(const MatrixType&amp;, const MatrixType&amp;, int)</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc">  * contains an example of the typical use of this class.</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">  * <span class="command">\sa</span> class SelfAdjointEigenSolver, class EigenSolver, class ComplexEigenSolver</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="47">47</th><td><b>template</b>&lt;<b>typename</b> _MatrixType&gt;</td></tr>
+<tr><th id="48">48</th><td><b>class</b> <dfn class="type def" id="Eigen::GeneralizedSelfAdjointEigenSolver" title='Eigen::GeneralizedSelfAdjointEigenSolver' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver">GeneralizedSelfAdjointEigenSolver</dfn> : <b>public</b> <a class="type" href="SelfAdjointEigenSolver.h.html#Eigen::SelfAdjointEigenSolver" title='Eigen::SelfAdjointEigenSolver' data-ref="Eigen::SelfAdjointEigenSolver">SelfAdjointEigenSolver</a>&lt;_MatrixType&gt;</td></tr>
+<tr><th id="49">49</th><td>{</td></tr>
+<tr><th id="50">50</th><td>    <b>typedef</b> <a class="type" href="SelfAdjointEigenSolver.h.html#Eigen::SelfAdjointEigenSolver" title='Eigen::SelfAdjointEigenSolver' data-ref="Eigen::SelfAdjointEigenSolver">SelfAdjointEigenSolver</a>&lt;_MatrixType&gt; <dfn class="typedef" id="Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</dfn>;</td></tr>
+<tr><th id="51">51</th><td>  <b>public</b>:</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td>    <b>typedef</b> <b>typename</b> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::Index <dfn class="typedef" id="Eigen::GeneralizedSelfAdjointEigenSolver::Index" title='Eigen::GeneralizedSelfAdjointEigenSolver::Index' data-type='typename Base::Index' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Index">Index</dfn>;</td></tr>
+<tr><th id="54">54</th><td>    <b>typedef</b> _MatrixType <dfn class="typedef" id="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</dfn>;</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td>    <i class="doc">/** <span class="command">\brief</span> Default constructor for fixed-size matrices.</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">      * The default constructor is useful in cases in which the user intends to</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc">      * perform decompositions via compute(). This constructor</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc">      * can only be used if<span class="command"> \p</span> <span class="arg">_MatrixType</span> is a fixed-size matrix; use</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc">      * GeneralizedSelfAdjointEigenSolver(Index) for dynamic-size matrices.</i></td></tr>
+<tr><th id="62">62</th><td><i class="doc">      */</i></td></tr>
+<tr><th id="63">63</th><td>    <dfn class="decl def" id="_ZN5Eigen33GeneralizedSelfAdjointEigenSolverC1Ev" title='Eigen::GeneralizedSelfAdjointEigenSolver::GeneralizedSelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="_ZN5Eigen33GeneralizedSelfAdjointEigenSolverC1Ev">GeneralizedSelfAdjointEigenSolver</dfn>() : <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>() {}</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td>    <i class="doc">/** <span class="command">\brief</span> Constructor, pre-allocates memory for dynamic-size matrices.</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc">      * <span class="command">\param</span> [in]  <span class="arg">size</span>  Positive integer, size of the matrix whose</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc">      * eigenvalues and eigenvectors will be computed.</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc">      * This constructor is useful for dynamic-size matrices, when the user</i></td></tr>
+<tr><th id="71">71</th><td><i class="doc">      * intends to perform decompositions via compute(). The<span class="command"> \p</span> <span class="arg">size</span></i></td></tr>
+<tr><th id="72">72</th><td><i class="doc">      * parameter is only used as a hint. It is not an error to give a wrong</i></td></tr>
+<tr><th id="73">73</th><td><i class="doc">      *<span class="command"> \p</span> <span class="arg">size,</span> but it may impair performance.</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc">      * <span class="command">\sa</span> compute() for an example</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc">      */</i></td></tr>
+<tr><th id="77">77</th><td>    <dfn class="decl def" id="_ZN5Eigen33GeneralizedSelfAdjointEigenSolverC1ENS_22SelfAdjointEigenSolverIT_E5IndexE" title='Eigen::GeneralizedSelfAdjointEigenSolver::GeneralizedSelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="_ZN5Eigen33GeneralizedSelfAdjointEigenSolverC1ENS_22SelfAdjointEigenSolverIT_E5IndexE">GeneralizedSelfAdjointEigenSolver</dfn>(<a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Index" title='Eigen::GeneralizedSelfAdjointEigenSolver::Index' data-type='typename Base::Index' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Index">Index</a> <dfn class="local col5 decl" id="2565size" title='size' data-type='Index' data-ref="2565size">size</dfn>)</td></tr>
+<tr><th id="78">78</th><td>        : <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>(<a class="local col5 ref" href="#2565size" title='size' data-ref="2565size">size</a>)</td></tr>
+<tr><th id="79">79</th><td>    {}</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>    <i class="doc">/** <span class="command">\brief</span> Constructor; computes generalized eigendecomposition of given matrix pencil.</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">      * <span class="command">\param</span>[in]  <span class="arg">matA</span>  Selfadjoint matrix in matrix pencil.</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">      *                   Only the lower triangular part of the matrix is referenced.</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">      * <span class="command">\param</span>[in]  <span class="arg">matB</span>  Positive-definite matrix in matrix pencil.</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">      *                   Only the lower triangular part of the matrix is referenced.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">      * <span class="command">\param</span>[in]  <span class="arg">options</span> A or-ed set of flags {#ComputeEigenvectors,#EigenvaluesOnly} | {#Ax_lBx,#ABx_lx,#BAx_lx}.</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">      *                     Default is #ComputeEigenvectors|#Ax_lBx.</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">      * This constructor calls compute(const MatrixType&amp;, const MatrixType&amp;, int)</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">      * to compute the eigenvalues and (if requested) the eigenvectors of the</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">      * generalized eigenproblem <span class="command">\f$</span><span class="verb"> Ax = \lambda B x \</span>f$ with<span class="command"> \a</span> <span class="arg">matA</span> the</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">      * selfadjoint matrix <span class="command">\f$</span><span class="verb"> A \</span>f$ and<span class="command"> \a</span> <span class="arg">matB</span> the positive definite matrix</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">      * <span class="command">\f$</span><span class="verb"> B \</span>f$. Each eigenvector <span class="command">\f$</span><span class="verb"> x \</span>f$ satisfies the property</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">      * <span class="command">\f$</span><span class="verb"> x^* B x = 1 \</span>f$. The eigenvectors are computed if</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">      *<span class="command"> \a</span> <span class="arg">options</span> contains ComputeEigenvectors.</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">      * In addition, the two following variants can be solved via<span class="command"> \p</span> <span class="arg">options:</span></i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">      * -<span class="command"> \c</span> <span class="arg">ABx_lx:</span> <span class="command">\f$</span><span class="verb"> ABx = \lambda x \</span>f$</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">      * -<span class="command"> \c</span> <span class="arg">BAx_lx:</span> <span class="command">\f$</span><span class="verb"> BAx = \lambda x \</span>f$</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc">      * Example:<span class="command"> \include</span> SelfAdjointEigenSolver_SelfAdjointEigenSolver_MatrixType2.cpp</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc">      * Output:<span class="command"> \verbinclude</span> SelfAdjointEigenSolver_SelfAdjointEigenSolver_MatrixType2.out</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">      * <span class="command">\sa</span> compute(const MatrixType&amp;, const MatrixType&amp;, int)</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">      */</i></td></tr>
+<tr><th id="107">107</th><td>    <dfn class="decl def" id="_ZN5Eigen33GeneralizedSelfAdjointEigenSolverC1ERKT_S3_i" title='Eigen::GeneralizedSelfAdjointEigenSolver::GeneralizedSelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="_ZN5Eigen33GeneralizedSelfAdjointEigenSolverC1ERKT_S3_i">GeneralizedSelfAdjointEigenSolver</dfn>(<em>const</em> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&amp; <dfn class="local col6 decl" id="2566matA" title='matA' data-type='const MatrixType &amp;' data-ref="2566matA">matA</dfn>, <em>const</em> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&amp; <dfn class="local col7 decl" id="2567matB" title='matB' data-type='const MatrixType &amp;' data-ref="2567matB">matB</dfn>,</td></tr>
+<tr><th id="108">108</th><td>                                      <em>int</em> <dfn class="local col8 decl" id="2568options" title='options' data-type='int' data-ref="2568options">options</dfn> = <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ComputeEigenvectors" title='Eigen::DecompositionOptions::ComputeEigenvectors' data-ref="Eigen::DecompositionOptions::ComputeEigenvectors">ComputeEigenvectors</a>|<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::Ax_lBx" title='Eigen::DecompositionOptions::Ax_lBx' data-ref="Eigen::DecompositionOptions::Ax_lBx">Ax_lBx</a>)</td></tr>
+<tr><th id="109">109</th><td>      : <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>(<a class="local col6 ref" href="#2566matA" title='matA' data-ref="2566matA">matA</a>.cols())</td></tr>
+<tr><th id="110">110</th><td>    {</td></tr>
+<tr><th id="111">111</th><td>      <a class="member" href="#_ZN5Eigen33GeneralizedSelfAdjointEigenSolver7computeERKT_S3_i" title='Eigen::GeneralizedSelfAdjointEigenSolver::compute' data-ref="_ZN5Eigen33GeneralizedSelfAdjointEigenSolver7computeERKT_S3_i">compute</a>(<a class="local col6 ref" href="#2566matA" title='matA' data-ref="2566matA">matA</a>, <a class="local col7 ref" href="#2567matB" title='matB' data-ref="2567matB">matB</a>, <a class="local col8 ref" href="#2568options" title='options' data-ref="2568options">options</a>);</td></tr>
+<tr><th id="112">112</th><td>    }</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>    <i class="doc">/** <span class="command">\brief</span> Computes generalized eigendecomposition of given matrix pencil.</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">      * <span class="command">\param</span>[in]  <span class="arg">matA</span>  Selfadjoint matrix in matrix pencil.</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">      *                   Only the lower triangular part of the matrix is referenced.</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">      * <span class="command">\param</span>[in]  <span class="arg">matB</span>  Positive-definite matrix in matrix pencil.</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">      *                   Only the lower triangular part of the matrix is referenced.</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">      * <span class="command">\param</span>[in]  <span class="arg">options</span> A or-ed set of flags {#ComputeEigenvectors,#EigenvaluesOnly} | {#Ax_lBx,#ABx_lx,#BAx_lx}.</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">      *                     Default is #ComputeEigenvectors|#Ax_lBx.</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">      * <span class="command">\returns</span>    Reference to<span class="command"> \c</span> <span class="arg">*this</span></i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">      * Accoring to<span class="command"> \p</span> <span class="arg">options,</span> this function computes eigenvalues and (if requested)</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">      * the eigenvectors of one of the following three generalized eigenproblems:</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">      * -<span class="command"> \c</span> <span class="arg">Ax_lBx:</span> <span class="command">\f$</span><span class="verb"> Ax = \lambda B x \</span>f$</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">      * -<span class="command"> \c</span> <span class="arg">ABx_lx:</span> <span class="command">\f$</span><span class="verb"> ABx = \lambda x \</span>f$</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">      * -<span class="command"> \c</span> <span class="arg">BAx_lx:</span> <span class="command">\f$</span><span class="verb"> BAx = \lambda x \</span>f$</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">      * with<span class="command"> \a</span> <span class="arg">matA</span> the selfadjoint matrix <span class="command">\f$</span><span class="verb"> A \</span>f$ and<span class="command"> \a</span> <span class="arg">matB</span> the positive definite</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">      * matrix <span class="command">\f$</span><span class="verb"> B \</span>f$.</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">      * In addition, each eigenvector <span class="command">\f$</span><span class="verb"> x \</span>f$ satisfies the property <span class="command">\f$</span><span class="verb"> x^* B x = 1 \</span>f$.</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">      * The eigenvalues() function can be used to retrieve</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">      * the eigenvalues. If<span class="command"> \p</span> <span class="arg">options</span> contains ComputeEigenvectors, then the</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">      * eigenvectors are also computed and can be retrieved by calling</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">      * eigenvectors().</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">      * The implementation uses LLT to compute the Cholesky decomposition</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">      * <span class="command">\f$</span><span class="verb"> B = LL^* \</span>f$ and computes the classical eigendecomposition</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">      * of the selfadjoint matrix <span class="command">\f$</span><span class="verb"> L^{-1} A (L^*)^{-1} \</span>f$ if<span class="command"> \p</span> <span class="arg">options</span> contains Ax_lBx</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">      * and of <span class="command">\f$</span><span class="verb"> L^{*} A L \</span>f$ otherwise. This solves the</i></td></tr>
+<tr><th id="143">143</th><td><i class="doc">      * generalized eigenproblem, because any solution of the generalized</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">      * eigenproblem <span class="command">\f$</span><span class="verb"> Ax = \lambda B x \</span>f$ corresponds to a solution</i></td></tr>
+<tr><th id="145">145</th><td><i class="doc">      * <span class="command">\f$</span><span class="verb"> L^{-1} A (L^*)^{-1} (L^* x) = \lambda (L^* x) \</span>f$ of the</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">      * eigenproblem for <span class="command">\f$</span><span class="verb"> L^{-1} A (L^*)^{-1} \</span>f$. Similar statements</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">      * can be made for the two other variants.</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">      * Example:<span class="command"> \include</span> SelfAdjointEigenSolver_compute_MatrixType2.cpp</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">      * Output:<span class="command"> \verbinclude</span> SelfAdjointEigenSolver_compute_MatrixType2.out</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">      *</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">      * <span class="command">\sa</span> GeneralizedSelfAdjointEigenSolver(const MatrixType&amp;, const MatrixType&amp;, int)</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">      */</i></td></tr>
+<tr><th id="154">154</th><td>    GeneralizedSelfAdjointEigenSolver&amp; <a class="decl" href="#_ZN5Eigen33GeneralizedSelfAdjointEigenSolver7computeERKT_S3_i" title='Eigen::GeneralizedSelfAdjointEigenSolver::compute' data-ref="_ZN5Eigen33GeneralizedSelfAdjointEigenSolver7computeERKT_S3_i">compute</a>(<em>const</em> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&amp; <dfn class="local col9 decl" id="2569matA" title='matA' data-type='const MatrixType &amp;' data-ref="2569matA">matA</dfn>, <em>const</em> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&amp; <dfn class="local col0 decl" id="2570matB" title='matB' data-type='const MatrixType &amp;' data-ref="2570matB">matB</dfn>,</td></tr>
+<tr><th id="155">155</th><td>                                               <em>int</em> <dfn class="local col1 decl" id="2571options" title='options' data-type='int' data-ref="2571options">options</dfn> = <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ComputeEigenvectors" title='Eigen::DecompositionOptions::ComputeEigenvectors' data-ref="Eigen::DecompositionOptions::ComputeEigenvectors">ComputeEigenvectors</a>|<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::Ax_lBx" title='Eigen::DecompositionOptions::Ax_lBx' data-ref="Eigen::DecompositionOptions::Ax_lBx">Ax_lBx</a>);</td></tr>
+<tr><th id="156">156</th><td></td></tr>
+<tr><th id="157">157</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td>};</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><b>template</b>&lt;<b>typename</b> MatrixType&gt;</td></tr>
+<tr><th id="163">163</th><td><a class="type" href="SelfAdjointEigenSolver.h.html#Eigen::GeneralizedSelfAdjointEigenSolver" title='Eigen::GeneralizedSelfAdjointEigenSolver' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver">GeneralizedSelfAdjointEigenSolver</a>&lt;MatrixType&gt;&amp; <a class="type" href="SelfAdjointEigenSolver.h.html#Eigen::GeneralizedSelfAdjointEigenSolver" title='Eigen::GeneralizedSelfAdjointEigenSolver' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver">GeneralizedSelfAdjointEigenSolver</a>&lt;MatrixType&gt;::</td></tr>
+<tr><th id="164">164</th><td><dfn class="decl def" id="_ZN5Eigen33GeneralizedSelfAdjointEigenSolver7computeERKT_S3_i" title='Eigen::GeneralizedSelfAdjointEigenSolver::compute' data-ref="_ZN5Eigen33GeneralizedSelfAdjointEigenSolver7computeERKT_S3_i">compute</dfn>(<em>const</em> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&amp; <dfn class="local col2 decl" id="2572matA" title='matA' data-type='const MatrixType &amp;' data-ref="2572matA">matA</dfn>, <em>const</em> <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&amp; <dfn class="local col3 decl" id="2573matB" title='matB' data-type='const MatrixType &amp;' data-ref="2573matB">matB</dfn>, <em>int</em> <dfn class="local col4 decl" id="2574options" title='options' data-type='int' data-ref="2574options">options</dfn>)</td></tr>
+<tr><th id="165">165</th><td>{</td></tr>
+<tr><th id="166">166</th><td>  <a class="macro" href="../Core/util/Macros.h.html#207" title="" data-ref="_M/eigen_assert">eigen_assert</a>(matA.cols()==matA.rows() &amp;&amp; matB.rows()==matA.rows() &amp;&amp; matB.cols()==matB.rows());</td></tr>
+<tr><th id="167">167</th><td>  <a class="macro" href="../Core/util/Macros.h.html#207" title="" data-ref="_M/eigen_assert">eigen_assert</a>((options&amp;~(EigVecMask|GenEigMask))==<var>0</var></td></tr>
+<tr><th id="168">168</th><td>          &amp;&amp; (options&amp;EigVecMask)!=EigVecMask</td></tr>
+<tr><th id="169">169</th><td>          &amp;&amp; ((options&amp;GenEigMask)==<var>0</var> || (options&amp;GenEigMask)==Ax_lBx</td></tr>
+<tr><th id="170">170</th><td>           || (options&amp;GenEigMask)==ABx_lx || (options&amp;GenEigMask)==BAx_lx)</td></tr>
+<tr><th id="171">171</th><td>          &amp;&amp; <q>"invalid option parameter"</q>);</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td>  <em>bool</em> <dfn class="local col5 decl" id="2575computeEigVecs" title='computeEigVecs' data-type='bool' data-ref="2575computeEigVecs">computeEigVecs</dfn> = ((<a class="local col4 ref" href="#2574options" title='options' data-ref="2574options">options</a>&amp;<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::EigVecMask" title='Eigen::DecompositionOptions::EigVecMask' data-ref="Eigen::DecompositionOptions::EigVecMask">EigVecMask</a>)==<var>0</var>) || ((<a class="local col4 ref" href="#2574options" title='options' data-ref="2574options">options</a>&amp;<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::EigVecMask" title='Eigen::DecompositionOptions::EigVecMask' data-ref="Eigen::DecompositionOptions::EigVecMask">EigVecMask</a>)==<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ComputeEigenvectors" title='Eigen::DecompositionOptions::ComputeEigenvectors' data-ref="Eigen::DecompositionOptions::ComputeEigenvectors">ComputeEigenvectors</a>);</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>  <i>// Compute the cholesky decomposition of matB = L L' = U'U</i></td></tr>
+<tr><th id="176">176</th><td>  <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::LLT" title='Eigen::LLT' data-ref="Eigen::LLT">LLT</a>&lt;<a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a>&gt; <dfn class="local col6 decl" id="2576cholB" title='cholB' data-type='LLT&lt;MatrixType&gt;' data-ref="2576cholB">cholB</dfn>(<a class="local col3 ref" href="#2573matB" title='matB' data-ref="2573matB">matB</a>);</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td>  <em>int</em> <dfn class="local col7 decl" id="2577type" title='type' data-type='int' data-ref="2577type">type</dfn> = (<a class="local col4 ref" href="#2574options" title='options' data-ref="2574options">options</a>&amp;<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::GenEigMask" title='Eigen::DecompositionOptions::GenEigMask' data-ref="Eigen::DecompositionOptions::GenEigMask">GenEigMask</a>);</td></tr>
+<tr><th id="179">179</th><td>  <b>if</b>(<a class="local col7 ref" href="#2577type" title='type' data-ref="2577type">type</a>==<var>0</var>)</td></tr>
+<tr><th id="180">180</th><td>    <a class="local col7 ref" href="#2577type" title='type' data-ref="2577type">type</a> = <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::Ax_lBx" title='Eigen::DecompositionOptions::Ax_lBx' data-ref="Eigen::DecompositionOptions::Ax_lBx">Ax_lBx</a>;</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>  <b>if</b>(<a class="local col7 ref" href="#2577type" title='type' data-ref="2577type">type</a>==<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::Ax_lBx" title='Eigen::DecompositionOptions::Ax_lBx' data-ref="Eigen::DecompositionOptions::Ax_lBx">Ax_lBx</a>)</td></tr>
+<tr><th id="183">183</th><td>  {</td></tr>
+<tr><th id="184">184</th><td>    <i>// compute C = inv(L) A inv(L')</i></td></tr>
+<tr><th id="185">185</th><td>    <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a> <dfn class="local col8 decl" id="2578matC" title='matC' data-type='MatrixType' data-ref="2578matC">matC</dfn> = <a class="local col2 ref" href="#2572matA" title='matA' data-ref="2572matA">matA</a>.<b>template</b> selfadjointView&lt;<a class="enum" href="../Core/util/Constants.h.html#Eigen::::Lower" title='Eigen::::Lower' data-ref="Eigen::::Lower">Lower</a>&gt;();</td></tr>
+<tr><th id="186">186</th><td>    <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixL().<b>template</b> solveInPlace&lt;<a class="enum" href="../Core/util/Constants.h.html#Eigen::::OnTheLeft" title='Eigen::::OnTheLeft' data-ref="Eigen::::OnTheLeft">OnTheLeft</a>&gt;(<a class="local col8 ref" href="#2578matC" title='matC' data-ref="2578matC">matC</a>);</td></tr>
+<tr><th id="187">187</th><td>    <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixU().<b>template</b> solveInPlace&lt;<a class="enum" href="../Core/util/Constants.h.html#Eigen::::OnTheRight" title='Eigen::::OnTheRight' data-ref="Eigen::::OnTheRight">OnTheRight</a>&gt;(<a class="local col8 ref" href="#2578matC" title='matC' data-ref="2578matC">matC</a>);</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>    <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::compute(<a class="local col8 ref" href="#2578matC" title='matC' data-ref="2578matC">matC</a>, <a class="local col5 ref" href="#2575computeEigVecs" title='computeEigVecs' data-ref="2575computeEigVecs">computeEigVecs</a> ? <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ComputeEigenvectors" title='Eigen::DecompositionOptions::ComputeEigenvectors' data-ref="Eigen::DecompositionOptions::ComputeEigenvectors">ComputeEigenvectors</a> : <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::EigenvaluesOnly" title='Eigen::DecompositionOptions::EigenvaluesOnly' data-ref="Eigen::DecompositionOptions::EigenvaluesOnly">EigenvaluesOnly</a> );</td></tr>
+<tr><th id="190">190</th><td></td></tr>
+<tr><th id="191">191</th><td>    <i>// transform back the eigen vectors: evecs = inv(U) * evecs</i></td></tr>
+<tr><th id="192">192</th><td>    <b>if</b>(<a class="local col5 ref" href="#2575computeEigVecs" title='computeEigVecs' data-ref="2575computeEigVecs">computeEigVecs</a>)</td></tr>
+<tr><th id="193">193</th><td>      <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixU().solveInPlace(<a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::m_eivec);</td></tr>
+<tr><th id="194">194</th><td>  }</td></tr>
+<tr><th id="195">195</th><td>  <b>else</b> <b>if</b>(<a class="local col7 ref" href="#2577type" title='type' data-ref="2577type">type</a>==<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ABx_lx" title='Eigen::DecompositionOptions::ABx_lx' data-ref="Eigen::DecompositionOptions::ABx_lx">ABx_lx</a>)</td></tr>
+<tr><th id="196">196</th><td>  {</td></tr>
+<tr><th id="197">197</th><td>    <i>// compute C = L' A L</i></td></tr>
+<tr><th id="198">198</th><td>    <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a> <dfn class="local col9 decl" id="2579matC" title='matC' data-type='MatrixType' data-ref="2579matC">matC</dfn> = <a class="local col2 ref" href="#2572matA" title='matA' data-ref="2572matA">matA</a>.<b>template</b> selfadjointView&lt;<a class="enum" href="../Core/util/Constants.h.html#Eigen::::Lower" title='Eigen::::Lower' data-ref="Eigen::::Lower">Lower</a>&gt;();</td></tr>
+<tr><th id="199">199</th><td>    <a class="local col9 ref" href="#2579matC" title='matC' data-ref="2579matC">matC</a> = <a class="local col9 ref" href="#2579matC" title='matC' data-ref="2579matC">matC</a> * <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixL();</td></tr>
+<tr><th id="200">200</th><td>    <a class="local col9 ref" href="#2579matC" title='matC' data-ref="2579matC">matC</a> = <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixU() * <a class="local col9 ref" href="#2579matC" title='matC' data-ref="2579matC">matC</a>;</td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>    <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::compute(<a class="local col9 ref" href="#2579matC" title='matC' data-ref="2579matC">matC</a>, <a class="local col5 ref" href="#2575computeEigVecs" title='computeEigVecs' data-ref="2575computeEigVecs">computeEigVecs</a> ? <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ComputeEigenvectors" title='Eigen::DecompositionOptions::ComputeEigenvectors' data-ref="Eigen::DecompositionOptions::ComputeEigenvectors">ComputeEigenvectors</a> : <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::EigenvaluesOnly" title='Eigen::DecompositionOptions::EigenvaluesOnly' data-ref="Eigen::DecompositionOptions::EigenvaluesOnly">EigenvaluesOnly</a>);</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>    <i>// transform back the eigen vectors: evecs = inv(U) * evecs</i></td></tr>
+<tr><th id="205">205</th><td>    <b>if</b>(<a class="local col5 ref" href="#2575computeEigVecs" title='computeEigVecs' data-ref="2575computeEigVecs">computeEigVecs</a>)</td></tr>
+<tr><th id="206">206</th><td>      <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixU().solveInPlace(<a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::m_eivec);</td></tr>
+<tr><th id="207">207</th><td>  }</td></tr>
+<tr><th id="208">208</th><td>  <b>else</b> <b>if</b>(<a class="local col7 ref" href="#2577type" title='type' data-ref="2577type">type</a>==<a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::BAx_lx" title='Eigen::DecompositionOptions::BAx_lx' data-ref="Eigen::DecompositionOptions::BAx_lx">BAx_lx</a>)</td></tr>
+<tr><th id="209">209</th><td>  {</td></tr>
+<tr><th id="210">210</th><td>    <i>// compute C = L' A L</i></td></tr>
+<tr><th id="211">211</th><td>    <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType" title='Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType' data-type='_MatrixType' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::MatrixType">MatrixType</a> <dfn class="local col0 decl" id="2580matC" title='matC' data-type='MatrixType' data-ref="2580matC">matC</dfn> = <a class="local col2 ref" href="#2572matA" title='matA' data-ref="2572matA">matA</a>.<b>template</b> selfadjointView&lt;<a class="enum" href="../Core/util/Constants.h.html#Eigen::::Lower" title='Eigen::::Lower' data-ref="Eigen::::Lower">Lower</a>&gt;();</td></tr>
+<tr><th id="212">212</th><td>    <a class="local col0 ref" href="#2580matC" title='matC' data-ref="2580matC">matC</a> = <a class="local col0 ref" href="#2580matC" title='matC' data-ref="2580matC">matC</a> * <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixL();</td></tr>
+<tr><th id="213">213</th><td>    <a class="local col0 ref" href="#2580matC" title='matC' data-ref="2580matC">matC</a> = <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixU() * <a class="local col0 ref" href="#2580matC" title='matC' data-ref="2580matC">matC</a>;</td></tr>
+<tr><th id="214">214</th><td></td></tr>
+<tr><th id="215">215</th><td>    <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::compute(<a class="local col0 ref" href="#2580matC" title='matC' data-ref="2580matC">matC</a>, <a class="local col5 ref" href="#2575computeEigVecs" title='computeEigVecs' data-ref="2575computeEigVecs">computeEigVecs</a> ? <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::ComputeEigenvectors" title='Eigen::DecompositionOptions::ComputeEigenvectors' data-ref="Eigen::DecompositionOptions::ComputeEigenvectors">ComputeEigenvectors</a> : <a class="enum" href="../Core/util/Constants.h.html#Eigen::DecompositionOptions::EigenvaluesOnly" title='Eigen::DecompositionOptions::EigenvaluesOnly' data-ref="Eigen::DecompositionOptions::EigenvaluesOnly">EigenvaluesOnly</a>);</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>    <i>// transform back the eigen vectors: evecs = L * evecs</i></td></tr>
+<tr><th id="218">218</th><td>    <b>if</b>(<a class="local col5 ref" href="#2575computeEigVecs" title='computeEigVecs' data-ref="2575computeEigVecs">computeEigVecs</a>)</td></tr>
+<tr><th id="219">219</th><td>      <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::m_eivec = <a class="local col6 ref" href="#2576cholB" title='cholB' data-ref="2576cholB">cholB</a>.matrixL() * <a class="typedef" href="#Eigen::GeneralizedSelfAdjointEigenSolver::Base" title='Eigen::GeneralizedSelfAdjointEigenSolver::Base' data-type='SelfAdjointEigenSolver&lt;_MatrixType&gt;' data-ref="Eigen::GeneralizedSelfAdjointEigenSolver::Base">Base</a>::m_eivec;</td></tr>
+<tr><th id="220">220</th><td>  }</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>  <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="223">223</th><td>}</td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td><u>#<span data-ppcond="11">endif</span> // EIGEN_GENERALIZEDSELFADJOINTEIGENSOLVER_H</u></td></tr>
+<tr><th id="228">228</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../ceres-solver/examples/bundle_adjuster.cc.html'>ceres-solver/examples/bundle_adjuster.cc</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

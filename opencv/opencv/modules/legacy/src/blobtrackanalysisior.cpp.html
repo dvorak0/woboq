@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>blobtrackanalysisior.cpp source code [opencv/modules/legacy/src/blobtrackanalysisior.cpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="CvBlobTrackAnalysisIOR "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/legacy/src/blobtrackanalysisior.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>legacy</a>/<a href='./'>src</a>/<a href='blobtrackanalysisior.cpp.html'>blobtrackanalysisior.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                        Intel License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="15">15</th><td><i>//</i></td></tr>
+<tr><th id="16">16</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="17">17</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="18">18</th><td><i>//</i></td></tr>
+<tr><th id="19">19</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="20">20</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="21">21</th><td><i>//</i></td></tr>
+<tr><th id="22">22</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="23">23</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="24">24</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="25">25</th><td><i>//</i></td></tr>
+<tr><th id="26">26</th><td><i>//   * The name of Intel Corporation may not be used to endorse or promote products</i></td></tr>
+<tr><th id="27">27</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="30">30</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="31">31</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="32">32</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="33">33</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="34">34</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="35">35</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="36">36</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="37">37</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="38">38</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="39">39</th><td><i>//</i></td></tr>
+<tr><th id="40">40</th><td><i>//M*/</i></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i>/*======================= FILTER LIST SHELL =====================*/</i></td></tr>
+<tr><th id="45">45</th><td><u>#define <dfn class="macro" id="_M/MAX_ANS" data-ref="_M/MAX_ANS">MAX_ANS</dfn> 16</u></td></tr>
+<tr><th id="46">46</th><td><u>#define <dfn class="macro" id="_M/MAX_DESC" data-ref="_M/MAX_DESC">MAX_DESC</dfn> 1024</u></td></tr>
+<tr><th id="47">47</th><td><b>class</b> <dfn class="type def" id="CvBlobTrackAnalysisIOR" title='CvBlobTrackAnalysisIOR' data-ref="CvBlobTrackAnalysisIOR">CvBlobTrackAnalysisIOR</dfn> : <b>public</b> <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackAnalysis" title='CvBlobTrackAnalysis' data-ref="CvBlobTrackAnalysis">CvBlobTrackAnalysis</a></td></tr>
+<tr><th id="48">48</th><td>{</td></tr>
+<tr><th id="49">49</th><td><b>protected</b>:</td></tr>
+<tr><th id="50">50</th><td>    <b>struct</b>  <dfn class="tu type def" id="CvBlobTrackAnalysisIOR::DefAn" title='CvBlobTrackAnalysisIOR::DefAn' data-ref="CvBlobTrackAnalysisIOR::DefAn"><a class="tu type" href="#CvBlobTrackAnalysisIOR::DefAn" title='CvBlobTrackAnalysisIOR::DefAn' data-ref="CvBlobTrackAnalysisIOR::DefAn">DefAn</a></dfn></td></tr>
+<tr><th id="51">51</th><td>    {</td></tr>
+<tr><th id="52">52</th><td>        <em>const</em> <em>char</em>*                   <dfn class="tu decl" id="CvBlobTrackAnalysisIOR::DefAn::pName" title='CvBlobTrackAnalysisIOR::DefAn::pName' data-type='const char *' data-ref="CvBlobTrackAnalysisIOR::DefAn::pName">pName</dfn>;</td></tr>
+<tr><th id="53">53</th><td>        <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackAnalysis" title='CvBlobTrackAnalysis' data-ref="CvBlobTrackAnalysis">CvBlobTrackAnalysis</a>*    <dfn class="tu decl" id="CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-type='CvBlobTrackAnalysis *' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</dfn>;</td></tr>
+<tr><th id="54">54</th><td>    } <dfn class="tu decl" id="CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-type='struct DefAn [16]' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</dfn>[<a class="macro" href="#45" title="16" data-ref="_M/MAX_ANS">MAX_ANS</a>];</td></tr>
+<tr><th id="55">55</th><td>    <em>int</em> <dfn class="tu decl" id="CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-type='int' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</dfn>;</td></tr>
+<tr><th id="56">56</th><td>    <em>char</em> <dfn class="tu decl" id="CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-type='char [1024]' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</dfn>[<a class="macro" href="#46" title="1024" data-ref="_M/MAX_DESC">MAX_DESC</a>];</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><b>public</b>:</td></tr>
+<tr><th id="59">59</th><td>    <dfn class="tu decl def" id="_ZN22CvBlobTrackAnalysisIORC1Ev" title='CvBlobTrackAnalysisIOR::CvBlobTrackAnalysisIOR' data-type='void CvBlobTrackAnalysisIOR::CvBlobTrackAnalysisIOR()' data-ref="_ZN22CvBlobTrackAnalysisIORC1Ev">CvBlobTrackAnalysisIOR</dfn>()</td></tr>
+<tr><th id="60">60</th><td>    {</td></tr>
+<tr><th id="61">61</th><td>        <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='w' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a> = <var>0</var>;</td></tr>
+<tr><th id="62">62</th><td>        <a class="member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN10CvVSModule13SetModuleNameEPKc" title='CvVSModule::SetModuleName' data-ref="_ZN10CvVSModule13SetModuleNameEPKc">SetModuleName</a>(<q>"IOR"</q>);</td></tr>
+<tr><th id="63">63</th><td>    }</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td>    <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIORD1Ev" title='CvBlobTrackAnalysisIOR::~CvBlobTrackAnalysisIOR' data-ref="_ZN22CvBlobTrackAnalysisIORD1Ev">~</dfn>CvBlobTrackAnalysisIOR()</td></tr>
+<tr><th id="66">66</th><td>    {</td></tr>
+<tr><th id="67">67</th><td>    };</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>    <b>virtual</b> <em>void</em>    <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIOR7AddBlobEP6CvBlob" title='CvBlobTrackAnalysisIOR::AddBlob' data-ref="_ZN22CvBlobTrackAnalysisIOR7AddBlobEP6CvBlob">AddBlob</dfn>(<a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlob" title='CvBlob' data-ref="CvBlob">CvBlob</a>* <dfn class="local col1 decl" id="1pBlob" title='pBlob' data-type='CvBlob *' data-ref="1pBlob">pBlob</dfn>)</td></tr>
+<tr><th id="70">70</th><td>    {</td></tr>
+<tr><th id="71">71</th><td>        <em>int</em> <dfn class="local col2 decl" id="2i" title='i' data-type='int' data-ref="2i">i</dfn>;</td></tr>
+<tr><th id="72">72</th><td>        <b>for</b>(<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>=<var>0</var>; <a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>&lt;<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>; ++<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>)</td></tr>
+<tr><th id="73">73</th><td>        {</td></tr>
+<tr><th id="74">74</th><td>            <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col2 ref" href="#2i" title='i' data-ref="2i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a>-&gt;<a class="virtual member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN19CvBlobTrackAnalysis7AddBlobEP6CvBlob" title='CvBlobTrackAnalysis::AddBlob' data-ref="_ZN19CvBlobTrackAnalysis7AddBlobEP6CvBlob">AddBlob</a>(<a class="local col1 ref" href="#1pBlob" title='pBlob' data-ref="1pBlob">pBlob</a>);</td></tr>
+<tr><th id="75">75</th><td>        } <i>/* Next analyzer. */</i></td></tr>
+<tr><th id="76">76</th><td>    };</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td>    <b>virtual</b> <em>void</em>    <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIOR7ProcessEP9_IplImageS1_" title='CvBlobTrackAnalysisIOR::Process' data-ref="_ZN22CvBlobTrackAnalysisIOR7ProcessEP9_IplImageS1_">Process</dfn>(<a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#IplImage" title='IplImage' data-type='struct _IplImage' data-ref="IplImage">IplImage</a>* <dfn class="local col3 decl" id="3pImg" title='pImg' data-type='IplImage *' data-ref="3pImg">pImg</dfn>, <a class="typedef" href="../../core/include/opencv2/core/types_c.h.html#IplImage" title='IplImage' data-type='struct _IplImage' data-ref="IplImage">IplImage</a>* <dfn class="local col4 decl" id="4pFG" title='pFG' data-type='IplImage *' data-ref="4pFG">pFG</dfn>)</td></tr>
+<tr><th id="79">79</th><td>    {</td></tr>
+<tr><th id="80">80</th><td>        <em>int</em> <dfn class="local col5 decl" id="5i" title='i' data-type='int' data-ref="5i">i</dfn>;</td></tr>
+<tr><th id="81">81</th><td><u>#<span data-ppcond="81">ifdef</span> <span class="macro" data-ref="_M/_OPENMP">_OPENMP</span></u></td></tr>
+<tr><th id="82">82</th><td><u>#pragma omp parallel for</u></td></tr>
+<tr><th id="83">83</th><td><u>#<span data-ppcond="81">endif</span></u></td></tr>
+<tr><th id="84">84</th><td>        <b>for</b>(<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>=<var>0</var>; <a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>&lt;<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>; ++<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>)</td></tr>
+<tr><th id="85">85</th><td>        {</td></tr>
+<tr><th id="86">86</th><td>            <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a>-&gt;<a class="virtual member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN19CvBlobTrackAnalysis7ProcessEP9_IplImageS1_" title='CvBlobTrackAnalysis::Process' data-ref="_ZN19CvBlobTrackAnalysis7ProcessEP9_IplImageS1_">Process</a>(<a class="local col3 ref" href="#3pImg" title='pImg' data-ref="3pImg">pImg</a>, <a class="local col4 ref" href="#4pFG" title='pFG' data-ref="4pFG">pFG</a>);</td></tr>
+<tr><th id="87">87</th><td>        } <i>/* Next analyzer. */</i></td></tr>
+<tr><th id="88">88</th><td>    };</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>    <em>float</em> <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIOR8GetStateEi" title='CvBlobTrackAnalysisIOR::GetState' data-ref="_ZN22CvBlobTrackAnalysisIOR8GetStateEi">GetState</dfn>(<em>int</em> <dfn class="local col6 decl" id="6BlobID" title='BlobID' data-type='int' data-ref="6BlobID">BlobID</dfn>)</td></tr>
+<tr><th id="91">91</th><td>    {</td></tr>
+<tr><th id="92">92</th><td>        <em>int</em> <dfn class="local col7 decl" id="7state" title='state' data-type='int' data-ref="7state">state</dfn> = <var>0</var>;</td></tr>
+<tr><th id="93">93</th><td>        <em>int</em> <dfn class="local col8 decl" id="8i" title='i' data-type='int' data-ref="8i">i</dfn>;</td></tr>
+<tr><th id="94">94</th><td>        <b>for</b>(<a class="local col8 ref" href="#8i" title='i' data-ref="8i">i</a>=<var>0</var>; <a class="local col8 ref" href="#8i" title='i' data-ref="8i">i</a>&lt;<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>; ++<a class="local col8 ref" href="#8i" title='i' data-ref="8i">i</a>)</td></tr>
+<tr><th id="95">95</th><td>        {</td></tr>
+<tr><th id="96">96</th><td>            <a class="local col7 ref" href="#7state" title='state' data-ref="7state">state</a> |= (<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col8 ref" href="#8i" title='i' data-ref="8i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a>-&gt;<a class="virtual member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN19CvBlobTrackAnalysis8GetStateEi" title='CvBlobTrackAnalysis::GetState' data-ref="_ZN19CvBlobTrackAnalysis8GetStateEi">GetState</a>(<a class="local col6 ref" href="#6BlobID" title='BlobID' data-ref="6BlobID">BlobID</a>) &gt; <var>0.5</var>);</td></tr>
+<tr><th id="97">97</th><td>        } <i>/* Next analyzer. */</i></td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>        <b>return</b> (<em>float</em>)<a class="local col7 ref" href="#7state" title='state' data-ref="7state">state</a>;</td></tr>
+<tr><th id="100">100</th><td>    };</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <b>virtual</b> <em>const</em> <em>char</em>*   <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIOR12GetStateDescEi" title='CvBlobTrackAnalysisIOR::GetStateDesc' data-ref="_ZN22CvBlobTrackAnalysisIOR12GetStateDescEi">GetStateDesc</dfn>(<em>int</em> <dfn class="local col9 decl" id="9BlobID" title='BlobID' data-type='int' data-ref="9BlobID">BlobID</dfn>)</td></tr>
+<tr><th id="103">103</th><td>    {</td></tr>
+<tr><th id="104">104</th><td>        <em>int</em>     <dfn class="local col0 decl" id="10rest" title='rest' data-type='int' data-ref="10rest">rest</dfn> = <a class="macro" href="#46" title="1024" data-ref="_M/MAX_DESC">MAX_DESC</a>-<var>1</var>;</td></tr>
+<tr><th id="105">105</th><td>        <em>int</em>     <dfn class="local col1 decl" id="11i" title='i' data-type='int' data-ref="11i">i</dfn>;</td></tr>
+<tr><th id="106">106</th><td>        <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='w' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>[<var>0</var>] = <var>0</var>;</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td>        <b>for</b>(<a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>=<var>0</var>; <a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>&lt;<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>; ++<a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>)</td></tr>
+<tr><th id="109">109</th><td>        {</td></tr>
+<tr><th id="110">110</th><td>            <em>const</em> <em>char</em>* <dfn class="local col2 decl" id="12str" title='str' data-type='const char *' data-ref="12str">str</dfn> = <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a>-&gt;<a class="virtual member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN19CvBlobTrackAnalysis12GetStateDescEi" title='CvBlobTrackAnalysis::GetStateDesc' data-ref="_ZN19CvBlobTrackAnalysis12GetStateDescEi">GetStateDesc</a>(<a class="local col9 ref" href="#9BlobID" title='BlobID' data-ref="9BlobID">BlobID</a>);</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>            <b>if</b>(<a class="local col2 ref" href="#12str" title='str' data-ref="12str">str</a> &amp;&amp; <a class="ref" href="../../../../include/string.h.html#strlen" title='strlen' data-ref="strlen">strlen</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pName" title='CvBlobTrackAnalysisIOR::DefAn::pName' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pName">pName</a>) + <a class="ref" href="../../../../include/string.h.html#strlen" title='strlen' data-ref="strlen">strlen</a>(<a class="local col2 ref" href="#12str" title='str' data-ref="12str">str</a>)+<var>4</var> &lt; (<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>)<a class="local col0 ref" href="#10rest" title='rest' data-ref="10rest">rest</a>)</td></tr>
+<tr><th id="113">113</th><td>            {</td></tr>
+<tr><th id="114">114</th><td>                <a class="ref" href="../../../../include/string.h.html#strcat" title='strcat' data-ref="strcat">strcat</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>,<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pName" title='CvBlobTrackAnalysisIOR::DefAn::pName' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pName">pName</a>);</td></tr>
+<tr><th id="115">115</th><td>                <a class="ref" href="../../../../include/string.h.html#strcat" title='strcat' data-ref="strcat">strcat</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>,<q>": "</q>);</td></tr>
+<tr><th id="116">116</th><td>                <a class="ref" href="../../../../include/string.h.html#strcat" title='strcat' data-ref="strcat">strcat</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>,<a class="local col2 ref" href="#12str" title='str' data-ref="12str">str</a>);</td></tr>
+<tr><th id="117">117</th><td>                <a class="ref" href="../../../../include/string.h.html#strcat" title='strcat' data-ref="strcat">strcat</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>,<q>"\n"</q>);</td></tr>
+<tr><th id="118">118</th><td>                <a class="local col0 ref" href="#10rest" title='rest' data-ref="10rest">rest</a> = <a class="macro" href="#46" title="1024" data-ref="_M/MAX_DESC">MAX_DESC</a> - (<em>int</em>)<a class="ref" href="../../../../include/string.h.html#strlen" title='strlen' data-ref="strlen">strlen</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>) - <var>1</var>;</td></tr>
+<tr><th id="119">119</th><td>            }</td></tr>
+<tr><th id="120">120</th><td>        } <i>/* Next analyzer. */</i></td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>        <b>if</b>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>[<var>0</var>]!=<var>0</var>)<b>return</b> <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Desc" title='CvBlobTrackAnalysisIOR::m_Desc' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_Desc">m_Desc</a>;</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td>        <b>return</b> <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="125">125</th><td>    };</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIOR11SetFileNameEPc" title='CvBlobTrackAnalysisIOR::SetFileName' data-ref="_ZN22CvBlobTrackAnalysisIOR11SetFileNameEPc">SetFileName</dfn>(<em>char</em>* <i>/*DataBaseName*/</i>)</td></tr>
+<tr><th id="128">128</th><td>    {</td></tr>
+<tr><th id="129">129</th><td>    };</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>    <em>int</em> <dfn class="tu decl def" id="_ZN22CvBlobTrackAnalysisIOR11AddAnalyzerEP19CvBlobTrackAnalysisPKc" title='CvBlobTrackAnalysisIOR::AddAnalyzer' data-type='int CvBlobTrackAnalysisIOR::AddAnalyzer(CvBlobTrackAnalysis * pA, const char * pName)' data-ref="_ZN22CvBlobTrackAnalysisIOR11AddAnalyzerEP19CvBlobTrackAnalysisPKc">AddAnalyzer</dfn>(<a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackAnalysis" title='CvBlobTrackAnalysis' data-ref="CvBlobTrackAnalysis">CvBlobTrackAnalysis</a>* <dfn class="local col3 decl" id="13pA" title='pA' data-type='CvBlobTrackAnalysis *' data-ref="13pA">pA</dfn>, <em>const</em> <em>char</em>* <dfn class="local col4 decl" id="14pName" title='pName' data-type='const char *' data-ref="14pName">pName</dfn>)</td></tr>
+<tr><th id="132">132</th><td>    {</td></tr>
+<tr><th id="133">133</th><td>        <b>if</b>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>&lt;<a class="macro" href="#45" title="16" data-ref="_M/MAX_ANS">MAX_ANS</a>)</td></tr>
+<tr><th id="134">134</th><td>        {</td></tr>
+<tr><th id="135">135</th><td>            <i>//int i;</i></td></tr>
+<tr><th id="136">136</th><td>            <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pName" title='CvBlobTrackAnalysisIOR::DefAn::pName' data-use='w' data-ref="CvBlobTrackAnalysisIOR::DefAn::pName">pName</a> = <a class="local col4 ref" href="#14pName" title='pName' data-ref="14pName">pName</a>;</td></tr>
+<tr><th id="137">137</th><td>            <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='w' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a> = <a class="local col3 ref" href="#13pA" title='pA' data-ref="13pA">pA</a>;</td></tr>
+<tr><th id="138">138</th><td>            <a class="member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN10CvVSModule23TransferParamsFromChildEPS_PKc" title='CvVSModule::TransferParamsFromChild' data-ref="_ZN10CvVSModule23TransferParamsFromChildEPS_PKc">TransferParamsFromChild</a>(<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a>, <a class="local col4 ref" href="#14pName" title='pName' data-ref="14pName">pName</a>);</td></tr>
+<tr><th id="139">139</th><td>            <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='w' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>++;</td></tr>
+<tr><th id="140">140</th><td>            <b>return</b> <var>1</var>;</td></tr>
+<tr><th id="141">141</th><td>        }</td></tr>
+<tr><th id="142">142</th><td>        <b>else</b></td></tr>
+<tr><th id="143">143</th><td>        {</td></tr>
+<tr><th id="144">144</th><td>            <a class="ref" href="../../../../include/stdio.h.html#printf" title='printf' data-ref="printf">printf</a>(<q>"Can not add track analyzer %s! (not more that %d analyzers)\n"</q>,<a class="local col4 ref" href="#14pName" title='pName' data-ref="14pName">pName</a>,<a class="macro" href="#45" title="16" data-ref="_M/MAX_ANS">MAX_ANS</a>);</td></tr>
+<tr><th id="145">145</th><td>            <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="146">146</th><td>        }</td></tr>
+<tr><th id="147">147</th><td>    }</td></tr>
+<tr><th id="148">148</th><td>    <em>void</em>    <dfn class="virtual decl def" id="_ZN22CvBlobTrackAnalysisIOR7ReleaseEv" title='CvBlobTrackAnalysisIOR::Release' data-ref="_ZN22CvBlobTrackAnalysisIOR7ReleaseEv">Release</dfn>()</td></tr>
+<tr><th id="149">149</th><td>    {</td></tr>
+<tr><th id="150">150</th><td>        <em>int</em> <dfn class="local col5 decl" id="15i" title='i' data-type='int' data-ref="15i">i</dfn>;</td></tr>
+<tr><th id="151">151</th><td>        <b>for</b>(<a class="local col5 ref" href="#15i" title='i' data-ref="15i">i</a>=<var>0</var>; <a class="local col5 ref" href="#15i" title='i' data-ref="15i">i</a>&lt;<a class="tu member" href="#CvBlobTrackAnalysisIOR::m_AnNum" title='CvBlobTrackAnalysisIOR::m_AnNum' data-use='r' data-ref="CvBlobTrackAnalysisIOR::m_AnNum">m_AnNum</a>; ++<a class="local col5 ref" href="#15i" title='i' data-ref="15i">i</a>)</td></tr>
+<tr><th id="152">152</th><td>        {</td></tr>
+<tr><th id="153">153</th><td>            <a class="tu member" href="#CvBlobTrackAnalysisIOR::m_Ans" title='CvBlobTrackAnalysisIOR::m_Ans' data-use='m' data-ref="CvBlobTrackAnalysisIOR::m_Ans">m_Ans</a>[<a class="local col5 ref" href="#15i" title='i' data-ref="15i">i</a>].<a class="tu ref" href="#CvBlobTrackAnalysisIOR::DefAn::pAn" title='CvBlobTrackAnalysisIOR::DefAn::pAn' data-use='r' data-ref="CvBlobTrackAnalysisIOR::DefAn::pAn">pAn</a>-&gt;<a class="virtual member" href="../include/opencv2/legacy/blobtrack.hpp.html#_ZN19CvBlobTrackAnalysis7ReleaseEv" title='CvBlobTrackAnalysis::Release' data-ref="_ZN19CvBlobTrackAnalysis7ReleaseEv">Release</a>();</td></tr>
+<tr><th id="154">154</th><td>        } <i>/* Next analyzer. */</i></td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>        <b>delete</b> <b>this</b>;</td></tr>
+<tr><th id="157">157</th><td>    };</td></tr>
+<tr><th id="158">158</th><td>}; <i>/* CvBlobTrackAnalysisIOR. */</i></td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td><a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackAnalysis" title='CvBlobTrackAnalysis' data-ref="CvBlobTrackAnalysis">CvBlobTrackAnalysis</a>* <dfn class="decl def" id="_Z34cvCreateModuleBlobTrackAnalysisIORv" title='cvCreateModuleBlobTrackAnalysisIOR' data-ref="_Z34cvCreateModuleBlobTrackAnalysisIORv">cvCreateModuleBlobTrackAnalysisIOR</dfn>()</td></tr>
+<tr><th id="161">161</th><td>{</td></tr>
+<tr><th id="162">162</th><td>    <a class="type" href="#CvBlobTrackAnalysisIOR" title='CvBlobTrackAnalysisIOR' data-ref="CvBlobTrackAnalysisIOR">CvBlobTrackAnalysisIOR</a>* <dfn class="local col6 decl" id="16pIOR" title='pIOR' data-type='CvBlobTrackAnalysisIOR *' data-ref="16pIOR">pIOR</dfn> = <b>new</b> <a class="type" href="#CvBlobTrackAnalysisIOR" title='CvBlobTrackAnalysisIOR' data-ref="CvBlobTrackAnalysisIOR">CvBlobTrackAnalysisIOR</a><a class="tu ref" href="#_ZN22CvBlobTrackAnalysisIORC1Ev" title='CvBlobTrackAnalysisIOR::CvBlobTrackAnalysisIOR' data-use='c' data-ref="_ZN22CvBlobTrackAnalysisIORC1Ev">(</a>);</td></tr>
+<tr><th id="163">163</th><td>    <a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackAnalysis" title='CvBlobTrackAnalysis' data-ref="CvBlobTrackAnalysis">CvBlobTrackAnalysis</a>* <dfn class="local col7 decl" id="17pA" title='pA' data-type='CvBlobTrackAnalysis *' data-ref="17pA">pA</dfn> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>    <a class="local col7 ref" href="#17pA" title='pA' data-ref="17pA">pA</a> = <a class="ref" href="../include/opencv2/legacy/blobtrack.hpp.html#_Z38cvCreateModuleBlobTrackAnalysisHistPVSv" title='cvCreateModuleBlobTrackAnalysisHistPVS' data-ref="_Z38cvCreateModuleBlobTrackAnalysisHistPVSv">cvCreateModuleBlobTrackAnalysisHistPVS</a>();</td></tr>
+<tr><th id="166">166</th><td>    <a class="local col6 ref" href="#16pIOR" title='pIOR' data-ref="16pIOR">pIOR</a>-&gt;<a class="tu ref" href="#_ZN22CvBlobTrackAnalysisIOR11AddAnalyzerEP19CvBlobTrackAnalysisPKc" title='CvBlobTrackAnalysisIOR::AddAnalyzer' data-use='c' data-ref="_ZN22CvBlobTrackAnalysisIOR11AddAnalyzerEP19CvBlobTrackAnalysisPKc">AddAnalyzer</a>(<a class="local col7 ref" href="#17pA" title='pA' data-ref="17pA">pA</a>, <q>"HIST"</q>);</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td>    <i>//pA = (CvBlobTrackAnalysis*)cvCreateModuleBlobTrackAnalysisHeightScale();</i></td></tr>
+<tr><th id="169">169</th><td><i>    //pIOR-&gt;AddAnalyzer(pA, "SCALE");</i></td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td>    <b>return</b> (<a class="type" href="../include/opencv2/legacy/blobtrack.hpp.html#CvBlobTrackAnalysis" title='CvBlobTrackAnalysis' data-ref="CvBlobTrackAnalysis">CvBlobTrackAnalysis</a>*)<a class="local col6 ref" href="#16pIOR" title='pIOR' data-ref="16pIOR">pIOR</a>;</td></tr>
+<tr><th id="172">172</th><td>}<i>/* cvCreateCvBlobTrackAnalysisIOR */</i></td></tr>
+<tr><th id="173">173</th><td><i>/* ======================== Analyser modules ============================= */</i></td></tr>
+<tr><th id="174">174</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

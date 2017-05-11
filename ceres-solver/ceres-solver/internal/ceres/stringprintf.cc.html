@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>stringprintf.cc source code [ceres-solver/internal/ceres/stringprintf.cc] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/stringprintf.cc'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='stringprintf.cc.html'>stringprintf.cc</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: Sanjay Ghemawat</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="stringprintf.h.html">"ceres/stringprintf.h"</a></u></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/c++/4.8/cerrno.html">&lt;cerrno&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/4.8/cstdarg.html">&lt;cstdarg&gt;</a>  // For va_list and related operations</u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../include/c++/4.8/cstdio.html">&lt;cstdio&gt;</a>   // MSVC requires this for _vsnprintf</u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../include/ceres/internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><b>using</b> <span class="namespace">std::</span>string;</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><i>// va_copy() was defined in the C99 standard.  However, it did not appear in the</i></td></tr>
+<tr><th id="47">47</th><td><i>// C++ standard until C++11.  This means that if Ceres is being compiled with a</i></td></tr>
+<tr><th id="48">48</th><td><i>// strict pre-C++11 standard (e.g. -std=c++03), va_copy() will NOT be defined,</i></td></tr>
+<tr><th id="49">49</th><td><i>// as we are using the C++ compiler (it would however be defined if we were</i></td></tr>
+<tr><th id="50">50</th><td><i>// using the C compiler).  Note however that both GCC &amp; Clang will in fact</i></td></tr>
+<tr><th id="51">51</th><td><i>// define va_copy() when compiling for C++ if the C++ standard is not explicitly</i></td></tr>
+<tr><th id="52">52</th><td><i>// specified (i.e. no -std=c++&lt;XX&gt; arg), even though it should not strictly be</i></td></tr>
+<tr><th id="53">53</th><td><i>// defined unless -std=c++11 (or greater) was passed.</i></td></tr>
+<tr><th id="54">54</th><td><u>#<span data-ppcond="54">if</span> !defined(<span class="macro" data-ref="_M/va_copy">va_copy</span>)</u></td></tr>
+<tr><th id="55">55</th><td><u>#if defined (__GNUC__)</u></td></tr>
+<tr><th id="56">56</th><td><i>// On GCC/Clang, if va_copy() is not defined (C++ standard &lt; C++11 explicitly</i></td></tr>
+<tr><th id="57">57</th><td><i>// specified), use the internal __va_copy() version, which should be present</i></td></tr>
+<tr><th id="58">58</th><td><i>// in even very old GCC versions.</i></td></tr>
+<tr><th id="59">59</th><td><u>#define va_copy(d, s) __va_copy(d, s)</u></td></tr>
+<tr><th id="60">60</th><td><u>#else</u></td></tr>
+<tr><th id="61">61</th><td><i>// Some older versions of MSVC do not have va_copy(), in which case define it.</i></td></tr>
+<tr><th id="62">62</th><td><i>// Although this is required for older MSVC versions, it should also work for</i></td></tr>
+<tr><th id="63">63</th><td><i>// other non-GCC/Clang compilers which also do not defined va_copy().</i></td></tr>
+<tr><th id="64">64</th><td><u>#define va_copy(d, s) ((d) = (s))</u></td></tr>
+<tr><th id="65">65</th><td><u>#endif  // defined (__GNUC__)</u></td></tr>
+<tr><th id="66">66</th><td><u>#<span data-ppcond="54">endif</span>  // !defined(va_copy)</u></td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><em>void</em> <dfn class="decl def" id="_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag" title='ceres::internal::StringAppendV' data-ref="_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag">StringAppendV</dfn>(<a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>* <dfn class="local col1 decl" id="1dst" title='dst' data-type='string *' data-ref="1dst">dst</dfn>, <em>const</em> <em>char</em>* <dfn class="local col2 decl" id="2format" title='format' data-type='const char *' data-ref="2format">format</dfn>, <span class='typedef' title='va_list' data-type='__gnuc_va_list' data-ref="va_list">va_list</span> <dfn class="local col3 decl" id="3ap" title='ap' data-type='__va_list_tag *' data-ref="3ap">ap</dfn>) {</td></tr>
+<tr><th id="69">69</th><td>  <i>// First try with a small fixed size buffer</i></td></tr>
+<tr><th id="70">70</th><td>  <em>char</em> <dfn class="local col4 decl" id="4space" title='space' data-type='char [1024]' data-ref="4space">space</dfn>[<var>1024</var>];</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i>// It's possible for methods that use a va_list to invalidate</i></td></tr>
+<tr><th id="73">73</th><td><i>  // the data in it upon use.  The fix is to make a copy</i></td></tr>
+<tr><th id="74">74</th><td><i>  // of the structure before using it and use that copy instead.</i></td></tr>
+<tr><th id="75">75</th><td>  <span class='typedef' title='va_list' data-type='__gnuc_va_list' data-ref="va_list">va_list</span> <span class='ref fake' title='__va_list_tag::__va_list_tag' data-ref="__va_list_tag::__va_list_tag"></span><dfn class="local col5 decl" id="5backup_ap" title='backup_ap' data-type='va_list' data-ref="5backup_ap">backup_ap</dfn>;</td></tr>
+<tr><th id="76">76</th><td>  <span class="macro" title="__builtin_va_copy(backup_ap, ap)" data-ref="_M/va_copy">va_copy</span>(<a class="local col5 ref" href="#5backup_ap" title='backup_ap' data-ref="5backup_ap">backup_ap</a>, <a class="local col3 ref" href="#3ap" title='ap' data-ref="3ap">ap</a>);</td></tr>
+<tr><th id="77">77</th><td>  <em>int</em> <dfn class="local col6 decl" id="6result" title='result' data-type='int' data-ref="6result">result</dfn> = <a class="ref" href="../../../include/stdio.h.html#vsnprintf" title='vsnprintf' data-ref="vsnprintf">vsnprintf</a>(<a class="local col4 ref" href="#4space" title='space' data-ref="4space">space</a>, <b>sizeof</b>(<a class="local col4 ref" href="#4space" title='space' data-ref="4space">space</a>), <a class="local col2 ref" href="#2format" title='format' data-ref="2format">format</a>, <a class="local col5 ref" href="#5backup_ap" title='backup_ap' data-ref="5backup_ap">backup_ap</a>);</td></tr>
+<tr><th id="78">78</th><td>  <span class="macro" title="__builtin_va_end(backup_ap)" data-ref="_M/va_end">va_end</span>(<a class="local col5 ref" href="#5backup_ap" title='backup_ap' data-ref="5backup_ap">backup_ap</a>);</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>  <b>if</b> (<a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a> &lt; <b>sizeof</b>(<a class="local col4 ref" href="#4space" title='space' data-ref="4space">space</a>)) {</td></tr>
+<tr><th id="81">81</th><td>    <b>if</b> (<a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a> &gt;= <var>0</var>) {</td></tr>
+<tr><th id="82">82</th><td>      <i>// Normal case -- everything fit.</i></td></tr>
+<tr><th id="83">83</th><td>      <a class="local col1 ref" href="#1dst" title='dst' data-ref="1dst">dst</a>-&gt;<a class="ref" href="../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_string6appendEPKT_NT1_6rebindIS0_E5other9size_typeE" title='std::basic_string::append' data-ref="_ZNSt12basic_string6appendEPKT_NT1_6rebindIS0_E5other9size_typeE">append</a>(<a class="local col4 ref" href="#4space" title='space' data-ref="4space">space</a>, <a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a>);</td></tr>
+<tr><th id="84">84</th><td>      <b>return</b>;</td></tr>
+<tr><th id="85">85</th><td>    }</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td><u>#<span data-ppcond="87">if</span> defined (<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>)</u></td></tr>
+<tr><th id="88">88</th><td>    <i>// Error or MSVC running out of space.  MSVC 8.0 and higher</i></td></tr>
+<tr><th id="89">89</th><td><i>    // can be asked about space needed with the special idiom below:</i></td></tr>
+<tr><th id="90">90</th><td>    va_copy(backup_ap, ap);</td></tr>
+<tr><th id="91">91</th><td>    result = vsnprintf(NULL, <var>0</var>, format, backup_ap);</td></tr>
+<tr><th id="92">92</th><td>    va_end(backup_ap);</td></tr>
+<tr><th id="93">93</th><td><u>#<span data-ppcond="87">endif</span></u></td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>    <b>if</b> (<a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a> &lt; <var>0</var>) {</td></tr>
+<tr><th id="96">96</th><td>      <i>// Just an error.</i></td></tr>
+<tr><th id="97">97</th><td>      <b>return</b>;</td></tr>
+<tr><th id="98">98</th><td>    }</td></tr>
+<tr><th id="99">99</th><td>  }</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td>  <i>// Increase the buffer size to the size requested by vsnprintf,</i></td></tr>
+<tr><th id="102">102</th><td><i>  // plus one for the closing \0.</i></td></tr>
+<tr><th id="103">103</th><td>  <em>int</em> <dfn class="local col7 decl" id="7length" title='length' data-type='int' data-ref="7length">length</dfn> = <a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a>+<var>1</var>;</td></tr>
+<tr><th id="104">104</th><td>  <em>char</em>* <dfn class="local col8 decl" id="8buf" title='buf' data-type='char *' data-ref="8buf">buf</dfn> = <b>new</b> <em>char</em>[<a class="local col7 ref" href="#7length" title='length' data-ref="7length">length</a>];</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>  <i>// Restore the va_list before we use it again</i></td></tr>
+<tr><th id="107">107</th><td>  <span class="macro" title="__builtin_va_copy(backup_ap, ap)" data-ref="_M/va_copy">va_copy</span>(<a class="local col5 ref" href="#5backup_ap" title='backup_ap' data-ref="5backup_ap">backup_ap</a>, <a class="local col3 ref" href="#3ap" title='ap' data-ref="3ap">ap</a>);</td></tr>
+<tr><th id="108">108</th><td>  <a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a> = <a class="ref" href="../../../include/stdio.h.html#vsnprintf" title='vsnprintf' data-ref="vsnprintf">vsnprintf</a>(<a class="local col8 ref" href="#8buf" title='buf' data-ref="8buf">buf</a>, <a class="local col7 ref" href="#7length" title='length' data-ref="7length">length</a>, <a class="local col2 ref" href="#2format" title='format' data-ref="2format">format</a>, <a class="local col5 ref" href="#5backup_ap" title='backup_ap' data-ref="5backup_ap">backup_ap</a>);</td></tr>
+<tr><th id="109">109</th><td>  <span class="macro" title="__builtin_va_end(backup_ap)" data-ref="_M/va_end">va_end</span>(<a class="local col5 ref" href="#5backup_ap" title='backup_ap' data-ref="5backup_ap">backup_ap</a>);</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>  <b>if</b> (<a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a> &gt;= <var>0</var> &amp;&amp; <a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a> &lt; <a class="local col7 ref" href="#7length" title='length' data-ref="7length">length</a>) {</td></tr>
+<tr><th id="112">112</th><td>    <i>// It fit</i></td></tr>
+<tr><th id="113">113</th><td>    <a class="local col1 ref" href="#1dst" title='dst' data-ref="1dst">dst</a>-&gt;<a class="ref" href="../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_string6appendEPKT_NT1_6rebindIS0_E5other9size_typeE" title='std::basic_string::append' data-ref="_ZNSt12basic_string6appendEPKT_NT1_6rebindIS0_E5other9size_typeE">append</a>(<a class="local col8 ref" href="#8buf" title='buf' data-ref="8buf">buf</a>, <a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a>);</td></tr>
+<tr><th id="114">114</th><td>  }</td></tr>
+<tr><th id="115">115</th><td>  <b>delete</b>[] <a class="local col8 ref" href="#8buf" title='buf' data-ref="8buf">buf</a>;</td></tr>
+<tr><th id="116">116</th><td>}</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl def" id="_ZN5ceres8internal12StringPrintfEPKcz" title='ceres::internal::StringPrintf' data-ref="_ZN5ceres8internal12StringPrintfEPKcz">StringPrintf</dfn>(<em>const</em> <em>char</em>* <dfn class="local col9 decl" id="9format" title='format' data-type='const char *' data-ref="9format">format</dfn>, ...) {</td></tr>
+<tr><th id="120">120</th><td>  <span class='typedef' title='va_list' data-type='__gnuc_va_list' data-ref="va_list">va_list</span> <span class='ref fake' title='__va_list_tag::__va_list_tag' data-ref="__va_list_tag::__va_list_tag"></span><dfn class="local col0 decl" id="10ap" title='ap' data-type='va_list' data-ref="10ap">ap</dfn>;</td></tr>
+<tr><th id="121">121</th><td>  <span class="macro" title="__builtin_va_start(ap, format)" data-ref="_M/va_start">va_start</span>(<a class="local col0 ref" href="#10ap" title='ap' data-ref="10ap">ap</a>, <a class="local col9 ref" href="#9format" title='format' data-ref="9format">format</a>);</td></tr>
+<tr><th id="122">122</th><td>  <a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <a class="ref fake" href="../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1Ev" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1Ev"></a><dfn class="local col1 decl" id="11result" title='result' data-type='string' data-ref="11result">result</dfn>;</td></tr>
+<tr><th id="123">123</th><td>  <a class="ref" href="#_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag" title='ceres::internal::StringAppendV' data-ref="_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag">StringAppendV</a>(&amp;<a class="local col1 ref" href="#11result" title='result' data-ref="11result">result</a>, <a class="local col9 ref" href="#9format" title='format' data-ref="9format">format</a>, <a class="local col0 ref" href="#10ap" title='ap' data-ref="10ap">ap</a>);</td></tr>
+<tr><th id="124">124</th><td>  <span class="macro" title="__builtin_va_end(ap)" data-ref="_M/va_end">va_end</span>(<a class="local col0 ref" href="#10ap" title='ap' data-ref="10ap">ap</a>);</td></tr>
+<tr><th id="125">125</th><td>  <b>return</b> <a class="local col1 ref" href="#11result" title='result' data-ref="11result">result</a>;</td></tr>
+<tr><th id="126">126</th><td>}</td></tr>
+<tr><th id="127">127</th><td></td></tr>
+<tr><th id="128">128</th><td><em>const</em> <a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="decl def" id="_ZN5ceres8internal13SStringPrintfEPSsPKcz" title='ceres::internal::SStringPrintf' data-ref="_ZN5ceres8internal13SStringPrintfEPSsPKcz">SStringPrintf</dfn>(<a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>* <dfn class="local col2 decl" id="12dst" title='dst' data-type='string *' data-ref="12dst">dst</dfn>, <em>const</em> <em>char</em>* <dfn class="local col3 decl" id="13format" title='format' data-type='const char *' data-ref="13format">format</dfn>, ...) {</td></tr>
+<tr><th id="129">129</th><td>  <span class='typedef' title='va_list' data-type='__gnuc_va_list' data-ref="va_list">va_list</span> <span class='ref fake' title='__va_list_tag::__va_list_tag' data-ref="__va_list_tag::__va_list_tag"></span><dfn class="local col4 decl" id="14ap" title='ap' data-type='va_list' data-ref="14ap">ap</dfn>;</td></tr>
+<tr><th id="130">130</th><td>  <span class="macro" title="__builtin_va_start(ap, format)" data-ref="_M/va_start">va_start</span>(<a class="local col4 ref" href="#14ap" title='ap' data-ref="14ap">ap</a>, <a class="local col3 ref" href="#13format" title='format' data-ref="13format">format</a>);</td></tr>
+<tr><th id="131">131</th><td>  <a class="local col2 ref" href="#12dst" title='dst' data-ref="12dst">dst</a>-&gt;<a class="ref" href="../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_string5clearEv" title='std::basic_string::clear' data-ref="_ZNSt12basic_string5clearEv">clear</a>();</td></tr>
+<tr><th id="132">132</th><td>  <a class="ref" href="#_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag" title='ceres::internal::StringAppendV' data-ref="_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag">StringAppendV</a>(<a class="local col2 ref" href="#12dst" title='dst' data-ref="12dst">dst</a>, <a class="local col3 ref" href="#13format" title='format' data-ref="13format">format</a>, <a class="local col4 ref" href="#14ap" title='ap' data-ref="14ap">ap</a>);</td></tr>
+<tr><th id="133">133</th><td>  <span class="macro" title="__builtin_va_end(ap)" data-ref="_M/va_end">va_end</span>(<a class="local col4 ref" href="#14ap" title='ap' data-ref="14ap">ap</a>);</td></tr>
+<tr><th id="134">134</th><td>  <b>return</b> *<a class="local col2 ref" href="#12dst" title='dst' data-ref="12dst">dst</a>;</td></tr>
+<tr><th id="135">135</th><td>}</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td><em>void</em> <dfn class="decl def" id="_ZN5ceres8internal13StringAppendFEPSsPKcz" title='ceres::internal::StringAppendF' data-ref="_ZN5ceres8internal13StringAppendFEPSsPKcz">StringAppendF</dfn>(<a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>* <dfn class="local col5 decl" id="15dst" title='dst' data-type='string *' data-ref="15dst">dst</dfn>, <em>const</em> <em>char</em>* <dfn class="local col6 decl" id="16format" title='format' data-type='const char *' data-ref="16format">format</dfn>, ...) {</td></tr>
+<tr><th id="138">138</th><td>  <span class='typedef' title='va_list' data-type='__gnuc_va_list' data-ref="va_list">va_list</span> <span class='ref fake' title='__va_list_tag::__va_list_tag' data-ref="__va_list_tag::__va_list_tag"></span><dfn class="local col7 decl" id="17ap" title='ap' data-type='va_list' data-ref="17ap">ap</dfn>;</td></tr>
+<tr><th id="139">139</th><td>  <span class="macro" title="__builtin_va_start(ap, format)" data-ref="_M/va_start">va_start</span>(<a class="local col7 ref" href="#17ap" title='ap' data-ref="17ap">ap</a>, <a class="local col6 ref" href="#16format" title='format' data-ref="16format">format</a>);</td></tr>
+<tr><th id="140">140</th><td>  <a class="ref" href="#_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag" title='ceres::internal::StringAppendV' data-ref="_ZN5ceres8internal13StringAppendVEPSsPKcP13__va_list_tag">StringAppendV</a>(<a class="local col5 ref" href="#15dst" title='dst' data-ref="15dst">dst</a>, <a class="local col6 ref" href="#16format" title='format' data-ref="16format">format</a>, <a class="local col7 ref" href="#17ap" title='ap' data-ref="17ap">ap</a>);</td></tr>
+<tr><th id="141">141</th><td>  <span class="macro" title="__builtin_va_end(ap)" data-ref="_M/va_end">va_end</span>(<a class="local col7 ref" href="#17ap" title='ap' data-ref="17ap">ap</a>);</td></tr>
+<tr><th id="142">142</th><td>}</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="145">145</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="146">146</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

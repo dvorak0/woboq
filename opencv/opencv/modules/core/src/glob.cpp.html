@@ -1,0 +1,311 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>glob.cpp source code [opencv/modules/core/src/glob.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/core/src/glob.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>core</a>/<a href='./'>src</a>/<a href='glob.cpp.html'>glob.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2008-2013, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and / or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><u>#<span data-ppcond="45">if</span> defined <span class="macro" data-ref="_M/WIN32">WIN32</span> || defined <span class="macro" data-ref="_M/_WIN32">_WIN32</span> || defined <span class="macro" data-ref="_M/WINCE">WINCE</span></u></td></tr>
+<tr><th id="46">46</th><td><u># include &lt;windows.h&gt;</u></td></tr>
+<tr><th id="47">47</th><td><em>const</em> <em>char</em> dir_separators[] = <q>"/\\"</q>;</td></tr>
+<tr><th id="48">48</th><td><em>const</em> <em>char</em> native_separator = <kbd>'\\'</kbd>;</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><b>namespace</b></td></tr>
+<tr><th id="51">51</th><td>{</td></tr>
+<tr><th id="52">52</th><td>    <b>struct</b> dirent</td></tr>
+<tr><th id="53">53</th><td>    {</td></tr>
+<tr><th id="54">54</th><td>        <em>const</em> <em>char</em>* d_name;</td></tr>
+<tr><th id="55">55</th><td>    };</td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>    <b>struct</b> DIR</td></tr>
+<tr><th id="58">58</th><td>    {</td></tr>
+<tr><th id="59">59</th><td><u>#ifdef HAVE_WINRT</u></td></tr>
+<tr><th id="60">60</th><td>        WIN32_FIND_DATAW data;</td></tr>
+<tr><th id="61">61</th><td><u>#else</u></td></tr>
+<tr><th id="62">62</th><td>        WIN32_FIND_DATA data;</td></tr>
+<tr><th id="63">63</th><td><u>#endif</u></td></tr>
+<tr><th id="64">64</th><td>        HANDLE handle;</td></tr>
+<tr><th id="65">65</th><td>        dirent ent;</td></tr>
+<tr><th id="66">66</th><td><u>#ifdef HAVE_WINRT</u></td></tr>
+<tr><th id="67">67</th><td>        DIR() {};</td></tr>
+<tr><th id="68">68</th><td>        ~DIR()</td></tr>
+<tr><th id="69">69</th><td>        {</td></tr>
+<tr><th id="70">70</th><td>            <b>if</b> (ent.d_name)</td></tr>
+<tr><th id="71">71</th><td>                <b>delete</b>[] ent.d_name;</td></tr>
+<tr><th id="72">72</th><td>        }</td></tr>
+<tr><th id="73">73</th><td><u>#endif</u></td></tr>
+<tr><th id="74">74</th><td>    };</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>    DIR* opendir(<em>const</em> <em>char</em>* path)</td></tr>
+<tr><th id="77">77</th><td>    {</td></tr>
+<tr><th id="78">78</th><td>        DIR* dir = <b>new</b> DIR;</td></tr>
+<tr><th id="79">79</th><td>        dir-&gt;ent.d_name = <var>0</var>;</td></tr>
+<tr><th id="80">80</th><td><u>#ifdef HAVE_WINRT</u></td></tr>
+<tr><th id="81">81</th><td>        cv::String full_path = cv::String(path) + <q>"\\*"</q>;</td></tr>
+<tr><th id="82">82</th><td>        <em>wchar_t</em> wfull_path[MAX_PATH];</td></tr>
+<tr><th id="83">83</th><td>        size_t copied = mbstowcs(wfull_path, full_path.c_str(), MAX_PATH);</td></tr>
+<tr><th id="84">84</th><td>        CV_Assert((copied != MAX_PATH) &amp;&amp; (copied != (size_t)-<var>1</var>));</td></tr>
+<tr><th id="85">85</th><td>        dir-&gt;handle = ::FindFirstFileExW(wfull_path, FindExInfoStandard,</td></tr>
+<tr><th id="86">86</th><td>                        &amp;dir-&gt;data, FindExSearchNameMatch, NULL, <var>0</var>);</td></tr>
+<tr><th id="87">87</th><td><u>#else</u></td></tr>
+<tr><th id="88">88</th><td>        dir-&gt;handle = ::FindFirstFileExA((cv::String(path) + <q>"\\*"</q>).c_str(),</td></tr>
+<tr><th id="89">89</th><td>            FindExInfoStandard, &amp;dir-&gt;data, FindExSearchNameMatch, NULL, <var>0</var>);</td></tr>
+<tr><th id="90">90</th><td><u>#endif</u></td></tr>
+<tr><th id="91">91</th><td>        <b>if</b>(dir-&gt;handle == INVALID_HANDLE_VALUE)</td></tr>
+<tr><th id="92">92</th><td>        {</td></tr>
+<tr><th id="93">93</th><td>            <i>/*closedir will do all cleanup*/</i></td></tr>
+<tr><th id="94">94</th><td>            <b>delete</b> dir;</td></tr>
+<tr><th id="95">95</th><td>            <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="96">96</th><td>        }</td></tr>
+<tr><th id="97">97</th><td>        <b>return</b> dir;</td></tr>
+<tr><th id="98">98</th><td>    }</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td>    dirent* readdir(DIR* dir)</td></tr>
+<tr><th id="101">101</th><td>    {</td></tr>
+<tr><th id="102">102</th><td><u>#ifdef HAVE_WINRT</u></td></tr>
+<tr><th id="103">103</th><td>        <b>if</b> (dir-&gt;ent.d_name != <var>0</var>)</td></tr>
+<tr><th id="104">104</th><td>        {</td></tr>
+<tr><th id="105">105</th><td>            <b>if</b> (::FindNextFileW(dir-&gt;handle, &amp;dir-&gt;data) != TRUE)</td></tr>
+<tr><th id="106">106</th><td>                <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="107">107</th><td>        }</td></tr>
+<tr><th id="108">108</th><td>        size_t asize = wcstombs(NULL, dir-&gt;data.cFileName, <var>0</var>);</td></tr>
+<tr><th id="109">109</th><td>        CV_Assert((asize != <var>0</var>) &amp;&amp; (asize != (size_t)-<var>1</var>));</td></tr>
+<tr><th id="110">110</th><td>        <em>char</em>* aname = <b>new</b> <em>char</em>[asize+<var>1</var>];</td></tr>
+<tr><th id="111">111</th><td>        aname[asize] = <var>0</var>;</td></tr>
+<tr><th id="112">112</th><td>        wcstombs(aname, dir-&gt;data.cFileName, asize);</td></tr>
+<tr><th id="113">113</th><td>        dir-&gt;ent.d_name = aname;</td></tr>
+<tr><th id="114">114</th><td><u>#else</u></td></tr>
+<tr><th id="115">115</th><td>        <b>if</b> (dir-&gt;ent.d_name != <var>0</var>)</td></tr>
+<tr><th id="116">116</th><td>        {</td></tr>
+<tr><th id="117">117</th><td>            <b>if</b> (::FindNextFileA(dir-&gt;handle, &amp;dir-&gt;data) != TRUE)</td></tr>
+<tr><th id="118">118</th><td>                <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="119">119</th><td>        }</td></tr>
+<tr><th id="120">120</th><td>        dir-&gt;ent.d_name = dir-&gt;data.cFileName;</td></tr>
+<tr><th id="121">121</th><td><u>#endif</u></td></tr>
+<tr><th id="122">122</th><td>        <b>return</b> &amp;dir-&gt;ent;</td></tr>
+<tr><th id="123">123</th><td>    }</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>    <em>void</em> closedir(DIR* dir)</td></tr>
+<tr><th id="126">126</th><td>    {</td></tr>
+<tr><th id="127">127</th><td>        ::FindClose(dir-&gt;handle);</td></tr>
+<tr><th id="128">128</th><td>        <b>delete</b> dir;</td></tr>
+<tr><th id="129">129</th><td>    }</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>}</td></tr>
+<tr><th id="133">133</th><td><u>#<span data-ppcond="45">else</span></u></td></tr>
+<tr><th id="134">134</th><td><u># include <a href="../../../../include/dirent.h.html">&lt;dirent.h&gt;</a></u></td></tr>
+<tr><th id="135">135</th><td><u># include <a href="../../../../include/x86_64-linux-gnu/sys/stat.h.html">&lt;sys/stat.h&gt;</a></u></td></tr>
+<tr><th id="136">136</th><td><em>const</em> <em>char</em> <dfn class="tu decl def" id="dir_separators" title='dir_separators' data-type='const char [2]' data-ref="dir_separators">dir_separators</dfn>[] = <q>"/"</q>;</td></tr>
+<tr><th id="137">137</th><td><em>const</em> <em>char</em> <dfn class="tu decl def" id="native_separator" title='native_separator' data-type='const char' data-ref="native_separator">native_separator</dfn> = <kbd>'/'</kbd>;</td></tr>
+<tr><th id="138">138</th><td><u>#<span data-ppcond="45">endif</span></u></td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td><em>static</em> <em>bool</em> <dfn class="tu decl def" id="_ZL5isDirRKSsP11__dirstream" title='isDir' data-type='bool isDir(const cv::String &amp; path, DIR * dir)' data-ref="_ZL5isDirRKSsP11__dirstream">isDir</dfn>(<em>const</em> <span class="namespace">cv::</span><a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a>&amp; <dfn class="local col1 decl" id="1path" title='path' data-type='const cv::String &amp;' data-ref="1path">path</dfn>, <a class="typedef" href="../../../../include/dirent.h.html#DIR" title='DIR' data-type='struct __dirstream' data-ref="DIR">DIR</a>* <dfn class="local col2 decl" id="2dir" title='dir' data-type='DIR *' data-ref="2dir">dir</dfn>)</td></tr>
+<tr><th id="141">141</th><td>{</td></tr>
+<tr><th id="142">142</th><td><u>#<span data-ppcond="142">if</span> defined <span class="macro" data-ref="_M/WIN32">WIN32</span> || defined <span class="macro" data-ref="_M/_WIN32">_WIN32</span> || defined <span class="macro" data-ref="_M/WINCE">WINCE</span></u></td></tr>
+<tr><th id="143">143</th><td>    DWORD attributes;</td></tr>
+<tr><th id="144">144</th><td>    BOOL status = TRUE;</td></tr>
+<tr><th id="145">145</th><td>    <b>if</b> (dir)</td></tr>
+<tr><th id="146">146</th><td>        attributes = dir-&gt;data.dwFileAttributes;</td></tr>
+<tr><th id="147">147</th><td>    <b>else</b></td></tr>
+<tr><th id="148">148</th><td>    {</td></tr>
+<tr><th id="149">149</th><td>        WIN32_FILE_ATTRIBUTE_DATA all_attrs;</td></tr>
+<tr><th id="150">150</th><td><u>#ifdef HAVE_WINRT</u></td></tr>
+<tr><th id="151">151</th><td>        <em>wchar_t</em> wpath[MAX_PATH];</td></tr>
+<tr><th id="152">152</th><td>        size_t copied = mbstowcs(wpath, path.c_str(), MAX_PATH);</td></tr>
+<tr><th id="153">153</th><td>        CV_Assert((copied != MAX_PATH) &amp;&amp; (copied != (size_t)-<var>1</var>));</td></tr>
+<tr><th id="154">154</th><td>        status = ::GetFileAttributesExW(wpath, GetFileExInfoStandard, &amp;all_attrs);</td></tr>
+<tr><th id="155">155</th><td><u>#else</u></td></tr>
+<tr><th id="156">156</th><td>        status = ::GetFileAttributesExA(path.c_str(), GetFileExInfoStandard, &amp;all_attrs);</td></tr>
+<tr><th id="157">157</th><td><u>#endif</u></td></tr>
+<tr><th id="158">158</th><td>        attributes = all_attrs.dwFileAttributes;</td></tr>
+<tr><th id="159">159</th><td>    }</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td>    <b>return</b> status &amp;&amp; ((attributes &amp; FILE_ATTRIBUTE_DIRECTORY) != <var>0</var>);</td></tr>
+<tr><th id="162">162</th><td><u>#<span data-ppcond="142">else</span></u></td></tr>
+<tr><th id="163">163</th><td>    (<em>void</em>)<a class="local col2 ref" href="#2dir" title='dir' data-ref="2dir">dir</a>;</td></tr>
+<tr><th id="164">164</th><td>    <b>struct</b> <a class="type" href="../../../../include/x86_64-linux-gnu/bits/stat.h.html#stat" title='stat' data-ref="stat">stat</a> <a class="ref fake" href="../../../../include/x86_64-linux-gnu/bits/stat.h.html#46" title='stat::stat' data-ref="_ZN4statC1Ev"></a><dfn class="local col3 decl" id="3stat_buf" title='stat_buf' data-type='struct stat' data-ref="3stat_buf">stat_buf</dfn>;</td></tr>
+<tr><th id="165">165</th><td>    <b>if</b> (<var>0</var> != <a class="ref" href="../../../../include/x86_64-linux-gnu/sys/stat.h.html#stat" title='stat' data-ref="stat">stat</a>( <a class="local col1 ref" href="#1path" title='path' data-ref="1path">path</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>(), &amp;<a class="local col3 ref" href="#3stat_buf" title='stat_buf' data-ref="3stat_buf">stat_buf</a>))</td></tr>
+<tr><th id="166">166</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="167">167</th><td>    <em>int</em> <dfn class="local col4 decl" id="4is_dir" title='is_dir' data-type='int' data-ref="4is_dir">is_dir</dfn> = <a class="macro" href="../../../../include/x86_64-linux-gnu/sys/stat.h.html#129" title="((((stat_buf.st_mode)) &amp; 0170000) == (0040000))" data-ref="_M/S_ISDIR">S_ISDIR</a>( <a class="local col3 ref" href="#3stat_buf" title='stat_buf' data-ref="3stat_buf">stat_buf</a>.<a class="ref" href="../../../../include/x86_64-linux-gnu/bits/stat.h.html#stat::st_mode" title='stat::st_mode' data-ref="stat::st_mode">st_mode</a>);</td></tr>
+<tr><th id="168">168</th><td>    <b>return</b> <a class="local col4 ref" href="#4is_dir" title='is_dir' data-ref="4is_dir">is_dir</a> != <var>0</var>;</td></tr>
+<tr><th id="169">169</th><td><u>#<span data-ppcond="142">endif</span></u></td></tr>
+<tr><th id="170">170</th><td>}</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td><em>static</em> <em>bool</em> <dfn class="tu decl def" id="_ZL7wildcmpPKcS0_" title='wildcmp' data-type='bool wildcmp(const char * string, const char * wild)' data-ref="_ZL7wildcmpPKcS0_">wildcmp</dfn>(<em>const</em> <em>char</em> *<dfn class="local col5 decl" id="5string" title='string' data-type='const char *' data-ref="5string">string</dfn>, <em>const</em> <em>char</em> *<dfn class="local col6 decl" id="6wild" title='wild' data-type='const char *' data-ref="6wild">wild</dfn>)</td></tr>
+<tr><th id="173">173</th><td>{</td></tr>
+<tr><th id="174">174</th><td>    <i>// Based on wildcmp written by Jack Handy - &lt;A href="mailto:jakkhandy@hotmail.com"&gt;jakkhandy@hotmail.com&lt;/A&gt;</i></td></tr>
+<tr><th id="175">175</th><td>    <em>const</em> <em>char</em> *<dfn class="local col7 decl" id="7cp" title='cp' data-type='const char *' data-ref="7cp">cp</dfn> = <var>0</var>, *<dfn class="local col8 decl" id="8mp" title='mp' data-type='const char *' data-ref="8mp">mp</dfn> = <var>0</var>;</td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td>    <b>while</b> ((*<a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a>) &amp;&amp; (*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> != <kbd>'*'</kbd>))</td></tr>
+<tr><th id="178">178</th><td>    {</td></tr>
+<tr><th id="179">179</th><td>        <b>if</b> ((*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> != *<a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a>) &amp;&amp; (*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> != <kbd>'?'</kbd>))</td></tr>
+<tr><th id="180">180</th><td>        {</td></tr>
+<tr><th id="181">181</th><td>            <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="182">182</th><td>        }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>        <a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a>++;</td></tr>
+<tr><th id="185">185</th><td>        <a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a>++;</td></tr>
+<tr><th id="186">186</th><td>    }</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td>    <b>while</b> (*<a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a>)</td></tr>
+<tr><th id="189">189</th><td>    {</td></tr>
+<tr><th id="190">190</th><td>        <b>if</b> (*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> == <kbd>'*'</kbd>)</td></tr>
+<tr><th id="191">191</th><td>        {</td></tr>
+<tr><th id="192">192</th><td>            <b>if</b> (!*++<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a>)</td></tr>
+<tr><th id="193">193</th><td>            {</td></tr>
+<tr><th id="194">194</th><td>                <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="195">195</th><td>            }</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>            <a class="local col8 ref" href="#8mp" title='mp' data-ref="8mp">mp</a> = <a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a>;</td></tr>
+<tr><th id="198">198</th><td>            <a class="local col7 ref" href="#7cp" title='cp' data-ref="7cp">cp</a> = <a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a> + <var>1</var>;</td></tr>
+<tr><th id="199">199</th><td>        }</td></tr>
+<tr><th id="200">200</th><td>        <b>else</b> <b>if</b> ((*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> == *<a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a>) || (*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> == <kbd>'?'</kbd>))</td></tr>
+<tr><th id="201">201</th><td>        {</td></tr>
+<tr><th id="202">202</th><td>            <a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a>++;</td></tr>
+<tr><th id="203">203</th><td>            <a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a>++;</td></tr>
+<tr><th id="204">204</th><td>        }</td></tr>
+<tr><th id="205">205</th><td>        <b>else</b></td></tr>
+<tr><th id="206">206</th><td>        {</td></tr>
+<tr><th id="207">207</th><td>            <a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> = <a class="local col8 ref" href="#8mp" title='mp' data-ref="8mp">mp</a>;</td></tr>
+<tr><th id="208">208</th><td>            <a class="local col5 ref" href="#5string" title='string' data-ref="5string">string</a> = <a class="local col7 ref" href="#7cp" title='cp' data-ref="7cp">cp</a>++;</td></tr>
+<tr><th id="209">209</th><td>        }</td></tr>
+<tr><th id="210">210</th><td>    }</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>    <b>while</b> (*<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> == <kbd>'*'</kbd>)</td></tr>
+<tr><th id="213">213</th><td>    {</td></tr>
+<tr><th id="214">214</th><td>        <a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a>++;</td></tr>
+<tr><th id="215">215</th><td>    }</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>    <b>return</b> *<a class="local col6 ref" href="#6wild" title='wild' data-ref="6wild">wild</a> == <var>0</var>;</td></tr>
+<tr><th id="218">218</th><td>}</td></tr>
+<tr><th id="219">219</th><td></td></tr>
+<tr><th id="220">220</th><td><em>static</em> <em>void</em> <dfn class="tu decl def" id="_ZL8glob_recRKSsS0_RSt6vectorISsSaISsEEb" title='glob_rec' data-type='void glob_rec(const cv::String &amp; directory, const cv::String &amp; wildchart, std::vector&lt;cv::String&gt; &amp; result, bool recursive)' data-ref="_ZL8glob_recRKSsS0_RSt6vectorISsSaISsEEb">glob_rec</dfn>(<em>const</em> <span class="namespace">cv::</span><a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a>&amp; <dfn class="local col9 decl" id="9directory" title='directory' data-type='const cv::String &amp;' data-ref="9directory">directory</dfn>, <em>const</em> <span class="namespace">cv::</span><a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a>&amp; <dfn class="local col0 decl" id="10wildchart" title='wildchart' data-type='const cv::String &amp;' data-ref="10wildchart">wildchart</dfn>, <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">cv::</span><a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a>&gt;&amp; <dfn class="local col1 decl" id="11result" title='result' data-type='std::vector&lt;cv::String&gt; &amp;' data-ref="11result">result</dfn>, <em>bool</em> <dfn class="local col2 decl" id="12recursive" title='recursive' data-type='bool' data-ref="12recursive">recursive</dfn>)</td></tr>
+<tr><th id="221">221</th><td>{</td></tr>
+<tr><th id="222">222</th><td>    <a class="typedef" href="../../../../include/dirent.h.html#DIR" title='DIR' data-type='struct __dirstream' data-ref="DIR">DIR</a> *<dfn class="local col3 decl" id="13dir" title='dir' data-type='DIR *' data-ref="13dir">dir</dfn>;</td></tr>
+<tr><th id="223">223</th><td>    <b>struct</b> <a class="type" href="../../../../include/x86_64-linux-gnu/bits/dirent.h.html#dirent" title='dirent' data-ref="dirent">dirent</a> *<dfn class="local col4 decl" id="14ent" title='ent' data-type='struct dirent *' data-ref="14ent">ent</dfn>;</td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td>    <b>if</b> ((<a class="local col3 ref" href="#13dir" title='dir' data-ref="13dir">dir</a> = <a class="ref" href="../../../../include/dirent.h.html#opendir" title='opendir' data-ref="opendir">opendir</a> (<a class="local col9 ref" href="#9directory" title='directory' data-ref="9directory">directory</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>())) != <var>0</var>)</td></tr>
+<tr><th id="226">226</th><td>    {</td></tr>
+<tr><th id="227">227</th><td>        <i>/* find all the files and directories within directory */</i></td></tr>
+<tr><th id="228">228</th><td>        <b>try</b></td></tr>
+<tr><th id="229">229</th><td>        {</td></tr>
+<tr><th id="230">230</th><td>            <b>while</b> ((<a class="local col4 ref" href="#14ent" title='ent' data-ref="14ent">ent</a> = <a class="ref" href="../../../../include/dirent.h.html#readdir" title='readdir' data-ref="readdir">readdir</a> (<a class="local col3 ref" href="#13dir" title='dir' data-ref="13dir">dir</a>)) != <var>0</var>)</td></tr>
+<tr><th id="231">231</th><td>            {</td></tr>
+<tr><th id="232">232</th><td>                <em>const</em> <em>char</em>* <dfn class="local col5 decl" id="15name" title='name' data-type='const char *' data-ref="15name">name</dfn> = <a class="local col4 ref" href="#14ent" title='ent' data-ref="14ent">ent</a>-&gt;<a class="ref" href="../../../../include/x86_64-linux-gnu/bits/dirent.h.html#dirent::d_name" title='dirent::d_name' data-ref="dirent::d_name">d_name</a>;</td></tr>
+<tr><th id="233">233</th><td>                <b>if</b>((<a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>[<var>0</var>] == <var>0</var>) || (<a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>[<var>0</var>] == <kbd>'.'</kbd> &amp;&amp; <a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>[<var>1</var>] == <var>0</var>) || (<a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>[<var>0</var>] == <kbd>'.'</kbd> &amp;&amp; <a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>[<var>1</var>] == <kbd>'.'</kbd> &amp;&amp; <a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>[<var>2</var>] == <var>0</var>))</td></tr>
+<tr><th id="234">234</th><td>                    <b>continue</b>;</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>                <span class="namespace">cv::</span><a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a> <dfn class="local col6 decl" id="16path" title='path' data-type='cv::String' data-ref="16path">path</dfn> = <a class="local col9 ref" href="#9directory" title='directory' data-ref="9directory">directory</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZStplRKSbIT_T0_T1_ES_" title='std::operator+' data-ref="_ZStplRKSbIT_T0_T1_ES_">+</a> <a class="tu ref" href="#native_separator" title='native_separator' data-use='r' data-ref="native_separator">native_separator</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZStplRKSbIT_T0_T1_EPKS_" title='std::operator+' data-ref="_ZStplRKSbIT_T0_T1_EPKS_">+</a> <a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>;</td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td>                <b>if</b> (<a class="tu ref" href="#_ZL5isDirRKSsP11__dirstream" title='isDir' data-use='c' data-ref="_ZL5isDirRKSsP11__dirstream">isDir</a>(<a class="local col6 ref" href="#16path" title='path' data-ref="16path">path</a>, <a class="local col3 ref" href="#13dir" title='dir' data-ref="13dir">dir</a>))</td></tr>
+<tr><th id="239">239</th><td>                {</td></tr>
+<tr><th id="240">240</th><td>                    <b>if</b> (<a class="local col2 ref" href="#12recursive" title='recursive' data-ref="12recursive">recursive</a>)</td></tr>
+<tr><th id="241">241</th><td>                        <a class="tu ref" href="#_ZL8glob_recRKSsS0_RSt6vectorISsSaISsEEb" title='glob_rec' data-use='c' data-ref="_ZL8glob_recRKSsS0_RSt6vectorISsSaISsEEb">glob_rec</a>(<a class="local col6 ref" href="#16path" title='path' data-ref="16path">path</a>, <a class="local col0 ref" href="#10wildchart" title='wildchart' data-ref="10wildchart">wildchart</a>, <span class='refarg'><a class="local col1 ref" href="#11result" title='result' data-ref="11result">result</a></span>, <a class="local col2 ref" href="#12recursive" title='recursive' data-ref="12recursive">recursive</a>);</td></tr>
+<tr><th id="242">242</th><td>                }</td></tr>
+<tr><th id="243">243</th><td>                <b>else</b></td></tr>
+<tr><th id="244">244</th><td>                {</td></tr>
+<tr><th id="245">245</th><td>                    <b>if</b> (<a class="local col0 ref" href="#10wildchart" title='wildchart' data-ref="10wildchart">wildchart</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5emptyEv" title='std::basic_string::empty' data-ref="_ZNKSt12basic_string5emptyEv">empty</a>() || <a class="tu ref" href="#_ZL7wildcmpPKcS0_" title='wildcmp' data-use='c' data-ref="_ZL7wildcmpPKcS0_">wildcmp</a>(<a class="local col5 ref" href="#15name" title='name' data-ref="15name">name</a>, <a class="local col0 ref" href="#10wildchart" title='wildchart' data-ref="10wildchart">wildchart</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>()))</td></tr>
+<tr><th id="246">246</th><td>                        <a class="local col1 ref" href="#11result" title='result' data-ref="11result">result</a>.<a class="ref" href="../../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vector9push_backERKT_" title='std::vector::push_back' data-ref="_ZNSt6vector9push_backERKT_">push_back</a>(<a class="local col6 ref" href="#16path" title='path' data-ref="16path">path</a>);</td></tr>
+<tr><th id="247">247</th><td>                }</td></tr>
+<tr><th id="248">248</th><td>            }</td></tr>
+<tr><th id="249">249</th><td>        }</td></tr>
+<tr><th id="250">250</th><td>        <b>catch</b> (...)</td></tr>
+<tr><th id="251">251</th><td>        {</td></tr>
+<tr><th id="252">252</th><td>            <a class="ref" href="../../../../include/dirent.h.html#closedir" title='closedir' data-ref="closedir">closedir</a>(<a class="local col3 ref" href="#13dir" title='dir' data-ref="13dir">dir</a>);</td></tr>
+<tr><th id="253">253</th><td>            <b>throw</b>;</td></tr>
+<tr><th id="254">254</th><td>        }</td></tr>
+<tr><th id="255">255</th><td>        <a class="ref" href="../../../../include/dirent.h.html#closedir" title='closedir' data-ref="closedir">closedir</a>(<a class="local col3 ref" href="#13dir" title='dir' data-ref="13dir">dir</a>);</td></tr>
+<tr><th id="256">256</th><td>    }</td></tr>
+<tr><th id="257">257</th><td>    <b>else</b> <a class="macro" href="../include/opencv2/core/core.hpp.html#218" title="cv::error( cv::Exception(CV_StsObjectNotFound, cv::format(&quot;could not open directory: %s&quot;, directory.c_str()), __func__, &quot;/home/yzf/code/opencv/modules/core/src/glob.cpp&quot;, 257) )" data-ref="_M/CV_Error">CV_Error</a>(<a class="enum" href="../include/opencv2/core/types_c.h.html#::CV_StsObjectNotFound" title='::CV_StsObjectNotFound' data-ref="::CV_StsObjectNotFound">CV_StsObjectNotFound</a>, cv::<a class="ref" href="../include/opencv2/core/core.hpp.html#_ZN2cv6formatEPKcz" title='cv::format' data-ref="_ZN2cv6formatEPKcz">format</a>(<q>"could not open directory: %s"</q>, <a class="local col9 ref" href="#9directory" title='directory' data-ref="9directory">directory</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>()));</td></tr>
+<tr><th id="258">258</th><td>}</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td><em>void</em> <span class="namespace">cv::</span><dfn class="decl def" id="_ZN2cv4globESsRSt6vectorISsSaISsEEb" title='cv::glob' data-ref="_ZN2cv4globESsRSt6vectorISsSaISsEEb">glob</dfn>(<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a> <dfn class="local col7 decl" id="17pattern" title='pattern' data-type='String' data-ref="17pattern">pattern</dfn>, <span class="namespace">std::</span><a class="type" href="../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a>&gt;&amp; <dfn class="local col8 decl" id="18result" title='result' data-type='std::vector&lt;String&gt; &amp;' data-ref="18result">result</dfn>, <em>bool</em> <dfn class="local col9 decl" id="19recursive" title='recursive' data-type='bool' data-ref="19recursive">recursive</dfn>)</td></tr>
+<tr><th id="261">261</th><td>{</td></tr>
+<tr><th id="262">262</th><td>    <a class="local col8 ref" href="#18result" title='result' data-ref="18result">result</a>.<a class="ref" href="../../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vector5clearEv" title='std::vector::clear' data-ref="_ZNSt6vector5clearEv">clear</a>();</td></tr>
+<tr><th id="263">263</th><td>    <a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a> <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1Ev" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1Ev"></a><dfn class="local col0 decl" id="20path" title='path' data-type='String' data-ref="20path">path</dfn>, <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1Ev" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1Ev"></a><dfn class="local col1 decl" id="21wildchart" title='wildchart' data-type='String' data-ref="21wildchart">wildchart</dfn>;</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td>    <b>if</b> (<a class="tu ref" href="#_ZL5isDirRKSsP11__dirstream" title='isDir' data-use='c' data-ref="_ZL5isDirRKSsP11__dirstream">isDir</a>(<a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>, <var>0</var>))</td></tr>
+<tr><th id="266">266</th><td>    {</td></tr>
+<tr><th id="267">267</th><td>        <b>if</b>(<a class="ref" href="../../../../include/string.h.html#strchr" title='strchr' data-ref="strchr">strchr</a>(<a class="tu ref" href="#dir_separators" title='dir_separators' data-use='r' data-ref="dir_separators">dir_separators</a>, <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a><a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringixENT1_6rebindIT_E5other9size_typeE" title='std::basic_string::operator[]' data-ref="_ZNSt12basic_stringixENT1_6rebindIT_E5other9size_typeE">[<a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string4sizeEv" title='std::basic_string::size' data-ref="_ZNKSt12basic_string4sizeEv">size</a>() - <var>1</var>]</a>) != <var>0</var>)</td></tr>
+<tr><th id="268">268</th><td>        {</td></tr>
+<tr><th id="269">269</th><td>            <a class="local col0 ref" href="#20path" title='path' data-ref="20path">path</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSERKSbIT_T0_T1_E" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSERKSbIT_T0_T1_E">=</a> <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string6substrENT1_6rebindIT_E5other9size_typeES3_" title='std::basic_string::substr' data-ref="_ZNKSt12basic_string6substrENT1_6rebindIT_E5other9size_typeES3_">substr</a>(<var>0</var>, <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string4sizeEv" title='std::basic_string::size' data-ref="_ZNKSt12basic_string4sizeEv">size</a>() - <var>1</var>);</td></tr>
+<tr><th id="270">270</th><td>        }</td></tr>
+<tr><th id="271">271</th><td>        <b>else</b></td></tr>
+<tr><th id="272">272</th><td>        {</td></tr>
+<tr><th id="273">273</th><td>            <a class="local col0 ref" href="#20path" title='path' data-ref="20path">path</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSERKSbIT_T0_T1_E" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSERKSbIT_T0_T1_E">=</a> <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>;</td></tr>
+<tr><th id="274">274</th><td>        }</td></tr>
+<tr><th id="275">275</th><td>    }</td></tr>
+<tr><th id="276">276</th><td>    <b>else</b></td></tr>
+<tr><th id="277">277</th><td>    {</td></tr>
+<tr><th id="278">278</th><td>        <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="22pos" title='pos' data-type='size_t' data-ref="22pos">pos</dfn> = <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string12find_last_ofEPKT_NT1_6rebindIS0_E5other9size_typeE" title='std::basic_string::find_last_of' data-ref="_ZNKSt12basic_string12find_last_ofEPKT_NT1_6rebindIS0_E5other9size_typeE">find_last_of</a>(<a class="tu ref" href="#dir_separators" title='dir_separators' data-use='r' data-ref="dir_separators">dir_separators</a>);</td></tr>
+<tr><th id="279">279</th><td>        <b>if</b> (<a class="local col2 ref" href="#22pos" title='pos' data-ref="22pos">pos</a> == <a class="typedef" href="../include/opencv2/core/core.hpp.html#cv::String" title='cv::String' data-type='std::string' data-ref="cv::String">String</a>::<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#std::basic_string::npos" title='std::basic_string::npos' data-ref="std::basic_string::npos">npos</a>)</td></tr>
+<tr><th id="280">280</th><td>        {</td></tr>
+<tr><th id="281">281</th><td>            <a class="local col1 ref" href="#21wildchart" title='wildchart' data-ref="21wildchart">wildchart</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSERKSbIT_T0_T1_E" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSERKSbIT_T0_T1_E">=</a> <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>;</td></tr>
+<tr><th id="282">282</th><td>            <a class="local col0 ref" href="#20path" title='path' data-ref="20path">path</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSEPKT_" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSEPKT_">=</a> <q>"."</q>;</td></tr>
+<tr><th id="283">283</th><td>        }</td></tr>
+<tr><th id="284">284</th><td>        <b>else</b></td></tr>
+<tr><th id="285">285</th><td>        {</td></tr>
+<tr><th id="286">286</th><td>            <a class="local col0 ref" href="#20path" title='path' data-ref="20path">path</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSERKSbIT_T0_T1_E" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSERKSbIT_T0_T1_E">=</a> <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string6substrENT1_6rebindIT_E5other9size_typeES3_" title='std::basic_string::substr' data-ref="_ZNKSt12basic_string6substrENT1_6rebindIT_E5other9size_typeES3_">substr</a>(<var>0</var>, <a class="local col2 ref" href="#22pos" title='pos' data-ref="22pos">pos</a>);</td></tr>
+<tr><th id="287">287</th><td>            <a class="local col1 ref" href="#21wildchart" title='wildchart' data-ref="21wildchart">wildchart</a> <a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSERKSbIT_T0_T1_E" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSERKSbIT_T0_T1_E">=</a> <a class="local col7 ref" href="#17pattern" title='pattern' data-ref="17pattern">pattern</a>.<a class="ref" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string6substrENT1_6rebindIT_E5other9size_typeES3_" title='std::basic_string::substr' data-ref="_ZNKSt12basic_string6substrENT1_6rebindIT_E5other9size_typeES3_">substr</a>(<a class="local col2 ref" href="#22pos" title='pos' data-ref="22pos">pos</a> + <var>1</var>);</td></tr>
+<tr><th id="288">288</th><td>        }</td></tr>
+<tr><th id="289">289</th><td>    }</td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td>    <a class="tu ref" href="#_ZL8glob_recRKSsS0_RSt6vectorISsSaISsEEb" title='glob_rec' data-use='c' data-ref="_ZL8glob_recRKSsS0_RSt6vectorISsSaISsEEb">glob_rec</a>(<a class="local col0 ref" href="#20path" title='path' data-ref="20path">path</a>, <a class="local col1 ref" href="#21wildchart" title='wildchart' data-ref="21wildchart">wildchart</a>, <span class='refarg'><a class="local col8 ref" href="#18result" title='result' data-ref="18result">result</a></span>, <a class="local col9 ref" href="#19recursive" title='recursive' data-ref="19recursive">recursive</a>);</td></tr>
+<tr><th id="292">292</th><td>    <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/bits/stl_algo.h.html#_ZSt4sortT_S_" title='std::sort' data-ref="_ZSt4sortT_S_">sort</a>(<a class="local col8 ref" href="#18result" title='result' data-ref="18result">result</a>.<a class="ref" href="../../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vector5beginEv" title='std::vector::begin' data-ref="_ZNSt6vector5beginEv">begin</a>(), <a class="local col8 ref" href="#18result" title='result' data-ref="18result">result</a>.<a class="ref" href="../../../../include/c++/4.8/bits/stl_vector.h.html#_ZNSt6vector3endEv" title='std::vector::end' data-ref="_ZNSt6vector3endEv">end</a>());</td></tr>
+<tr><th id="293">293</th><td>}</td></tr>
+<tr><th id="294">294</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

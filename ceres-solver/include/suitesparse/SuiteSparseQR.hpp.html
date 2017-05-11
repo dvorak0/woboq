@@ -1,0 +1,614 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SuiteSparseQR.hpp source code [include/suitesparse/SuiteSparseQR.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="SuiteSparseQR_factorization,spqr_numeric,spqr_symbolic "/>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/suitesparse/SuiteSparseQR.hpp'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>include</a>/<a href='./'>suitesparse</a>/<a href='SuiteSparseQR.hpp.html'>SuiteSparseQR.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="2">2</th><td><i>// === SuiteSparseQR.hpp =======================================================</i></td></tr>
+<tr><th id="3">3</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="4">4</th><td><i></i></td></tr>
+<tr><th id="5">5</th><td><i>// User include file for C++ programs.</i></td></tr>
+<tr><th id="6">6</th><td></td></tr>
+<tr><th id="7">7</th><td><u>#<span data-ppcond="7">ifndef</span> <span class="macro" data-ref="_M/SUITESPARSEQR_H">SUITESPARSEQR_H</span></u></td></tr>
+<tr><th id="8">8</th><td><u>#define <dfn class="macro" id="_M/SUITESPARSEQR_H" data-ref="_M/SUITESPARSEQR_H">SUITESPARSEQR_H</dfn></u></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><i>// -----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="11">11</th><td><i>// include files</i></td></tr>
+<tr><th id="12">12</th><td><i>// -----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="cholmod.h.html">"cholmod.h"</a></u></td></tr>
+<tr><th id="15">15</th><td><u>#include <a href="SuiteSparseQR_definitions.h.html">"SuiteSparseQR_definitions.h"</a></u></td></tr>
+<tr><th id="16">16</th><td></td></tr>
+<tr><th id="17">17</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="18">18</th><td><i>// === spqr_symbolic ===========================================================</i></td></tr>
+<tr><th id="19">19</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="20">20</th><td><i></i></td></tr>
+<tr><th id="21">21</th><td><i>// The contents of this object do not change during numeric factorization.  The</i></td></tr>
+<tr><th id="22">22</th><td><i>// Symbolic object depends only on the pattern of the input matrix, and not its</i></td></tr>
+<tr><th id="23">23</th><td><i>// values.  These contents also do not change with column pivoting for rank</i></td></tr>
+<tr><th id="24">24</th><td><i>// detection.  This makes parallelism easier to manage, since all threads can</i></td></tr>
+<tr><th id="25">25</th><td><i>// have access to this object without synchronization.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>// The total size of the Symbolic object is (10 + 2*m + anz + 2*n + 5*nf + rnz)</i></td></tr>
+<tr><th id="28">28</th><td><i>// Long's, where the user's input A matrix is m-by-n with anz nonzeros, nf &lt;=</i></td></tr>
+<tr><th id="29">29</th><td><i>// MIN(m,n) is the number of frontal matrices, and rnz &lt;= nnz(R) is the number</i></td></tr>
+<tr><th id="30">30</th><td><i>// of column indices used to represent the supernodal form of R (one Long per</i></td></tr>
+<tr><th id="31">31</th><td><i>// non-pivotal column index in the leading row of each block of R).</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><b>struct</b> <dfn class="type def" id="spqr_symbolic" title='spqr_symbolic' data-ref="spqr_symbolic">spqr_symbolic</dfn></td></tr>
+<tr><th id="34">34</th><td>{</td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td>    <i>// -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="37">37</th><td><i>    // row-form of the input matrix and its permutations</i></td></tr>
+<tr><th id="38">38</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="39">39</th><td><i></i></td></tr>
+<tr><th id="40">40</th><td><i>    // During symbolic analysis, the nonzero pattern of S = A(P,Q) is</i></td></tr>
+<tr><th id="41">41</th><td><i>    // constructed, where A is the user's input matrix.  Its numerical values</i></td></tr>
+<tr><th id="42">42</th><td><i>    // are also constructed, but they do not become part of the Symbolic</i></td></tr>
+<tr><th id="43">43</th><td><i>    // object.  The matrix S is stored in row-oriented form.  The rows of S are</i></td></tr>
+<tr><th id="44">44</th><td><i>    // sorted according to their leftmost column index (via PLinv).  Column</i></td></tr>
+<tr><th id="45">45</th><td><i>    // indices in each row of S are in strictly ascending order, even though</i></td></tr>
+<tr><th id="46">46</th><td><i>    // the input matrix A need not be sorted.</i></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::m" title='spqr_symbolic::m' data-ref="spqr_symbolic::m">m</dfn>, <dfn class="decl" id="spqr_symbolic::n" title='spqr_symbolic::n' data-ref="spqr_symbolic::n">n</dfn>, <dfn class="decl" id="spqr_symbolic::anz" title='spqr_symbolic::anz' data-ref="spqr_symbolic::anz">anz</dfn> ; <i>// S is m-by-n with anz entries</i></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Sp" title='spqr_symbolic::Sp' data-ref="spqr_symbolic::Sp">Sp</dfn> ;       <i>// size m+1, row pointers of S</i></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Sj" title='spqr_symbolic::Sj' data-ref="spqr_symbolic::Sj">Sj</dfn> ;       <i>// size anz = Sp [n], column indices of S</i></td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Qfill" title='spqr_symbolic::Qfill' data-ref="spqr_symbolic::Qfill">Qfill</dfn> ;    <i>// size n, fill-reducing column permutation.</i></td></tr>
+<tr><th id="55">55</th><td>                        <i>// Qfill [k] = j if column k of A is column j of S.</i></td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::PLinv" title='spqr_symbolic::PLinv' data-ref="spqr_symbolic::PLinv">PLinv</dfn> ;    <i>// size m, inverse row permutation that places</i></td></tr>
+<tr><th id="58">58</th><td>                        <i>// S=A(P,Q) in increasing order of leftmost column</i></td></tr>
+<tr><th id="59">59</th><td><i>                        // index.  PLinv [i] = k if row i of A is row k of S.</i></td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Sleft" title='spqr_symbolic::Sleft' data-ref="spqr_symbolic::Sleft">Sleft</dfn> ;    <i>// size n+2.  The list of rows of S whose</i></td></tr>
+<tr><th id="62">62</th><td>            <i>// leftmost column index is j is given by</i></td></tr>
+<tr><th id="63">63</th><td><i>            // Sleft [j] ... Sleft [j+1]-1.  This can be empty (that is, Sleft</i></td></tr>
+<tr><th id="64">64</th><td><i>            // [j] can equal Sleft [j+1]).  Sleft [n] is the number of</i></td></tr>
+<tr><th id="65">65</th><td><i>            // non-empty rows of S, and Sleft [n+1] == m.  That is, Sleft [n]</i></td></tr>
+<tr><th id="66">66</th><td><i>            // ... Sleft [n+1]-1 gives the empty rows of S, if any.</i></td></tr>
+<tr><th id="67">67</th><td><i></i></td></tr>
+<tr><th id="68">68</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="69">69</th><td><i>    // frontal matrices: pattern and tree</i></td></tr>
+<tr><th id="70">70</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="71">71</th><td><i></i></td></tr>
+<tr><th id="72">72</th><td><i>    // Each frontal matrix is fm-by-fn, with fnpiv pivot columns.  The fn</i></td></tr>
+<tr><th id="73">73</th><td><i>    // column indices are given by a set of size fnpiv pivot columns, defined</i></td></tr>
+<tr><th id="74">74</th><td><i>    // by Super, followed by the pattern Rj [ Rp[f] ...  Rp[f+1]-1 ].</i></td></tr>
+<tr><th id="75">75</th><td><i></i></td></tr>
+<tr><th id="76">76</th><td><i>    // The row indices of the front are not kept.  If the Householder vectors</i></td></tr>
+<tr><th id="77">77</th><td><i>    // are not kept, the row indices are not needed.  If the Householder</i></td></tr>
+<tr><th id="78">78</th><td><i>    // vectors are kept, the row indices are computed dynamically during</i></td></tr>
+<tr><th id="79">79</th><td><i>    // numerical factorization.</i></td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::nf" title='spqr_symbolic::nf' data-ref="spqr_symbolic::nf">nf</dfn> ;        <i>// number of frontal matrices; nf &lt;= MIN (m,n)</i></td></tr>
+<tr><th id="82">82</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::maxfn" title='spqr_symbolic::maxfn' data-ref="spqr_symbolic::maxfn">maxfn</dfn> ;     <i>// max # of columns in any front</i></td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td>    <i>// parent, child, and childp define the row merge tree or etree (A'A)</i></td></tr>
+<tr><th id="85">85</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Parent" title='spqr_symbolic::Parent' data-ref="spqr_symbolic::Parent">Parent</dfn> ;   <i>// size nf+1</i></td></tr>
+<tr><th id="86">86</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Child" title='spqr_symbolic::Child' data-ref="spqr_symbolic::Child">Child</dfn> ;    <i>// size nf+1</i></td></tr>
+<tr><th id="87">87</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Childp" title='spqr_symbolic::Childp' data-ref="spqr_symbolic::Childp">Childp</dfn> ;   <i>// size nf+2</i></td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>    <i>// The parent of a front f is Parent [f], or EMPTY if f=nf.</i></td></tr>
+<tr><th id="90">90</th><td><i>    // A list of children of f can be obtained in the list</i></td></tr>
+<tr><th id="91">91</th><td><i>    // Child [Childp [f] ... Childp [f+1]-1].</i></td></tr>
+<tr><th id="92">92</th><td><i></i></td></tr>
+<tr><th id="93">93</th><td><i>    // Node nf in the tree is a placeholder; it does not represent a frontal</i></td></tr>
+<tr><th id="94">94</th><td><i>    // matrix.  All roots of the frontal "tree" (may be a forest) have the</i></td></tr>
+<tr><th id="95">95</th><td><i>    // placeholder node nf as their parent.  Thus, the tree of nodes 0:nf is</i></td></tr>
+<tr><th id="96">96</th><td><i>    // truly a tree, with just one parent (node nf).</i></td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Super" title='spqr_symbolic::Super' data-ref="spqr_symbolic::Super">Super</dfn> ;    <i>// size nf+1.  Super [f] gives the first</i></td></tr>
+<tr><th id="99">99</th><td>        <i>// pivot column in the front F.  This refers to a column of S.  The</i></td></tr>
+<tr><th id="100">100</th><td><i>        // number of expected pivot columns in F is thus</i></td></tr>
+<tr><th id="101">101</th><td><i>        // Super [f+1] - Super [f].</i></td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Rp" title='spqr_symbolic::Rp' data-ref="spqr_symbolic::Rp">Rp</dfn> ;       <i>// size nf+1</i></td></tr>
+<tr><th id="104">104</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Rj" title='spqr_symbolic::Rj' data-ref="spqr_symbolic::Rj">Rj</dfn> ;       <i>// size rjsize; compressed supernodal form of R</i></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Post" title='spqr_symbolic::Post' data-ref="spqr_symbolic::Post">Post</dfn> ;     <i>// size nf+1, post ordering of frontal tree.</i></td></tr>
+<tr><th id="107">107</th><td>                        <i>// f=Post[k] gives the kth node in the postordered tree</i></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::rjsize" title='spqr_symbolic::rjsize' data-ref="spqr_symbolic::rjsize">rjsize</dfn> ;    <i>// size of Rj</i></td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::do_rank_detection" title='spqr_symbolic::do_rank_detection' data-ref="spqr_symbolic::do_rank_detection">do_rank_detection</dfn> ; <i>// TRUE: allow for tol &gt;= 0.</i></td></tr>
+<tr><th id="112">112</th><td>                                         <i>// FALSE: ignore tol</i></td></tr>
+<tr><th id="113">113</th><td><i></i></td></tr>
+<tr><th id="114">114</th><td><i>    // the rest depends on whether or not rank-detection is allowed:</i></td></tr>
+<tr><th id="115">115</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::maxstack" title='spqr_symbolic::maxstack' data-ref="spqr_symbolic::maxstack">maxstack</dfn>  ; <i>// max stack size (sequential case)</i></td></tr>
+<tr><th id="116">116</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::hisize" title='spqr_symbolic::hisize' data-ref="spqr_symbolic::hisize">hisize</dfn> ;    <i>// size of Hii</i></td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::keepH" title='spqr_symbolic::keepH' data-ref="spqr_symbolic::keepH">keepH</dfn> ;     <i>// TRUE if H is present</i></td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Hip" title='spqr_symbolic::Hip' data-ref="spqr_symbolic::Hip">Hip</dfn> ;      <i>// size nf+1.  If H is kept, the row indices</i></td></tr>
+<tr><th id="121">121</th><td>        <i>// of frontal matrix f are in Hii [Hip [f] ... Hip [f] + Hm [f]],</i></td></tr>
+<tr><th id="122">122</th><td><i>        // where Hii and Hm are stored in the numeric object.</i></td></tr>
+<tr><th id="123">123</th><td><i></i></td></tr>
+<tr><th id="124">124</th><td><i>        // There is one block row of R per frontal matrix.</i></td></tr>
+<tr><th id="125">125</th><td><i>        // The fn column indices of R are given by Rj [Rp [f] ... Rp [f+1]-1],</i></td></tr>
+<tr><th id="126">126</th><td><i>        // where the first fp column indices are Super [f] ... Super [f+1]-1.</i></td></tr>
+<tr><th id="127">127</th><td><i>        // The remaining column indices in Rj [...] are non-pivotal, and are</i></td></tr>
+<tr><th id="128">128</th><td><i>        // in the range Super [f+1] to n.  The number of rows of R is at</i></td></tr>
+<tr><th id="129">129</th><td><i>        // most fp, but can be less if dead columns appear in the matrix.</i></td></tr>
+<tr><th id="130">130</th><td><i>        // The number of columns in the contribution block C is always</i></td></tr>
+<tr><th id="131">131</th><td><i>        // cn = fn - fp, where fn = Rp [f+1] - Rp [f].</i></td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::ntasks" title='spqr_symbolic::ntasks' data-ref="spqr_symbolic::ntasks">ntasks</dfn> ;    <i>// number of tasks in task graph</i></td></tr>
+<tr><th id="134">134</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_symbolic::ns" title='spqr_symbolic::ns' data-ref="spqr_symbolic::ns">ns</dfn> ;        <i>// number of stacks</i></td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>    <i>// -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="137">137</th><td><i>    // the rest of the QR symbolic object is present only if ntasks &gt; 1</i></td></tr>
+<tr><th id="138">138</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="139">139</th><td><i></i></td></tr>
+<tr><th id="140">140</th><td><i>    // Task tree (nodes 0:ntasks), including placeholder node</i></td></tr>
+<tr><th id="141">141</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::TaskChildp" title='spqr_symbolic::TaskChildp' data-ref="spqr_symbolic::TaskChildp">TaskChildp</dfn> ;       <i>// size ntasks+2</i></td></tr>
+<tr><th id="142">142</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::TaskChild" title='spqr_symbolic::TaskChild' data-ref="spqr_symbolic::TaskChild">TaskChild</dfn> ;        <i>// size ntasks+1</i></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::TaskStack" title='spqr_symbolic::TaskStack' data-ref="spqr_symbolic::TaskStack">TaskStack</dfn> ;        <i>// size ntasks+1</i></td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>    <i>// list of fronts for each task</i></td></tr>
+<tr><th id="147">147</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::TaskFront" title='spqr_symbolic::TaskFront' data-ref="spqr_symbolic::TaskFront">TaskFront</dfn> ;        <i>// size nf+1</i></td></tr>
+<tr><th id="148">148</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::TaskFrontp" title='spqr_symbolic::TaskFrontp' data-ref="spqr_symbolic::TaskFrontp">TaskFrontp</dfn>  ;      <i>// size ntasks+2</i></td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::On_stack" title='spqr_symbolic::On_stack' data-ref="spqr_symbolic::On_stack">On_stack</dfn>  ;        <i>// size nf+1, front f is on</i></td></tr>
+<tr><th id="151">151</th><td>                                         <i>// stack On_stack [f]</i></td></tr>
+<tr><th id="152">152</th><td><i></i></td></tr>
+<tr><th id="153">153</th><td><i>    // size of each stack</i></td></tr>
+<tr><th id="154">154</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_symbolic::Stack_maxstack" title='spqr_symbolic::Stack_maxstack' data-ref="spqr_symbolic::Stack_maxstack">Stack_maxstack</dfn> ;   <i>// size ns+2</i></td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>} ;</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="160">160</th><td><i>// === spqr_numeric ============================================================</i></td></tr>
+<tr><th id="161">161</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="162">162</th><td><i></i></td></tr>
+<tr><th id="163">163</th><td><i>// The Numeric object contains the numerical values of the triangular/</i></td></tr>
+<tr><th id="164">164</th><td><i>// trapezoidal factor R, and optionally the Householder vectors H if they</i></td></tr>
+<tr><th id="165">165</th><td><i>// are kept.</i></td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <b>struct</b> <dfn class="type def" id="spqr_numeric" title='spqr_numeric' data-ref="spqr_numeric">spqr_numeric</dfn></td></tr>
+<tr><th id="168">168</th><td>{</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td>    <i>// -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="171">171</th><td><i>    // Numeric R factor</i></td></tr>
+<tr><th id="172">172</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td>    Entry **<dfn class="decl" id="spqr_numeric::Rblock" title='spqr_numeric::Rblock' data-ref="spqr_numeric::Rblock">Rblock</dfn> ;    <i>// size nf.  R [f] is an (Entry *) pointer to the</i></td></tr>
+<tr><th id="175">175</th><td>                        <i>// R block for front F.  It is an upper trapezoidal</i></td></tr>
+<tr><th id="176">176</th><td><i>                        // of size Rm(f)-by-Rn(f), but only the upper</i></td></tr>
+<tr><th id="177">177</th><td><i>                        // triangular part is stored in column-packed format.</i></td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td>    Entry **<dfn class="decl" id="spqr_numeric::Stacks" title='spqr_numeric::Stacks' data-ref="spqr_numeric::Stacks">Stacks</dfn> ;    <i>// size ns; an array of stacks holding the R and H</i></td></tr>
+<tr><th id="180">180</th><td>                        <i>// factors and the current frontal matrix F at the head.</i></td></tr>
+<tr><th id="181">181</th><td><i>                        // This is followed by empty space, then the C blocks of</i></td></tr>
+<tr><th id="182">182</th><td><i>                        // prior frontal matrices at the bottom.  When the</i></td></tr>
+<tr><th id="183">183</th><td><i>                        // factorization is complete, only the R and H part at</i></td></tr>
+<tr><th id="184">184</th><td><i>                        // the head of each stack is left.</i></td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_numeric::Stack_size" title='spqr_numeric::Stack_size' data-ref="spqr_numeric::Stack_size">Stack_size</dfn> ;   <i>// size ns; Stack_size [s] is the size</i></td></tr>
+<tr><th id="187">187</th><td>                                     <i>// of Stacks [s]</i></td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::hisize" title='spqr_numeric::hisize' data-ref="spqr_numeric::hisize">hisize</dfn> ;        <i>// size of Hii</i></td></tr>
+<tr><th id="190">190</th><td></td></tr>
+<tr><th id="191">191</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::n" title='spqr_numeric::n' data-ref="spqr_numeric::n">n</dfn> ;             <i>// A is m-by-n</i></td></tr>
+<tr><th id="192">192</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::m" title='spqr_numeric::m' data-ref="spqr_numeric::m">m</dfn> ;</td></tr>
+<tr><th id="193">193</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::nf" title='spqr_numeric::nf' data-ref="spqr_numeric::nf">nf</dfn> ;            <i>// number of frontal matrices</i></td></tr>
+<tr><th id="194">194</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::ntasks" title='spqr_numeric::ntasks' data-ref="spqr_numeric::ntasks">ntasks</dfn> ;        <i>// # of tasks in task graph actually used</i></td></tr>
+<tr><th id="195">195</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::ns" title='spqr_numeric::ns' data-ref="spqr_numeric::ns">ns</dfn> ;            <i>// number of stacks actually used</i></td></tr>
+<tr><th id="196">196</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::maxstack" title='spqr_numeric::maxstack' data-ref="spqr_numeric::maxstack">maxstack</dfn> ;      <i>// size of sequential stack, if used</i></td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td>    <i>// -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="199">199</th><td><i>    // for rank detection and m &lt; n case</i></td></tr>
+<tr><th id="200">200</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>    <em>char</em> *<dfn class="decl" id="spqr_numeric::Rdead" title='spqr_numeric::Rdead' data-ref="spqr_numeric::Rdead">Rdead</dfn> ;       <i>// size n, Rdead [k] = 1 if k is a dead pivot column,</i></td></tr>
+<tr><th id="203">203</th><td>                        <i>// Rdead [k] = 0 otherwise.  If no columns are dead,</i></td></tr>
+<tr><th id="204">204</th><td><i>                        // this is NULL.  If m &lt; n, then at least m-n columns</i></td></tr>
+<tr><th id="205">205</th><td><i>                        // will be dead. </i></td></tr>
+<tr><th id="206">206</th><td></td></tr>
+<tr><th id="207">207</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::rank" title='spqr_numeric::rank' data-ref="spqr_numeric::rank">rank</dfn> ;      <i>// number of live pivot columns</i></td></tr>
+<tr><th id="208">208</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::rank1" title='spqr_numeric::rank1' data-ref="spqr_numeric::rank1">rank1</dfn> ;     <i>// number of live pivot columns in first ntol</i></td></tr>
+<tr><th id="209">209</th><td>                                 <i>// columns of A</i></td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::maxfrank" title='spqr_numeric::maxfrank' data-ref="spqr_numeric::maxfrank">maxfrank</dfn> ;  <i>// max number of rows in any R block</i></td></tr>
+<tr><th id="212">212</th><td></td></tr>
+<tr><th id="213">213</th><td>    <em>double</em> <dfn class="decl" id="spqr_numeric::norm_E_fro" title='spqr_numeric::norm_E_fro' data-ref="spqr_numeric::norm_E_fro">norm_E_fro</dfn> ; <i>// 2-norm of w, the vector of dead column 2-norms</i></td></tr>
+<tr><th id="214">214</th><td></td></tr>
+<tr><th id="215">215</th><td>    <i>// -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="216">216</th><td><i>    // for keeping Householder vectors</i></td></tr>
+<tr><th id="217">217</th><td><i>    // -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="218">218</th><td><i></i></td></tr>
+<tr><th id="219">219</th><td><i>    // The factorization is R = (H_s * ... * H_2 * H_1) * P_H</i></td></tr>
+<tr><th id="220">220</th><td><i>    // where P_H is the permutation HPinv, and H_1, ... H_s are the Householder</i></td></tr>
+<tr><th id="221">221</th><td><i>    // vectors (s = rjsize).</i></td></tr>
+<tr><th id="222">222</th><td></td></tr>
+<tr><th id="223">223</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::keepH" title='spqr_numeric::keepH' data-ref="spqr_numeric::keepH">keepH</dfn> ;     <i>// TRUE if H is present</i></td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::rjsize" title='spqr_numeric::rjsize' data-ref="spqr_numeric::rjsize">rjsize</dfn> ;    <i>// size of Hstair and HTau</i></td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_numeric::HStair" title='spqr_numeric::HStair' data-ref="spqr_numeric::HStair">HStair</dfn> ;   <i>// size rjsize.  The list Hstair [Rp [f] ... </i></td></tr>
+<tr><th id="228">228</th><td>                        <i>// Rp [f+1]-1] gives the staircase for front F</i></td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>    Entry *<dfn class="decl" id="spqr_numeric::HTau" title='spqr_numeric::HTau' data-ref="spqr_numeric::HTau">HTau</dfn> ;       <i>// size rjsize.  The list HTau [Rp [f] ... Rp [f+1]-1]</i></td></tr>
+<tr><th id="231">231</th><td>                        <i>// gives the Householder coefficients for front F</i></td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_numeric::Hii" title='spqr_numeric::Hii' data-ref="spqr_numeric::Hii">Hii</dfn> ;      <i>// size hisize, row indices of H.</i></td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_numeric::HPinv" title='spqr_numeric::HPinv' data-ref="spqr_numeric::HPinv">HPinv</dfn> ;    <i>// size m.  HPinv [i] = k if row i of A and H</i></td></tr>
+<tr><th id="236">236</th><td>                        <i>// is row k of R.  This permutation includes</i></td></tr>
+<tr><th id="237">237</th><td><i>                        // QRsym-&gt;PLinv, and the permutation constructed via</i></td></tr>
+<tr><th id="238">238</th><td><i>                        // pivotal row ordering during factorization.</i></td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_numeric::Hm" title='spqr_numeric::Hm' data-ref="spqr_numeric::Hm">Hm</dfn> ;       <i>// size nf, Hm [f] = # of rows in front F</i></td></tr>
+<tr><th id="241">241</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="spqr_numeric::Hr" title='spqr_numeric::Hr' data-ref="spqr_numeric::Hr">Hr</dfn> ;       <i>// size nf, Hr [f] = # of rows in R block of</i></td></tr>
+<tr><th id="242">242</th><td>                                 <i>// front F</i></td></tr>
+<tr><th id="243">243</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="spqr_numeric::maxfm" title='spqr_numeric::maxfm' data-ref="spqr_numeric::maxfm">maxfm</dfn> ;     <i>// max (Hm [0:nf-1]), computed only if H kept</i></td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td>} ;</td></tr>
+<tr><th id="246">246</th><td></td></tr>
+<tr><th id="247">247</th><td></td></tr>
+<tr><th id="248">248</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="249">249</th><td><i>// === SuiteSparseQR_factorization =============================================</i></td></tr>
+<tr><th id="250">250</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="251">251</th><td><i></i></td></tr>
+<tr><th id="252">252</th><td><i>// A combined symbolic+numeric QR factorization of A or [A B],</i></td></tr>
+<tr><th id="253">253</th><td><i>// with singletons</i></td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <b>struct</b> <dfn class="type def" id="SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</dfn></td></tr>
+<tr><th id="256">256</th><td>{</td></tr>
+<tr><th id="257">257</th><td></td></tr>
+<tr><th id="258">258</th><td>    <i>// QR factorization of A or [A Binput] after singletons have been removed</i></td></tr>
+<tr><th id="259">259</th><td>    <em>double</em> <dfn class="decl" id="SuiteSparseQR_factorization::tol" title='SuiteSparseQR_factorization::tol' data-ref="SuiteSparseQR_factorization::tol">tol</dfn> ;        <i>// tol used</i></td></tr>
+<tr><th id="260">260</th><td>    <a class="type" href="#spqr_symbolic" title='spqr_symbolic' data-ref="spqr_symbolic">spqr_symbolic</a> *<dfn class="decl" id="SuiteSparseQR_factorization::QRsym" title='SuiteSparseQR_factorization::QRsym' data-ref="SuiteSparseQR_factorization::QRsym">QRsym</dfn> ;</td></tr>
+<tr><th id="261">261</th><td>    <a class="type" href="#spqr_numeric" title='spqr_numeric' data-ref="spqr_numeric">spqr_numeric</a> &lt;Entry&gt; *<dfn class="decl" id="SuiteSparseQR_factorization::QRnum" title='SuiteSparseQR_factorization::QRnum' data-ref="SuiteSparseQR_factorization::QRnum">QRnum</dfn> ;</td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td>    <i>// singletons, in compressed-row form; R is n1rows-by-n</i></td></tr>
+<tr><th id="264">264</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::R1p" title='SuiteSparseQR_factorization::R1p' data-ref="SuiteSparseQR_factorization::R1p">R1p</dfn> ;      <i>// size n1rows+1</i></td></tr>
+<tr><th id="265">265</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::R1j" title='SuiteSparseQR_factorization::R1j' data-ref="SuiteSparseQR_factorization::R1j">R1j</dfn> ;</td></tr>
+<tr><th id="266">266</th><td>    Entry *<dfn class="decl" id="SuiteSparseQR_factorization::R1x" title='SuiteSparseQR_factorization::R1x' data-ref="SuiteSparseQR_factorization::R1x">R1x</dfn> ;</td></tr>
+<tr><th id="267">267</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::r1nz" title='SuiteSparseQR_factorization::r1nz' data-ref="SuiteSparseQR_factorization::r1nz">r1nz</dfn> ;      <i>// nnz (R1)</i></td></tr>
+<tr><th id="268">268</th><td></td></tr>
+<tr><th id="269">269</th><td>    <i>// combined singleton and fill-reducing permutation</i></td></tr>
+<tr><th id="270">270</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::Q1fill" title='SuiteSparseQR_factorization::Q1fill' data-ref="SuiteSparseQR_factorization::Q1fill">Q1fill</dfn> ;</td></tr>
+<tr><th id="271">271</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::P1inv" title='SuiteSparseQR_factorization::P1inv' data-ref="SuiteSparseQR_factorization::P1inv">P1inv</dfn> ;</td></tr>
+<tr><th id="272">272</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::HP1inv" title='SuiteSparseQR_factorization::HP1inv' data-ref="SuiteSparseQR_factorization::HP1inv">HP1inv</dfn> ;   <i>// NULL if n1cols == 0, in which case</i></td></tr>
+<tr><th id="273">273</th><td>                        <i>// QRnum-&gt;HPinv serves in its place.</i></td></tr>
+<tr><th id="274">274</th><td><i></i></td></tr>
+<tr><th id="275">275</th><td><i>    // Rmap and RmapInv are NULL if QR-&gt;rank == A-&gt;ncol</i></td></tr>
+<tr><th id="276">276</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::Rmap" title='SuiteSparseQR_factorization::Rmap' data-ref="SuiteSparseQR_factorization::Rmap">Rmap</dfn> ;     <i>// size n.  Rmap [j] = k if column j of R is</i></td></tr>
+<tr><th id="277">277</th><td>                        <i>// the kth live column and where k &lt; QR-&gt;rank;</i></td></tr>
+<tr><th id="278">278</th><td><i>                        // otherwise, if j is a dead column, then</i></td></tr>
+<tr><th id="279">279</th><td><i>                        // k &gt;= QR-&gt;rank.</i></td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="decl" id="SuiteSparseQR_factorization::RmapInv" title='SuiteSparseQR_factorization::RmapInv' data-ref="SuiteSparseQR_factorization::RmapInv">RmapInv</dfn> ;</td></tr>
+<tr><th id="282">282</th><td></td></tr>
+<tr><th id="283">283</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::n1rows" title='SuiteSparseQR_factorization::n1rows' data-ref="SuiteSparseQR_factorization::n1rows">n1rows</dfn> ;    <i>// number of singleton rows of [A B]</i></td></tr>
+<tr><th id="284">284</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::n1cols" title='SuiteSparseQR_factorization::n1cols' data-ref="SuiteSparseQR_factorization::n1cols">n1cols</dfn> ;    <i>// number of singleton columns of [A B]</i></td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::narows" title='SuiteSparseQR_factorization::narows' data-ref="SuiteSparseQR_factorization::narows">narows</dfn> ;    <i>// number of rows of A</i></td></tr>
+<tr><th id="287">287</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::nacols" title='SuiteSparseQR_factorization::nacols' data-ref="SuiteSparseQR_factorization::nacols">nacols</dfn> ;    <i>// number of columns of A</i></td></tr>
+<tr><th id="288">288</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::bncols" title='SuiteSparseQR_factorization::bncols' data-ref="SuiteSparseQR_factorization::bncols">bncols</dfn> ;    <i>// number of columns of B</i></td></tr>
+<tr><th id="289">289</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="SuiteSparseQR_factorization::rank" title='SuiteSparseQR_factorization::rank' data-ref="SuiteSparseQR_factorization::rank">rank</dfn> ;      <i>// rank estimate of A (n1rows + QRnum-&gt;rank1),</i></td></tr>
+<tr><th id="290">290</th><td>                                 <i>// ranges from 0 to min(m,n)</i></td></tr>
+<tr><th id="291">291</th><td></td></tr>
+<tr><th id="292">292</th><td>    <em>int</em> <dfn class="decl" id="SuiteSparseQR_factorization::allow_tol" title='SuiteSparseQR_factorization::allow_tol' data-ref="SuiteSparseQR_factorization::allow_tol">allow_tol</dfn> ;     <i>// if TRUE, do rank detection</i></td></tr>
+<tr><th id="293">293</th><td>} ;</td></tr>
+<tr><th id="294">294</th><td></td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="297">297</th><td><i>// === Simple user-callable SuiteSparseQR functions ============================</i></td></tr>
+<tr><th id="298">298</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="299">299</th><td><i></i></td></tr>
+<tr><th id="300">300</th><td><i>//  SuiteSparseQR           Sparse QR factorization and solve</i></td></tr>
+<tr><th id="301">301</th><td><i>//  SuiteSparseQR_qmult     Q*X, Q'*X, X*Q, or X*Q' for X full or sparse</i></td></tr>
+<tr><th id="302">302</th><td><i></i></td></tr>
+<tr><th id="303">303</th><td><i>// returns rank(A) estimate, or EMPTY on failure</i></td></tr>
+<tr><th id="304">304</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="_Z13SuiteSparseQRidliP21cholmod_sparse_structS0_P20cholmod_dense_structPS0_PS2_S3_PPlS3_S6_S4_P21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidliP21cholmod_sparse_structS0_P20cholmod_dense_structPS0_PS2_S3_PPlS3_S6_S4_P21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="305">305</th><td>(</td></tr>
+<tr><th id="306">306</th><td>    <i>// inputs, not modified</i></td></tr>
+<tr><th id="307">307</th><td>    <em>int</em> <dfn class="local col6 decl" id="616ordering" title='ordering' data-type='int' data-ref="616ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="308">308</th><td>    <em>double</em> <dfn class="local col7 decl" id="617tol" title='tol' data-type='double' data-ref="617tol">tol</dfn>,             <i>// only accept singletons above tol</i></td></tr>
+<tr><th id="309">309</th><td></td></tr>
+<tr><th id="310">310</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="local col8 decl" id="618econ" title='econ' data-type='long' data-ref="618econ">econ</dfn>,  <i>// number of rows of C and R to return; a value</i></td></tr>
+<tr><th id="311">311</th><td>                            <i>// less than the rank r of A is treated as r, and</i></td></tr>
+<tr><th id="312">312</th><td><i>                            // a value greater than m is treated as m.</i></td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td>    <em>int</em> <dfn class="local col9 decl" id="619getCTX" title='getCTX' data-type='int' data-ref="619getCTX">getCTX</dfn>,             <i>// if 0: return Z = C of size econ-by-bncols</i></td></tr>
+<tr><th id="315">315</th><td>                            <i>// if 1: return Z = C' of size bncols-by-econ</i></td></tr>
+<tr><th id="316">316</th><td><i>                            // if 2: return Z = X of size econ-by-bncols</i></td></tr>
+<tr><th id="317">317</th><td></td></tr>
+<tr><th id="318">318</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col0 decl" id="620A" title='A' data-type='cholmod_sparse *' data-ref="620A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td>    <i>// B is either sparse or dense.  If Bsparse is non-NULL, B is sparse and</i></td></tr>
+<tr><th id="321">321</th><td><i>    // Bdense is ignored.  If Bsparse is NULL and Bdense is non-NULL, then B is</i></td></tr>
+<tr><th id="322">322</th><td><i>    // dense.  B is not present if both are NULL.</i></td></tr>
+<tr><th id="323">323</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col1 decl" id="621Bsparse" title='Bsparse' data-type='cholmod_sparse *' data-ref="621Bsparse">Bsparse</dfn>,</td></tr>
+<tr><th id="324">324</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col2 decl" id="622Bdense" title='Bdense' data-type='cholmod_dense *' data-ref="622Bdense">Bdense</dfn>,</td></tr>
+<tr><th id="325">325</th><td></td></tr>
+<tr><th id="326">326</th><td>    <i>// output arrays, neither allocated nor defined on input.</i></td></tr>
+<tr><th id="327">327</th><td><i></i></td></tr>
+<tr><th id="328">328</th><td><i>    // Z is the matrix C, C', or X</i></td></tr>
+<tr><th id="329">329</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col3 decl" id="623Zsparse" title='Zsparse' data-type='cholmod_sparse **' data-ref="623Zsparse">Zsparse</dfn>,</td></tr>
+<tr><th id="330">330</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a>  **<dfn class="local col4 decl" id="624Zdense" title='Zdense' data-type='cholmod_dense **' data-ref="624Zdense">Zdense</dfn>,</td></tr>
+<tr><th id="331">331</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col5 decl" id="625R" title='R' data-type='cholmod_sparse **' data-ref="625R">R</dfn>,     <i>// the R factor</i></td></tr>
+<tr><th id="332">332</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col6 decl" id="626E" title='E' data-type='long **' data-ref="626E">E</dfn>,   <i>// size n; fill-reducing ordering of A.</i></td></tr>
+<tr><th id="333">333</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col7 decl" id="627H" title='H' data-type='cholmod_sparse **' data-ref="627H">H</dfn>,     <i>// the Householder vectors (m-by-nh)</i></td></tr>
+<tr><th id="334">334</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col8 decl" id="628HPinv" title='HPinv' data-type='long **' data-ref="628HPinv">HPinv</dfn>,<i>// size m; row permutation for H</i></td></tr>
+<tr><th id="335">335</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> **<dfn class="local col9 decl" id="629HTau" title='HTau' data-type='cholmod_dense **' data-ref="629HTau">HTau</dfn>,   <i>// size nh, Householder coefficients</i></td></tr>
+<tr><th id="336">336</th><td></td></tr>
+<tr><th id="337">337</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="338">338</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col0 decl" id="630cc" title='cc' data-type='cholmod_common *' data-ref="630cc">cc</dfn></td></tr>
+<tr><th id="339">339</th><td>) ;</td></tr>
+<tr><th id="340">340</th><td></td></tr>
+<tr><th id="341">341</th><td><i>// X = A\dense(B)</i></td></tr>
+<tr><th id="342">342</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="decl" id="_Z13SuiteSparseQRidP21cholmod_sparse_structP20cholmod_dense_structP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidP21cholmod_sparse_structP20cholmod_dense_structP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="343">343</th><td>(</td></tr>
+<tr><th id="344">344</th><td>    <em>int</em> <dfn class="local col1 decl" id="631ordering" title='ordering' data-type='int' data-ref="631ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="345">345</th><td>    <em>double</em> <dfn class="local col2 decl" id="632tol" title='tol' data-type='double' data-ref="632tol">tol</dfn>,</td></tr>
+<tr><th id="346">346</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col3 decl" id="633A" title='A' data-type='cholmod_sparse *' data-ref="633A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="347">347</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a>  *<dfn class="local col4 decl" id="634B" title='B' data-type='cholmod_dense *' data-ref="634B">B</dfn>,      <i>// m-by-nrhs</i></td></tr>
+<tr><th id="348">348</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col5 decl" id="635cc" title='cc' data-type='cholmod_common *' data-ref="635cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="349">349</th><td>) ;</td></tr>
+<tr><th id="350">350</th><td></td></tr>
+<tr><th id="351">351</th><td><i>// X = A\dense(B) using default ordering and tolerance</i></td></tr>
+<tr><th id="352">352</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="decl" id="_Z13SuiteSparseQRP21cholmod_sparse_structP20cholmod_dense_structP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRP21cholmod_sparse_structP20cholmod_dense_structP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="353">353</th><td>(</td></tr>
+<tr><th id="354">354</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col6 decl" id="636A" title='A' data-type='cholmod_sparse *' data-ref="636A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="355">355</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a>  *<dfn class="local col7 decl" id="637B" title='B' data-type='cholmod_dense *' data-ref="637B">B</dfn>,      <i>// m-by-nrhs</i></td></tr>
+<tr><th id="356">356</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col8 decl" id="638cc" title='cc' data-type='cholmod_common *' data-ref="638cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="357">357</th><td>) ;</td></tr>
+<tr><th id="358">358</th><td></td></tr>
+<tr><th id="359">359</th><td><i>// X = A\sparse(B)</i></td></tr>
+<tr><th id="360">360</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="decl" id="_Z13SuiteSparseQRidP21cholmod_sparse_structS0_P21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidP21cholmod_sparse_structS0_P21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="361">361</th><td>(</td></tr>
+<tr><th id="362">362</th><td>    <em>int</em> <dfn class="local col9 decl" id="639ordering" title='ordering' data-type='int' data-ref="639ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="363">363</th><td>    <em>double</em> <dfn class="local col0 decl" id="640tol" title='tol' data-type='double' data-ref="640tol">tol</dfn>,</td></tr>
+<tr><th id="364">364</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col1 decl" id="641A" title='A' data-type='cholmod_sparse *' data-ref="641A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="365">365</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col2 decl" id="642B" title='B' data-type='cholmod_sparse *' data-ref="642B">B</dfn>,      <i>// m-by-nrhs</i></td></tr>
+<tr><th id="366">366</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col3 decl" id="643cc" title='cc' data-type='cholmod_common *' data-ref="643cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="367">367</th><td>) ;</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td><i>// [Q,R,E] = qr(A), returning Q as a sparse matrix</i></td></tr>
+<tr><th id="370">370</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="_Z13SuiteSparseQRidlP21cholmod_sparse_structPS0_S1_PPlP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidlP21cholmod_sparse_structPS0_S1_PPlP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="371">371</th><td>    <i>// returns rank(A) estimate</i></td></tr>
+<tr><th id="372">372</th><td>(</td></tr>
+<tr><th id="373">373</th><td>    <em>int</em> <dfn class="local col4 decl" id="644ordering" title='ordering' data-type='int' data-ref="644ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="374">374</th><td>    <em>double</em> <dfn class="local col5 decl" id="645tol" title='tol' data-type='double' data-ref="645tol">tol</dfn>,</td></tr>
+<tr><th id="375">375</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="local col6 decl" id="646econ" title='econ' data-type='long' data-ref="646econ">econ</dfn>,</td></tr>
+<tr><th id="376">376</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col7 decl" id="647A" title='A' data-type='cholmod_sparse *' data-ref="647A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="377">377</th><td>    <i>// outputs</i></td></tr>
+<tr><th id="378">378</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col8 decl" id="648Q" title='Q' data-type='cholmod_sparse **' data-ref="648Q">Q</dfn>,     <i>// m-by-e sparse matrix where e=max(econ,rank(A))</i></td></tr>
+<tr><th id="379">379</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col9 decl" id="649R" title='R' data-type='cholmod_sparse **' data-ref="649R">R</dfn>,     <i>// e-by-n sparse matrix</i></td></tr>
+<tr><th id="380">380</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col0 decl" id="650E" title='E' data-type='long **' data-ref="650E">E</dfn>,   <i>// permutation of 0:n-1, NULL if identity</i></td></tr>
+<tr><th id="381">381</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col1 decl" id="651cc" title='cc' data-type='cholmod_common *' data-ref="651cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="382">382</th><td>) ;</td></tr>
+<tr><th id="383">383</th><td></td></tr>
+<tr><th id="384">384</th><td><i>// [Q,R,E] = qr(A), discarding Q</i></td></tr>
+<tr><th id="385">385</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="_Z13SuiteSparseQRidlP21cholmod_sparse_structPS0_PPlP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidlP21cholmod_sparse_structPS0_PPlP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="386">386</th><td>    <i>// returns rank(A) estimate</i></td></tr>
+<tr><th id="387">387</th><td>(</td></tr>
+<tr><th id="388">388</th><td>    <em>int</em> <dfn class="local col2 decl" id="652ordering" title='ordering' data-type='int' data-ref="652ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="389">389</th><td>    <em>double</em> <dfn class="local col3 decl" id="653tol" title='tol' data-type='double' data-ref="653tol">tol</dfn>,</td></tr>
+<tr><th id="390">390</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="local col4 decl" id="654econ" title='econ' data-type='long' data-ref="654econ">econ</dfn>,</td></tr>
+<tr><th id="391">391</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col5 decl" id="655A" title='A' data-type='cholmod_sparse *' data-ref="655A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="392">392</th><td>    <i>// outputs</i></td></tr>
+<tr><th id="393">393</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col6 decl" id="656R" title='R' data-type='cholmod_sparse **' data-ref="656R">R</dfn>,     <i>// e-by-n sparse matrix</i></td></tr>
+<tr><th id="394">394</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col7 decl" id="657E" title='E' data-type='long **' data-ref="657E">E</dfn>,   <i>// permutation of 0:n-1, NULL if identity</i></td></tr>
+<tr><th id="395">395</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col8 decl" id="658cc" title='cc' data-type='cholmod_common *' data-ref="658cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="396">396</th><td>) ;</td></tr>
+<tr><th id="397">397</th><td></td></tr>
+<tr><th id="398">398</th><td><i>// [C,R,E] = qr(A,B), where C and B are dense</i></td></tr>
+<tr><th id="399">399</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="_Z13SuiteSparseQRidlP21cholmod_sparse_structP20cholmod_dense_structPS2_PS0_PPlP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidlP21cholmod_sparse_structP20cholmod_dense_structPS2_PS0_PPlP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="400">400</th><td>(</td></tr>
+<tr><th id="401">401</th><td>    <i>// inputs, not modified</i></td></tr>
+<tr><th id="402">402</th><td>    <em>int</em> <dfn class="local col9 decl" id="659ordering" title='ordering' data-type='int' data-ref="659ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="403">403</th><td>    <em>double</em> <dfn class="local col0 decl" id="660tol" title='tol' data-type='double' data-ref="660tol">tol</dfn>,             <i>// only accept singletons above tol</i></td></tr>
+<tr><th id="404">404</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="local col1 decl" id="661econ" title='econ' data-type='long' data-ref="661econ">econ</dfn>,  <i>// number of rows of C and R to return</i></td></tr>
+<tr><th id="405">405</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col2 decl" id="662A" title='A' data-type='cholmod_sparse *' data-ref="662A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="406">406</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a>  *<dfn class="local col3 decl" id="663B" title='B' data-type='cholmod_dense *' data-ref="663B">B</dfn>,      <i>// m-by-nrhs dense matrix</i></td></tr>
+<tr><th id="407">407</th><td>    <i>// outputs</i></td></tr>
+<tr><th id="408">408</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a>  **<dfn class="local col4 decl" id="664C" title='C' data-type='cholmod_dense **' data-ref="664C">C</dfn>,     <i>// C = Q'*B, an e-by-nrhs dense matrix</i></td></tr>
+<tr><th id="409">409</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col5 decl" id="665R" title='R' data-type='cholmod_sparse **' data-ref="665R">R</dfn>,     <i>// e-by-n sparse matrix where e=max(econ,rank(A))</i></td></tr>
+<tr><th id="410">410</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col6 decl" id="666E" title='E' data-type='long **' data-ref="666E">E</dfn>,   <i>// permutation of 0:n-1, NULL if identity</i></td></tr>
+<tr><th id="411">411</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col7 decl" id="667cc" title='cc' data-type='cholmod_common *' data-ref="667cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="412">412</th><td>) ;</td></tr>
+<tr><th id="413">413</th><td></td></tr>
+<tr><th id="414">414</th><td><i>// [C,R,E] = qr(A,B), where C and B are sparse</i></td></tr>
+<tr><th id="415">415</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="_Z13SuiteSparseQRidlP21cholmod_sparse_structS0_PS0_S1_PPlP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidlP21cholmod_sparse_structS0_PS0_S1_PPlP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="416">416</th><td>(</td></tr>
+<tr><th id="417">417</th><td>    <i>// inputs, not modified</i></td></tr>
+<tr><th id="418">418</th><td>    <em>int</em> <dfn class="local col8 decl" id="668ordering" title='ordering' data-type='int' data-ref="668ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="419">419</th><td>    <em>double</em> <dfn class="local col9 decl" id="669tol" title='tol' data-type='double' data-ref="669tol">tol</dfn>,             <i>// only accept singletons above tol</i></td></tr>
+<tr><th id="420">420</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="local col0 decl" id="670econ" title='econ' data-type='long' data-ref="670econ">econ</dfn>,  <i>// number of rows of C and R to return</i></td></tr>
+<tr><th id="421">421</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col1 decl" id="671A" title='A' data-type='cholmod_sparse *' data-ref="671A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="422">422</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col2 decl" id="672B" title='B' data-type='cholmod_sparse *' data-ref="672B">B</dfn>,      <i>// m-by-nrhs sparse matrix</i></td></tr>
+<tr><th id="423">423</th><td>    <i>// outputs</i></td></tr>
+<tr><th id="424">424</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col3 decl" id="673C" title='C' data-type='cholmod_sparse **' data-ref="673C">C</dfn>,     <i>// C = Q'*B, an e-by-nrhs sparse matrix</i></td></tr>
+<tr><th id="425">425</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col4 decl" id="674R" title='R' data-type='cholmod_sparse **' data-ref="674R">R</dfn>,     <i>// e-by-n sparse matrix where e=max(econ,rank(A))</i></td></tr>
+<tr><th id="426">426</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col5 decl" id="675E" title='E' data-type='long **' data-ref="675E">E</dfn>,   <i>// permutation of 0:n-1, NULL if identity</i></td></tr>
+<tr><th id="427">427</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col6 decl" id="676cc" title='cc' data-type='cholmod_common *' data-ref="676cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="428">428</th><td>) ;</td></tr>
+<tr><th id="429">429</th><td></td></tr>
+<tr><th id="430">430</th><td><i>// [Q,R,E] = qr(A) where Q is returned in Householder form</i></td></tr>
+<tr><th id="431">431</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="decl" id="_Z13SuiteSparseQRidlP21cholmod_sparse_structPS0_PPlS1_S3_PP20cholmod_dense_structP21cholmod_common_struct" title='SuiteSparseQR' data-ref="_Z13SuiteSparseQRidlP21cholmod_sparse_structPS0_PPlS1_S3_PP20cholmod_dense_structP21cholmod_common_struct">SuiteSparseQR</dfn></td></tr>
+<tr><th id="432">432</th><td>(</td></tr>
+<tr><th id="433">433</th><td>    <i>// inputs, not modified</i></td></tr>
+<tr><th id="434">434</th><td>    <em>int</em> <dfn class="local col7 decl" id="677ordering" title='ordering' data-type='int' data-ref="677ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="435">435</th><td>    <em>double</em> <dfn class="local col8 decl" id="678tol" title='tol' data-type='double' data-ref="678tol">tol</dfn>,             <i>// only accept singletons above tol</i></td></tr>
+<tr><th id="436">436</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> <dfn class="local col9 decl" id="679econ" title='econ' data-type='long' data-ref="679econ">econ</dfn>,  <i>// number of rows of C and R to return</i></td></tr>
+<tr><th id="437">437</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col0 decl" id="680A" title='A' data-type='cholmod_sparse *' data-ref="680A">A</dfn>,      <i>// m-by-n sparse matrix</i></td></tr>
+<tr><th id="438">438</th><td>    <i>// outputs</i></td></tr>
+<tr><th id="439">439</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col1 decl" id="681R" title='R' data-type='cholmod_sparse **' data-ref="681R">R</dfn>,     <i>// the R factor</i></td></tr>
+<tr><th id="440">440</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col2 decl" id="682E" title='E' data-type='long **' data-ref="682E">E</dfn>,   <i>// permutation of 0:n-1, NULL if identity</i></td></tr>
+<tr><th id="441">441</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> **<dfn class="local col3 decl" id="683H" title='H' data-type='cholmod_sparse **' data-ref="683H">H</dfn>,     <i>// the Householder vectors (m-by-nh)</i></td></tr>
+<tr><th id="442">442</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> **<dfn class="local col4 decl" id="684HPinv" title='HPinv' data-type='long **' data-ref="684HPinv">HPinv</dfn>,<i>// size m; row permutation for H</i></td></tr>
+<tr><th id="443">443</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> **<dfn class="local col5 decl" id="685HTau" title='HTau' data-type='cholmod_dense **' data-ref="685HTau">HTau</dfn>,   <i>// size nh, Householder coefficients</i></td></tr>
+<tr><th id="444">444</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col6 decl" id="686cc" title='cc' data-type='cholmod_common *' data-ref="686cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="445">445</th><td>) ;</td></tr>
+<tr><th id="446">446</th><td></td></tr>
+<tr><th id="447">447</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="448">448</th><td><i>// === SuiteSparseQR_qmult =====================================================</i></td></tr>
+<tr><th id="449">449</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="450">450</th><td><i></i></td></tr>
+<tr><th id="451">451</th><td><i>// This function takes as input the matrix Q in Householder form, as returned</i></td></tr>
+<tr><th id="452">452</th><td><i>// by SuiteSparseQR (... H, HPinv, HTau, cc) above.</i></td></tr>
+<tr><th id="453">453</th><td><i></i></td></tr>
+<tr><th id="454">454</th><td><i>// returns Y of size m-by-n (NULL on failure)</i></td></tr>
+<tr><th id="455">455</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="decl" id="_Z19SuiteSparseQR_qmultiP21cholmod_sparse_structP20cholmod_dense_structPlS2_P21cholmod_common_struct" title='SuiteSparseQR_qmult' data-ref="_Z19SuiteSparseQR_qmultiP21cholmod_sparse_structP20cholmod_dense_structPlS2_P21cholmod_common_struct">SuiteSparseQR_qmult</dfn></td></tr>
+<tr><th id="456">456</th><td>(</td></tr>
+<tr><th id="457">457</th><td>    <i>// inputs, no modified</i></td></tr>
+<tr><th id="458">458</th><td>    <em>int</em> <dfn class="local col7 decl" id="687method" title='method' data-type='int' data-ref="687method">method</dfn>,         <i>// 0,1,2,3</i></td></tr>
+<tr><th id="459">459</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col8 decl" id="688H" title='H' data-type='cholmod_sparse *' data-ref="688H">H</dfn>,      <i>// either m-by-nh or n-by-nh</i></td></tr>
+<tr><th id="460">460</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col9 decl" id="689HTau" title='HTau' data-type='cholmod_dense *' data-ref="689HTau">HTau</dfn>,    <i>// size 1-by-nh</i></td></tr>
+<tr><th id="461">461</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="local col0 decl" id="690HPinv" title='HPinv' data-type='long *' data-ref="690HPinv">HPinv</dfn>,<i>// size mh</i></td></tr>
+<tr><th id="462">462</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col1 decl" id="691Xdense" title='Xdense' data-type='cholmod_dense *' data-ref="691Xdense">Xdense</dfn>,  <i>// size m-by-n</i></td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="465">465</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col2 decl" id="692cc" title='cc' data-type='cholmod_common *' data-ref="692cc">cc</dfn></td></tr>
+<tr><th id="466">466</th><td>) ;</td></tr>
+<tr><th id="467">467</th><td></td></tr>
+<tr><th id="468">468</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="decl" id="_Z19SuiteSparseQR_qmultiP21cholmod_sparse_structP20cholmod_dense_structPlS0_P21cholmod_common_struct" title='SuiteSparseQR_qmult' data-ref="_Z19SuiteSparseQR_qmultiP21cholmod_sparse_structP20cholmod_dense_structPlS0_P21cholmod_common_struct">SuiteSparseQR_qmult</dfn></td></tr>
+<tr><th id="469">469</th><td>(</td></tr>
+<tr><th id="470">470</th><td>    <i>// inputs, no modified</i></td></tr>
+<tr><th id="471">471</th><td>    <em>int</em> <dfn class="local col3 decl" id="693method" title='method' data-type='int' data-ref="693method">method</dfn>,             <i>// 0,1,2,3</i></td></tr>
+<tr><th id="472">472</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col4 decl" id="694H" title='H' data-type='cholmod_sparse *' data-ref="694H">H</dfn>,      <i>// either m-by-nh or n-by-nh</i></td></tr>
+<tr><th id="473">473</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col5 decl" id="695HTau" title='HTau' data-type='cholmod_dense *' data-ref="695HTau">HTau</dfn>,    <i>// size 1-by-nh</i></td></tr>
+<tr><th id="474">474</th><td>    <a class="macro" href="SuiteSparse_config.h.html#62" title="long" data-ref="_M/SuiteSparse_long">SuiteSparse_long</a> *<dfn class="local col6 decl" id="696HPinv" title='HPinv' data-type='long *' data-ref="696HPinv">HPinv</dfn>,<i>// size mh</i></td></tr>
+<tr><th id="475">475</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col7 decl" id="697X" title='X' data-type='cholmod_sparse *' data-ref="697X">X</dfn>,</td></tr>
+<tr><th id="476">476</th><td></td></tr>
+<tr><th id="477">477</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="478">478</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col8 decl" id="698cc" title='cc' data-type='cholmod_common *' data-ref="698cc">cc</dfn></td></tr>
+<tr><th id="479">479</th><td>) ;</td></tr>
+<tr><th id="480">480</th><td></td></tr>
+<tr><th id="481">481</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="482">482</th><td><i>// === Expert user-callable SuiteSparseQR functions ============================</i></td></tr>
+<tr><th id="483">483</th><td><i>// =============================================================================</i></td></tr>
+<tr><th id="484">484</th><td></td></tr>
+<tr><th id="485">485</th><td><u>#<span data-ppcond="485">ifndef</span> <span class="macro" data-ref="_M/NEXPERT">NEXPERT</span></u></td></tr>
+<tr><th id="486">486</th><td></td></tr>
+<tr><th id="487">487</th><td><i>// These functions are "expert" routines, allowing reuse of the QR</i></td></tr>
+<tr><th id="488">488</th><td><i>// factorization for different right-hand-sides.  They also allow the user to</i></td></tr>
+<tr><th id="489">489</th><td><i>// find the minimum 2-norm solution to an undertermined system of equations.</i></td></tr>
+<tr><th id="490">490</th><td></td></tr>
+<tr><th id="491">491</th><td><b>template</b> &lt;<b>typename</b> Entry&gt;</td></tr>
+<tr><th id="492">492</th><td><a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="decl" id="_Z23SuiteSparseQR_factorizeidP21cholmod_sparse_structP21cholmod_common_struct" title='SuiteSparseQR_factorize' data-ref="_Z23SuiteSparseQR_factorizeidP21cholmod_sparse_structP21cholmod_common_struct">SuiteSparseQR_factorize</dfn></td></tr>
+<tr><th id="493">493</th><td>(</td></tr>
+<tr><th id="494">494</th><td>    <i>// inputs, not modified:</i></td></tr>
+<tr><th id="495">495</th><td>    <em>int</em> <dfn class="local col9 decl" id="699ordering" title='ordering' data-type='int' data-ref="699ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="496">496</th><td>    <em>double</em> <dfn class="local col0 decl" id="700tol" title='tol' data-type='double' data-ref="700tol">tol</dfn>,             <i>// treat columns with 2-norm &lt;= tol as zero</i></td></tr>
+<tr><th id="497">497</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col1 decl" id="701A" title='A' data-type='cholmod_sparse *' data-ref="701A">A</dfn>,      <i>// sparse matrix to factorize</i></td></tr>
+<tr><th id="498">498</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="499">499</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col2 decl" id="702cc" title='cc' data-type='cholmod_common *' data-ref="702cc">cc</dfn></td></tr>
+<tr><th id="500">500</th><td>) ;</td></tr>
+<tr><th id="501">501</th><td></td></tr>
+<tr><th id="502">502</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="decl" id="_Z19SuiteSparseQR_solveiP27SuiteSparseQR_factorizationIT_EP20cholmod_dense_structP21cholmod_common_struct" title='SuiteSparseQR_solve' data-ref="_Z19SuiteSparseQR_solveiP27SuiteSparseQR_factorizationIT_EP20cholmod_dense_structP21cholmod_common_struct">SuiteSparseQR_solve</dfn>    <i>// returns X</i></td></tr>
+<tr><th id="503">503</th><td>(</td></tr>
+<tr><th id="504">504</th><td>    <i>// inputs, not modified:</i></td></tr>
+<tr><th id="505">505</th><td>    <em>int</em> <dfn class="local col3 decl" id="703system" title='system' data-type='int' data-ref="703system">system</dfn>,                 <i>// which system to solve</i></td></tr>
+<tr><th id="506">506</th><td>    <a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="local col4 decl" id="704QR" title='QR' data-type='SuiteSparseQR_factorization&lt;Entry&gt; *' data-ref="704QR">QR</dfn>, <i>// of an m-by-n sparse matrix A</i></td></tr>
+<tr><th id="507">507</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col5 decl" id="705B" title='B' data-type='cholmod_dense *' data-ref="705B">B</dfn>,           <i>// right-hand-side, m-by-nrhs or n-by-nrhs</i></td></tr>
+<tr><th id="508">508</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="509">509</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col6 decl" id="706cc" title='cc' data-type='cholmod_common *' data-ref="706cc">cc</dfn></td></tr>
+<tr><th id="510">510</th><td>) ;</td></tr>
+<tr><th id="511">511</th><td></td></tr>
+<tr><th id="512">512</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="decl" id="_Z19SuiteSparseQR_solveiP27SuiteSparseQR_factorizationIT_EP21cholmod_sparse_structP21cholmod_common_struct" title='SuiteSparseQR_solve' data-ref="_Z19SuiteSparseQR_solveiP27SuiteSparseQR_factorizationIT_EP21cholmod_sparse_structP21cholmod_common_struct">SuiteSparseQR_solve</dfn>    <i>// returns X</i></td></tr>
+<tr><th id="513">513</th><td>(</td></tr>
+<tr><th id="514">514</th><td>    <i>// inputs, not modified:</i></td></tr>
+<tr><th id="515">515</th><td>    <em>int</em> <dfn class="local col7 decl" id="707system" title='system' data-type='int' data-ref="707system">system</dfn>,                 <i>// which system to solve (0,1,2,3)</i></td></tr>
+<tr><th id="516">516</th><td>    <a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="local col8 decl" id="708QR" title='QR' data-type='SuiteSparseQR_factorization&lt;Entry&gt; *' data-ref="708QR">QR</dfn>, <i>// of an m-by-n sparse matrix A</i></td></tr>
+<tr><th id="517">517</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col9 decl" id="709Bsparse" title='Bsparse' data-type='cholmod_sparse *' data-ref="709Bsparse">Bsparse</dfn>,    <i>// right-hand-side, m-by-nrhs or n-by-nrhs</i></td></tr>
+<tr><th id="518">518</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="519">519</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col0 decl" id="710cc" title='cc' data-type='cholmod_common *' data-ref="710cc">cc</dfn></td></tr>
+<tr><th id="520">520</th><td>) ;</td></tr>
+<tr><th id="521">521</th><td></td></tr>
+<tr><th id="522">522</th><td><i>// returns Y of size m-by-n, or NULL on failure</i></td></tr>
+<tr><th id="523">523</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="decl" id="_Z19SuiteSparseQR_qmultiP27SuiteSparseQR_factorizationIT_EP20cholmod_dense_structP21cholmod_common_struct" title='SuiteSparseQR_qmult' data-ref="_Z19SuiteSparseQR_qmultiP27SuiteSparseQR_factorizationIT_EP20cholmod_dense_structP21cholmod_common_struct">SuiteSparseQR_qmult</dfn></td></tr>
+<tr><th id="524">524</th><td>(</td></tr>
+<tr><th id="525">525</th><td>    <i>// inputs, not modified</i></td></tr>
+<tr><th id="526">526</th><td>    <em>int</em> <dfn class="local col1 decl" id="711method" title='method' data-type='int' data-ref="711method">method</dfn>,                 <i>// 0,1,2,3 (same as SuiteSparseQR_qmult)</i></td></tr>
+<tr><th id="527">527</th><td>    <a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="local col2 decl" id="712QR" title='QR' data-type='SuiteSparseQR_factorization&lt;Entry&gt; *' data-ref="712QR">QR</dfn>, <i>// of an m-by-n sparse matrix A</i></td></tr>
+<tr><th id="528">528</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col3 decl" id="713Xdense" title='Xdense' data-type='cholmod_dense *' data-ref="713Xdense">Xdense</dfn>,      <i>// size m-by-n with leading dimension ldx</i></td></tr>
+<tr><th id="529">529</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="530">530</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col4 decl" id="714cc" title='cc' data-type='cholmod_common *' data-ref="714cc">cc</dfn></td></tr>
+<tr><th id="531">531</th><td>) ;</td></tr>
+<tr><th id="532">532</th><td></td></tr>
+<tr><th id="533">533</th><td><i>// returns Y of size m-by-n, or NULL on failure</i></td></tr>
+<tr><th id="534">534</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="decl" id="_Z19SuiteSparseQR_qmultiP27SuiteSparseQR_factorizationIT_EP21cholmod_sparse_structP21cholmod_common_struct" title='SuiteSparseQR_qmult' data-ref="_Z19SuiteSparseQR_qmultiP27SuiteSparseQR_factorizationIT_EP21cholmod_sparse_structP21cholmod_common_struct">SuiteSparseQR_qmult</dfn></td></tr>
+<tr><th id="535">535</th><td>(</td></tr>
+<tr><th id="536">536</th><td>    <i>// inputs, not modified</i></td></tr>
+<tr><th id="537">537</th><td>    <em>int</em> <dfn class="local col5 decl" id="715method" title='method' data-type='int' data-ref="715method">method</dfn>,                 <i>// 0,1,2,3</i></td></tr>
+<tr><th id="538">538</th><td>    <a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="local col6 decl" id="716QR" title='QR' data-type='SuiteSparseQR_factorization&lt;Entry&gt; *' data-ref="716QR">QR</dfn>, <i>// of an m-by-n sparse matrix A</i></td></tr>
+<tr><th id="539">539</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col7 decl" id="717Xsparse" title='Xsparse' data-type='cholmod_sparse *' data-ref="717Xsparse">Xsparse</dfn>,    <i>// size m-by-n</i></td></tr>
+<tr><th id="540">540</th><td>    <i>// workspace and parameters</i></td></tr>
+<tr><th id="541">541</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col8 decl" id="718cc" title='cc' data-type='cholmod_common *' data-ref="718cc">cc</dfn></td></tr>
+<tr><th id="542">542</th><td>) ;</td></tr>
+<tr><th id="543">543</th><td></td></tr>
+<tr><th id="544">544</th><td><i>// free the QR object</i></td></tr>
+<tr><th id="545">545</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <em>int</em> <dfn class="decl" id="_Z18SuiteSparseQR_freePP27SuiteSparseQR_factorizationIT_EP21cholmod_common_struct" title='SuiteSparseQR_free' data-ref="_Z18SuiteSparseQR_freePP27SuiteSparseQR_factorizationIT_EP21cholmod_common_struct">SuiteSparseQR_free</dfn></td></tr>
+<tr><th id="546">546</th><td>(</td></tr>
+<tr><th id="547">547</th><td>    <a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; **<dfn class="local col9 decl" id="719QR" title='QR' data-type='SuiteSparseQR_factorization&lt;Entry&gt; **' data-ref="719QR">QR</dfn>, <i>// of an m-by-n sparse matrix A</i></td></tr>
+<tr><th id="548">548</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col0 decl" id="720cc" title='cc' data-type='cholmod_common *' data-ref="720cc">cc</dfn></td></tr>
+<tr><th id="549">549</th><td>) ;</td></tr>
+<tr><th id="550">550</th><td></td></tr>
+<tr><th id="551">551</th><td><i>// find the min 2-norm solution to a sparse linear system</i></td></tr>
+<tr><th id="552">552</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="decl" id="_Z22SuiteSparseQR_min2normidP21cholmod_sparse_structP20cholmod_dense_structP21cholmod_common_struct" title='SuiteSparseQR_min2norm' data-ref="_Z22SuiteSparseQR_min2normidP21cholmod_sparse_structP20cholmod_dense_structP21cholmod_common_struct">SuiteSparseQR_min2norm</dfn></td></tr>
+<tr><th id="553">553</th><td>(</td></tr>
+<tr><th id="554">554</th><td>    <em>int</em> <dfn class="local col1 decl" id="721ordering" title='ordering' data-type='int' data-ref="721ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="555">555</th><td>    <em>double</em> <dfn class="local col2 decl" id="722tol" title='tol' data-type='double' data-ref="722tol">tol</dfn>,</td></tr>
+<tr><th id="556">556</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col3 decl" id="723A" title='A' data-type='cholmod_sparse *' data-ref="723A">A</dfn>,</td></tr>
+<tr><th id="557">557</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_dense" title='cholmod_dense' data-type='struct cholmod_dense_struct' data-ref="cholmod_dense">cholmod_dense</a> *<dfn class="local col4 decl" id="724B" title='B' data-type='cholmod_dense *' data-ref="724B">B</dfn>,</td></tr>
+<tr><th id="558">558</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col5 decl" id="725cc" title='cc' data-type='cholmod_common *' data-ref="725cc">cc</dfn></td></tr>
+<tr><th id="559">559</th><td>) ;</td></tr>
+<tr><th id="560">560</th><td></td></tr>
+<tr><th id="561">561</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="decl" id="_Z22SuiteSparseQR_min2normidP21cholmod_sparse_structS0_P21cholmod_common_struct" title='SuiteSparseQR_min2norm' data-ref="_Z22SuiteSparseQR_min2normidP21cholmod_sparse_structS0_P21cholmod_common_struct">SuiteSparseQR_min2norm</dfn></td></tr>
+<tr><th id="562">562</th><td>(</td></tr>
+<tr><th id="563">563</th><td>    <em>int</em> <dfn class="local col6 decl" id="726ordering" title='ordering' data-type='int' data-ref="726ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="564">564</th><td>    <em>double</em> <dfn class="local col7 decl" id="727tol" title='tol' data-type='double' data-ref="727tol">tol</dfn>,</td></tr>
+<tr><th id="565">565</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col8 decl" id="728A" title='A' data-type='cholmod_sparse *' data-ref="728A">A</dfn>,</td></tr>
+<tr><th id="566">566</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col9 decl" id="729B" title='B' data-type='cholmod_sparse *' data-ref="729B">B</dfn>,</td></tr>
+<tr><th id="567">567</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col0 decl" id="730cc" title='cc' data-type='cholmod_common *' data-ref="730cc">cc</dfn></td></tr>
+<tr><th id="568">568</th><td>) ;</td></tr>
+<tr><th id="569">569</th><td></td></tr>
+<tr><th id="570">570</th><td><i>// symbolic QR factorization; no singletons exploited</i></td></tr>
+<tr><th id="571">571</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; </td></tr>
+<tr><th id="572">572</th><td><a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="decl" id="_Z22SuiteSparseQR_symboliciiP21cholmod_sparse_structP21cholmod_common_struct" title='SuiteSparseQR_symbolic' data-ref="_Z22SuiteSparseQR_symboliciiP21cholmod_sparse_structP21cholmod_common_struct">SuiteSparseQR_symbolic</dfn></td></tr>
+<tr><th id="573">573</th><td>(</td></tr>
+<tr><th id="574">574</th><td>    <i>// inputs:</i></td></tr>
+<tr><th id="575">575</th><td>    <em>int</em> <dfn class="local col1 decl" id="731ordering" title='ordering' data-type='int' data-ref="731ordering">ordering</dfn>,           <i>// all, except 3:given treated as 0:fixed</i></td></tr>
+<tr><th id="576">576</th><td>    <em>int</em> <dfn class="local col2 decl" id="732allow_tol" title='allow_tol' data-type='int' data-ref="732allow_tol">allow_tol</dfn>,          <i>// if FALSE, tol is ignored by the numeric</i></td></tr>
+<tr><th id="577">577</th><td>                            <i>// factorization, and no rank detection is performed</i></td></tr>
+<tr><th id="578">578</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col3 decl" id="733A" title='A' data-type='cholmod_sparse *' data-ref="733A">A</dfn>,      <i>// sparse matrix to factorize (A-&gt;x ignored)</i></td></tr>
+<tr><th id="579">579</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col4 decl" id="734cc" title='cc' data-type='cholmod_common *' data-ref="734cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="580">580</th><td>) ;</td></tr>
+<tr><th id="581">581</th><td></td></tr>
+<tr><th id="582">582</th><td><i>// numeric QR factorization;</i></td></tr>
+<tr><th id="583">583</th><td><b>template</b> &lt;<b>typename</b> Entry&gt; <em>int</em> <dfn class="decl" id="_Z21SuiteSparseQR_numericdP21cholmod_sparse_structP27SuiteSparseQR_factorizationIT_EP21cholmod_common_struct" title='SuiteSparseQR_numeric' data-ref="_Z21SuiteSparseQR_numericdP21cholmod_sparse_structP27SuiteSparseQR_factorizationIT_EP21cholmod_common_struct">SuiteSparseQR_numeric</dfn></td></tr>
+<tr><th id="584">584</th><td>(</td></tr>
+<tr><th id="585">585</th><td>    <i>// inputs:</i></td></tr>
+<tr><th id="586">586</th><td>    <em>double</em> <dfn class="local col5 decl" id="735tol" title='tol' data-type='double' data-ref="735tol">tol</dfn>,             <i>// treat columns with 2-norm &lt;= tol as zero</i></td></tr>
+<tr><th id="587">587</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_sparse" title='cholmod_sparse' data-type='struct cholmod_sparse_struct' data-ref="cholmod_sparse">cholmod_sparse</a> *<dfn class="local col6 decl" id="736A" title='A' data-type='cholmod_sparse *' data-ref="736A">A</dfn>,      <i>// sparse matrix to factorize</i></td></tr>
+<tr><th id="588">588</th><td>    <i>// input/output</i></td></tr>
+<tr><th id="589">589</th><td>    <a class="type" href="#SuiteSparseQR_factorization" title='SuiteSparseQR_factorization' data-ref="SuiteSparseQR_factorization">SuiteSparseQR_factorization</a> &lt;Entry&gt; *<dfn class="local col7 decl" id="737QR" title='QR' data-type='SuiteSparseQR_factorization&lt;Entry&gt; *' data-ref="737QR">QR</dfn>,</td></tr>
+<tr><th id="590">590</th><td>    <a class="typedef" href="cholmod_core.h.html#cholmod_common" title='cholmod_common' data-type='struct cholmod_common_struct' data-ref="cholmod_common">cholmod_common</a> *<dfn class="local col8 decl" id="738cc" title='cc' data-type='cholmod_common *' data-ref="738cc">cc</dfn>      <i>// workspace and parameters</i></td></tr>
+<tr><th id="591">591</th><td>) ;</td></tr>
+<tr><th id="592">592</th><td></td></tr>
+<tr><th id="593">593</th><td><u>#<span data-ppcond="485">endif</span></u></td></tr>
+<tr><th id="594">594</th><td></td></tr>
+<tr><th id="595">595</th><td><u>#<span data-ppcond="7">endif</span></u></td></tr>
+<tr><th id="596">596</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../ceres-solver/internal/ceres/compressed_col_sparse_matrix_utils_test.cc.html'>ceres-solver/internal/ceres/compressed_col_sparse_matrix_utils_test.cc</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

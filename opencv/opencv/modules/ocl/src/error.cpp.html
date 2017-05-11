@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>error.cpp source code [opencv/modules/ocl/src/error.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/ocl/src/error.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>ocl</a>/<a href='./'>src</a>/<a href='error.cpp.html'>error.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2010-2012, Institute Of Software Chinese Academy Of Science, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2010-2012, Advanced Micro Devices, Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// @Authors</i></td></tr>
+<tr><th id="18">18</th><td><i>//</i></td></tr>
+<tr><th id="19">19</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="20">20</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="21">21</th><td><i>//</i></td></tr>
+<tr><th id="22">22</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="23">23</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="24">24</th><td><i>//</i></td></tr>
+<tr><th id="25">25</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="26">26</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="27">27</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="30">30</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="31">31</th><td><i>//</i></td></tr>
+<tr><th id="32">32</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="33">33</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="34">34</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="35">35</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="36">36</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="37">37</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="38">38</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="39">39</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="40">40</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="41">41</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="42">42</th><td><i>//</i></td></tr>
+<tr><th id="43">43</th><td><i>//M*/</i></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><b>using</b> <b>namespace</b> <span class="namespace">cv</span>;</td></tr>
+<tr><th id="47">47</th><td><b>using</b> <b>namespace</b> <span class="namespace">cv::ocl</span>;</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="50">50</th><td>{</td></tr>
+<tr><th id="51">51</th><td>    <b>namespace</b> <span class="namespace">ocl</span></td></tr>
+<tr><th id="52">52</th><td>    {</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td>        <em>const</em> <em>char</em> *<dfn class="decl def" id="_ZN2cv3ocl20getOpenCLErrorStringEi" title='cv::ocl::getOpenCLErrorString' data-ref="_ZN2cv3ocl20getOpenCLErrorStringEi">getOpenCLErrorString</dfn>( <em>int</em> <dfn class="local col1 decl" id="1err" title='err' data-type='int' data-ref="1err">err</dfn> )</td></tr>
+<tr><th id="55">55</th><td>        {</td></tr>
+<tr><th id="56">56</th><td>            <b>switch</b>(<a class="local col1 ref" href="#1err" title='err' data-ref="1err">err</a>)</td></tr>
+<tr><th id="57">57</th><td>            {</td></tr>
+<tr><th id="58">58</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#120" title="-1" data-ref="_M/CL_DEVICE_NOT_FOUND">CL_DEVICE_NOT_FOUND</a>:</td></tr>
+<tr><th id="59">59</th><td>                <b>return</b> <q>"CL_DEVICE_NOT_FOUND"</q>;</td></tr>
+<tr><th id="60">60</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#121" title="-2" data-ref="_M/CL_DEVICE_NOT_AVAILABLE">CL_DEVICE_NOT_AVAILABLE</a>:</td></tr>
+<tr><th id="61">61</th><td>                <b>return</b> <q>"CL_DEVICE_NOT_AVAILABLE"</q>;</td></tr>
+<tr><th id="62">62</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#122" title="-3" data-ref="_M/CL_COMPILER_NOT_AVAILABLE">CL_COMPILER_NOT_AVAILABLE</a>:</td></tr>
+<tr><th id="63">63</th><td>                <b>return</b> <q>"CL_COMPILER_NOT_AVAILABLE"</q>;</td></tr>
+<tr><th id="64">64</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#123" title="-4" data-ref="_M/CL_MEM_OBJECT_ALLOCATION_FAILURE">CL_MEM_OBJECT_ALLOCATION_FAILURE</a>:</td></tr>
+<tr><th id="65">65</th><td>                <b>return</b> <q>"CL_MEM_OBJECT_ALLOCATION_FAILURE"</q>;</td></tr>
+<tr><th id="66">66</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#124" title="-5" data-ref="_M/CL_OUT_OF_RESOURCES">CL_OUT_OF_RESOURCES</a>:</td></tr>
+<tr><th id="67">67</th><td>                <b>return</b> <q>"CL_OUT_OF_RESOURCES"</q>;</td></tr>
+<tr><th id="68">68</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#125" title="-6" data-ref="_M/CL_OUT_OF_HOST_MEMORY">CL_OUT_OF_HOST_MEMORY</a>:</td></tr>
+<tr><th id="69">69</th><td>                <b>return</b> <q>"CL_OUT_OF_HOST_MEMORY"</q>;</td></tr>
+<tr><th id="70">70</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#126" title="-7" data-ref="_M/CL_PROFILING_INFO_NOT_AVAILABLE">CL_PROFILING_INFO_NOT_AVAILABLE</a>:</td></tr>
+<tr><th id="71">71</th><td>                <b>return</b> <q>"CL_PROFILING_INFO_NOT_AVAILABLE"</q>;</td></tr>
+<tr><th id="72">72</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#127" title="-8" data-ref="_M/CL_MEM_COPY_OVERLAP">CL_MEM_COPY_OVERLAP</a>:</td></tr>
+<tr><th id="73">73</th><td>                <b>return</b> <q>"CL_MEM_COPY_OVERLAP"</q>;</td></tr>
+<tr><th id="74">74</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#128" title="-9" data-ref="_M/CL_IMAGE_FORMAT_MISMATCH">CL_IMAGE_FORMAT_MISMATCH</a>:</td></tr>
+<tr><th id="75">75</th><td>                <b>return</b> <q>"CL_IMAGE_FORMAT_MISMATCH"</q>;</td></tr>
+<tr><th id="76">76</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#129" title="-10" data-ref="_M/CL_IMAGE_FORMAT_NOT_SUPPORTED">CL_IMAGE_FORMAT_NOT_SUPPORTED</a>:</td></tr>
+<tr><th id="77">77</th><td>                <b>return</b> <q>"CL_IMAGE_FORMAT_NOT_SUPPORTED"</q>;</td></tr>
+<tr><th id="78">78</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#130" title="-11" data-ref="_M/CL_BUILD_PROGRAM_FAILURE">CL_BUILD_PROGRAM_FAILURE</a>:</td></tr>
+<tr><th id="79">79</th><td>                <b>return</b> <q>"CL_BUILD_PROGRAM_FAILURE"</q>;</td></tr>
+<tr><th id="80">80</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#131" title="-12" data-ref="_M/CL_MAP_FAILURE">CL_MAP_FAILURE</a>:</td></tr>
+<tr><th id="81">81</th><td>                <b>return</b> <q>"CL_MAP_FAILURE"</q>;</td></tr>
+<tr><th id="82">82</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#132" title="-13" data-ref="_M/CL_MISALIGNED_SUB_BUFFER_OFFSET">CL_MISALIGNED_SUB_BUFFER_OFFSET</a>:</td></tr>
+<tr><th id="83">83</th><td>                <b>return</b> <q>"CL_MISALIGNED_SUB_BUFFER_OFFSET"</q>;</td></tr>
+<tr><th id="84">84</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#133" title="-14" data-ref="_M/CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST">CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST</a>:</td></tr>
+<tr><th id="85">85</th><td>                <b>return</b> <q>"CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST"</q>;</td></tr>
+<tr><th id="86">86</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#140" title="-30" data-ref="_M/CL_INVALID_VALUE">CL_INVALID_VALUE</a>:</td></tr>
+<tr><th id="87">87</th><td>                <b>return</b> <q>"CL_INVALID_VALUE"</q>;</td></tr>
+<tr><th id="88">88</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#141" title="-31" data-ref="_M/CL_INVALID_DEVICE_TYPE">CL_INVALID_DEVICE_TYPE</a>:</td></tr>
+<tr><th id="89">89</th><td>                <b>return</b> <q>"CL_INVALID_DEVICE_TYPE"</q>;</td></tr>
+<tr><th id="90">90</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#142" title="-32" data-ref="_M/CL_INVALID_PLATFORM">CL_INVALID_PLATFORM</a>:</td></tr>
+<tr><th id="91">91</th><td>                <b>return</b> <q>"CL_INVALID_PLATFORM"</q>;</td></tr>
+<tr><th id="92">92</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#143" title="-33" data-ref="_M/CL_INVALID_DEVICE">CL_INVALID_DEVICE</a>:</td></tr>
+<tr><th id="93">93</th><td>                <b>return</b> <q>"CL_INVALID_DEVICE"</q>;</td></tr>
+<tr><th id="94">94</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#144" title="-34" data-ref="_M/CL_INVALID_CONTEXT">CL_INVALID_CONTEXT</a>:</td></tr>
+<tr><th id="95">95</th><td>                <b>return</b> <q>"CL_INVALID_CONTEXT"</q>;</td></tr>
+<tr><th id="96">96</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#145" title="-35" data-ref="_M/CL_INVALID_QUEUE_PROPERTIES">CL_INVALID_QUEUE_PROPERTIES</a>:</td></tr>
+<tr><th id="97">97</th><td>                <b>return</b> <q>"CL_INVALID_QUEUE_PROPERTIES"</q>;</td></tr>
+<tr><th id="98">98</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#146" title="-36" data-ref="_M/CL_INVALID_COMMAND_QUEUE">CL_INVALID_COMMAND_QUEUE</a>:</td></tr>
+<tr><th id="99">99</th><td>                <b>return</b> <q>"CL_INVALID_COMMAND_QUEUE"</q>;</td></tr>
+<tr><th id="100">100</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#147" title="-37" data-ref="_M/CL_INVALID_HOST_PTR">CL_INVALID_HOST_PTR</a>:</td></tr>
+<tr><th id="101">101</th><td>                <b>return</b> <q>"CL_INVALID_HOST_PTR"</q>;</td></tr>
+<tr><th id="102">102</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#148" title="-38" data-ref="_M/CL_INVALID_MEM_OBJECT">CL_INVALID_MEM_OBJECT</a>:</td></tr>
+<tr><th id="103">103</th><td>                <b>return</b> <q>"CL_INVALID_MEM_OBJECT"</q>;</td></tr>
+<tr><th id="104">104</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#149" title="-39" data-ref="_M/CL_INVALID_IMAGE_FORMAT_DESCRIPTOR">CL_INVALID_IMAGE_FORMAT_DESCRIPTOR</a>:</td></tr>
+<tr><th id="105">105</th><td>                <b>return</b> <q>"CL_INVALID_IMAGE_FORMAT_DESCRIPTOR"</q>;</td></tr>
+<tr><th id="106">106</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#150" title="-40" data-ref="_M/CL_INVALID_IMAGE_SIZE">CL_INVALID_IMAGE_SIZE</a>:</td></tr>
+<tr><th id="107">107</th><td>                <b>return</b> <q>"CL_INVALID_IMAGE_SIZE"</q>;</td></tr>
+<tr><th id="108">108</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#151" title="-41" data-ref="_M/CL_INVALID_SAMPLER">CL_INVALID_SAMPLER</a>:</td></tr>
+<tr><th id="109">109</th><td>                <b>return</b> <q>"CL_INVALID_SAMPLER"</q>;</td></tr>
+<tr><th id="110">110</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#152" title="-42" data-ref="_M/CL_INVALID_BINARY">CL_INVALID_BINARY</a>:</td></tr>
+<tr><th id="111">111</th><td>                <b>return</b> <q>"CL_INVALID_BINARY"</q>;</td></tr>
+<tr><th id="112">112</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#153" title="-43" data-ref="_M/CL_INVALID_BUILD_OPTIONS">CL_INVALID_BUILD_OPTIONS</a>:</td></tr>
+<tr><th id="113">113</th><td>                <b>return</b> <q>"CL_INVALID_BUILD_OPTIONS"</q>;</td></tr>
+<tr><th id="114">114</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#154" title="-44" data-ref="_M/CL_INVALID_PROGRAM">CL_INVALID_PROGRAM</a>:</td></tr>
+<tr><th id="115">115</th><td>                <b>return</b> <q>"CL_INVALID_PROGRAM"</q>;</td></tr>
+<tr><th id="116">116</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#155" title="-45" data-ref="_M/CL_INVALID_PROGRAM_EXECUTABLE">CL_INVALID_PROGRAM_EXECUTABLE</a>:</td></tr>
+<tr><th id="117">117</th><td>                <b>return</b> <q>"CL_INVALID_PROGRAM_EXECUTABLE"</q>;</td></tr>
+<tr><th id="118">118</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#156" title="-46" data-ref="_M/CL_INVALID_KERNEL_NAME">CL_INVALID_KERNEL_NAME</a>:</td></tr>
+<tr><th id="119">119</th><td>                <b>return</b> <q>"CL_INVALID_KERNEL_NAME"</q>;</td></tr>
+<tr><th id="120">120</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#157" title="-47" data-ref="_M/CL_INVALID_KERNEL_DEFINITION">CL_INVALID_KERNEL_DEFINITION</a>:</td></tr>
+<tr><th id="121">121</th><td>                <b>return</b> <q>"CL_INVALID_KERNEL_DEFINITION"</q>;</td></tr>
+<tr><th id="122">122</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#158" title="-48" data-ref="_M/CL_INVALID_KERNEL">CL_INVALID_KERNEL</a>:</td></tr>
+<tr><th id="123">123</th><td>                <b>return</b> <q>"CL_INVALID_KERNEL"</q>;</td></tr>
+<tr><th id="124">124</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#159" title="-49" data-ref="_M/CL_INVALID_ARG_INDEX">CL_INVALID_ARG_INDEX</a>:</td></tr>
+<tr><th id="125">125</th><td>                <b>return</b> <q>"CL_INVALID_ARG_INDEX"</q>;</td></tr>
+<tr><th id="126">126</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#160" title="-50" data-ref="_M/CL_INVALID_ARG_VALUE">CL_INVALID_ARG_VALUE</a>:</td></tr>
+<tr><th id="127">127</th><td>                <b>return</b> <q>"CL_INVALID_ARG_VALUE"</q>;</td></tr>
+<tr><th id="128">128</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#161" title="-51" data-ref="_M/CL_INVALID_ARG_SIZE">CL_INVALID_ARG_SIZE</a>:</td></tr>
+<tr><th id="129">129</th><td>                <b>return</b> <q>"CL_INVALID_ARG_SIZE"</q>;</td></tr>
+<tr><th id="130">130</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#162" title="-52" data-ref="_M/CL_INVALID_KERNEL_ARGS">CL_INVALID_KERNEL_ARGS</a>:</td></tr>
+<tr><th id="131">131</th><td>                <b>return</b> <q>"CL_INVALID_KERNEL_ARGS"</q>;</td></tr>
+<tr><th id="132">132</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#163" title="-53" data-ref="_M/CL_INVALID_WORK_DIMENSION">CL_INVALID_WORK_DIMENSION</a>:</td></tr>
+<tr><th id="133">133</th><td>                <b>return</b> <q>"CL_INVALID_WORK_DIMENSION"</q>;</td></tr>
+<tr><th id="134">134</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#164" title="-54" data-ref="_M/CL_INVALID_WORK_GROUP_SIZE">CL_INVALID_WORK_GROUP_SIZE</a>:</td></tr>
+<tr><th id="135">135</th><td>                <b>return</b> <q>"CL_INVALID_WORK_GROUP_SIZE"</q>;</td></tr>
+<tr><th id="136">136</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#165" title="-55" data-ref="_M/CL_INVALID_WORK_ITEM_SIZE">CL_INVALID_WORK_ITEM_SIZE</a>:</td></tr>
+<tr><th id="137">137</th><td>                <b>return</b> <q>"CL_INVALID_WORK_ITEM_SIZE"</q>;</td></tr>
+<tr><th id="138">138</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#166" title="-56" data-ref="_M/CL_INVALID_GLOBAL_OFFSET">CL_INVALID_GLOBAL_OFFSET</a>:</td></tr>
+<tr><th id="139">139</th><td>                <b>return</b> <q>"CL_INVALID_GLOBAL_OFFSET"</q>;</td></tr>
+<tr><th id="140">140</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#167" title="-57" data-ref="_M/CL_INVALID_EVENT_WAIT_LIST">CL_INVALID_EVENT_WAIT_LIST</a>:</td></tr>
+<tr><th id="141">141</th><td>                <b>return</b> <q>"CL_INVALID_EVENT_WAIT_LIST"</q>;</td></tr>
+<tr><th id="142">142</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#168" title="-58" data-ref="_M/CL_INVALID_EVENT">CL_INVALID_EVENT</a>:</td></tr>
+<tr><th id="143">143</th><td>                <b>return</b> <q>"CL_INVALID_EVENT"</q>;</td></tr>
+<tr><th id="144">144</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#169" title="-59" data-ref="_M/CL_INVALID_OPERATION">CL_INVALID_OPERATION</a>:</td></tr>
+<tr><th id="145">145</th><td>                <b>return</b> <q>"CL_INVALID_OPERATION"</q>;</td></tr>
+<tr><th id="146">146</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#170" title="-60" data-ref="_M/CL_INVALID_GL_OBJECT">CL_INVALID_GL_OBJECT</a>:</td></tr>
+<tr><th id="147">147</th><td>                <b>return</b> <q>"CL_INVALID_GL_OBJECT"</q>;</td></tr>
+<tr><th id="148">148</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#171" title="-61" data-ref="_M/CL_INVALID_BUFFER_SIZE">CL_INVALID_BUFFER_SIZE</a>:</td></tr>
+<tr><th id="149">149</th><td>                <b>return</b> <q>"CL_INVALID_BUFFER_SIZE"</q>;</td></tr>
+<tr><th id="150">150</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#172" title="-62" data-ref="_M/CL_INVALID_MIP_LEVEL">CL_INVALID_MIP_LEVEL</a>:</td></tr>
+<tr><th id="151">151</th><td>                <b>return</b> <q>"CL_INVALID_MIP_LEVEL"</q>;</td></tr>
+<tr><th id="152">152</th><td>            <b>case</b> <a class="macro" href="../../../3rdparty/include/opencl/1.2/CL/cl.h.html#173" title="-63" data-ref="_M/CL_INVALID_GLOBAL_WORK_SIZE">CL_INVALID_GLOBAL_WORK_SIZE</a>:</td></tr>
+<tr><th id="153">153</th><td>                <b>return</b> <q>"CL_INVALID_GLOBAL_WORK_SIZE"</q>;</td></tr>
+<tr><th id="154">154</th><td>                <i>//case CL_INVALID_PROPERTY:</i></td></tr>
+<tr><th id="155">155</th><td><i>                //    return "CL_INVALID_PROPERTY";</i></td></tr>
+<tr><th id="156">156</th><td><i>                //case CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR:</i></td></tr>
+<tr><th id="157">157</th><td><i>                //    return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";</i></td></tr>
+<tr><th id="158">158</th><td><i>                //case CL_PLATFORM_NOT_FOUND_KHR:</i></td></tr>
+<tr><th id="159">159</th><td><i>                //    return "CL_PLATFORM_NOT_FOUND_KHR";</i></td></tr>
+<tr><th id="160">160</th><td><i>                //    //case CL_INVALID_PROPERTY_EXT:</i></td></tr>
+<tr><th id="161">161</th><td><i>                //    //    return "CL_INVALID_PROPERTY_EXT";</i></td></tr>
+<tr><th id="162">162</th><td><i>                //case CL_DEVICE_PARTITION_FAILED_EXT:</i></td></tr>
+<tr><th id="163">163</th><td><i>                //    return "CL_DEVICE_PARTITION_FAILED_EXT";</i></td></tr>
+<tr><th id="164">164</th><td><i>                //case CL_INVALID_PARTITION_COUNT_EXT:</i></td></tr>
+<tr><th id="165">165</th><td><i>                //    return "CL_INVALID_PARTITION_COUNT_EXT";</i></td></tr>
+<tr><th id="166">166</th><td><i>                //default:</i></td></tr>
+<tr><th id="167">167</th><td><i>                //    return "unknown error code";</i></td></tr>
+<tr><th id="168">168</th><td>            }</td></tr>
+<tr><th id="169">169</th><td>            <em>static</em> <em>char</em> <dfn class="local col2 decl" id="2buf" title='buf' data-type='char [256]' data-ref="2buf">buf</dfn>[<var>256</var>];</td></tr>
+<tr><th id="170">170</th><td>            <a class="ref" href="../../../../include/stdio.h.html#sprintf" title='sprintf' data-ref="sprintf">sprintf</a>(<a class="local col2 ref" href="#2buf" title='buf' data-ref="2buf">buf</a>, <q>"%d"</q>, <a class="local col1 ref" href="#1err" title='err' data-ref="1err">err</a>);</td></tr>
+<tr><th id="171">171</th><td>            <b>return</b> <a class="local col2 ref" href="#2buf" title='buf' data-ref="2buf">buf</a>;</td></tr>
+<tr><th id="172">172</th><td>        }</td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td>        <em>void</em> <dfn class="decl def" id="_ZN2cv3ocl5errorEPKcS2_iS2_" title='cv::ocl::error' data-ref="_ZN2cv3ocl5errorEPKcS2_iS2_">error</dfn>(<em>const</em> <em>char</em> *<dfn class="local col3 decl" id="3error_string" title='error_string' data-type='const char *' data-ref="3error_string">error_string</dfn>, <em>const</em> <em>char</em> *<dfn class="local col4 decl" id="4file" title='file' data-type='const char *' data-ref="4file">file</dfn>, <em>const</em> <em>int</em> <dfn class="local col5 decl" id="5line" title='line' data-type='const int' data-ref="5line">line</dfn>, <em>const</em> <em>char</em> *<dfn class="local col6 decl" id="6func" title='func' data-type='const char *' data-ref="6func">func</dfn>)</td></tr>
+<tr><th id="175">175</th><td>        {</td></tr>
+<tr><th id="176">176</th><td>            <em>int</em> <dfn class="local col7 decl" id="7code" title='code' data-type='int' data-ref="7code">code</dfn> = <a class="enum" href="../../core/include/opencv2/core/types_c.h.html#::CV_GpuApiCallError" title='::CV_GpuApiCallError' data-ref="::CV_GpuApiCallError">CV_GpuApiCallError</a>;</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td>            <b>if</b> (<span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/exception.html#_ZSt18uncaught_exceptionv" title='std::uncaught_exception' data-ref="_ZSt18uncaught_exceptionv">uncaught_exception</a>())</td></tr>
+<tr><th id="179">179</th><td>            {</td></tr>
+<tr><th id="180">180</th><td>                <em>const</em> <em>char</em> *<dfn class="local col8 decl" id="8errorStr" title='errorStr' data-type='const char *' data-ref="8errorStr">errorStr</dfn> = <a class="ref" href="../../core/include/opencv2/core/core_c.h.html#cvErrorStr" title='cvErrorStr' data-ref="cvErrorStr">cvErrorStr</a>(<a class="local col7 ref" href="#7code" title='code' data-ref="7code">code</a>);</td></tr>
+<tr><th id="181">181</th><td>                <em>const</em> <em>char</em> *<dfn class="local col9 decl" id="9function" title='function' data-type='const char *' data-ref="9function">function</dfn> = <a class="local col6 ref" href="#6func" title='func' data-ref="6func">func</a> ? <a class="local col6 ref" href="#6func" title='func' data-ref="6func">func</a> : <q>"unknown function"</q>;</td></tr>
+<tr><th id="182">182</th><td></td></tr>
+<tr><th id="183">183</th><td>                <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cerr" title='std::cerr' data-ref="std::cerr">cerr</a> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"OpenCV Error: "</q> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <a class="local col8 ref" href="#8errorStr" title='errorStr' data-ref="8errorStr">errorStr</a> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"("</q> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <a class="local col3 ref" href="#3error_string" title='error_string' data-ref="3error_string">error_string</a> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>") in "</q> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <a class="local col9 ref" href="#9function" title='function' data-ref="9function">function</a> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>", file "</q> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <a class="local col4 ref" href="#4file" title='file' data-ref="4file">file</a> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>", line "</q> <a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEi" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEi">&lt;&lt;</a> <a class="local col5 ref" href="#5line" title='line' data-ref="5line">line</a>;</td></tr>
+<tr><th id="184">184</th><td>                <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/4.8/iostream.html#std::cerr" title='std::cerr' data-ref="std::cerr">cerr</a>.<a class="ref" href="../../../../include/c++/4.8/ostream.html#_ZNSt13basic_ostream5flushEv" title='std::basic_ostream::flush' data-ref="_ZNSt13basic_ostream5flushEv">flush</a>();</td></tr>
+<tr><th id="185">185</th><td>            }</td></tr>
+<tr><th id="186">186</th><td>            <b>else</b></td></tr>
+<tr><th id="187">187</th><td>                <span class="namespace">cv::</span><a class="ref" href="../../core/include/opencv2/core/core.hpp.html#_ZN2cv5errorERKNS_9ExceptionE" title='cv::error' data-ref="_ZN2cv5errorERKNS_9ExceptionE">error</a>( <span class="namespace">cv::</span><a class="type" href="../../core/include/opencv2/core/core.hpp.html#cv::Exception" title='cv::Exception' data-ref="cv::Exception">Exception</a><a class="ref" href="../../core/include/opencv2/core/core.hpp.html#_ZN2cv9ExceptionC1EiRKSsS2_S2_i" title='cv::Exception::Exception' data-ref="_ZN2cv9ExceptionC1EiRKSsS2_S2_i">(</a><a class="local col7 ref" href="#7code" title='code' data-ref="7code">code</a>, <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><a class="local col3 ref" href="#3error_string" title='error_string' data-ref="3error_string">error_string</a>, <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><a class="local col6 ref" href="#6func" title='func' data-ref="6func">func</a>, <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><a class="local col4 ref" href="#4file" title='file' data-ref="4file">file</a>, <a class="local col5 ref" href="#5line" title='line' data-ref="5line">line</a>) );</td></tr>
+<tr><th id="188">188</th><td>        }</td></tr>
+<tr><th id="189">189</th><td>    }</td></tr>
+<tr><th id="190">190</th><td>}</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

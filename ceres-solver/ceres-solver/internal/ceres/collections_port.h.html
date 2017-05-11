@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>collections_port.h source code [ceres-solver/internal/ceres/collections_port.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::HashMap,ceres::internal::HashSet,std::tr1::hash "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/collections_port.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='collections_port.h.html'>collections_port.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// Portable HashMap and HashSet, and a specialized overload for hashing pairs.</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_COLLECTIONS_PORT_H_">CERES_INTERNAL_COLLECTIONS_PORT_H_</span></u></td></tr>
+<tr><th id="34">34</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_COLLECTIONS_PORT_H_" data-ref="_M/CERES_INTERNAL_COLLECTIONS_PORT_H_">CERES_INTERNAL_COLLECTIONS_PORT_H_</dfn></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../include/ceres/internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><u>#<span data-ppcond="38">if</span> defined(<span class="macro" data-ref="_M/CERES_NO_UNORDERED_MAP">CERES_NO_UNORDERED_MAP</span>)</u></td></tr>
+<tr><th id="39">39</th><td><u>#  include &lt;map&gt;</u></td></tr>
+<tr><th id="40">40</th><td><u>#  include &lt;set&gt;</u></td></tr>
+<tr><th id="41">41</th><td><u>#<span data-ppcond="38">endif</span></u></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#<span data-ppcond="43">if</span> defined(<a class="macro" href="../../config/ceres/internal/config.h.html#79" data-ref="_M/CERES_TR1_UNORDERED_MAP">CERES_TR1_UNORDERED_MAP</a>)</u></td></tr>
+<tr><th id="44">44</th><td><u>#  include <a href="../../../include/c++/4.8/tr1/unordered_map.html">&lt;tr1/unordered_map&gt;</a></u></td></tr>
+<tr><th id="45">45</th><td><u>#  include <a href="../../../include/c++/4.8/tr1/unordered_set.html">&lt;tr1/unordered_set&gt;</a></u></td></tr>
+<tr><th id="46">46</th><td><u>#  define <dfn class="macro" id="_M/CERES_HASH_NAMESPACE_START" data-ref="_M/CERES_HASH_NAMESPACE_START">CERES_HASH_NAMESPACE_START</dfn> namespace <span class="namespace">std</span> { namespace <span class="namespace">tr1</span> {</u></td></tr>
+<tr><th id="47">47</th><td><u>#  define <dfn class="macro" id="_M/CERES_HASH_NAMESPACE_END" data-ref="_M/CERES_HASH_NAMESPACE_END">CERES_HASH_NAMESPACE_END</dfn> } }</u></td></tr>
+<tr><th id="48">48</th><td><u>#<span data-ppcond="43">endif</span></u></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><u>#<span data-ppcond="50">if</span> defined(<span class="macro" data-ref="_M/CERES_STD_UNORDERED_MAP">CERES_STD_UNORDERED_MAP</span>)</u></td></tr>
+<tr><th id="51">51</th><td><u>#  include &lt;unordered_map&gt;</u></td></tr>
+<tr><th id="52">52</th><td><u>#  include &lt;unordered_set&gt;</u></td></tr>
+<tr><th id="53">53</th><td><u>#  define CERES_HASH_NAMESPACE_START namespace std {</u></td></tr>
+<tr><th id="54">54</th><td><u>#  define CERES_HASH_NAMESPACE_END }</u></td></tr>
+<tr><th id="55">55</th><td><u>#<span data-ppcond="50">endif</span></u></td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td><u>#<span data-ppcond="57">if</span> defined(<span class="macro" data-ref="_M/CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE">CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE</span>)</u></td></tr>
+<tr><th id="58">58</th><td><u>#  include &lt;unordered_map&gt;</u></td></tr>
+<tr><th id="59">59</th><td><u>#  include &lt;unordered_set&gt;</u></td></tr>
+<tr><th id="60">60</th><td><u>#  define CERES_HASH_NAMESPACE_START namespace std { namespace tr1 {</u></td></tr>
+<tr><th id="61">61</th><td><u>#  define CERES_HASH_NAMESPACE_END } }</u></td></tr>
+<tr><th id="62">62</th><td><u>#<span data-ppcond="57">endif</span></u></td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><u>#<span data-ppcond="64">if</span> !defined(<span class="macro" data-ref="_M/CERES_NO_UNORDERED_MAP">CERES_NO_UNORDERED_MAP</span>) &amp;&amp; !defined(<a class="macro" href="../../config/ceres/internal/config.h.html#79" data-ref="_M/CERES_TR1_UNORDERED_MAP">CERES_TR1_UNORDERED_MAP</a>) &amp;&amp; \</u></td></tr>
+<tr><th id="65">65</th><td><u>    !defined(<span class="macro" data-ref="_M/CERES_STD_UNORDERED_MAP">CERES_STD_UNORDERED_MAP</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE">CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE</span>)  // NOLINT</u></td></tr>
+<tr><th id="66">66</th><td><u>#  error One of: CERES_NO_UNORDERED_MAP, CERES_TR1_UNORDERED_MAP,\</u></td></tr>
+<tr><th id="67">67</th><td><u> CERES_STD_UNORDERED_MAP, CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE must be defined!  // NOLINT</u></td></tr>
+<tr><th id="68">68</th><td><u>#<span data-ppcond="64">endif</span></u></td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td><u>#include <a href="../../../include/c++/4.8/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="71">71</th><td><u>#include <a href="integral_types.h.html">"ceres/integral_types.h"</a></u></td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td><i>// Some systems don't have access to unordered_map/unordered_set. In</i></td></tr>
+<tr><th id="74">74</th><td><i>// that case, substitute the hash map/set with normal map/set. The</i></td></tr>
+<tr><th id="75">75</th><td><i>// price to pay is slower speed for some operations.</i></td></tr>
+<tr><th id="76">76</th><td><u>#<span data-ppcond="76">if</span> defined(<span class="macro" data-ref="_M/CERES_NO_UNORDERED_MAP">CERES_NO_UNORDERED_MAP</span>)</u></td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td><b>namespace</b> ceres {</td></tr>
+<tr><th id="79">79</th><td><b>namespace</b> internal {</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td><b>template</b>&lt;<b>typename</b> K, <b>typename</b> V&gt;</td></tr>
+<tr><th id="82">82</th><td><b>struct</b> HashMap : map&lt;K, V&gt; {};</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td><b>template</b>&lt;<b>typename</b> K&gt;</td></tr>
+<tr><th id="85">85</th><td><b>struct</b> HashSet : set&lt;K&gt; {};</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="88">88</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td><u>#<span data-ppcond="76">else</span></u></td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="93">93</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td><u>#<span data-ppcond="95">if</span> defined(<a class="macro" href="../../config/ceres/internal/config.h.html#79" data-ref="_M/CERES_TR1_UNORDERED_MAP">CERES_TR1_UNORDERED_MAP</a>) || \</u></td></tr>
+<tr><th id="96">96</th><td><u>    defined(<span class="macro" data-ref="_M/CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE">CERES_STD_UNORDERED_MAP_IN_TR1_NAMESPACE</span>)</u></td></tr>
+<tr><th id="97">97</th><td><b>template</b>&lt;<b>typename</b> K, <b>typename</b> V&gt;</td></tr>
+<tr><th id="98">98</th><td><b>struct</b> <dfn class="type def" id="ceres::internal::HashMap" title='ceres::internal::HashMap' data-ref="ceres::internal::HashMap">HashMap</dfn> : <span class="namespace">std::tr1::</span><a class="type" href="../../../include/c++/4.8/tr1/unordered_map.h.html#std::tr1::unordered_map" title='std::tr1::unordered_map' data-ref="std::tr1::unordered_map">unordered_map</a>&lt;K, V&gt; {};</td></tr>
+<tr><th id="99">99</th><td><b>template</b>&lt;<b>typename</b> K&gt;</td></tr>
+<tr><th id="100">100</th><td><b>struct</b> <dfn class="type def" id="ceres::internal::HashSet" title='ceres::internal::HashSet' data-ref="ceres::internal::HashSet">HashSet</dfn> : <span class="namespace">std::tr1::</span><a class="type" href="../../../include/c++/4.8/tr1/unordered_set.h.html#std::tr1::unordered_set" title='std::tr1::unordered_set' data-ref="std::tr1::unordered_set">unordered_set</a>&lt;K&gt; {};</td></tr>
+<tr><th id="101">101</th><td><u>#<span data-ppcond="95">endif</span></u></td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td><u>#<span data-ppcond="103">if</span> defined(<span class="macro" data-ref="_M/CERES_STD_UNORDERED_MAP">CERES_STD_UNORDERED_MAP</span>)</u></td></tr>
+<tr><th id="104">104</th><td><b>template</b>&lt;<b>typename</b> K, <b>typename</b> V&gt;</td></tr>
+<tr><th id="105">105</th><td><b>struct</b> HashMap : std::unordered_map&lt;K, V&gt; {};</td></tr>
+<tr><th id="106">106</th><td><b>template</b>&lt;<b>typename</b> K&gt;</td></tr>
+<tr><th id="107">107</th><td><b>struct</b> HashSet : std::unordered_set&lt;K&gt; {};</td></tr>
+<tr><th id="108">108</th><td><u>#<span data-ppcond="103">endif</span></u></td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td><u>#<span data-ppcond="110">if</span> defined(<span class="macro" data-ref="_M/_WIN32">_WIN32</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/__MINGW64__">__MINGW64__</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/__MINGW32__">__MINGW32__</span>)</u></td></tr>
+<tr><th id="111">111</th><td><u>#define GG_LONGLONG(x) x##I64</u></td></tr>
+<tr><th id="112">112</th><td><u>#define GG_ULONGLONG(x) x##UI64</u></td></tr>
+<tr><th id="113">113</th><td><u>#<span data-ppcond="110">else</span></u></td></tr>
+<tr><th id="114">114</th><td><u>#define <dfn class="macro" id="_M/GG_LONGLONG" data-ref="_M/GG_LONGLONG">GG_LONGLONG</dfn>(x) x##LL</u></td></tr>
+<tr><th id="115">115</th><td><u>#define <dfn class="macro" id="_M/GG_ULONGLONG" data-ref="_M/GG_ULONGLONG">GG_ULONGLONG</dfn>(x) x##ULL</u></td></tr>
+<tr><th id="116">116</th><td><u>#<span data-ppcond="110">endif</span></u></td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td><i>// The hash function is due to Bob Jenkins (see</i></td></tr>
+<tr><th id="119">119</th><td><i>// <a href="http://burtleburtle.net/bob/hash/index.html">http://burtleburtle.net/bob/hash/index.html</a>). Each mix takes 36 instructions,</i></td></tr>
+<tr><th id="120">120</th><td><i>// in 18 cycles if you're lucky. On x86 architectures, this requires 45</i></td></tr>
+<tr><th id="121">121</th><td><i>// instructions in 27 cycles, if you're lucky.</i></td></tr>
+<tr><th id="122">122</th><td><i>//</i></td></tr>
+<tr><th id="123">123</th><td><i>// 32bit version</i></td></tr>
+<tr><th id="124">124</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal8hash_mixERjS1_S1_" title='ceres::internal::hash_mix' data-ref="_ZN5ceres8internal8hash_mixERjS1_S1_">hash_mix</dfn>(<a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a>&amp; <dfn class="local col6 decl" id="416a" title='a' data-type='uint32 &amp;' data-ref="416a">a</dfn>, <a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a>&amp; <dfn class="local col7 decl" id="417b" title='b' data-type='uint32 &amp;' data-ref="417b">b</dfn>, <a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a>&amp; <dfn class="local col8 decl" id="418c" title='c' data-type='uint32 &amp;' data-ref="418c">c</dfn>) {</td></tr>
+<tr><th id="125">125</th><td>  <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> -= <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>; <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> -= <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>; <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> ^= (<a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>&gt;&gt;<var>13</var>);</td></tr>
+<tr><th id="126">126</th><td>  <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> -= <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>; <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> -= <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>; <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> ^= (<a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>&lt;&lt;<var>8</var>);</td></tr>
+<tr><th id="127">127</th><td>  <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> -= <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>; <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> -= <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>; <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> ^= (<a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>&gt;&gt;<var>13</var>);</td></tr>
+<tr><th id="128">128</th><td>  <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> -= <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>; <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> -= <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>; <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> ^= (<a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>&gt;&gt;<var>12</var>);</td></tr>
+<tr><th id="129">129</th><td>  <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> -= <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>; <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> -= <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>; <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> ^= (<a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>&lt;&lt;<var>16</var>);</td></tr>
+<tr><th id="130">130</th><td>  <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> -= <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>; <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> -= <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>; <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> ^= (<a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>&gt;&gt;<var>5</var>);</td></tr>
+<tr><th id="131">131</th><td>  <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> -= <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>; <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> -= <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>; <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a> ^= (<a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>&gt;&gt;<var>3</var>);</td></tr>
+<tr><th id="132">132</th><td>  <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> -= <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a>; <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> -= <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>; <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a> ^= (<a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>&lt;&lt;<var>10</var>);</td></tr>
+<tr><th id="133">133</th><td>  <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> -= <a class="local col6 ref" href="#416a" title='a' data-ref="416a">a</a>; <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> -= <a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>; <a class="local col8 ref" href="#418c" title='c' data-ref="418c">c</a> ^= (<a class="local col7 ref" href="#417b" title='b' data-ref="417b">b</a>&gt;&gt;<var>15</var>);</td></tr>
+<tr><th id="134">134</th><td>}</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td><i>// 64bit version</i></td></tr>
+<tr><th id="137">137</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN5ceres8internal8hash_mixERmS1_S1_" title='ceres::internal::hash_mix' data-ref="_ZN5ceres8internal8hash_mixERmS1_S1_">hash_mix</dfn>(<a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a>&amp; <dfn class="local col9 decl" id="419a" title='a' data-type='uint64 &amp;' data-ref="419a">a</dfn>, <a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a>&amp; <dfn class="local col0 decl" id="420b" title='b' data-type='uint64 &amp;' data-ref="420b">b</dfn>, <a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a>&amp; <dfn class="local col1 decl" id="421c" title='c' data-type='uint64 &amp;' data-ref="421c">c</dfn>) {</td></tr>
+<tr><th id="138">138</th><td>  <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> -= <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>; <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> -= <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>; <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> ^= (<a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>&gt;&gt;<var>43</var>);</td></tr>
+<tr><th id="139">139</th><td>  <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> -= <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>; <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> -= <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>; <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> ^= (<a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>&lt;&lt;<var>9</var>);</td></tr>
+<tr><th id="140">140</th><td>  <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> -= <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>; <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> -= <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>; <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> ^= (<a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>&gt;&gt;<var>8</var>);</td></tr>
+<tr><th id="141">141</th><td>  <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> -= <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>; <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> -= <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>; <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> ^= (<a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>&gt;&gt;<var>38</var>);</td></tr>
+<tr><th id="142">142</th><td>  <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> -= <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>; <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> -= <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>; <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> ^= (<a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>&lt;&lt;<var>23</var>);</td></tr>
+<tr><th id="143">143</th><td>  <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> -= <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>; <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> -= <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>; <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> ^= (<a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>&gt;&gt;<var>5</var>);</td></tr>
+<tr><th id="144">144</th><td>  <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> -= <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>; <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> -= <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>; <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a> ^= (<a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>&gt;&gt;<var>35</var>);</td></tr>
+<tr><th id="145">145</th><td>  <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> -= <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a>; <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> -= <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>; <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a> ^= (<a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>&lt;&lt;<var>49</var>);</td></tr>
+<tr><th id="146">146</th><td>  <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> -= <a class="local col9 ref" href="#419a" title='a' data-ref="419a">a</a>; <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> -= <a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>; <a class="local col1 ref" href="#421c" title='c' data-ref="421c">c</a> ^= (<a class="local col0 ref" href="#420b" title='b' data-ref="420b">b</a>&gt;&gt;<var>11</var>);</td></tr>
+<tr><th id="147">147</th><td>}</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td><b>inline</b> <a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a> <dfn class="decl def" id="_ZN5ceres8internal17Hash32NumWithSeedEjj" title='ceres::internal::Hash32NumWithSeed' data-ref="_ZN5ceres8internal17Hash32NumWithSeedEjj">Hash32NumWithSeed</dfn>(<a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a> <dfn class="local col2 decl" id="422num" title='num' data-type='uint32' data-ref="422num">num</dfn>, <a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a> <dfn class="local col3 decl" id="423c" title='c' data-type='uint32' data-ref="423c">c</dfn>) {</td></tr>
+<tr><th id="150">150</th><td>  <i>// The golden ratio; an arbitrary value.</i></td></tr>
+<tr><th id="151">151</th><td>  <a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a> <dfn class="local col4 decl" id="424b" title='b' data-type='uint32' data-ref="424b">b</dfn> = <var>0x9e3779b9UL</var>;</td></tr>
+<tr><th id="152">152</th><td>  <a class="ref" href="#_ZN5ceres8internal8hash_mixERjS1_S1_" title='ceres::internal::hash_mix' data-ref="_ZN5ceres8internal8hash_mixERjS1_S1_">hash_mix</a>(<span class='refarg'><a class="local col2 ref" href="#422num" title='num' data-ref="422num">num</a></span>, <span class='refarg'><a class="local col4 ref" href="#424b" title='b' data-ref="424b">b</a></span>, <span class='refarg'><a class="local col3 ref" href="#423c" title='c' data-ref="423c">c</a></span>);</td></tr>
+<tr><th id="153">153</th><td>  <b>return</b> <a class="local col3 ref" href="#423c" title='c' data-ref="423c">c</a>;</td></tr>
+<tr><th id="154">154</th><td>}</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td><b>inline</b> <a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a> <dfn class="decl def" id="_ZN5ceres8internal17Hash64NumWithSeedEmm" title='ceres::internal::Hash64NumWithSeed' data-ref="_ZN5ceres8internal17Hash64NumWithSeedEmm">Hash64NumWithSeed</dfn>(<a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a> <dfn class="local col5 decl" id="425num" title='num' data-type='uint64' data-ref="425num">num</dfn>, <a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a> <dfn class="local col6 decl" id="426c" title='c' data-type='uint64' data-ref="426c">c</dfn>) {</td></tr>
+<tr><th id="157">157</th><td>  <i>// More of the golden ratio.</i></td></tr>
+<tr><th id="158">158</th><td>  <a class="typedef" href="integral_types.h.html#ceres::internal::uint64" title='ceres::internal::uint64' data-type='UnsignedInteger&lt;64&gt;::type' data-ref="ceres::internal::uint64">uint64</a> <dfn class="local col7 decl" id="427b" title='b' data-type='uint64' data-ref="427b">b</dfn> = <a class="macro" href="#115" title="0xe08c1d668b756f82ULL" data-ref="_M/GG_ULONGLONG">GG_ULONGLONG</a>(<var>0xe08c1d668b756f82</var>);</td></tr>
+<tr><th id="159">159</th><td>  <a class="ref" href="#_ZN5ceres8internal8hash_mixERmS1_S1_" title='ceres::internal::hash_mix' data-ref="_ZN5ceres8internal8hash_mixERmS1_S1_">hash_mix</a>(<span class='refarg'><a class="local col5 ref" href="#425num" title='num' data-ref="425num">num</a></span>, <span class='refarg'><a class="local col7 ref" href="#427b" title='b' data-ref="427b">b</a></span>, <span class='refarg'><a class="local col6 ref" href="#426c" title='c' data-ref="426c">c</a></span>);</td></tr>
+<tr><th id="160">160</th><td>  <b>return</b> <a class="local col6 ref" href="#426c" title='c' data-ref="426c">c</a>;</td></tr>
+<tr><th id="161">161</th><td>}</td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="164">164</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td><i>// Since on some platforms this is a doubly-nested namespace (std::tr1) and</i></td></tr>
+<tr><th id="167">167</th><td><i>// others it is not, the entire namespace line must be in a macro.</i></td></tr>
+<tr><th id="168">168</th><td><a class="macro" href="#46" title="namespace std { namespace tr1 {" data-ref="_M/CERES_HASH_NAMESPACE_START">CERES_HASH_NAMESPACE_START</a></td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><i>// The outrageously annoying specializations below are for portability reasons.</i></td></tr>
+<tr><th id="171">171</th><td><i>// In short, it's not possible to have two overloads of hash&lt;pair&lt;T1, T2&gt;</i></td></tr>
+<tr><th id="172">172</th><td><i></i></td></tr>
+<tr><th id="173">173</th><td><i>// Hasher for STL pairs. Requires hashers for both members to be defined.</i></td></tr>
+<tr><th id="174">174</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="175">175</th><td><b>struct</b> <dfn class="type def" id="std::tr1::hash" title='std::tr1::hash' data-ref="std::tr1::hash">hash</dfn>&lt;<a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;T, T&gt; &gt; {</td></tr>
+<tr><th id="176">176</th><td>  <a class="typedef" href="../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def" id="_ZNKSt3tr14hashISt4pairIT_S2_EEclERKS3_" title='std::tr1::hash&lt;pair&lt;type-parameter-0-0, type-parameter-0-0&gt; &gt;::operator()' data-ref="_ZNKSt3tr14hashISt4pairIT_S2_EEclERKS3_"><b>operator</b>()</dfn>(<em>const</em> <a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;T, T&gt;&amp; <dfn class="local col8 decl" id="428p" title='p' data-type='const pair&lt;T, T&gt; &amp;' data-ref="428p">p</dfn>) <em>const</em> {</td></tr>
+<tr><th id="177">177</th><td>    <a class="typedef" href="../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="429h1" title='h1' data-type='size_t' data-ref="429h1">h1</dfn> = <a class="type" href="../../../include/c++/4.8/tr1/functional_hash.h.html#std::tr1::hash" title='std::tr1::hash' data-ref="std::tr1::hash">hash</a>&lt;T&gt;()(<a class="local col8 ref" href="#428p" title='p' data-ref="428p">p</a>.first);</td></tr>
+<tr><th id="178">178</th><td>    <a class="typedef" href="../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="430h2" title='h2' data-type='size_t' data-ref="430h2">h2</dfn> = <a class="type" href="../../../include/c++/4.8/tr1/functional_hash.h.html#std::tr1::hash" title='std::tr1::hash' data-ref="std::tr1::hash">hash</a>&lt;T&gt;()(<a class="local col8 ref" href="#428p" title='p' data-ref="428p">p</a>.second);</td></tr>
+<tr><th id="179">179</th><td>    <i>// The decision below is at compile time</i></td></tr>
+<tr><th id="180">180</th><td>    <b>return</b> (<b>sizeof</b>(<a class="local col9 ref" href="#429h1" title='h1' data-ref="429h1">h1</a>) &lt;= <b>sizeof</b>(<span class="namespace">ceres::internal::</span><a class="typedef" href="integral_types.h.html#ceres::internal::uint32" title='ceres::internal::uint32' data-type='UnsignedInteger&lt;32&gt;::type' data-ref="ceres::internal::uint32">uint32</a>)) ?</td></tr>
+<tr><th id="181">181</th><td>            <span class="namespace">ceres::internal::</span><a class="ref" href="#_ZN5ceres8internal17Hash32NumWithSeedEjj" title='ceres::internal::Hash32NumWithSeed' data-ref="_ZN5ceres8internal17Hash32NumWithSeedEjj">Hash32NumWithSeed</a>(<a class="local col9 ref" href="#429h1" title='h1' data-ref="429h1">h1</a>, <a class="local col0 ref" href="#430h2" title='h2' data-ref="430h2">h2</a>) :</td></tr>
+<tr><th id="182">182</th><td>            <span class="namespace">ceres::internal::</span><a class="ref" href="#_ZN5ceres8internal17Hash64NumWithSeedEmm" title='ceres::internal::Hash64NumWithSeed' data-ref="_ZN5ceres8internal17Hash64NumWithSeedEmm">Hash64NumWithSeed</a>(<a class="local col9 ref" href="#429h1" title='h1' data-ref="429h1">h1</a>, <a class="local col0 ref" href="#430h2" title='h2' data-ref="430h2">h2</a>);</td></tr>
+<tr><th id="183">183</th><td>  }</td></tr>
+<tr><th id="184">184</th><td>  <i>// Less than operator for MSVC.</i></td></tr>
+<tr><th id="185">185</th><td>  <em>bool</em> <dfn class="decl def" id="_ZNKSt3tr14hashISt4pairIT_S2_EEclERKS3_S6_" title='std::tr1::hash&lt;pair&lt;type-parameter-0-0, type-parameter-0-0&gt; &gt;::operator()' data-ref="_ZNKSt3tr14hashISt4pairIT_S2_EEclERKS3_S6_"><b>operator</b>()</dfn>(<em>const</em> <a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;T, T&gt;&amp; <dfn class="local col1 decl" id="431a" title='a' data-type='const pair&lt;T, T&gt; &amp;' data-ref="431a">a</dfn>,</td></tr>
+<tr><th id="186">186</th><td>                  <em>const</em> <a class="type" href="../../../include/c++/4.8/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;T, T&gt;&amp; <dfn class="local col2 decl" id="432b" title='b' data-type='const pair&lt;T, T&gt; &amp;' data-ref="432b">b</dfn>) <em>const</em> {</td></tr>
+<tr><th id="187">187</th><td>    <b>return</b> <a class="local col1 ref" href="#431a" title='a' data-ref="431a">a</a> &lt; <a class="local col2 ref" href="#432b" title='b' data-ref="432b">b</a>;</td></tr>
+<tr><th id="188">188</th><td>  }</td></tr>
+<tr><th id="189">189</th><td>  <em>static</em> <em>const</em> <a class="typedef" href="../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="std::tr1::hash{pair{type-parameter-0-0,type-parameter-0-0}}::bucket_size" title='std::tr1::hash&lt;pair&lt;type-parameter-0-0, type-parameter-0-0&gt; &gt;::bucket_size' data-ref="std::tr1::hash{pair{type-parameter-0-0,type-parameter-0-0}}::bucket_size">bucket_size</dfn> = <var>4</var>;  <i>// These are required by MSVC</i></td></tr>
+<tr><th id="190">190</th><td>  <em>static</em> <em>const</em> <a class="typedef" href="../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="std::tr1::hash{pair{type-parameter-0-0,type-parameter-0-0}}::min_buckets" title='std::tr1::hash&lt;pair&lt;type-parameter-0-0, type-parameter-0-0&gt; &gt;::min_buckets' data-ref="std::tr1::hash{pair{type-parameter-0-0,type-parameter-0-0}}::min_buckets">min_buckets</dfn> = <var>8</var>;  <i>// 4 and 8 are defaults.</i></td></tr>
+<tr><th id="191">191</th><td>};</td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td><a class="macro" href="#47" title="} }" data-ref="_M/CERES_HASH_NAMESPACE_END">CERES_HASH_NAMESPACE_END</a></td></tr>
+<tr><th id="194">194</th><td></td></tr>
+<tr><th id="195">195</th><td><u>#<span data-ppcond="76">endif</span>  // CERES_NO_UNORDERED_MAP</u></td></tr>
+<tr><th id="196">196</th><td><u>#<span data-ppcond="33">endif</span>  // CERES_INTERNAL_COLLECTIONS_PORT_H_</u></td></tr>
+<tr><th id="197">197</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='block_evaluate_preparer.cc.html'>ceres-solver/internal/ceres/block_evaluate_preparer.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

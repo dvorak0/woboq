@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>evaluator.cc source code [ceres-solver/internal/ceres/evaluator.cc] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/evaluator.cc'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='evaluator.cc.html'>evaluator.cc</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="block_evaluate_preparer.h.html">"ceres/block_evaluate_preparer.h"</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="block_jacobian_writer.h.html">"ceres/block_jacobian_writer.h"</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="compressed_row_jacobian_writer.h.html">"ceres/compressed_row_jacobian_writer.h"</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="compressed_row_sparse_matrix.h.html">"ceres/compressed_row_sparse_matrix.h"</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../include/ceres/crs_matrix.h.html">"ceres/crs_matrix.h"</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="dense_jacobian_writer.h.html">"ceres/dense_jacobian_writer.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="dynamic_compressed_row_finalizer.h.html">"ceres/dynamic_compressed_row_finalizer.h"</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="dynamic_compressed_row_jacobian_writer.h.html">"ceres/dynamic_compressed_row_jacobian_writer.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="evaluator.h.html">"ceres/evaluator.h"</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="../../include/ceres/internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="program_evaluator.h.html">"ceres/program_evaluator.h"</a></u></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="scratch_evaluate_preparer.h.html">"ceres/scratch_evaluate_preparer.h"</a></u></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="../../../include/glog/logging.h.html">"glog/logging.h"</a></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="47">47</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><a class="type" href="evaluator.h.html#ceres::internal::Evaluator" title='ceres::internal::Evaluator' data-ref="ceres::internal::Evaluator">Evaluator</a>::<dfn class="virtual decl def" id="_ZN5ceres8internal9EvaluatorD1Ev" title='ceres::internal::Evaluator::~Evaluator' data-ref="_ZN5ceres8internal9EvaluatorD1Ev">~</dfn>Evaluator() {}</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><a class="type" href="evaluator.h.html#ceres::internal::Evaluator" title='ceres::internal::Evaluator' data-ref="ceres::internal::Evaluator">Evaluator</a>* <a class="type" href="evaluator.h.html#ceres::internal::Evaluator" title='ceres::internal::Evaluator' data-ref="ceres::internal::Evaluator">Evaluator</a>::<dfn class="decl def" id="_ZN5ceres8internal9Evaluator6CreateERKNS1_7OptionsEPNS0_7ProgramEPSs" title='ceres::internal::Evaluator::Create' data-ref="_ZN5ceres8internal9Evaluator6CreateERKNS1_7OptionsEPNS0_7ProgramEPSs">Create</dfn>(<em>const</em> <a class="type" href="evaluator.h.html#ceres::internal::Evaluator" title='ceres::internal::Evaluator' data-ref="ceres::internal::Evaluator">Evaluator</a>::<a class="type" href="evaluator.h.html#ceres::internal::Evaluator::Options" title='ceres::internal::Evaluator::Options' data-ref="ceres::internal::Evaluator::Options">Options</a>&amp; <dfn class="local col9 decl" id="69options" title='options' data-type='const Evaluator::Options &amp;' data-ref="69options">options</dfn>,</td></tr>
+<tr><th id="52">52</th><td>                             <a class="type" href="program.h.html#ceres::internal::Program" title='ceres::internal::Program' data-ref="ceres::internal::Program">Program</a>* <dfn class="local col0 decl" id="70program" title='program' data-type='ceres::internal::Program *' data-ref="70program">program</dfn>,</td></tr>
+<tr><th id="53">53</th><td>                             <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>* <dfn class="local col1 decl" id="71error" title='error' data-type='std::string *' data-ref="71error">error</dfn>) {</td></tr>
+<tr><th id="54">54</th><td>  <b>switch</b> (<a class="local col9 ref" href="#69options" title='options' data-ref="69options">options</a>.<a class="ref" href="evaluator.h.html#ceres::internal::Evaluator::Options::linear_solver_type" title='ceres::internal::Evaluator::Options::linear_solver_type' data-ref="ceres::internal::Evaluator::Options::linear_solver_type">linear_solver_type</a>) {</td></tr>
+<tr><th id="55">55</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::DENSE_QR" title='ceres::LinearSolverType::DENSE_QR' data-ref="ceres::LinearSolverType::DENSE_QR">DENSE_QR</a>:</td></tr>
+<tr><th id="56">56</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::DENSE_NORMAL_CHOLESKY" title='ceres::LinearSolverType::DENSE_NORMAL_CHOLESKY' data-ref="ceres::LinearSolverType::DENSE_NORMAL_CHOLESKY">DENSE_NORMAL_CHOLESKY</a>:</td></tr>
+<tr><th id="57">57</th><td>      <b>return</b> <b>new</b> <a class="type" href="program_evaluator.h.html#ceres::internal::ProgramEvaluator" title='ceres::internal::ProgramEvaluator' data-ref="ceres::internal::ProgramEvaluator">ProgramEvaluator</a>&lt;<a class="type" href="scratch_evaluate_preparer.h.html#ceres::internal::ScratchEvaluatePreparer" title='ceres::internal::ScratchEvaluatePreparer' data-ref="ceres::internal::ScratchEvaluatePreparer">ScratchEvaluatePreparer</a>,</td></tr>
+<tr><th id="58">58</th><td>                                  <a class="type" href="dense_jacobian_writer.h.html#ceres::internal::DenseJacobianWriter" title='ceres::internal::DenseJacobianWriter' data-ref="ceres::internal::DenseJacobianWriter">DenseJacobianWriter</a>&gt;<a class="ref" href="program_evaluator.h.html#_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE" title='ceres::internal::ProgramEvaluator::ProgramEvaluator&lt;EvaluatePreparer, JacobianWriter, JacobianFinalizer&gt;' data-ref="_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE">(</a><a class="local col9 ref" href="#69options" title='options' data-ref="69options">options</a>,</td></tr>
+<tr><th id="59">59</th><td>                                                       <a class="local col0 ref" href="#70program" title='program' data-ref="70program">program</a>);</td></tr>
+<tr><th id="60">60</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::DENSE_SCHUR" title='ceres::LinearSolverType::DENSE_SCHUR' data-ref="ceres::LinearSolverType::DENSE_SCHUR">DENSE_SCHUR</a>:</td></tr>
+<tr><th id="61">61</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::SPARSE_SCHUR" title='ceres::LinearSolverType::SPARSE_SCHUR' data-ref="ceres::LinearSolverType::SPARSE_SCHUR">SPARSE_SCHUR</a>:</td></tr>
+<tr><th id="62">62</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::ITERATIVE_SCHUR" title='ceres::LinearSolverType::ITERATIVE_SCHUR' data-ref="ceres::LinearSolverType::ITERATIVE_SCHUR">ITERATIVE_SCHUR</a>:</td></tr>
+<tr><th id="63">63</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::CGNR" title='ceres::LinearSolverType::CGNR' data-ref="ceres::LinearSolverType::CGNR">CGNR</a>:</td></tr>
+<tr><th id="64">64</th><td>      <b>return</b> <b>new</b> <a class="type" href="program_evaluator.h.html#ceres::internal::ProgramEvaluator" title='ceres::internal::ProgramEvaluator' data-ref="ceres::internal::ProgramEvaluator">ProgramEvaluator</a>&lt;<a class="type" href="block_evaluate_preparer.h.html#ceres::internal::BlockEvaluatePreparer" title='ceres::internal::BlockEvaluatePreparer' data-ref="ceres::internal::BlockEvaluatePreparer">BlockEvaluatePreparer</a>,</td></tr>
+<tr><th id="65">65</th><td>                                  <a class="type" href="block_jacobian_writer.h.html#ceres::internal::BlockJacobianWriter" title='ceres::internal::BlockJacobianWriter' data-ref="ceres::internal::BlockJacobianWriter">BlockJacobianWriter</a>&gt;<a class="ref" href="program_evaluator.h.html#_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE" title='ceres::internal::ProgramEvaluator::ProgramEvaluator&lt;EvaluatePreparer, JacobianWriter, JacobianFinalizer&gt;' data-ref="_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE">(</a><a class="local col9 ref" href="#69options" title='options' data-ref="69options">options</a>,</td></tr>
+<tr><th id="66">66</th><td>                                                       <a class="local col0 ref" href="#70program" title='program' data-ref="70program">program</a>);</td></tr>
+<tr><th id="67">67</th><td>    <b>case</b> <a class="enum" href="../../include/ceres/types.h.html#ceres::LinearSolverType::SPARSE_NORMAL_CHOLESKY" title='ceres::LinearSolverType::SPARSE_NORMAL_CHOLESKY' data-ref="ceres::LinearSolverType::SPARSE_NORMAL_CHOLESKY">SPARSE_NORMAL_CHOLESKY</a>:</td></tr>
+<tr><th id="68">68</th><td>      <b>if</b> (<a class="local col9 ref" href="#69options" title='options' data-ref="69options">options</a>.<a class="ref" href="evaluator.h.html#ceres::internal::Evaluator::Options::dynamic_sparsity" title='ceres::internal::Evaluator::Options::dynamic_sparsity' data-ref="ceres::internal::Evaluator::Options::dynamic_sparsity">dynamic_sparsity</a>) {</td></tr>
+<tr><th id="69">69</th><td>        <b>return</b> <b>new</b> <a class="type" href="program_evaluator.h.html#ceres::internal::ProgramEvaluator" title='ceres::internal::ProgramEvaluator' data-ref="ceres::internal::ProgramEvaluator">ProgramEvaluator</a>&lt;<a class="type" href="scratch_evaluate_preparer.h.html#ceres::internal::ScratchEvaluatePreparer" title='ceres::internal::ScratchEvaluatePreparer' data-ref="ceres::internal::ScratchEvaluatePreparer">ScratchEvaluatePreparer</a>,</td></tr>
+<tr><th id="70">70</th><td>                                    <a class="type" href="dynamic_compressed_row_jacobian_writer.h.html#ceres::internal::DynamicCompressedRowJacobianWriter" title='ceres::internal::DynamicCompressedRowJacobianWriter' data-ref="ceres::internal::DynamicCompressedRowJacobianWriter">DynamicCompressedRowJacobianWriter</a>,</td></tr>
+<tr><th id="71">71</th><td>                                    <a class="type" href="dynamic_compressed_row_finalizer.h.html#ceres::internal::DynamicCompressedRowJacobianFinalizer" title='ceres::internal::DynamicCompressedRowJacobianFinalizer' data-ref="ceres::internal::DynamicCompressedRowJacobianFinalizer">DynamicCompressedRowJacobianFinalizer</a>&gt;<a class="ref" href="program_evaluator.h.html#_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE" title='ceres::internal::ProgramEvaluator::ProgramEvaluator&lt;EvaluatePreparer, JacobianWriter, JacobianFinalizer&gt;' data-ref="_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE">(</a></td></tr>
+<tr><th id="72">72</th><td>                                        <a class="local col9 ref" href="#69options" title='options' data-ref="69options">options</a>, <a class="local col0 ref" href="#70program" title='program' data-ref="70program">program</a>);</td></tr>
+<tr><th id="73">73</th><td>      } <b>else</b> {</td></tr>
+<tr><th id="74">74</th><td>        <b>return</b> <b>new</b> <a class="type" href="program_evaluator.h.html#ceres::internal::ProgramEvaluator" title='ceres::internal::ProgramEvaluator' data-ref="ceres::internal::ProgramEvaluator">ProgramEvaluator</a>&lt;<a class="type" href="scratch_evaluate_preparer.h.html#ceres::internal::ScratchEvaluatePreparer" title='ceres::internal::ScratchEvaluatePreparer' data-ref="ceres::internal::ScratchEvaluatePreparer">ScratchEvaluatePreparer</a>,</td></tr>
+<tr><th id="75">75</th><td>                                    <a class="type" href="compressed_row_jacobian_writer.h.html#ceres::internal::CompressedRowJacobianWriter" title='ceres::internal::CompressedRowJacobianWriter' data-ref="ceres::internal::CompressedRowJacobianWriter">CompressedRowJacobianWriter</a>&gt;<a class="ref" href="program_evaluator.h.html#_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE" title='ceres::internal::ProgramEvaluator::ProgramEvaluator&lt;EvaluatePreparer, JacobianWriter, JacobianFinalizer&gt;' data-ref="_ZN5ceres8internal16ProgramEvaluatorC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE">(</a><a class="local col9 ref" href="#69options" title='options' data-ref="69options">options</a>,</td></tr>
+<tr><th id="76">76</th><td>                                                                 <a class="local col0 ref" href="#70program" title='program' data-ref="70program">program</a>);</td></tr>
+<tr><th id="77">77</th><td>      }</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>    <b>default</b>:</td></tr>
+<tr><th id="80">80</th><td>      *<a class="local col1 ref" href="#71error" title='error' data-ref="71error">error</a> <a class="ref" href="../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringaSEPKT_" title='std::basic_string::operator=' data-ref="_ZNSt12basic_stringaSEPKT_">=</a> <q>"Invalid Linear Solver Type. Unable to create evaluator."</q>;</td></tr>
+<tr><th id="81">81</th><td>      <b>return</b> <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="82">82</th><td>  }</td></tr>
+<tr><th id="83">83</th><td>}</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="86">86</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="87">87</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

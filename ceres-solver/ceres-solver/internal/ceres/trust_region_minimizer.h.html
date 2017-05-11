@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>trust_region_minimizer.h source code [ceres-solver/internal/ceres/trust_region_minimizer.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::TrustRegionMinimizer "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/trust_region_minimizer.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='trust_region_minimizer.h.html'>trust_region_minimizer.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2016 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_TRUST_REGION_MINIMIZER_H_">CERES_INTERNAL_TRUST_REGION_MINIMIZER_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_TRUST_REGION_MINIMIZER_H_" data-ref="_M/CERES_INTERNAL_TRUST_REGION_MINIMIZER_H_">CERES_INTERNAL_TRUST_REGION_MINIMIZER_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../include/ceres/internal/eigen.h.html">"ceres/internal/eigen.h"</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../include/ceres/internal/scoped_ptr.h.html">"ceres/internal/scoped_ptr.h"</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="minimizer.h.html">"ceres/minimizer.h"</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../include/ceres/solver.h.html">"ceres/solver.h"</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="sparse_matrix.h.html">"ceres/sparse_matrix.h"</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="trust_region_step_evaluator.h.html">"ceres/trust_region_step_evaluator.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="trust_region_strategy.h.html">"ceres/trust_region_strategy.h"</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="../../include/ceres/types.h.html">"ceres/types.h"</a></u></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="44">44</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><i>// Generic trust region minimization algorithm.</i></td></tr>
+<tr><th id="47">47</th><td><i>//</i></td></tr>
+<tr><th id="48">48</th><td><i>// For example usage, see SolverImpl::Minimize.</i></td></tr>
+<tr><th id="49">49</th><td><b>class</b> <dfn class="type def" id="ceres::internal::TrustRegionMinimizer" title='ceres::internal::TrustRegionMinimizer' data-ref="ceres::internal::TrustRegionMinimizer">TrustRegionMinimizer</dfn> : <b>public</b> <a class="type" href="minimizer.h.html#ceres::internal::Minimizer" title='ceres::internal::Minimizer' data-ref="ceres::internal::Minimizer">Minimizer</a> {</td></tr>
+<tr><th id="50">50</th><td> <b>public</b>:</td></tr>
+<tr><th id="51">51</th><td>  <dfn class="virtual decl" id="_ZN5ceres8internal20TrustRegionMinimizerD1Ev" title='ceres::internal::TrustRegionMinimizer::~TrustRegionMinimizer' data-ref="_ZN5ceres8internal20TrustRegionMinimizerD1Ev">~</dfn>TrustRegionMinimizer();</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td>  <i>// This method is not thread safe.</i></td></tr>
+<tr><th id="54">54</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZN5ceres8internal20TrustRegionMinimizer8MinimizeERKNS0_9Minimizer7OptionsEPdPNS_6Solver7SummaryE" title='ceres::internal::TrustRegionMinimizer::Minimize' data-ref="_ZN5ceres8internal20TrustRegionMinimizer8MinimizeERKNS0_9Minimizer7OptionsEPdPNS_6Solver7SummaryE">Minimize</dfn>(<em>const</em> <a class="type" href="minimizer.h.html#ceres::internal::Minimizer" title='ceres::internal::Minimizer' data-ref="ceres::internal::Minimizer">Minimizer</a>::<a class="type" href="minimizer.h.html#ceres::internal::Minimizer::Options" title='ceres::internal::Minimizer::Options' data-ref="ceres::internal::Minimizer::Options">Options</a>&amp; <dfn class="local col3 decl" id="173options" title='options' data-type='const Minimizer::Options &amp;' data-ref="173options">options</dfn>,</td></tr>
+<tr><th id="55">55</th><td>                        <em>double</em>* <dfn class="local col4 decl" id="174parameters" title='parameters' data-type='double *' data-ref="174parameters">parameters</dfn>,</td></tr>
+<tr><th id="56">56</th><td>                        <a class="type" href="../../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../../include/ceres/solver.h.html#ceres::Solver::Summary" title='ceres::Solver::Summary' data-ref="ceres::Solver::Summary">Summary</a>* <dfn class="local col5 decl" id="175solver_summary" title='solver_summary' data-type='Solver::Summary *' data-ref="175solver_summary">solver_summary</dfn>);</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td> <b>private</b>:</td></tr>
+<tr><th id="59">59</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer4InitERKNS0_9Minimizer7OptionsEPdPNS_6Solver7SummaryE" title='ceres::internal::TrustRegionMinimizer::Init' data-ref="_ZN5ceres8internal20TrustRegionMinimizer4InitERKNS0_9Minimizer7OptionsEPdPNS_6Solver7SummaryE">Init</dfn>(<em>const</em> <a class="type" href="minimizer.h.html#ceres::internal::Minimizer" title='ceres::internal::Minimizer' data-ref="ceres::internal::Minimizer">Minimizer</a>::<a class="type" href="minimizer.h.html#ceres::internal::Minimizer::Options" title='ceres::internal::Minimizer::Options' data-ref="ceres::internal::Minimizer::Options">Options</a>&amp; <dfn class="local col6 decl" id="176options" title='options' data-type='const Minimizer::Options &amp;' data-ref="176options">options</dfn>,</td></tr>
+<tr><th id="60">60</th><td>            <em>double</em>* <dfn class="local col7 decl" id="177parameters" title='parameters' data-type='double *' data-ref="177parameters">parameters</dfn>,</td></tr>
+<tr><th id="61">61</th><td>            <a class="type" href="../../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../../include/ceres/solver.h.html#ceres::Solver::Summary" title='ceres::Solver::Summary' data-ref="ceres::Solver::Summary">Summary</a>* <dfn class="local col8 decl" id="178solver_summary" title='solver_summary' data-type='Solver::Summary *' data-ref="178solver_summary">solver_summary</dfn>);</td></tr>
+<tr><th id="62">62</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer13IterationZeroEv" title='ceres::internal::TrustRegionMinimizer::IterationZero' data-ref="_ZN5ceres8internal20TrustRegionMinimizer13IterationZeroEv">IterationZero</dfn>();</td></tr>
+<tr><th id="63">63</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer47FinalizeIterationAndCheckIfMinimizerCanContinueEv" title='ceres::internal::TrustRegionMinimizer::FinalizeIterationAndCheckIfMinimizerCanContinue' data-ref="_ZN5ceres8internal20TrustRegionMinimizer47FinalizeIterationAndCheckIfMinimizerCanContinueEv">FinalizeIterationAndCheckIfMinimizerCanContinue</dfn>();</td></tr>
+<tr><th id="64">64</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer22ComputeTrustRegionStepEv" title='ceres::internal::TrustRegionMinimizer::ComputeTrustRegionStep' data-ref="_ZN5ceres8internal20TrustRegionMinimizer22ComputeTrustRegionStepEv">ComputeTrustRegionStep</dfn>();</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer27EvaluateGradientAndJacobianEv" title='ceres::internal::TrustRegionMinimizer::EvaluateGradientAndJacobian' data-ref="_ZN5ceres8internal20TrustRegionMinimizer27EvaluateGradientAndJacobianEv">EvaluateGradientAndJacobian</dfn>();</td></tr>
+<tr><th id="67">67</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer36ComputeCandidatePointAndEvaluateCostEv" title='ceres::internal::TrustRegionMinimizer::ComputeCandidatePointAndEvaluateCost' data-ref="_ZN5ceres8internal20TrustRegionMinimizer36ComputeCandidatePointAndEvaluateCostEv">ComputeCandidatePointAndEvaluateCost</dfn>();</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer12DoLineSearchERKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEES6_dPS4_" title='ceres::internal::TrustRegionMinimizer::DoLineSearch' data-ref="_ZN5ceres8internal20TrustRegionMinimizer12DoLineSearchERKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEES6_dPS4_">DoLineSearch</dfn>(<em>const</em> <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a>&amp; <dfn class="local col9 decl" id="179x" title='x' data-type='const Vector &amp;' data-ref="179x">x</dfn>,</td></tr>
+<tr><th id="70">70</th><td>                    <em>const</em> <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a>&amp; <dfn class="local col0 decl" id="180gradient" title='gradient' data-type='const Vector &amp;' data-ref="180gradient">gradient</dfn>,</td></tr>
+<tr><th id="71">71</th><td>                    <em>const</em> <em>double</em> <dfn class="local col1 decl" id="181cost" title='cost' data-type='const double' data-ref="181cost">cost</dfn>,</td></tr>
+<tr><th id="72">72</th><td>                    <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a>* <dfn class="local col2 decl" id="182delta" title='delta' data-type='Vector *' data-ref="182delta">delta</dfn>);</td></tr>
+<tr><th id="73">73</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer25DoInnerIterationsIfNeededEv" title='ceres::internal::TrustRegionMinimizer::DoInnerIterationsIfNeeded' data-ref="_ZN5ceres8internal20TrustRegionMinimizer25DoInnerIterationsIfNeededEv">DoInnerIterationsIfNeeded</dfn>();</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer25ParameterToleranceReachedEv" title='ceres::internal::TrustRegionMinimizer::ParameterToleranceReached' data-ref="_ZN5ceres8internal20TrustRegionMinimizer25ParameterToleranceReachedEv">ParameterToleranceReached</dfn>();</td></tr>
+<tr><th id="76">76</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer24FunctionToleranceReachedEv" title='ceres::internal::TrustRegionMinimizer::FunctionToleranceReached' data-ref="_ZN5ceres8internal20TrustRegionMinimizer24FunctionToleranceReachedEv">FunctionToleranceReached</dfn>();</td></tr>
+<tr><th id="77">77</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer24GradientToleranceReachedEv" title='ceres::internal::TrustRegionMinimizer::GradientToleranceReached' data-ref="_ZN5ceres8internal20TrustRegionMinimizer24GradientToleranceReachedEv">GradientToleranceReached</dfn>();</td></tr>
+<tr><th id="78">78</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer20MaxSolverTimeReachedEv" title='ceres::internal::TrustRegionMinimizer::MaxSolverTimeReached' data-ref="_ZN5ceres8internal20TrustRegionMinimizer20MaxSolverTimeReachedEv">MaxSolverTimeReached</dfn>();</td></tr>
+<tr><th id="79">79</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer26MaxSolverIterationsReachedEv" title='ceres::internal::TrustRegionMinimizer::MaxSolverIterationsReached' data-ref="_ZN5ceres8internal20TrustRegionMinimizer26MaxSolverIterationsReachedEv">MaxSolverIterationsReached</dfn>();</td></tr>
+<tr><th id="80">80</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer27MinTrustRegionRadiusReachedEv" title='ceres::internal::TrustRegionMinimizer::MinTrustRegionRadiusReached' data-ref="_ZN5ceres8internal20TrustRegionMinimizer27MinTrustRegionRadiusReachedEv">MinTrustRegionRadiusReached</dfn>();</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer16IsStepSuccessfulEv" title='ceres::internal::TrustRegionMinimizer::IsStepSuccessful' data-ref="_ZN5ceres8internal20TrustRegionMinimizer16IsStepSuccessfulEv">IsStepSuccessful</dfn>();</td></tr>
+<tr><th id="83">83</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer22HandleUnsuccessfulStepEv" title='ceres::internal::TrustRegionMinimizer::HandleUnsuccessfulStep' data-ref="_ZN5ceres8internal20TrustRegionMinimizer22HandleUnsuccessfulStepEv">HandleUnsuccessfulStep</dfn>();</td></tr>
+<tr><th id="84">84</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer20HandleSuccessfulStepEv" title='ceres::internal::TrustRegionMinimizer::HandleSuccessfulStep' data-ref="_ZN5ceres8internal20TrustRegionMinimizer20HandleSuccessfulStepEv">HandleSuccessfulStep</dfn>();</td></tr>
+<tr><th id="85">85</th><td>  <em>bool</em> <dfn class="decl" id="_ZN5ceres8internal20TrustRegionMinimizer17HandleInvalidStepEv" title='ceres::internal::TrustRegionMinimizer::HandleInvalidStep' data-ref="_ZN5ceres8internal20TrustRegionMinimizer17HandleInvalidStepEv">HandleInvalidStep</dfn>();</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>  <a class="type" href="minimizer.h.html#ceres::internal::Minimizer" title='ceres::internal::Minimizer' data-ref="ceres::internal::Minimizer">Minimizer</a>::<a class="type" href="minimizer.h.html#ceres::internal::Minimizer::Options" title='ceres::internal::Minimizer::Options' data-ref="ceres::internal::Minimizer::Options">Options</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::options_" title='ceres::internal::TrustRegionMinimizer::options_' data-ref="ceres::internal::TrustRegionMinimizer::options_">options_</dfn>;</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>  <i>// These pointers are shortcuts to objects passed to the</i></td></tr>
+<tr><th id="90">90</th><td><i>  // TrustRegionMinimizer. The TrustRegionMinimizer does not own them.</i></td></tr>
+<tr><th id="91">91</th><td>  <em>double</em>* <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::parameters_" title='ceres::internal::TrustRegionMinimizer::parameters_' data-ref="ceres::internal::TrustRegionMinimizer::parameters_">parameters_</dfn>;</td></tr>
+<tr><th id="92">92</th><td>  <a class="type" href="../../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../../include/ceres/solver.h.html#ceres::Solver::Summary" title='ceres::Solver::Summary' data-ref="ceres::Solver::Summary">Summary</a>* <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::solver_summary_" title='ceres::internal::TrustRegionMinimizer::solver_summary_' data-ref="ceres::internal::TrustRegionMinimizer::solver_summary_">solver_summary_</dfn>;</td></tr>
+<tr><th id="93">93</th><td>  <a class="type" href="evaluator.h.html#ceres::internal::Evaluator" title='ceres::internal::Evaluator' data-ref="ceres::internal::Evaluator">Evaluator</a>* <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::evaluator_" title='ceres::internal::TrustRegionMinimizer::evaluator_' data-ref="ceres::internal::TrustRegionMinimizer::evaluator_">evaluator_</dfn>;</td></tr>
+<tr><th id="94">94</th><td>  <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>* <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::jacobian_" title='ceres::internal::TrustRegionMinimizer::jacobian_' data-ref="ceres::internal::TrustRegionMinimizer::jacobian_">jacobian_</dfn>;</td></tr>
+<tr><th id="95">95</th><td>  <a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</a>* <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::strategy_" title='ceres::internal::TrustRegionMinimizer::strategy_' data-ref="ceres::internal::TrustRegionMinimizer::strategy_">strategy_</dfn>;</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>  <a class="type" href="../../include/ceres/internal/scoped_ptr.h.html#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;<a class="type" href="trust_region_step_evaluator.h.html#ceres::internal::TrustRegionStepEvaluator" title='ceres::internal::TrustRegionStepEvaluator' data-ref="ceres::internal::TrustRegionStepEvaluator">TrustRegionStepEvaluator</a>&gt; <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::step_evaluator_" title='ceres::internal::TrustRegionMinimizer::step_evaluator_' data-ref="ceres::internal::TrustRegionMinimizer::step_evaluator_">step_evaluator_</dfn>;</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>  <em>bool</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::is_not_silent_" title='ceres::internal::TrustRegionMinimizer::is_not_silent_' data-ref="ceres::internal::TrustRegionMinimizer::is_not_silent_">is_not_silent_</dfn>;</td></tr>
+<tr><th id="100">100</th><td>  <em>bool</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::inner_iterations_are_enabled_" title='ceres::internal::TrustRegionMinimizer::inner_iterations_are_enabled_' data-ref="ceres::internal::TrustRegionMinimizer::inner_iterations_are_enabled_">inner_iterations_are_enabled_</dfn>;</td></tr>
+<tr><th id="101">101</th><td>  <em>bool</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::inner_iterations_were_useful_" title='ceres::internal::TrustRegionMinimizer::inner_iterations_were_useful_' data-ref="ceres::internal::TrustRegionMinimizer::inner_iterations_were_useful_">inner_iterations_were_useful_</dfn>;</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>  <i>// Summary of the current iteration.</i></td></tr>
+<tr><th id="104">104</th><td>  <a class="type" href="../../include/ceres/iteration_callback.h.html#ceres::IterationSummary" title='ceres::IterationSummary' data-ref="ceres::IterationSummary">IterationSummary</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::iteration_summary_" title='ceres::internal::TrustRegionMinimizer::iteration_summary_' data-ref="ceres::internal::TrustRegionMinimizer::iteration_summary_">iteration_summary_</dfn>;</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>  <i>// Dimensionality of the problem in the ambient space.</i></td></tr>
+<tr><th id="107">107</th><td>  <em>int</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::num_parameters_" title='ceres::internal::TrustRegionMinimizer::num_parameters_' data-ref="ceres::internal::TrustRegionMinimizer::num_parameters_">num_parameters_</dfn>;</td></tr>
+<tr><th id="108">108</th><td>  <i>// Dimensionality of the problem in the tangent space. This is the</i></td></tr>
+<tr><th id="109">109</th><td><i>  // number of columns in the Jacobian.</i></td></tr>
+<tr><th id="110">110</th><td>  <em>int</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::num_effective_parameters_" title='ceres::internal::TrustRegionMinimizer::num_effective_parameters_' data-ref="ceres::internal::TrustRegionMinimizer::num_effective_parameters_">num_effective_parameters_</dfn>;</td></tr>
+<tr><th id="111">111</th><td>  <i>// Length of the residual vector, also the number of rows in the Jacobian.</i></td></tr>
+<tr><th id="112">112</th><td>  <em>int</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::num_residuals_" title='ceres::internal::TrustRegionMinimizer::num_residuals_' data-ref="ceres::internal::TrustRegionMinimizer::num_residuals_">num_residuals_</dfn>;</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>  <i>// Current point.</i></td></tr>
+<tr><th id="115">115</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::x_" title='ceres::internal::TrustRegionMinimizer::x_' data-ref="ceres::internal::TrustRegionMinimizer::x_">x_</dfn>;</td></tr>
+<tr><th id="116">116</th><td>  <i>// Residuals at x_;</i></td></tr>
+<tr><th id="117">117</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::residuals_" title='ceres::internal::TrustRegionMinimizer::residuals_' data-ref="ceres::internal::TrustRegionMinimizer::residuals_">residuals_</dfn>;</td></tr>
+<tr><th id="118">118</th><td>  <i>// Gradient at x_.</i></td></tr>
+<tr><th id="119">119</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::gradient_" title='ceres::internal::TrustRegionMinimizer::gradient_' data-ref="ceres::internal::TrustRegionMinimizer::gradient_">gradient_</dfn>;</td></tr>
+<tr><th id="120">120</th><td>  <i>// Solution computed by the inner iterations.</i></td></tr>
+<tr><th id="121">121</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::inner_iteration_x_" title='ceres::internal::TrustRegionMinimizer::inner_iteration_x_' data-ref="ceres::internal::TrustRegionMinimizer::inner_iteration_x_">inner_iteration_x_</dfn>;</td></tr>
+<tr><th id="122">122</th><td>  <i>// model_residuals = J * trust_region_step</i></td></tr>
+<tr><th id="123">123</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::model_residuals_" title='ceres::internal::TrustRegionMinimizer::model_residuals_' data-ref="ceres::internal::TrustRegionMinimizer::model_residuals_">model_residuals_</dfn>;</td></tr>
+<tr><th id="124">124</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::negative_gradient_" title='ceres::internal::TrustRegionMinimizer::negative_gradient_' data-ref="ceres::internal::TrustRegionMinimizer::negative_gradient_">negative_gradient_</dfn>;</td></tr>
+<tr><th id="125">125</th><td>  <i>// projected_gradient_step = Plus(x, -gradient), an intermediate</i></td></tr>
+<tr><th id="126">126</th><td><i>  // quantity used to compute the projected gradient norm.</i></td></tr>
+<tr><th id="127">127</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::projected_gradient_step_" title='ceres::internal::TrustRegionMinimizer::projected_gradient_step_' data-ref="ceres::internal::TrustRegionMinimizer::projected_gradient_step_">projected_gradient_step_</dfn>;</td></tr>
+<tr><th id="128">128</th><td>  <i>// The step computed by the trust region strategy. If Jacobi scaling</i></td></tr>
+<tr><th id="129">129</th><td><i>  // is enabled, this is a vector in the scaled space.</i></td></tr>
+<tr><th id="130">130</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::trust_region_step_" title='ceres::internal::TrustRegionMinimizer::trust_region_step_' data-ref="ceres::internal::TrustRegionMinimizer::trust_region_step_">trust_region_step_</dfn>;</td></tr>
+<tr><th id="131">131</th><td>  <i>// The current proposal for how far the trust region algorithm</i></td></tr>
+<tr><th id="132">132</th><td><i>  // thinks we should move. In the most basic case, it is just the</i></td></tr>
+<tr><th id="133">133</th><td><i>  // trust_region_step_ with the Jacobi scaling undone. If bounds</i></td></tr>
+<tr><th id="134">134</th><td><i>  // constraints are present, then it is the result of the projected</i></td></tr>
+<tr><th id="135">135</th><td><i>  // line search.</i></td></tr>
+<tr><th id="136">136</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::delta_" title='ceres::internal::TrustRegionMinimizer::delta_' data-ref="ceres::internal::TrustRegionMinimizer::delta_">delta_</dfn>;</td></tr>
+<tr><th id="137">137</th><td>  <i>// candidate_x  = Plus(x, delta)</i></td></tr>
+<tr><th id="138">138</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::candidate_x_" title='ceres::internal::TrustRegionMinimizer::candidate_x_' data-ref="ceres::internal::TrustRegionMinimizer::candidate_x_">candidate_x_</dfn>;</td></tr>
+<tr><th id="139">139</th><td>  <i>// Scaling vector to scale the columns of the Jacobian.</i></td></tr>
+<tr><th id="140">140</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::jacobian_scaling_" title='ceres::internal::TrustRegionMinimizer::jacobian_scaling_' data-ref="ceres::internal::TrustRegionMinimizer::jacobian_scaling_">jacobian_scaling_</dfn>;</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>  <i>// Euclidean norm of x_.</i></td></tr>
+<tr><th id="143">143</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::x_norm_" title='ceres::internal::TrustRegionMinimizer::x_norm_' data-ref="ceres::internal::TrustRegionMinimizer::x_norm_">x_norm_</dfn>;</td></tr>
+<tr><th id="144">144</th><td>  <i>// Cost at x_.</i></td></tr>
+<tr><th id="145">145</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::x_cost_" title='ceres::internal::TrustRegionMinimizer::x_cost_' data-ref="ceres::internal::TrustRegionMinimizer::x_cost_">x_cost_</dfn>;</td></tr>
+<tr><th id="146">146</th><td>  <i>// Minimum cost encountered up till now.</i></td></tr>
+<tr><th id="147">147</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::minimum_cost_" title='ceres::internal::TrustRegionMinimizer::minimum_cost_' data-ref="ceres::internal::TrustRegionMinimizer::minimum_cost_">minimum_cost_</dfn>;</td></tr>
+<tr><th id="148">148</th><td>  <i>// How much did the trust region strategy reduce the cost of the</i></td></tr>
+<tr><th id="149">149</th><td><i>  // linearized Gauss-Newton model.</i></td></tr>
+<tr><th id="150">150</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::model_cost_change_" title='ceres::internal::TrustRegionMinimizer::model_cost_change_' data-ref="ceres::internal::TrustRegionMinimizer::model_cost_change_">model_cost_change_</dfn>;</td></tr>
+<tr><th id="151">151</th><td>  <i>// Cost at candidate_x_.</i></td></tr>
+<tr><th id="152">152</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::candidate_cost_" title='ceres::internal::TrustRegionMinimizer::candidate_cost_' data-ref="ceres::internal::TrustRegionMinimizer::candidate_cost_">candidate_cost_</dfn>;</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>  <i>// Time at which the minimizer was started.</i></td></tr>
+<tr><th id="155">155</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::start_time_in_secs_" title='ceres::internal::TrustRegionMinimizer::start_time_in_secs_' data-ref="ceres::internal::TrustRegionMinimizer::start_time_in_secs_">start_time_in_secs_</dfn>;</td></tr>
+<tr><th id="156">156</th><td>  <i>// Time at which the current iteration was started.</i></td></tr>
+<tr><th id="157">157</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::iteration_start_time_in_secs_" title='ceres::internal::TrustRegionMinimizer::iteration_start_time_in_secs_' data-ref="ceres::internal::TrustRegionMinimizer::iteration_start_time_in_secs_">iteration_start_time_in_secs_</dfn>;</td></tr>
+<tr><th id="158">158</th><td>  <i>// Number of consecutive steps where the minimizer loop computed a</i></td></tr>
+<tr><th id="159">159</th><td><i>  // numerically invalid step.</i></td></tr>
+<tr><th id="160">160</th><td>  <em>int</em> <dfn class="decl" id="ceres::internal::TrustRegionMinimizer::num_consecutive_invalid_steps_" title='ceres::internal::TrustRegionMinimizer::num_consecutive_invalid_steps_' data-ref="ceres::internal::TrustRegionMinimizer::num_consecutive_invalid_steps_">num_consecutive_invalid_steps_</dfn>;</td></tr>
+<tr><th id="161">161</th><td>};</td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="164">164</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_INTERNAL_TRUST_REGION_MINIMIZER_H_</u></td></tr>
+<tr><th id="167">167</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='coordinate_descent_minimizer.cc.html'>ceres-solver/internal/ceres/coordinate_descent_minimizer.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

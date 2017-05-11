@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>linear_index.h source code [opencv/modules/flann/include/opencv2/flann/linear_index.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="cvflann::LinearIndex,cvflann::LinearIndexParams "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/flann/include/opencv2/flann/linear_index.h'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data';</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>opencv</a>/<a href='../../../..'>modules</a>/<a href='../../..'>flann</a>/<a href='../..'>include</a>/<a href='..'>opencv2</a>/<a href='./'>flann</a>/<a href='linear_index.h.html'>linear_index.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/***********************************************************************</i></td></tr>
+<tr><th id="2">2</th><td><i> * Software License Agreement (BSD License)</i></td></tr>
+<tr><th id="3">3</th><td><i> *</i></td></tr>
+<tr><th id="4">4</th><td><i> * Copyright 2008-2009  Marius Muja (mariusm@cs.ubc.ca). All rights reserved.</i></td></tr>
+<tr><th id="5">5</th><td><i> * Copyright 2008-2009  David G. Lowe (lowe@cs.ubc.ca). All rights reserved.</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * THE BSD LICENSE</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="10">10</th><td><i> * modification, are permitted provided that the following conditions</i></td></tr>
+<tr><th id="11">11</th><td><i> * are met:</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> * 1. Redistributions of source code must retain the above copyright</i></td></tr>
+<tr><th id="14">14</th><td><i> *    notice, this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="15">15</th><td><i> * 2. Redistributions in binary form must reproduce the above copyright</i></td></tr>
+<tr><th id="16">16</th><td><i> *    notice, this list of conditions and the following disclaimer in the</i></td></tr>
+<tr><th id="17">17</th><td><i> *    documentation and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR</i></td></tr>
+<tr><th id="20">20</th><td><i> * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES</i></td></tr>
+<tr><th id="21">21</th><td><i> * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.</i></td></tr>
+<tr><th id="22">22</th><td><i> * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,</i></td></tr>
+<tr><th id="23">23</th><td><i> * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT</i></td></tr>
+<tr><th id="24">24</th><td><i> * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,</i></td></tr>
+<tr><th id="25">25</th><td><i> * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY</i></td></tr>
+<tr><th id="26">26</th><td><i> * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</i></td></tr>
+<tr><th id="27">27</th><td><i> * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF</i></td></tr>
+<tr><th id="28">28</th><td><i> * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="29">29</th><td><i> *************************************************************************/</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/OPENCV_FLANN_LINEAR_INDEX_H_">OPENCV_FLANN_LINEAR_INDEX_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/OPENCV_FLANN_LINEAR_INDEX_H_" data-ref="_M/OPENCV_FLANN_LINEAR_INDEX_H_">OPENCV_FLANN_LINEAR_INDEX_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="general.h.html">"general.h"</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="nn_index.h.html">"nn_index.h"</a></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><b>namespace</b> <span class="namespace">cvflann</span></td></tr>
+<tr><th id="38">38</th><td>{</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><b>struct</b> <dfn class="type def" id="cvflann::LinearIndexParams" title='cvflann::LinearIndexParams' data-ref="cvflann::LinearIndexParams">LinearIndexParams</dfn> : <b>public</b> <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a></td></tr>
+<tr><th id="41">41</th><td>{</td></tr>
+<tr><th id="42">42</th><td>    <dfn class="decl def" id="_ZN7cvflann17LinearIndexParamsC1Ev" title='cvflann::LinearIndexParams::LinearIndexParams' data-ref="_ZN7cvflann17LinearIndexParamsC1Ev">LinearIndexParams</dfn>()</td></tr>
+<tr><th id="43">43</th><td>    {</td></tr>
+<tr><th id="44">44</th><td>        (* <b>this</b>)<a class="member" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapixERKT_" title='std::map::operator[]' data-ref="_ZNSt3mapixERKT_">[<a class="ref fake" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"algorithm"</q>]</a> <a class="ref" href="any.h.html#_ZN7cvflann3anyaSERKT_" title='cvflann::any::operator=' data-ref="_ZN7cvflann3anyaSERKT_">=</a> <a class="enum" href="defines.h.html#cvflann::flann_algorithm_t::FLANN_INDEX_LINEAR" title='cvflann::flann_algorithm_t::FLANN_INDEX_LINEAR' data-ref="cvflann::flann_algorithm_t::FLANN_INDEX_LINEAR">FLANN_INDEX_LINEAR</a>;</td></tr>
+<tr><th id="45">45</th><td>    }</td></tr>
+<tr><th id="46">46</th><td>};</td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><b>template</b> &lt;<b>typename</b> Distance&gt;</td></tr>
+<tr><th id="49">49</th><td><b>class</b> <dfn class="type def" id="cvflann::LinearIndex" title='cvflann::LinearIndex' data-ref="cvflann::LinearIndex">LinearIndex</dfn> : <b>public</b> <a class="type" href="nn_index.h.html#cvflann::NNIndex" title='cvflann::NNIndex' data-ref="cvflann::NNIndex">NNIndex</a>&lt;Distance&gt;</td></tr>
+<tr><th id="50">50</th><td>{</td></tr>
+<tr><th id="51">51</th><td><b>public</b>:</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td>    <b>typedef</b> <b>typename</b> Distance::ElementType <dfn class="typedef" id="cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</dfn>;</td></tr>
+<tr><th id="54">54</th><td>    <b>typedef</b> <b>typename</b> Distance::ResultType <dfn class="typedef" id="cvflann::LinearIndex::DistanceType" title='cvflann::LinearIndex::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::LinearIndex::DistanceType">DistanceType</dfn>;</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>    <dfn class="decl def" id="_ZN7cvflann11LinearIndexC1ERKNS_6MatrixINT_11ElementTypeEEERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS8_EEES2_" title='cvflann::LinearIndex::LinearIndex&lt;Distance&gt;' data-ref="_ZN7cvflann11LinearIndexC1ERKNS_6MatrixINT_11ElementTypeEEERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS8_EEES2_">LinearIndex</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</a>&gt;&amp; <dfn class="local col9 decl" id="2319inputData" title='inputData' data-type='const Matrix&lt;ElementType&gt; &amp;' data-ref="2319inputData">inputData</dfn>, <em>const</em> <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a>&amp; <dfn class="local col0 decl" id="2320params" title='params' data-type='const IndexParams &amp;' data-ref="2320params">params</dfn> = <a class="type" href="#cvflann::LinearIndexParams" title='cvflann::LinearIndexParams' data-ref="cvflann::LinearIndexParams">LinearIndexParams</a><a class="ref" href="#_ZN7cvflann17LinearIndexParamsC1Ev" title='cvflann::LinearIndexParams::LinearIndexParams' data-ref="_ZN7cvflann17LinearIndexParamsC1Ev">(</a>),</td></tr>
+<tr><th id="58">58</th><td>                Distance <dfn class="local col1 decl" id="2321d" title='d' data-type='Distance' data-ref="2321d">d</dfn> = Distance()) :</td></tr>
+<tr><th id="59">59</th><td>        <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>(<a class="local col9 ref" href="#2319inputData" title='inputData' data-ref="2319inputData">inputData</a>), <a class="member" href="#cvflann::LinearIndex::index_params_" title='cvflann::LinearIndex::index_params_' data-ref="cvflann::LinearIndex::index_params_">index_params_</a><a class="ref" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapC1ERKSt3mapIT_T0_T1_T2_E" title='std::map::map&lt;_Key, _Tp, _Compare, _Alloc&gt;' data-ref="_ZNSt3mapC1ERKSt3mapIT_T0_T1_T2_E">(</a><a class="local col0 ref" href="#2320params" title='params' data-ref="2320params">params</a>), <a class="member" href="#cvflann::LinearIndex::distance_" title='cvflann::LinearIndex::distance_' data-ref="cvflann::LinearIndex::distance_">distance_</a>(<a class="local col1 ref" href="#2321d" title='d' data-ref="2321d">d</a>)</td></tr>
+<tr><th id="60">60</th><td>    {</td></tr>
+<tr><th id="61">61</th><td>    }</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>    <dfn class="decl" id="_ZN7cvflann11LinearIndexC1ERKNS_11LinearIndexIT_EE" title='cvflann::LinearIndex::LinearIndex&lt;Distance&gt;' data-ref="_ZN7cvflann11LinearIndexC1ERKNS_11LinearIndexIT_EE">LinearIndex</dfn>(<em>const</em> LinearIndex&amp;);</td></tr>
+<tr><th id="64">64</th><td>    LinearIndex&amp; <dfn class="decl" id="_ZN7cvflann11LinearIndexaSERKNS_11LinearIndexIT_EE" title='cvflann::LinearIndex::operator=' data-ref="_ZN7cvflann11LinearIndexaSERKNS_11LinearIndexIT_EE"><b>operator</b>=</dfn>(<em>const</em> LinearIndex&amp;);</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>    <a class="type" href="defines.h.html#cvflann::flann_algorithm_t" title='cvflann::flann_algorithm_t' data-ref="cvflann::flann_algorithm_t">flann_algorithm_t</a> <dfn class="decl def" id="_ZNK7cvflann11LinearIndex7getTypeEv" title='cvflann::LinearIndex::getType' data-ref="_ZNK7cvflann11LinearIndex7getTypeEv">getType</dfn>() <em>const</em></td></tr>
+<tr><th id="67">67</th><td>    {</td></tr>
+<tr><th id="68">68</th><td>        <b>return</b> <a class="enum" href="defines.h.html#cvflann::flann_algorithm_t::FLANN_INDEX_LINEAR" title='cvflann::flann_algorithm_t::FLANN_INDEX_LINEAR' data-ref="cvflann::flann_algorithm_t::FLANN_INDEX_LINEAR">FLANN_INDEX_LINEAR</a>;</td></tr>
+<tr><th id="69">69</th><td>    }</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def" id="_ZNK7cvflann11LinearIndex4sizeEv" title='cvflann::LinearIndex::size' data-ref="_ZNK7cvflann11LinearIndex4sizeEv">size</dfn>() <em>const</em></td></tr>
+<tr><th id="73">73</th><td>    {</td></tr>
+<tr><th id="74">74</th><td>        <b>return</b> <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>.rows;</td></tr>
+<tr><th id="75">75</th><td>    }</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def" id="_ZNK7cvflann11LinearIndex6veclenEv" title='cvflann::LinearIndex::veclen' data-ref="_ZNK7cvflann11LinearIndex6veclenEv">veclen</dfn>() <em>const</em></td></tr>
+<tr><th id="78">78</th><td>    {</td></tr>
+<tr><th id="79">79</th><td>        <b>return</b> <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>.cols;</td></tr>
+<tr><th id="80">80</th><td>    }</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>    <em>int</em> <dfn class="decl def" id="_ZNK7cvflann11LinearIndex10usedMemoryEv" title='cvflann::LinearIndex::usedMemory' data-ref="_ZNK7cvflann11LinearIndex10usedMemoryEv">usedMemory</dfn>() <em>const</em></td></tr>
+<tr><th id="84">84</th><td>    {</td></tr>
+<tr><th id="85">85</th><td>        <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="86">86</th><td>    }</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">     * Dummy implementation for other algorithms of addable indexes after that.</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="91">91</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann11LinearIndex8addIndexERKNS_6MatrixINT_11ElementTypeEEES6_" title='cvflann::LinearIndex::addIndex' data-ref="_ZN7cvflann11LinearIndex8addIndexERKNS_6MatrixINT_11ElementTypeEEES6_">addIndex</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</a>&gt;&amp; <i>/*wholeData*/</i>, <em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</a>&gt;&amp; <i>/*additionalData*/</i>)</td></tr>
+<tr><th id="92">92</th><td>    {</td></tr>
+<tr><th id="93">93</th><td>    }</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann11LinearIndex10buildIndexEv" title='cvflann::LinearIndex::buildIndex' data-ref="_ZN7cvflann11LinearIndex10buildIndexEv">buildIndex</dfn>()</td></tr>
+<tr><th id="96">96</th><td>    {</td></tr>
+<tr><th id="97">97</th><td>        <i>/* nothing to do here for linear search */</i></td></tr>
+<tr><th id="98">98</th><td>    }</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann11LinearIndex9saveIndexEP8_IO_FILE" title='cvflann::LinearIndex::saveIndex' data-ref="_ZN7cvflann11LinearIndex9saveIndexEP8_IO_FILE">saveIndex</dfn>(<a class="typedef" href="../../../../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>*)</td></tr>
+<tr><th id="101">101</th><td>    {</td></tr>
+<tr><th id="102">102</th><td>        <i>/* nothing to do here for linear search */</i></td></tr>
+<tr><th id="103">103</th><td>    }</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann11LinearIndex9loadIndexEP8_IO_FILE" title='cvflann::LinearIndex::loadIndex' data-ref="_ZN7cvflann11LinearIndex9loadIndexEP8_IO_FILE">loadIndex</dfn>(<a class="typedef" href="../../../../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>*)</td></tr>
+<tr><th id="107">107</th><td>    {</td></tr>
+<tr><th id="108">108</th><td>        <i>/* nothing to do here for linear search */</i></td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>        <a class="member" href="#cvflann::LinearIndex::index_params_" title='cvflann::LinearIndex::index_params_' data-ref="cvflann::LinearIndex::index_params_">index_params_</a>[<q>"algorithm"</q>] = <a class="member" href="#_ZNK7cvflann11LinearIndex7getTypeEv" title='cvflann::LinearIndex::getType' data-ref="_ZNK7cvflann11LinearIndex7getTypeEv">getType</a>();</td></tr>
+<tr><th id="111">111</th><td>    }</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann11LinearIndex13findNeighborsERNS_9ResultSetINT_10ResultTypeEEEPKNS2_11ElementTypeERKNS_12SearchParamsE" title='cvflann::LinearIndex::findNeighbors' data-ref="_ZN7cvflann11LinearIndex13findNeighborsERNS_9ResultSetINT_10ResultTypeEEEPKNS2_11ElementTypeERKNS_12SearchParamsE">findNeighbors</dfn>(<a class="type" href="result_set.h.html#cvflann::ResultSet" title='cvflann::ResultSet' data-ref="cvflann::ResultSet">ResultSet</a>&lt;<a class="typedef" href="#cvflann::LinearIndex::DistanceType" title='cvflann::LinearIndex::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::LinearIndex::DistanceType">DistanceType</a>&gt;&amp; <dfn class="local col2 decl" id="2322resultSet" title='resultSet' data-type='ResultSet&lt;DistanceType&gt; &amp;' data-ref="2322resultSet">resultSet</dfn>, <em>const</em> <a class="typedef" href="#cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</a>* <dfn class="local col3 decl" id="2323vec" title='vec' data-type='const ElementType *' data-ref="2323vec">vec</dfn>, <em>const</em> <a class="type" href="params.h.html#cvflann::SearchParams" title='cvflann::SearchParams' data-ref="cvflann::SearchParams">SearchParams</a>&amp; <i>/*searchParams*/</i>)</td></tr>
+<tr><th id="114">114</th><td>    {</td></tr>
+<tr><th id="115">115</th><td>        <a class="typedef" href="#cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</a>* <dfn class="local col4 decl" id="2324data" title='data' data-type='ElementType *' data-ref="2324data">data</dfn> = <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>.data;</td></tr>
+<tr><th id="116">116</th><td>        <b>for</b> (<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="2325i" title='i' data-type='size_t' data-ref="2325i">i</dfn> = <var>0</var>; <a class="local col5 ref" href="#2325i" title='i' data-ref="2325i">i</a> &lt; <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>.rows; ++<a class="local col5 ref" href="#2325i" title='i' data-ref="2325i">i</a>, <a class="local col4 ref" href="#2324data" title='data' data-ref="2324data">data</a> += <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>.cols) {</td></tr>
+<tr><th id="117">117</th><td>            <a class="typedef" href="#cvflann::LinearIndex::DistanceType" title='cvflann::LinearIndex::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::LinearIndex::DistanceType">DistanceType</a> <dfn class="local col6 decl" id="2326dist" title='dist' data-type='DistanceType' data-ref="2326dist">dist</dfn> = <a class="member" href="#cvflann::LinearIndex::distance_" title='cvflann::LinearIndex::distance_' data-ref="cvflann::LinearIndex::distance_">distance_</a>(<a class="local col4 ref" href="#2324data" title='data' data-ref="2324data">data</a>, <a class="local col3 ref" href="#2323vec" title='vec' data-ref="2323vec">vec</a>, <a class="member" href="#cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</a>.cols);</td></tr>
+<tr><th id="118">118</th><td>            <a class="local col2 ref" href="#2322resultSet" title='resultSet' data-ref="2322resultSet">resultSet</a>.addPoint(<a class="local col6 ref" href="#2326dist" title='dist' data-ref="2326dist">dist</a>, (<em>int</em>)<a class="local col5 ref" href="#2325i" title='i' data-ref="2325i">i</a>);</td></tr>
+<tr><th id="119">119</th><td>        }</td></tr>
+<tr><th id="120">120</th><td>    }</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a> <dfn class="decl def" id="_ZNK7cvflann11LinearIndex13getParametersEv" title='cvflann::LinearIndex::getParameters' data-ref="_ZNK7cvflann11LinearIndex13getParametersEv">getParameters</dfn>() <em>const</em></td></tr>
+<tr><th id="123">123</th><td>    {</td></tr>
+<tr><th id="124">124</th><td>        <b>return</b> <a class="member" href="#cvflann::LinearIndex::index_params_" title='cvflann::LinearIndex::index_params_' data-ref="cvflann::LinearIndex::index_params_">index_params_</a>;</td></tr>
+<tr><th id="125">125</th><td>    }</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td><b>private</b>:</td></tr>
+<tr><th id="128">128</th><td>    <i class="doc">/** The dataset */</i></td></tr>
+<tr><th id="129">129</th><td>    <em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::LinearIndex::ElementType" title='cvflann::LinearIndex::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::LinearIndex::ElementType">ElementType</a>&gt; <dfn class="decl" id="cvflann::LinearIndex::dataset_" title='cvflann::LinearIndex::dataset_' data-ref="cvflann::LinearIndex::dataset_">dataset_</dfn>;</td></tr>
+<tr><th id="130">130</th><td>    <i class="doc">/** Index parameters */</i></td></tr>
+<tr><th id="131">131</th><td>    <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a> <dfn class="decl" id="cvflann::LinearIndex::index_params_" title='cvflann::LinearIndex::index_params_' data-ref="cvflann::LinearIndex::index_params_">index_params_</dfn>;</td></tr>
+<tr><th id="132">132</th><td>    <i class="doc">/** Index distance */</i></td></tr>
+<tr><th id="133">133</th><td>    Distance <dfn class="decl" id="cvflann::LinearIndex::distance_" title='cvflann::LinearIndex::distance_' data-ref="cvflann::LinearIndex::distance_">distance_</dfn>;</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>};</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>}</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td><u>#<span data-ppcond="31">endif</span> // OPENCV_FLANN_LINEAR_INDEX_H_</u></td></tr>
+<tr><th id="140">140</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../apps/haartraining/createsamples.cpp.html'>opencv/apps/haartraining/createsamples.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

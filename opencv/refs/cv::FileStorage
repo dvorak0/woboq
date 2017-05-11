@@ -1,0 +1,121 @@
+<def f='opencv/modules/core/include/opencv2/core/core.hpp' l='4114' ll='4179'/>
+<size>64</size>
+<doc f='opencv/modules/core/include/opencv2/core/core.hpp' l='4017'>/*!
+ XML/YAML File Storage Class.
+
+ The class describes an object associated with XML or YAML file.
+ It can be used to store data to such a file or read and decode the data.
+
+ The storage is organized as a tree of nested sequences (or lists) and mappings.
+ Sequence is a heterogenious array, which elements are accessed by indices or sequentially using an iterator.
+ Mapping is analogue of std::map or C structure, which elements are accessed by names.
+ The most top level structure is a mapping.
+ Leaves of the file storage tree are integers, floating-point numbers and text strings.
+
+ For example, the following code:
+
+ \code
+ // open file storage for writing. Type of the file is determined from the extension
+ FileStorage fs(&quot;test.yml&quot;, FileStorage::WRITE);
+ fs &lt;&lt; &quot;test_int&quot; &lt;&lt; 5 &lt;&lt; &quot;test_real&quot; &lt;&lt; 3.1 &lt;&lt; &quot;test_string&quot; &lt;&lt; &quot;ABCDEFGH&quot;;
+ fs &lt;&lt; &quot;test_mat&quot; &lt;&lt; Mat::eye(3,3,CV_32F);
+
+ fs &lt;&lt; &quot;test_list&quot; &lt;&lt; &quot;[&quot; &lt;&lt; 0.0000000000001 &lt;&lt; 2 &lt;&lt; CV_PI &lt;&lt; -3435345 &lt;&lt; &quot;2-502 2-029 3egegeg&quot; &lt;&lt;
+ &quot;{:&quot; &lt;&lt; &quot;month&quot; &lt;&lt; 12 &lt;&lt; &quot;day&quot; &lt;&lt; 31 &lt;&lt; &quot;year&quot; &lt;&lt; 1969 &lt;&lt; &quot;}&quot; &lt;&lt; &quot;]&quot;;
+ fs &lt;&lt; &quot;test_map&quot; &lt;&lt; &quot;{&quot; &lt;&lt; &quot;x&quot; &lt;&lt; 1 &lt;&lt; &quot;y&quot; &lt;&lt; 2 &lt;&lt; &quot;width&quot; &lt;&lt; 100 &lt;&lt; &quot;height&quot; &lt;&lt; 200 &lt;&lt; &quot;lbp&quot; &lt;&lt; &quot;[:&quot;;
+
+ const uchar arr[] = {0, 1, 1, 0, 1, 1, 0, 1};
+ fs.writeRaw(&quot;u&quot;, arr, (int)(sizeof(arr)/sizeof(arr[0])));
+
+ fs &lt;&lt; &quot;]&quot; &lt;&lt; &quot;}&quot;;
+ \endcode
+
+ will produce the following file:
+
+ \verbatim
+ %YAML:1.0
+ test_int: 5
+ test_real: 3.1000000000000001e+00
+ test_string: ABCDEFGH
+ test_mat: !!opencv-matrix
+     rows: 3
+     cols: 3
+     dt: f
+     data: [ 1., 0., 0., 0., 1., 0., 0., 0., 1. ]
+ test_list:
+     - 1.0000000000000000e-13
+     - 2
+     - 3.1415926535897931e+00
+     - -3435345
+     - &quot;2-502 2-029 3egegeg&quot;
+     - { month:12, day:31, year:1969 }
+ test_map:
+     x: 1
+     y: 2
+     width: 100
+     height: 200
+     lbp: [ 0, 1, 1, 0, 1, 1, 0, 1 ]
+ \endverbatim
+
+ and to read the file above, the following code can be used:
+
+ \code
+ // open file storage for reading.
+ // Type of the file is determined from the content, not the extension
+ FileStorage fs(&quot;test.yml&quot;, FileStorage::READ);
+ int test_int = (int)fs[&quot;test_int&quot;];
+ double test_real = (double)fs[&quot;test_real&quot;];
+ string test_string = (string)fs[&quot;test_string&quot;];
+
+ Mat M;
+ fs[&quot;test_mat&quot;] &gt;&gt; M;
+
+ FileNode tl = fs[&quot;test_list&quot;];
+ CV_Assert(tl.type() == FileNode::SEQ &amp;&amp; tl.size() == 6);
+ double tl0 = (double)tl[0];
+ int tl1 = (int)tl[1];
+ double tl2 = (double)tl[2];
+ int tl3 = (int)tl[3];
+ string tl4 = (string)tl[4];
+ CV_Assert(tl[5].type() == FileNode::MAP &amp;&amp; tl[5].size() == 3);
+
+ int month = (int)tl[5][&quot;month&quot;];
+ int day = (int)tl[5][&quot;day&quot;];
+ int year = (int)tl[5][&quot;year&quot;];
+
+ FileNode tm = fs[&quot;test_map&quot;];
+
+ int x = (int)tm[&quot;x&quot;];
+ int y = (int)tm[&quot;y&quot;];
+ int width = (int)tm[&quot;width&quot;];
+ int height = (int)tm[&quot;height&quot;];
+
+ int lbp_val = 0;
+ FileNodeIterator it = tm[&quot;lbp&quot;].begin();
+
+ for(int k = 0; k &lt; 8; k++, ++it)
+    lbp_val |= ((int)*it) &lt;&lt; k;
+ \endcode
+*/</doc>
+<fun r='_ZN2cv11FileStorageC1Ev'/>
+<fun r='_ZN2cv11FileStorageC1ERKSsiS2_'/>
+<fun r='_ZN2cv11FileStorageC1EP13CvFileStorage'/>
+<fun r='_ZN2cv11FileStorageD1Ev'/>
+<fun r='_ZN2cv11FileStorage4openERKSsiS2_'/>
+<fun r='_ZNK2cv11FileStorage8isOpenedEv'/>
+<fun r='_ZN2cv11FileStorage7releaseEv'/>
+<fun r='_ZN2cv11FileStorage19releaseAndGetStringEv'/>
+<fun r='_ZNK2cv11FileStorage20getFirstTopLevelNodeEv'/>
+<fun r='_ZNK2cv11FileStorage4rootEi'/>
+<fun r='_ZNK2cv11FileStorageixERKSs'/>
+<fun r='_ZNK2cv11FileStorageixEPKc'/>
+<fun r='_ZN2cv11FileStoragedeEv'/>
+<fun r='_ZNK2cv11FileStoragedeEv'/>
+<fun r='_ZN2cv11FileStorage8writeRawERKSsPKhm'/>
+<fun r='_ZN2cv11FileStorage8writeObjERKSsPKv'/>
+<fun r='_ZN2cv11FileStorage20getDefaultObjectNameERKSs'/>
+<mbr r='cv::FileStorage::fs' o='64' t='Ptr&lt;CvFileStorage&gt;'/>
+<mbr r='cv::FileStorage::elname' o='192' t='string'/>
+<mbr r='cv::FileStorage::structs' o='256' t='vector&lt;char&gt;'/>
+<mbr r='cv::FileStorage::state' o='448' t='int'/>
+<fun r='_ZNK2cv11FileStorage20getFirstTopLevelNodeEv'/>

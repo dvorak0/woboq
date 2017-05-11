@@ -1,0 +1,54 @@
+<dec f='ceres-solver/internal/ceres/dogleg_strategy.h' l='93' type='Vector ceres::internal::DoglegStrategy::MakePolynomialForBoundaryConstrainedProblem() const'/>
+<def f='ceres-solver/internal/ceres/dogleg_strategy.cc' l='419' ll='436' type='Vector ceres::internal::DoglegStrategy::MakePolynomialForBoundaryConstrainedProblem() const'/>
+<use f='ceres-solver/internal/ceres/dogleg_strategy.cc' l='479' u='c' c='_ZNK5ceres8internal14DoglegStrategy32FindMinimumOnTrustRegionBoundaryEPN5Eigen6MatrixIdLi2ELi1ELi2ELi2ELi1EEE'/>
+<doc f='ceres-solver/internal/ceres/dogleg_strategy.cc' l='368'>// Build the polynomial that defines the optimal Lagrange multipliers.
+// Let the Lagrangian be
+//
+//   L(x, y) = 0.5 x^T B x + x^T g + y (0.5 x^T x - 0.5 r^2).       (1)
+//
+// Stationary points of the Lagrangian are given by
+//
+//   0 = d L(x, y) / dx = Bx + g + y x                              (2)
+//   0 = d L(x, y) / dy = 0.5 x^T x - 0.5 r^2                       (3)
+//
+// For any given y, we can solve (2) for x as
+//
+//   x(y) = -(B + y I)^-1 g .                                       (4)
+//
+// As B + y I is 2x2, we form the inverse explicitly:
+//
+//   (B + y I)^-1 = (1 / det(B + y I)) adj(B + y I)                 (5)
+//
+// where adj() denotes adjugation. This should be safe, as B is positive
+// semi-definite and y is necessarily positive, so (B + y I) is indeed
+// invertible.
+// Plugging (5) into (4) and the result into (3), then dividing by 0.5 we
+// obtain
+//
+//   0 = (1 / det(B + y I))^2 g^T adj(B + y I)^T adj(B + y I) g - r^2
+//                                                                  (6)
+//
+// or
+//
+//   det(B + y I)^2 r^2 = g^T adj(B + y I)^T adj(B + y I) g         (7a)
+//                      = g^T adj(B)^T adj(B) g
+//                           + 2 y g^T adj(B)^T g + y^2 g^T g       (7b)
+//
+// as
+//
+//   adj(B + y I) = adj(B) + y I = adj(B)^T + y I .                 (8)
+//
+// The left hand side can be expressed explicitly using
+//
+//   det(B + y I) = det(B) + y tr(B) + y^2 .                        (9)
+//
+// So (7) is a polynomial in y of degree four.
+// Bringing everything back to the left hand side, the coefficients can
+// be read off as
+//
+//     y^4  r^2
+//   + y^3  2 r^2 tr(B)
+//   + y^2 (r^2 tr(B)^2 + 2 r^2 det(B) - g^T g)
+//   + y^1 (2 r^2 det(B) tr(B) - 2 g^T adj(B)^T g)
+//   + y^0 (r^2 det(B)^2 - g^T adj(B)^T adj(B) g)
+//</doc>

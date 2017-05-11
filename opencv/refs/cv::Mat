@@ -1,0 +1,438 @@
+<def f='opencv/modules/core/include/opencv2/core/core.hpp' l='1712' ll='2035'/>
+<ovr f='opencv/modules/core/include/opencv2/core/core.hpp' l='2829' c='cv::Mat_'/>
+<size>96</size>
+<doc f='opencv/modules/core/include/opencv2/core/core.hpp' l='1502'>/*!
+   The n-dimensional matrix class.
+
+   The class represents an n-dimensional dense numerical array that can act as
+   a matrix, image, optical flow map, 3-focal tensor etc.
+   It is very similar to CvMat and CvMatND types from earlier versions of OpenCV,
+   and similarly to those types, the matrix can be multi-channel. It also fully supports ROI mechanism.
+
+   There are many different ways to create cv::Mat object. Here are the some popular ones:
+   &lt;ul&gt;
+   &lt;li&gt; using cv::Mat::create(nrows, ncols, type) method or
+     the similar constructor cv::Mat::Mat(nrows, ncols, type[, fill_value]) constructor.
+     A new matrix of the specified size and specifed type will be allocated.
+     &quot;type&quot; has the same meaning as in cvCreateMat function,
+     e.g. CV_8UC1 means 8-bit single-channel matrix, CV_32FC2 means 2-channel (i.e. complex)
+     floating-point matrix etc:
+
+     \code
+     // make 7x7 complex matrix filled with 1+3j.
+     cv::Mat M(7,7,CV_32FC2,Scalar(1,3));
+     // and now turn M to 100x60 15-channel 8-bit matrix.
+     // The old content will be deallocated
+     M.create(100,60,CV_8UC(15));
+     \endcode
+
+     As noted in the introduction of this chapter, Mat::create()
+     will only allocate a new matrix when the current matrix dimensionality
+     or type are different from the specified.
+
+   &lt;li&gt; by using a copy constructor or assignment operator, where on the right side it can
+     be a matrix or expression, see below. Again, as noted in the introduction,
+     matrix assignment is O(1) operation because it only copies the header
+     and increases the reference counter. cv::Mat::clone() method can be used to get a full
+     (a.k.a. deep) copy of the matrix when you need it.
+
+   &lt;li&gt; by constructing a header for a part of another matrix. It can be a single row, single column,
+     several rows, several columns, rectangular region in the matrix (called a minor in algebra) or
+     a diagonal. Such operations are also O(1), because the new header will reference the same data.
+     You can actually modify a part of the matrix using this feature, e.g.
+
+     \code
+     // add 5-th row, multiplied by 3 to the 3rd row
+     M.row(3) = M.row(3) + M.row(5)*3;
+
+     // now copy 7-th column to the 1-st column
+     // M.col(1) = M.col(7); // this will not work
+     Mat M1 = M.col(1);
+     M.col(7).copyTo(M1);
+
+     // create new 320x240 image
+     cv::Mat img(Size(320,240),CV_8UC3);
+     // select a roi
+     cv::Mat roi(img, Rect(10,10,100,100));
+     // fill the ROI with (0,255,0) (which is green in RGB space);
+     // the original 320x240 image will be modified
+     roi = Scalar(0,255,0);
+     \endcode
+
+     Thanks to the additional cv::Mat::datastart and cv::Mat::dataend members, it is possible to
+     compute the relative sub-matrix position in the main &quot;container&quot; matrix using cv::Mat::locateROI():
+
+     \code
+     Mat A = Mat::eye(10, 10, CV_32S);
+     // extracts A columns, 1 (inclusive) to 3 (exclusive).
+     Mat B = A(Range::all(), Range(1, 3));
+     // extracts B rows, 5 (inclusive) to 9 (exclusive).
+     // that is, C ~ A(Range(5, 9), Range(1, 3))
+     Mat C = B(Range(5, 9), Range::all());
+     Size size; Point ofs;
+     C.locateROI(size, ofs);
+     // size will be (width=10,height=10) and the ofs will be (x=1, y=5)
+     \endcode
+
+     As in the case of whole matrices, if you need a deep copy, use cv::Mat::clone() method
+     of the extracted sub-matrices.
+
+   &lt;li&gt; by making a header for user-allocated-data. It can be useful for
+      &lt;ol&gt;
+      &lt;li&gt; processing &quot;foreign&quot; data using OpenCV (e.g. when you implement
+         a DirectShow filter or a processing module for gstreamer etc.), e.g.
+
+         \code
+         void process_video_frame(const unsigned char* pixels,
+                                  int width, int height, int step)
+         {
+            cv::Mat img(height, width, CV_8UC3, pixels, step);
+            cv::GaussianBlur(img, img, cv::Size(7,7), 1.5, 1.5);
+         }
+         \endcode
+
+      &lt;li&gt; for quick initialization of small matrices and/or super-fast element access
+
+         \code
+         double m[3][3] = {{a, b, c}, {d, e, f}, {g, h, i}};
+         cv::Mat M = cv::Mat(3, 3, CV_64F, m).inv();
+         \endcode
+      &lt;/ol&gt;
+
+       partial yet very common cases of this &quot;user-allocated data&quot; case are conversions
+       from CvMat and IplImage to cv::Mat. For this purpose there are special constructors
+       taking pointers to CvMat or IplImage and the optional
+       flag indicating whether to copy the data or not.
+
+       Backward conversion from cv::Mat to CvMat or IplImage is provided via cast operators
+       cv::Mat::operator CvMat() an cv::Mat::operator IplImage().
+       The operators do not copy the data.
+
+
+       \code
+       IplImage* img = cvLoadImage(&quot;greatwave.jpg&quot;, 1);
+       Mat mtx(img); // convert IplImage* -&gt; cv::Mat
+       CvMat oldmat = mtx; // convert cv::Mat -&gt; CvMat
+       CV_Assert(oldmat.cols == img-&gt;width &amp;&amp; oldmat.rows == img-&gt;height &amp;&amp;
+           oldmat.data.ptr == (uchar*)img-&gt;imageData &amp;&amp; oldmat.step == img-&gt;widthStep);
+       \endcode
+
+   &lt;li&gt; by using MATLAB-style matrix initializers, cv::Mat::zeros(), cv::Mat::ones(), cv::Mat::eye(), e.g.:
+
+   \code
+   // create a double-precision identity martix and add it to M.
+   M += Mat::eye(M.rows, M.cols, CV_64F);
+   \endcode
+
+   &lt;li&gt; by using comma-separated initializer:
+
+   \code
+   // create 3x3 double-precision identity matrix
+   Mat M = (Mat_&lt;double&gt;(3,3) &lt;&lt; 1, 0, 0, 0, 1, 0, 0, 0, 1);
+   \endcode
+
+   here we first call constructor of cv::Mat_ class (that we describe further) with the proper matrix,
+   and then we just put &quot;&lt;&lt;&quot; operator followed by comma-separated values that can be constants,
+   variables, expressions etc. Also, note the extra parentheses that are needed to avoid compiler errors.
+
+   &lt;/ul&gt;
+
+   Once matrix is created, it will be automatically managed by using reference-counting mechanism
+   (unless the matrix header is built on top of user-allocated data,
+   in which case you should handle the data by yourself).
+   The matrix data will be deallocated when no one points to it;
+   if you want to release the data pointed by a matrix header before the matrix destructor is called,
+   use cv::Mat::release().
+
+   The next important thing to learn about the matrix class is element access. Here is how the matrix is stored.
+   The elements are stored in row-major order (row by row). The cv::Mat::data member points to the first element of the first row,
+   cv::Mat::rows contains the number of matrix rows and cv::Mat::cols - the number of matrix columns. There is yet another member,
+   cv::Mat::step that is used to actually compute address of a matrix element. cv::Mat::step is needed because the matrix can be
+   a part of another matrix or because there can some padding space in the end of each row for a proper alignment.
+
+   Given these parameters, address of the matrix element M_{ij} is computed as following:
+
+   addr(M_{ij})=M.data + M.step*i + j*M.elemSize()
+
+   if you know the matrix element type, e.g. it is float, then you can use cv::Mat::at() method:
+
+   addr(M_{ij})=&amp;M.at&lt;float&gt;(i,j)
+
+   (where &amp; is used to convert the reference returned by cv::Mat::at() to a pointer).
+   if you need to process a whole row of matrix, the most efficient way is to get
+   the pointer to the row first, and then just use plain C operator []:
+
+   \code
+   // compute sum of positive matrix elements
+   // (assuming that M is double-precision matrix)
+   double sum=0;
+   for(int i = 0; i &lt; M.rows; i++)
+   {
+       const double* Mi = M.ptr&lt;double&gt;(i);
+       for(int j = 0; j &lt; M.cols; j++)
+           sum += std::max(Mi[j], 0.);
+   }
+   \endcode
+
+   Some operations, like the above one, do not actually depend on the matrix shape,
+   they just process elements of a matrix one by one (or elements from multiple matrices
+   that are sitting in the same place, e.g. matrix addition). Such operations are called
+   element-wise and it makes sense to check whether all the input/output matrices are continuous,
+   i.e. have no gaps in the end of each row, and if yes, process them as a single long row:
+
+   \code
+   // compute sum of positive matrix elements, optimized variant
+   double sum=0;
+   int cols = M.cols, rows = M.rows;
+   if(M.isContinuous())
+   {
+       cols *= rows;
+       rows = 1;
+   }
+   for(int i = 0; i &lt; rows; i++)
+   {
+       const double* Mi = M.ptr&lt;double&gt;(i);
+       for(int j = 0; j &lt; cols; j++)
+           sum += std::max(Mi[j], 0.);
+   }
+   \endcode
+   in the case of continuous matrix the outer loop body will be executed just once,
+   so the overhead will be smaller, which will be especially noticeable in the case of small matrices.
+
+   Finally, there are STL-style iterators that are smart enough to skip gaps between successive rows:
+   \code
+   // compute sum of positive matrix elements, iterator-based variant
+   double sum=0;
+   MatConstIterator_&lt;double&gt; it = M.begin&lt;double&gt;(), it_end = M.end&lt;double&gt;();
+   for(; it != it_end; ++it)
+       sum += std::max(*it, 0.);
+   \endcode
+
+   The matrix iterators are random-access iterators, so they can be passed
+   to any STL algorithm, including std::sort().
+*/</doc>
+<fun r='_ZN2cv3MatC1Ev'/>
+<fun r='_ZN2cv3MatC1Eiii'/>
+<fun r='_ZN2cv3MatC1ENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3MatC1EiiiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3MatC1ENS_5Size_IiEEiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3MatC1EiPKii'/>
+<fun r='_ZN2cv3MatC1EiPKiiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3MatC1ERKS0_'/>
+<fun r='_ZN2cv3MatC1EiiiPvm'/>
+<fun r='_ZN2cv3MatC1ENS_5Size_IiEEiPvm'/>
+<fun r='_ZN2cv3MatC1EiPKiiPvPKm'/>
+<fun r='_ZN2cv3MatC1ERKS0_RKNS_5RangeES5_'/>
+<fun r='_ZN2cv3MatC1ERKS0_RKNS_5Rect_IiEE'/>
+<fun r='_ZN2cv3MatC1ERKS0_PKNS_5RangeE'/>
+<fun r='_ZN2cv3MatC1EPK5CvMatb'/>
+<fun r='_ZN2cv3MatC1EPK7CvMatNDb'/>
+<fun r='_ZN2cv3MatC1EPK9_IplImageb'/>
+<fun r='_ZN2cv3MatC1ERKSt6vectorIT_SaIS2_EEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_3VecIT_XT0_EEEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_4MatxIT_XT0_EXT1_EEEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_6Point_IT_EEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_7Point3_IT_EEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_20MatCommaInitializer_IT_EE'/>
+<fun r='_ZN2cv3MatC1ERKNS_3gpu6GpuMatE'/>
+<fun r='_ZN2cv3MatD1Ev'/>
+<fun r='_ZN2cv3MataSERKS0_'/>
+<fun r='_ZN2cv3MataSERKNS_7MatExprE'/>
+<fun r='_ZNK2cv3Mat3rowEi'/>
+<fun r='_ZNK2cv3Mat3colEi'/>
+<fun r='_ZNK2cv3Mat8rowRangeEii'/>
+<fun r='_ZNK2cv3Mat8rowRangeERKNS_5RangeE'/>
+<fun r='_ZNK2cv3Mat8colRangeEii'/>
+<fun r='_ZNK2cv3Mat8colRangeERKNS_5RangeE'/>
+<fun r='_ZNK2cv3Mat4diagEi'/>
+<fun r='_ZN2cv3Mat4diagERKS0_'/>
+<fun r='_ZNK2cv3Mat5cloneEv'/>
+<fun r='_ZNK2cv3Mat6copyToERKNS_12_OutputArrayE'/>
+<fun r='_ZNK2cv3Mat6copyToERKNS_12_OutputArrayERKNS_11_InputArrayE'/>
+<fun r='_ZNK2cv3Mat9convertToERKNS_12_OutputArrayEidd'/>
+<fun r='_ZNK2cv3Mat8assignToERS0_i'/>
+<fun r='_ZN2cv3MataSERKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3Mat5setToERKNS_11_InputArrayES3_'/>
+<fun r='_ZNK2cv3Mat7reshapeEii'/>
+<fun r='_ZNK2cv3Mat7reshapeEiiPKi'/>
+<fun r='_ZNK2cv3Mat1tEv'/>
+<fun r='_ZNK2cv3Mat3invEi'/>
+<fun r='_ZNK2cv3Mat3mulERKNS_11_InputArrayEd'/>
+<fun r='_ZNK2cv3Mat5crossERKNS_11_InputArrayE'/>
+<fun r='_ZNK2cv3Mat3dotERKNS_11_InputArrayE'/>
+<fun r='_ZN2cv3Mat5zerosEiii'/>
+<fun r='_ZN2cv3Mat5zerosENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3Mat5zerosEiPKii'/>
+<fun r='_ZN2cv3Mat4onesEiii'/>
+<fun r='_ZN2cv3Mat4onesENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3Mat4onesEiPKii'/>
+<fun r='_ZN2cv3Mat3eyeEiii'/>
+<fun r='_ZN2cv3Mat3eyeENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3Mat6createEiii'/>
+<fun r='_ZN2cv3Mat6createENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3Mat6createEiPKii'/>
+<fun r='_ZN2cv3Mat6addrefEv'/>
+<fun r='_ZN2cv3Mat7releaseEv'/>
+<fun r='_ZN2cv3Mat10deallocateEv'/>
+<fun r='_ZN2cv3Mat8copySizeERKS0_'/>
+<fun r='_ZN2cv3Mat7reserveEm'/>
+<fun r='_ZN2cv3Mat6resizeEm'/>
+<fun r='_ZN2cv3Mat6resizeEmRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3Mat10push_back_EPKv'/>
+<fun r='_ZN2cv3Mat9push_backERKT_'/>
+<fun r='_ZN2cv3Mat9push_backERKNS_4Mat_IT_EE'/>
+<fun r='_ZN2cv3Mat9push_backERKS0_'/>
+<fun r='_ZN2cv3Mat8pop_backEm'/>
+<fun r='_ZNK2cv3Mat9locateROIERNS_5Size_IiEERNS_6Point_IiEE'/>
+<fun r='_ZN2cv3Mat9adjustROIEiiii'/>
+<fun r='_ZNK2cv3MatclENS_5RangeES1_'/>
+<fun r='_ZNK2cv3MatclERKNS_5Rect_IiEE'/>
+<fun r='_ZNK2cv3MatclEPKNS_5RangeE'/>
+<fun r='_ZNK2cv3Matcv5CvMatEv'/>
+<fun r='_ZNK2cv3Matcv7CvMatNDEv'/>
+<fun r='_ZNK2cv3Matcv9_IplImageEv'/>
+<fun r='_ZNK2cv3MatcvSt6vectorIT_SaIS2_EEEv'/>
+<fun r='_ZNK2cv3MatcvNS_3VecIT_XT0_EEEEv'/>
+<fun r='_ZNK2cv3MatcvNS_4MatxIT_XT0_EXT1_EEEEv'/>
+<fun r='_ZNK2cv3Mat12isContinuousEv'/>
+<fun r='_ZNK2cv3Mat11isSubmatrixEv'/>
+<fun r='_ZNK2cv3Mat8elemSizeEv'/>
+<fun r='_ZNK2cv3Mat9elemSize1Ev'/>
+<fun r='_ZNK2cv3Mat4typeEv'/>
+<fun r='_ZNK2cv3Mat5depthEv'/>
+<fun r='_ZNK2cv3Mat8channelsEv'/>
+<fun r='_ZNK2cv3Mat5step1Ei'/>
+<fun r='_ZNK2cv3Mat5emptyEv'/>
+<fun r='_ZNK2cv3Mat5totalEv'/>
+<fun r='_ZNK2cv3Mat11checkVectorEiib'/>
+<fun r='_ZN2cv3Mat3ptrEi'/>
+<fun r='_ZNK2cv3Mat3ptrEi'/>
+<fun r='_ZN2cv3Mat3ptrEii'/>
+<fun r='_ZNK2cv3Mat3ptrEii'/>
+<fun r='_ZN2cv3Mat3ptrEiii'/>
+<fun r='_ZNK2cv3Mat3ptrEiii'/>
+<fun r='_ZN2cv3Mat3ptrEPKi'/>
+<fun r='_ZNK2cv3Mat3ptrEPKi'/>
+<fun r='_ZN2cv3Mat3ptrERKNS_3VecIiXT_EEE'/>
+<fun r='_ZNK2cv3Mat3ptrERKNS_3VecIiXT_EEE'/>
+<fun r='_ZN2cv3Mat3ptrEi'/>
+<fun r='_ZNK2cv3Mat3ptrEi'/>
+<fun r='_ZN2cv3Mat3ptrEii'/>
+<fun r='_ZNK2cv3Mat3ptrEii'/>
+<fun r='_ZN2cv3Mat3ptrEiii'/>
+<fun r='_ZNK2cv3Mat3ptrEiii'/>
+<fun r='_ZN2cv3Mat3ptrEPKi'/>
+<fun r='_ZNK2cv3Mat3ptrEPKi'/>
+<fun r='_ZN2cv3Mat3ptrERKNS_3VecIiXT0_EEE'/>
+<fun r='_ZNK2cv3Mat3ptrERKNS_3VecIiXT0_EEE'/>
+<fun r='_ZN2cv3Mat2atEi'/>
+<fun r='_ZNK2cv3Mat2atEi'/>
+<fun r='_ZN2cv3Mat2atEii'/>
+<fun r='_ZNK2cv3Mat2atEii'/>
+<fun r='_ZN2cv3Mat2atEiii'/>
+<fun r='_ZNK2cv3Mat2atEiii'/>
+<fun r='_ZN2cv3Mat2atEPKi'/>
+<fun r='_ZNK2cv3Mat2atEPKi'/>
+<fun r='_ZN2cv3Mat2atERKNS_3VecIiXT0_EEE'/>
+<fun r='_ZNK2cv3Mat2atERKNS_3VecIiXT0_EEE'/>
+<fun r='_ZN2cv3Mat2atENS_6Point_IiEE'/>
+<fun r='_ZNK2cv3Mat2atENS_6Point_IiEE'/>
+<fun r='_ZN2cv3Mat5beginEv'/>
+<fun r='_ZN2cv3Mat3endEv'/>
+<fun r='_ZNK2cv3Mat5beginEv'/>
+<fun r='_ZNK2cv3Mat3endEv'/>
+<mbr r='cv::Mat::flags' o='0' t='int'/>
+<mbr r='cv::Mat::dims' o='32' t='int'/>
+<mbr r='cv::Mat::rows' o='64' t='int'/>
+<mbr r='cv::Mat::cols' o='96' t='int'/>
+<mbr r='cv::Mat::data' o='128' t='uchar *'/>
+<mbr r='cv::Mat::refcount' o='192' t='int *'/>
+<mbr r='cv::Mat::datastart' o='256' t='uchar *'/>
+<mbr r='cv::Mat::dataend' o='320' t='uchar *'/>
+<mbr r='cv::Mat::datalimit' o='384' t='uchar *'/>
+<mbr r='cv::Mat::allocator' o='448' t='cv::MatAllocator *'/>
+<mbr r='cv::Mat::size' o='512' t='cv::Mat::MSize'/>
+<mbr r='cv::Mat::step' o='576' t='cv::Mat::MStep'/>
+<fun r='_ZN2cv3Mat9initEmptyEv'/>
+<fun r='_ZN2cv3Mat9initEmptyEv'/>
+<fun r='_ZN2cv3MatC1Ev'/>
+<fun r='_ZN2cv3MatC1Eiii'/>
+<fun r='_ZN2cv3MatC1EiiiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3MatC1ENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3MatC1ENS_5Size_IiEEiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3MatC1EiPKii'/>
+<fun r='_ZN2cv3MatC1EiPKiiRKNS_7Scalar_IdEE'/>
+<fun r='_ZN2cv3MatC1ERKS0_'/>
+<fun r='_ZN2cv3MatC1EiiiPvm'/>
+<fun r='_ZN2cv3MatC1ENS_5Size_IiEEiPvm'/>
+<fun r='_ZN2cv3MatC1ERKSt6vectorIT_SaIS2_EEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_3VecIT_XT0_EEEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_4MatxIT_XT0_EXT1_EEEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_6Point_IT_EEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_7Point3_IT_EEb'/>
+<fun r='_ZN2cv3MatC1ERKNS_20MatCommaInitializer_IT_EE'/>
+<fun r='_ZN2cv3MatD1Ev'/>
+<fun r='_ZN2cv3MataSERKS0_'/>
+<fun r='_ZNK2cv3Mat3rowEi'/>
+<fun r='_ZNK2cv3Mat3colEi'/>
+<fun r='_ZNK2cv3Mat8rowRangeEii'/>
+<fun r='_ZNK2cv3Mat8rowRangeERKNS_5RangeE'/>
+<fun r='_ZNK2cv3Mat8colRangeEii'/>
+<fun r='_ZNK2cv3Mat8colRangeERKNS_5RangeE'/>
+<fun r='_ZN2cv3Mat4diagERKS0_'/>
+<fun r='_ZNK2cv3Mat5cloneEv'/>
+<fun r='_ZNK2cv3Mat8assignToERS0_i'/>
+<fun r='_ZN2cv3Mat6createEiii'/>
+<fun r='_ZN2cv3Mat6createENS_5Size_IiEEi'/>
+<fun r='_ZN2cv3Mat6addrefEv'/>
+<fun r='_ZN2cv3Mat7releaseEv'/>
+<fun r='_ZNK2cv3MatclENS_5RangeES1_'/>
+<fun r='_ZNK2cv3MatclERKNS_5Rect_IiEE'/>
+<fun r='_ZNK2cv3MatclEPKNS_5RangeE'/>
+<fun r='_ZNK2cv3Matcv5CvMatEv'/>
+<fun r='_ZNK2cv3Mat12isContinuousEv'/>
+<fun r='_ZNK2cv3Mat11isSubmatrixEv'/>
+<fun r='_ZNK2cv3Mat8elemSizeEv'/>
+<fun r='_ZNK2cv3Mat9elemSize1Ev'/>
+<fun r='_ZNK2cv3Mat4typeEv'/>
+<fun r='_ZNK2cv3Mat5depthEv'/>
+<fun r='_ZNK2cv3Mat8channelsEv'/>
+<fun r='_ZNK2cv3Mat5step1Ei'/>
+<fun r='_ZNK2cv3Mat5emptyEv'/>
+<fun r='_ZNK2cv3Mat5totalEv'/>
+<fun r='_ZN2cv3Mat3ptrEi'/>
+<fun r='_ZNK2cv3Mat3ptrEi'/>
+<fun r='_ZN2cv3Mat3ptrEi'/>
+<fun r='_ZNK2cv3Mat3ptrEi'/>
+<fun r='_ZN2cv3Mat3ptrEii'/>
+<fun r='_ZNK2cv3Mat3ptrEii'/>
+<fun r='_ZN2cv3Mat3ptrEii'/>
+<fun r='_ZNK2cv3Mat3ptrEii'/>
+<fun r='_ZN2cv3Mat3ptrEiii'/>
+<fun r='_ZNK2cv3Mat3ptrEiii'/>
+<fun r='_ZN2cv3Mat3ptrEiii'/>
+<fun r='_ZNK2cv3Mat3ptrEiii'/>
+<fun r='_ZN2cv3Mat3ptrEPKi'/>
+<fun r='_ZNK2cv3Mat3ptrEPKi'/>
+<fun r='_ZN2cv3Mat2atEii'/>
+<fun r='_ZNK2cv3Mat2atEii'/>
+<fun r='_ZN2cv3Mat2atENS_6Point_IiEE'/>
+<fun r='_ZNK2cv3Mat2atENS_6Point_IiEE'/>
+<fun r='_ZN2cv3Mat2atEi'/>
+<fun r='_ZNK2cv3Mat2atEi'/>
+<fun r='_ZN2cv3Mat2atEiii'/>
+<fun r='_ZNK2cv3Mat2atEiii'/>
+<fun r='_ZN2cv3Mat2atEPKi'/>
+<fun r='_ZNK2cv3Mat2atEPKi'/>
+<fun r='_ZN2cv3Mat2atERKNS_3VecIiXT0_EEE'/>
+<fun r='_ZNK2cv3Mat2atERKNS_3VecIiXT0_EEE'/>
+<fun r='_ZNK2cv3Mat5beginEv'/>
+<fun r='_ZNK2cv3Mat3endEv'/>
+<fun r='_ZN2cv3Mat5beginEv'/>
+<fun r='_ZN2cv3Mat3endEv'/>
+<fun r='_ZNK2cv3MatcvSt6vectorIT_SaIS2_EEEv'/>
+<fun r='_ZNK2cv3MatcvNS_3VecIT_XT0_EEEEv'/>
+<fun r='_ZNK2cv3MatcvNS_4MatxIT_XT0_EXT1_EEEEv'/>
+<fun r='_ZN2cv3Mat9push_backERKT_'/>
+<fun r='_ZN2cv3Mat9push_backERKNS_4Mat_IT_EE'/>
+<fun r='_ZN2cv3MataSERKNS_7MatExprE'/>

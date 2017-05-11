@@ -1,0 +1,68 @@
+<def f='opencv/modules/core/include/opencv2/core/core.hpp' l='2469' ll='2492'/>
+<size>288</size>
+<doc f='opencv/modules/core/include/opencv2/core/core.hpp' l='2415'>/*!
+    Principal Component Analysis
+
+    The class PCA is used to compute the special basis for a set of vectors.
+    The basis will consist of eigenvectors of the covariance matrix computed
+    from the input set of vectors. After PCA is performed, vectors can be transformed from
+    the original high-dimensional space to the subspace formed by a few most
+    prominent eigenvectors (called the principal components),
+    corresponding to the largest eigenvalues of the covariation matrix.
+    Thus the dimensionality of the vector and the correlation between the coordinates is reduced.
+
+    The following sample is the function that takes two matrices. The first one stores the set
+    of vectors (a row per vector) that is used to compute PCA, the second one stores another
+    &quot;test&quot; set of vectors (a row per vector) that are first compressed with PCA,
+    then reconstructed back and then the reconstruction error norm is computed and printed for each vector.
+
+    \code
+    using namespace cv;
+
+    PCA compressPCA(const Mat&amp; pcaset, int maxComponents,
+                    const Mat&amp; testset, Mat&amp; compressed)
+    {
+        PCA pca(pcaset, // pass the data
+                Mat(), // we do not have a pre-computed mean vector,
+                       // so let the PCA engine to compute it
+                CV_PCA_DATA_AS_ROW, // indicate that the vectors
+                                    // are stored as matrix rows
+                                    // (use CV_PCA_DATA_AS_COL if the vectors are
+                                    // the matrix columns)
+                maxComponents // specify, how many principal components to retain
+                );
+        // if there is no test data, just return the computed basis, ready-to-use
+        if( !testset.data )
+            return pca;
+        CV_Assert( testset.cols == pcaset.cols );
+
+        compressed.create(testset.rows, maxComponents, testset.type());
+
+        Mat reconstructed;
+        for( int i = 0; i &lt; testset.rows; i++ )
+        {
+            Mat vec = testset.row(i), coeffs = compressed.row(i), reconstructed;
+            // compress the vector, the result will be stored
+            // in the i-th row of the output matrix
+            pca.project(vec, coeffs);
+            // and then reconstruct it
+            pca.backProject(coeffs, reconstructed);
+            // and measure the error
+            printf(&quot;%d. diff = %g\n&quot;, i, norm(vec, reconstructed, NORM_L2));
+        }
+        return pca;
+    }
+    \endcode
+*/</doc>
+<fun r='_ZN2cv3PCAC1Ev'/>
+<fun r='_ZN2cv3PCAC1ERKNS_11_InputArrayES3_ii'/>
+<fun r='_ZN2cv3PCAC1ERKNS_11_InputArrayES3_id'/>
+<fun r='_ZN2cv3PCAclERKNS_11_InputArrayES3_ii'/>
+<fun r='_ZN2cv3PCA10computeVarERKNS_11_InputArrayES3_id'/>
+<fun r='_ZNK2cv3PCA7projectERKNS_11_InputArrayE'/>
+<fun r='_ZNK2cv3PCA7projectERKNS_11_InputArrayERKNS_12_OutputArrayE'/>
+<fun r='_ZNK2cv3PCA11backProjectERKNS_11_InputArrayE'/>
+<fun r='_ZNK2cv3PCA11backProjectERKNS_11_InputArrayERKNS_12_OutputArrayE'/>
+<mbr r='cv::PCA::eigenvectors' o='0' t='cv::Mat'/>
+<mbr r='cv::PCA::eigenvalues' o='768' t='cv::Mat'/>
+<mbr r='cv::PCA::mean' o='1536' t='cv::Mat'/>

@@ -1,0 +1,64 @@
+<def f='ceres-solver/include/ceres/dynamic_cost_function_to_functor.h' l='103' ll='186'/>
+<size>8</size>
+<doc f='ceres-solver/include/ceres/dynamic_cost_function_to_functor.h' l='45'>// DynamicCostFunctionToFunctor allows users to use CostFunction
+// objects in templated functors which are to be used for automatic
+// differentiation. It works similar to CostFunctionToFunctor, with the
+// difference that it allows you to wrap a cost function with dynamic numbers
+// of parameters and residuals.
+//
+// For example, let us assume that
+//
+//  class IntrinsicProjection : public CostFunction {
+//    public:
+//      IntrinsicProjection(const double* observation);
+//      virtual bool Evaluate(double const* const* parameters,
+//                            double* residuals,
+//                            double** jacobians) const;
+//  };
+//
+// is a cost function that implements the projection of a point in its
+// local coordinate system onto its image plane and subtracts it from
+// the observed point projection. It can compute its residual and
+// either via analytic or numerical differentiation can compute its
+// jacobians. The intrinsics are passed in as parameters[0] and the point as
+// parameters[1].
+//
+// Now we would like to compose the action of this CostFunction with
+// the action of camera extrinsics, i.e., rotation and
+// translation. Say we have a templated function
+//
+//   template&lt;typename T&gt;
+//   void RotateAndTranslatePoint(double const* const* parameters,
+//                                double* residuals);
+//
+// Then we can now do the following,
+//
+// struct CameraProjection {
+//   CameraProjection(const double* observation)
+//       : intrinsic_projection_.(new IntrinsicProjection(observation)) {
+//   }
+//   template &lt;typename T&gt;
+//   bool operator()(T const* const* parameters,
+//                   T* residual) const {
+//     const T* rotation = parameters[0];
+//     const T* translation = parameters[1];
+//     const T* intrinsics = parameters[2];
+//     const T* point = parameters[3];
+//     T transformed_point[3];
+//     RotateAndTranslatePoint(rotation, translation, point, transformed_point);
+//
+//     // Note that we call intrinsic_projection_, just like it was
+//     // any other templated functor.
+//     const T* projection_parameters[2];
+//     projection_parameters[0] = intrinsics;
+//     projection_parameters[1] = transformed_point;
+//     return intrinsic_projection_(projection_parameters, residual);
+//   }
+//
+//  private:
+//   DynamicCostFunctionToFunctor intrinsic_projection_;
+// };</doc>
+<fun r='_ZN5ceres28DynamicCostFunctionToFunctorC1EPNS_12CostFunctionE'/>
+<fun r='_ZNK5ceres28DynamicCostFunctionToFunctorclEPKPKdPd'/>
+<fun r='_ZNK5ceres28DynamicCostFunctionToFunctorclEPKPKT_PS1_'/>
+<mbr r='ceres::DynamicCostFunctionToFunctor::cost_function_' o='0' t='internal::scoped_ptr&lt;CostFunction&gt;'/>

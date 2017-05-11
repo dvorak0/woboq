@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>circle_fit.cc source code [ceres-solver/examples/circle_fit.cc] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="DistanceFromCircleCost,main "/>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/examples/circle_fit.cc'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>ceres-solver</a>/<a href='./'>examples</a>/<a href='circle_fit.cc.html'>circle_fit.cc</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// This fits circles to a collection of points, where the error is related to</i></td></tr>
+<tr><th id="32">32</th><td><i>// the distance of a point from the circle. This uses auto-differentiation to</i></td></tr>
+<tr><th id="33">33</th><td><i>// take the derivatives.</i></td></tr>
+<tr><th id="34">34</th><td><i>//</i></td></tr>
+<tr><th id="35">35</th><td><i>// The input format is simple text. Feed on standard in:</i></td></tr>
+<tr><th id="36">36</th><td><i>//</i></td></tr>
+<tr><th id="37">37</th><td><i>//   x_initial y_initial r_initial</i></td></tr>
+<tr><th id="38">38</th><td><i>//   x1 y1</i></td></tr>
+<tr><th id="39">39</th><td><i>//   x2 y2</i></td></tr>
+<tr><th id="40">40</th><td><i>//   y3 y3</i></td></tr>
+<tr><th id="41">41</th><td><i>//   ...</i></td></tr>
+<tr><th id="42">42</th><td><i>//</i></td></tr>
+<tr><th id="43">43</th><td><i>// And the result after solving will be printed to stdout:</i></td></tr>
+<tr><th id="44">44</th><td><i>//</i></td></tr>
+<tr><th id="45">45</th><td><i>//   x y r</i></td></tr>
+<tr><th id="46">46</th><td><i>//</i></td></tr>
+<tr><th id="47">47</th><td><i>// There are closed form solutions [1] to this problem which you may want to</i></td></tr>
+<tr><th id="48">48</th><td><i>// consider instead of using this one. If you already have a decent guess, Ceres</i></td></tr>
+<tr><th id="49">49</th><td><i>// can squeeze down the last bit of error.</i></td></tr>
+<tr><th id="50">50</th><td><i>//</i></td></tr>
+<tr><th id="51">51</th><td><i>//   [1] <a href="http://www.mathworks.com/matlabcentral/fileexchange/5557-circle-fit/content/circfit.m">http://www.mathworks.com/matlabcentral/fileexchange/5557-circle-fit/content/circfit.m</a></i></td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="../../include/c++/4.8/cstdio.html">&lt;cstdio&gt;</a></u></td></tr>
+<tr><th id="54">54</th><td><u>#include <a href="../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><u>#include <a href="../include/ceres/ceres.h.html">"ceres/ceres.h"</a></u></td></tr>
+<tr><th id="57">57</th><td><u>#include <a href="../../include/gflags/gflags.h.html">"gflags/gflags.h"</a></u></td></tr>
+<tr><th id="58">58</th><td><u>#include <a href="../../include/glog/logging.h.html">"glog/logging.h"</a></u></td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><b>using</b> <span class="namespace">ceres::</span>AutoDiffCostFunction;</td></tr>
+<tr><th id="61">61</th><td><b>using</b> <span class="namespace">ceres::</span>CauchyLoss;</td></tr>
+<tr><th id="62">62</th><td><b>using</b> <span class="namespace">ceres::</span>CostFunction;</td></tr>
+<tr><th id="63">63</th><td><b>using</b> <span class="namespace">ceres::</span>LossFunction;</td></tr>
+<tr><th id="64">64</th><td><b>using</b> <span class="namespace">ceres::</span>Problem;</td></tr>
+<tr><th id="65">65</th><td><b>using</b> <span class="namespace">ceres::</span>Solve;</td></tr>
+<tr><th id="66">66</th><td><b>using</b> <span class="namespace">ceres::</span>Solver;</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><a class="macro" href="../../include/gflags/gflags.h.html#516" title="namespace fLD { static const double FLAGS_nonorobust_threshold = 0.0; double FLAGS_robust_threshold = FLAGS_nonorobust_threshold; double FLAGS_norobust_threshold = FLAGS_nonorobust_threshold; static ::google::FlagRegisterer o_robust_threshold( &quot;robust_threshold&quot;, &quot;double&quot;, &quot;Robust loss parameter. Set to 0 for &quot; &quot;normal squared error (no robustification).&quot;, &quot;/home/yzf/code/ceres-solver/examples/circle_fit.cc&quot;, &amp;FLAGS_robust_threshold, &amp;FLAGS_norobust_threshold); } using fLD::FLAGS_robust_threshold" data-ref="_M/DEFINE_double">DEFINE_double</a>(robust_threshold, <var>0.0</var>, <q>"Robust loss parameter. Set to 0 for "</q></td></tr>
+<tr><th id="69">69</th><td>              <q>"normal squared error (no robustification)."</q>);</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td><i>// The cost for a single sample. The returned residual is related to the</i></td></tr>
+<tr><th id="72">72</th><td><i>// distance of the point from the circle (passed in as x, y, m parameters).</i></td></tr>
+<tr><th id="73">73</th><td><i>//</i></td></tr>
+<tr><th id="74">74</th><td><i>// Note that the radius is parameterized as r = m^2 to constrain the radius to</i></td></tr>
+<tr><th id="75">75</th><td><i>// positive values.</i></td></tr>
+<tr><th id="76">76</th><td><b>class</b> <dfn class="type def" id="DistanceFromCircleCost" title='DistanceFromCircleCost' data-ref="DistanceFromCircleCost">DistanceFromCircleCost</dfn> {</td></tr>
+<tr><th id="77">77</th><td> <b>public</b>:</td></tr>
+<tr><th id="78">78</th><td>  <dfn class="tu decl def" id="_ZN22DistanceFromCircleCostC1Edd" title='DistanceFromCircleCost::DistanceFromCircleCost' data-type='void DistanceFromCircleCost::DistanceFromCircleCost(double xx, double yy)' data-ref="_ZN22DistanceFromCircleCostC1Edd">DistanceFromCircleCost</dfn>(<em>double</em> <dfn class="local col1 decl" id="1xx" title='xx' data-type='double' data-ref="1xx">xx</dfn>, <em>double</em> <dfn class="local col2 decl" id="2yy" title='yy' data-type='double' data-ref="2yy">yy</dfn>) : <a class="tu member" href="#DistanceFromCircleCost::xx_" title='DistanceFromCircleCost::xx_' data-use='w' data-ref="DistanceFromCircleCost::xx_">xx_</a>(<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>), <a class="tu member" href="#DistanceFromCircleCost::yy_" title='DistanceFromCircleCost::yy_' data-use='w' data-ref="DistanceFromCircleCost::yy_">yy_</a>(<a class="local col2 ref" href="#2yy" title='yy' data-ref="2yy">yy</a>) {}</td></tr>
+<tr><th id="79">79</th><td>  <b>template</b> &lt;<b>typename</b> T&gt; <em>bool</em> <dfn class="tu decl def" id="_ZNK22DistanceFromCircleCostclEPKT_S2_S2_PS0_" title='DistanceFromCircleCost::operator()' data-type='bool DistanceFromCircleCost::operator()(const T *const x, const T *const y, const T *const m, T * residual) const' data-ref="_ZNK22DistanceFromCircleCostclEPKT_S2_S2_PS0_"><b>operator</b>()</dfn>(<em>const</em> T* <em>const</em> <dfn class="local col3 decl" id="3x" title='x' data-type='const T *const' data-ref="3x">x</dfn>,</td></tr>
+<tr><th id="80">80</th><td>                                        <em>const</em> T* <em>const</em> <dfn class="local col4 decl" id="4y" title='y' data-type='const T *const' data-ref="4y">y</dfn>,</td></tr>
+<tr><th id="81">81</th><td>                                        <em>const</em> T* <em>const</em> <dfn class="local col5 decl" id="5m" title='m' data-type='const T *const' data-ref="5m">m</dfn>,  <i>// r = m^2</i></td></tr>
+<tr><th id="82">82</th><td>                                        T* <dfn class="local col6 decl" id="6residual" title='residual' data-type='T *' data-ref="6residual">residual</dfn>) <em>const</em> {</td></tr>
+<tr><th id="83">83</th><td>    <i>// Since the radius is parameterized as m^2, unpack m to get r.</i></td></tr>
+<tr><th id="84">84</th><td>    T <dfn class="local col7 decl" id="7r" title='r' data-type='T' data-ref="7r">r</dfn> = *<a class="local col5 ref" href="#5m" title='m' data-ref="5m">m</a> * *<a class="local col5 ref" href="#5m" title='m' data-ref="5m">m</a>;</td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td>    <i>// Get the position of the sample in the circle's coordinate system.</i></td></tr>
+<tr><th id="87">87</th><td>    T <dfn class="local col8 decl" id="8xp" title='xp' data-type='T' data-ref="8xp">xp</dfn> = <a class="tu member" href="#DistanceFromCircleCost::xx_" title='DistanceFromCircleCost::xx_' data-use='r' data-ref="DistanceFromCircleCost::xx_">xx_</a> - *<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>;</td></tr>
+<tr><th id="88">88</th><td>    T <dfn class="local col9 decl" id="9yp" title='yp' data-type='T' data-ref="9yp">yp</dfn> = <a class="tu member" href="#DistanceFromCircleCost::yy_" title='DistanceFromCircleCost::yy_' data-use='r' data-ref="DistanceFromCircleCost::yy_">yy_</a> - *<a class="local col4 ref" href="#4y" title='y' data-ref="4y">y</a>;</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>    <i>// It is tempting to use the following cost:</i></td></tr>
+<tr><th id="91">91</th><td><i>    //</i></td></tr>
+<tr><th id="92">92</th><td><i>    //   residual[0] = r - sqrt(xp*xp + yp*yp);</i></td></tr>
+<tr><th id="93">93</th><td><i>    //</i></td></tr>
+<tr><th id="94">94</th><td><i>    // which is the distance of the sample from the circle. This works</i></td></tr>
+<tr><th id="95">95</th><td><i>    // reasonably well, but the sqrt() adds strong nonlinearities to the cost</i></td></tr>
+<tr><th id="96">96</th><td><i>    // function. Instead, a different cost is used, which while not strictly a</i></td></tr>
+<tr><th id="97">97</th><td><i>    // distance in the metric sense (it has units distance^2) it produces more</i></td></tr>
+<tr><th id="98">98</th><td><i>    // robust fits when there are outliers. This is because the cost surface is</i></td></tr>
+<tr><th id="99">99</th><td><i>    // more convex.</i></td></tr>
+<tr><th id="100">100</th><td>    <a class="local col6 ref" href="#6residual" title='residual' data-ref="6residual">residual</a>[<var>0</var>] = <a class="local col7 ref" href="#7r" title='r' data-ref="7r">r</a>*<a class="local col7 ref" href="#7r" title='r' data-ref="7r">r</a> - <a class="local col8 ref" href="#8xp" title='xp' data-ref="8xp">xp</a>*<a class="local col8 ref" href="#8xp" title='xp' data-ref="8xp">xp</a> - <a class="local col9 ref" href="#9yp" title='yp' data-ref="9yp">yp</a>*<a class="local col9 ref" href="#9yp" title='yp' data-ref="9yp">yp</a>;</td></tr>
+<tr><th id="101">101</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="102">102</th><td>  }</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td> <b>private</b>:</td></tr>
+<tr><th id="105">105</th><td>  <i>// The measured x,y coordinate that should be on the circle.</i></td></tr>
+<tr><th id="106">106</th><td>  <em>double</em> <dfn class="tu decl" id="DistanceFromCircleCost::xx_" title='DistanceFromCircleCost::xx_' data-type='double' data-ref="DistanceFromCircleCost::xx_">xx_</dfn>, <dfn class="tu decl" id="DistanceFromCircleCost::yy_" title='DistanceFromCircleCost::yy_' data-type='double' data-ref="DistanceFromCircleCost::yy_">yy_</dfn>;</td></tr>
+<tr><th id="107">107</th><td>};</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td><em>int</em> <dfn class="decl def" id="main" title='main' data-ref="main">main</dfn>(<em>int</em> <dfn class="local col0 decl" id="10argc" title='argc' data-type='int' data-ref="10argc">argc</dfn>, <em>char</em>** <dfn class="local col1 decl" id="11argv" title='argv' data-type='char **' data-ref="11argv">argv</dfn>) {</td></tr>
+<tr><th id="110">110</th><td>  <span class="macro" title="google" data-ref="_M/CERES_GFLAGS_NAMESPACE">CERES_GFLAGS_NAMESPACE</span>::<a class="ref" href="../../include/gflags/gflags.h.html#_ZN6google21ParseCommandLineFlagsEPiPPPcb" title='google::ParseCommandLineFlags' data-ref="_ZN6google21ParseCommandLineFlagsEPiPPPcb">ParseCommandLineFlags</a>(&amp;<a class="local col0 ref" href="#10argc" title='argc' data-ref="10argc">argc</a>, &amp;<a class="local col1 ref" href="#11argv" title='argv' data-ref="11argv">argv</a>, <b>true</b>);</td></tr>
+<tr><th id="111">111</th><td>  <span class="namespace">google::</span><a class="ref" href="../../include/glog/logging.h.html#_ZN6google17InitGoogleLoggingEPKc" title='google::InitGoogleLogging' data-ref="_ZN6google17InitGoogleLoggingEPKc">InitGoogleLogging</a>(<a class="local col1 ref" href="#11argv" title='argv' data-ref="11argv">argv</a>[<var>0</var>]);</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>  <em>double</em> <dfn class="local col2 decl" id="12x" title='x' data-type='double' data-ref="12x">x</dfn>, <dfn class="local col3 decl" id="13y" title='y' data-type='double' data-ref="13y">y</dfn>, <dfn class="local col4 decl" id="14r" title='r' data-type='double' data-ref="14r">r</dfn>;</td></tr>
+<tr><th id="114">114</th><td>  <b>if</b> (<a class="ref" href="../../include/stdio.h.html#scanf" title='scanf' data-ref="scanf">scanf</a>(<q>"%lg %lg %lg"</q>, &amp;<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>, &amp;<a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a>, &amp;<a class="local col4 ref" href="#14r" title='r' data-ref="14r">r</a>) != <var>3</var>) {</td></tr>
+<tr><th id="115">115</th><td>    <a class="ref" href="../../include/stdio.h.html#fprintf" title='fprintf' data-ref="fprintf">fprintf</a>(<a class="macro" href="../../include/stdio.h.html#174" title="stderr" data-ref="_M/stderr">stderr</a>, <q>"Couldn't read first line.\n"</q>);</td></tr>
+<tr><th id="116">116</th><td>    <b>return</b> <var>1</var>;</td></tr>
+<tr><th id="117">117</th><td>  }</td></tr>
+<tr><th id="118">118</th><td>  <a class="ref" href="../../include/stdio.h.html#fprintf" title='fprintf' data-ref="fprintf">fprintf</a>(<a class="macro" href="../../include/stdio.h.html#174" title="stderr" data-ref="_M/stderr">stderr</a>, <q>"Got x, y, r %lg, %lg, %lg\n"</q>, <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>, <a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a>, <a class="local col4 ref" href="#14r" title='r' data-ref="14r">r</a>);</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>  <i>// Save initial values for comparison.</i></td></tr>
+<tr><th id="121">121</th><td>  <em>double</em> <dfn class="local col5 decl" id="15initial_x" title='initial_x' data-type='double' data-ref="15initial_x">initial_x</dfn> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>;</td></tr>
+<tr><th id="122">122</th><td>  <em>double</em> <dfn class="local col6 decl" id="16initial_y" title='initial_y' data-type='double' data-ref="16initial_y">initial_y</dfn> = <a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a>;</td></tr>
+<tr><th id="123">123</th><td>  <em>double</em> <dfn class="local col7 decl" id="17initial_r" title='initial_r' data-type='double' data-ref="17initial_r">initial_r</dfn> = <a class="local col4 ref" href="#14r" title='r' data-ref="14r">r</a>;</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>  <i>// Parameterize r as m^2 so that it can't be negative.</i></td></tr>
+<tr><th id="126">126</th><td>  <em>double</em> <dfn class="local col8 decl" id="18m" title='m' data-type='double' data-ref="18m">m</dfn> = <a class="ref" href="../../include/x86_64-linux-gnu/bits/mathcalls.h.html#156" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="local col4 ref" href="#14r" title='r' data-ref="14r">r</a>);</td></tr>
+<tr><th id="127">127</th><td></td></tr>
+<tr><th id="128">128</th><td>  <a class="type" href="../include/ceres/problem.h.html#ceres::Problem" title='ceres::Problem' data-ref="ceres::Problem">Problem</a> <a class="ref fake" href="../include/ceres/problem.h.html#_ZN5ceres7ProblemC1Ev" title='ceres::Problem::Problem' data-ref="_ZN5ceres7ProblemC1Ev"></a><dfn class="local col9 decl" id="19problem" title='problem' data-type='ceres::Problem' data-ref="19problem">problem</dfn>;</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>  <i>// Configure the loss function.</i></td></tr>
+<tr><th id="131">131</th><td>  <a class="type" href="../include/ceres/loss_function.h.html#ceres::LossFunction" title='ceres::LossFunction' data-ref="ceres::LossFunction">LossFunction</a>* <dfn class="local col0 decl" id="20loss" title='loss' data-type='ceres::LossFunction *' data-ref="20loss">loss</dfn> = <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="132">132</th><td>  <b>if</b> (<a class="ref" href="#68" title='fLD::FLAGS_robust_threshold' data-ref="fLD::FLAGS_robust_threshold">FLAGS_robust_threshold</a>) {</td></tr>
+<tr><th id="133">133</th><td>    <a class="local col0 ref" href="#20loss" title='loss' data-ref="20loss">loss</a> = <b>new</b> <a class="type" href="../include/ceres/loss_function.h.html#ceres::CauchyLoss" title='ceres::CauchyLoss' data-ref="ceres::CauchyLoss">CauchyLoss</a><a class="ref" href="../include/ceres/loss_function.h.html#_ZN5ceres10CauchyLossC1Ed" title='ceres::CauchyLoss::CauchyLoss' data-ref="_ZN5ceres10CauchyLossC1Ed">(</a><a class="ref" href="#68" title='fLD::FLAGS_robust_threshold' data-ref="fLD::FLAGS_robust_threshold">FLAGS_robust_threshold</a>);</td></tr>
+<tr><th id="134">134</th><td>  }</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>  <i>// Add the residuals.</i></td></tr>
+<tr><th id="137">137</th><td>  <em>double</em> <dfn class="local col1 decl" id="21xx" title='xx' data-type='double' data-ref="21xx">xx</dfn>, <dfn class="local col2 decl" id="22yy" title='yy' data-type='double' data-ref="22yy">yy</dfn>;</td></tr>
+<tr><th id="138">138</th><td>  <em>int</em> <dfn class="local col3 decl" id="23num_points" title='num_points' data-type='int' data-ref="23num_points">num_points</dfn> = <var>0</var>;</td></tr>
+<tr><th id="139">139</th><td>  <b>while</b> (<a class="ref" href="../../include/stdio.h.html#scanf" title='scanf' data-ref="scanf">scanf</a>(<q>"%lf %lf\n"</q>, &amp;<a class="local col1 ref" href="#21xx" title='xx' data-ref="21xx">xx</a>, &amp;<a class="local col2 ref" href="#22yy" title='yy' data-ref="22yy">yy</a>) == <var>2</var>) {</td></tr>
+<tr><th id="140">140</th><td>    <a class="type" href="../include/ceres/cost_function.h.html#ceres::CostFunction" title='ceres::CostFunction' data-ref="ceres::CostFunction">CostFunction</a> *<dfn class="local col4 decl" id="24cost" title='cost' data-type='ceres::CostFunction *' data-ref="24cost">cost</dfn> =</td></tr>
+<tr><th id="141">141</th><td>        <b>new</b> <a class="type" href="../include/ceres/autodiff_cost_function.h.html#ceres::AutoDiffCostFunction" title='ceres::AutoDiffCostFunction' data-ref="ceres::AutoDiffCostFunction">AutoDiffCostFunction</a>&lt;<a class="type" href="#DistanceFromCircleCost" title='DistanceFromCircleCost' data-ref="DistanceFromCircleCost">DistanceFromCircleCost</a>, <var>1</var>, <var>1</var>, <var>1</var>, <var>1</var>&gt;<a class="ref" href="../include/ceres/autodiff_cost_function.h.html#_ZN5ceres20AutoDiffCostFunctionC1EPT_" title='ceres::AutoDiffCostFunction::AutoDiffCostFunction&lt;CostFunctor, kNumResiduals, N0, N1, N2, N3, N4, N5, N6, N7, N8, N9&gt;' data-ref="_ZN5ceres20AutoDiffCostFunctionC1EPT_">(</a></td></tr>
+<tr><th id="142">142</th><td>            <b>new</b> <a class="type" href="#DistanceFromCircleCost" title='DistanceFromCircleCost' data-ref="DistanceFromCircleCost">DistanceFromCircleCost</a><a class="tu ref" href="#_ZN22DistanceFromCircleCostC1Edd" title='DistanceFromCircleCost::DistanceFromCircleCost' data-use='c' data-ref="_ZN22DistanceFromCircleCostC1Edd">(</a><a class="local col1 ref" href="#21xx" title='xx' data-ref="21xx">xx</a>, <a class="local col2 ref" href="#22yy" title='yy' data-ref="22yy">yy</a>));</td></tr>
+<tr><th id="143">143</th><td>    <a class="local col9 ref" href="#19problem" title='problem' data-ref="19problem">problem</a>.<a class="ref" href="../include/ceres/problem.h.html#_ZN5ceres7Problem16AddResidualBlockEPNS_12CostFunctionEPNS_12LossFunctionEPdS5_S5_" title='ceres::Problem::AddResidualBlock' data-ref="_ZN5ceres7Problem16AddResidualBlockEPNS_12CostFunctionEPNS_12LossFunctionEPdS5_S5_">AddResidualBlock</a>(<a class="local col4 ref" href="#24cost" title='cost' data-ref="24cost">cost</a>, <a class="local col0 ref" href="#20loss" title='loss' data-ref="20loss">loss</a>, &amp;<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>, &amp;<a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a>, &amp;<a class="local col8 ref" href="#18m" title='m' data-ref="18m">m</a>);</td></tr>
+<tr><th id="144">144</th><td>    <a class="local col3 ref" href="#23num_points" title='num_points' data-ref="23num_points">num_points</a>++;</td></tr>
+<tr><th id="145">145</th><td>  }</td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Got "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEi" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEi">&lt;&lt;</a> <a class="local col3 ref" href="#23num_points" title='num_points' data-ref="23num_points">num_points</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" points.\n"</q>;</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td>  <i>// Build and solve the problem.</i></td></tr>
+<tr><th id="150">150</th><td>  <a class="type" href="../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../include/ceres/solver.h.html#ceres::Solver::Options" title='ceres::Solver::Options' data-ref="ceres::Solver::Options">Options</a> <a class="ref fake" href="../include/ceres/solver.h.html#_ZN5ceres6Solver7OptionsC1Ev" title='ceres::Solver::Options::Options' data-ref="_ZN5ceres6Solver7OptionsC1Ev"></a><dfn class="local col5 decl" id="25options" title='options' data-type='Solver::Options' data-ref="25options">options</dfn>;</td></tr>
+<tr><th id="151">151</th><td>  <a class="local col5 ref" href="#25options" title='options' data-ref="25options">options</a>.<a class="ref" href="../include/ceres/solver.h.html#ceres::Solver::Options::max_num_iterations" title='ceres::Solver::Options::max_num_iterations' data-ref="ceres::Solver::Options::max_num_iterations">max_num_iterations</a> = <var>500</var>;</td></tr>
+<tr><th id="152">152</th><td>  <a class="local col5 ref" href="#25options" title='options' data-ref="25options">options</a>.<a class="ref" href="../include/ceres/solver.h.html#ceres::Solver::Options::linear_solver_type" title='ceres::Solver::Options::linear_solver_type' data-ref="ceres::Solver::Options::linear_solver_type">linear_solver_type</a> = <span class="namespace">ceres::</span><a class="enum" href="../include/ceres/types.h.html#ceres::LinearSolverType::DENSE_QR" title='ceres::LinearSolverType::DENSE_QR' data-ref="ceres::LinearSolverType::DENSE_QR">DENSE_QR</a>;</td></tr>
+<tr><th id="153">153</th><td>  <a class="type" href="../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../include/ceres/solver.h.html#ceres::Solver::Summary" title='ceres::Solver::Summary' data-ref="ceres::Solver::Summary">Summary</a> <a class="ref fake" href="../include/ceres/solver.h.html#_ZN5ceres6Solver7SummaryC1Ev" title='ceres::Solver::Summary::Summary' data-ref="_ZN5ceres6Solver7SummaryC1Ev"></a><dfn class="local col6 decl" id="26summary" title='summary' data-type='Solver::Summary' data-ref="26summary">summary</dfn>;</td></tr>
+<tr><th id="154">154</th><td>  <a class="ref" href="../include/ceres/solver.h.html#_ZN5ceres5SolveERKNS_6Solver7OptionsEPNS_7ProblemEPNS0_7SummaryE" title='ceres::Solve' data-ref="_ZN5ceres5SolveERKNS_6Solver7OptionsEPNS_7ProblemEPNS0_7SummaryE">Solve</a>(<a class="local col5 ref" href="#25options" title='options' data-ref="25options">options</a>, &amp;<a class="local col9 ref" href="#19problem" title='problem' data-ref="19problem">problem</a>, &amp;<a class="local col6 ref" href="#26summary" title='summary' data-ref="26summary">summary</a>);</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>  <i>// Recover r from m.</i></td></tr>
+<tr><th id="157">157</th><td>  <a class="local col4 ref" href="#14r" title='r' data-ref="14r">r</a> = <a class="local col8 ref" href="#18m" title='m' data-ref="18m">m</a> * <a class="local col8 ref" href="#18m" title='m' data-ref="18m">m</a>;</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKSbIS0_S1_T1_E" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKSbIS0_S1_T1_E">&lt;&lt;</a> <a class="local col6 ref" href="#26summary" title='summary' data-ref="26summary">summary</a>.<a class="ref" href="../include/ceres/solver.h.html#_ZNK5ceres6Solver7Summary11BriefReportEv" title='ceres::Solver::Summary::BriefReport' data-ref="_ZNK5ceres6Solver7Summary11BriefReportEv">BriefReport</a>() <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="160">160</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"x : "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col5 ref" href="#15initial_x" title='initial_x' data-ref="15initial_x">initial_x</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" -&gt; "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="161">161</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"y : "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col6 ref" href="#16initial_y" title='initial_y' data-ref="16initial_y">initial_y</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" -&gt; "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="162">162</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"r : "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col7 ref" href="#17initial_r" title='initial_r' data-ref="17initial_r">initial_r</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" -&gt; "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col4 ref" href="#14r" title='r' data-ref="14r">r</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="163">163</th><td>  <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="164">164</th><td>}</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

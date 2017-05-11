@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>stl_util.h source code [ceres-solver/internal/ceres/stl_util.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/stl_util.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='stl_util.h.html'>stl_util.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: keir@google.com (Keir Mierle)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_STL_UTIL_H_">CERES_INTERNAL_STL_UTIL_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_STL_UTIL_H_" data-ref="_M/CERES_INTERNAL_STL_UTIL_H_">CERES_INTERNAL_STL_UTIL_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/4.8/algorithm.html">&lt;algorithm&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><i>// STLDeleteContainerPointers()</i></td></tr>
+<tr><th id="39">39</th><td><i>//  For a range within a container of pointers, calls delete</i></td></tr>
+<tr><th id="40">40</th><td><i>//  (non-array version) on these pointers.</i></td></tr>
+<tr><th id="41">41</th><td><i>// NOTE: for these three functions, we could just implement a DeleteObject</i></td></tr>
+<tr><th id="42">42</th><td><i>// functor and then call for_each() on the range and functor, but this</i></td></tr>
+<tr><th id="43">43</th><td><i>// requires us to pull in all of algorithm.h, which seems expensive.</i></td></tr>
+<tr><th id="44">44</th><td><i>// For hash_[multi]set, it is important that this deletes behind the iterator</i></td></tr>
+<tr><th id="45">45</th><td><i>// because the hash_set may call the hash function on the iterator when it is</i></td></tr>
+<tr><th id="46">46</th><td><i>// advanced, which could result in the hash function trying to deference a</i></td></tr>
+<tr><th id="47">47</th><td><i>// stale pointer.</i></td></tr>
+<tr><th id="48">48</th><td><b>template</b> &lt;<b>class</b> ForwardIterator&gt;</td></tr>
+<tr><th id="49">49</th><td><em>void</em> <dfn class="decl def" id="_ZN5ceres26STLDeleteContainerPointersET_S0_" title='ceres::STLDeleteContainerPointers' data-ref="_ZN5ceres26STLDeleteContainerPointersET_S0_">STLDeleteContainerPointers</dfn>(ForwardIterator <dfn class="local col1 decl" id="1begin" title='begin' data-type='ForwardIterator' data-ref="1begin">begin</dfn>,</td></tr>
+<tr><th id="50">50</th><td>                                ForwardIterator <dfn class="local col2 decl" id="2end" title='end' data-type='ForwardIterator' data-ref="2end">end</dfn>) {</td></tr>
+<tr><th id="51">51</th><td>  <b>while</b> (<a class="local col1 ref" href="#1begin" title='begin' data-ref="1begin">begin</a> != <a class="local col2 ref" href="#2end" title='end' data-ref="2end">end</a>) {</td></tr>
+<tr><th id="52">52</th><td>    ForwardIterator <dfn class="local col3 decl" id="3temp" title='temp' data-type='ForwardIterator' data-ref="3temp">temp</dfn> = <a class="local col1 ref" href="#1begin" title='begin' data-ref="1begin">begin</a>;</td></tr>
+<tr><th id="53">53</th><td>    ++<a class="local col1 ref" href="#1begin" title='begin' data-ref="1begin">begin</a>;</td></tr>
+<tr><th id="54">54</th><td>    <b>delete</b> *<a class="local col3 ref" href="#3temp" title='temp' data-ref="3temp">temp</a>;</td></tr>
+<tr><th id="55">55</th><td>  }</td></tr>
+<tr><th id="56">56</th><td>}</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><i>// Variant of STLDeleteContainerPointers which allows the container to</i></td></tr>
+<tr><th id="59">59</th><td><i>// contain duplicates.</i></td></tr>
+<tr><th id="60">60</th><td><b>template</b> &lt;<b>class</b> ForwardIterator&gt;</td></tr>
+<tr><th id="61">61</th><td><em>void</em> <dfn class="decl def" id="_ZN5ceres32STLDeleteUniqueContainerPointersET_S0_" title='ceres::STLDeleteUniqueContainerPointers' data-ref="_ZN5ceres32STLDeleteUniqueContainerPointersET_S0_">STLDeleteUniqueContainerPointers</dfn>(ForwardIterator <dfn class="local col4 decl" id="4begin" title='begin' data-type='ForwardIterator' data-ref="4begin">begin</dfn>,</td></tr>
+<tr><th id="62">62</th><td>                                      ForwardIterator <dfn class="local col5 decl" id="5end" title='end' data-type='ForwardIterator' data-ref="5end">end</dfn>) {</td></tr>
+<tr><th id="63">63</th><td>  sort(<a class="local col4 ref" href="#4begin" title='begin' data-ref="4begin">begin</a>, <a class="local col5 ref" href="#5end" title='end' data-ref="5end">end</a>);</td></tr>
+<tr><th id="64">64</th><td>  ForwardIterator <dfn class="local col6 decl" id="6new_end" title='new_end' data-type='ForwardIterator' data-ref="6new_end">new_end</dfn> = unique(<a class="local col4 ref" href="#4begin" title='begin' data-ref="4begin">begin</a>, <a class="local col5 ref" href="#5end" title='end' data-ref="5end">end</a>);</td></tr>
+<tr><th id="65">65</th><td>  <b>while</b> (<a class="local col4 ref" href="#4begin" title='begin' data-ref="4begin">begin</a> != <a class="local col6 ref" href="#6new_end" title='new_end' data-ref="6new_end">new_end</a>) {</td></tr>
+<tr><th id="66">66</th><td>    ForwardIterator <dfn class="local col7 decl" id="7temp" title='temp' data-type='ForwardIterator' data-ref="7temp">temp</dfn> = <a class="local col4 ref" href="#4begin" title='begin' data-ref="4begin">begin</a>;</td></tr>
+<tr><th id="67">67</th><td>    ++<a class="local col4 ref" href="#4begin" title='begin' data-ref="4begin">begin</a>;</td></tr>
+<tr><th id="68">68</th><td>    <b>delete</b> *<a class="local col7 ref" href="#7temp" title='temp' data-ref="7temp">temp</a>;</td></tr>
+<tr><th id="69">69</th><td>  }</td></tr>
+<tr><th id="70">70</th><td>}</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><i>// STLDeleteElements() deletes all the elements in an STL container and clears</i></td></tr>
+<tr><th id="73">73</th><td><i>// the container.  This function is suitable for use with a vector, set,</i></td></tr>
+<tr><th id="74">74</th><td><i>// hash_set, or any other STL container which defines sensible begin(), end(),</i></td></tr>
+<tr><th id="75">75</th><td><i>// and clear() methods.</i></td></tr>
+<tr><th id="76">76</th><td><i>//</i></td></tr>
+<tr><th id="77">77</th><td><i>// If container is NULL, this function is a no-op.</i></td></tr>
+<tr><th id="78">78</th><td><i>//</i></td></tr>
+<tr><th id="79">79</th><td><i>// As an alternative to calling STLDeleteElements() directly, consider</i></td></tr>
+<tr><th id="80">80</th><td><i>// ElementDeleter (defined below), which ensures that your container's elements</i></td></tr>
+<tr><th id="81">81</th><td><i>// are deleted when the ElementDeleter goes out of scope.</i></td></tr>
+<tr><th id="82">82</th><td><b>template</b> &lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="83">83</th><td><em>void</em> <dfn class="decl def" id="_ZN5ceres17STLDeleteElementsEPT_" title='ceres::STLDeleteElements' data-ref="_ZN5ceres17STLDeleteElementsEPT_">STLDeleteElements</dfn>(T *<dfn class="local col8 decl" id="8container" title='container' data-type='T *' data-ref="8container">container</dfn>) {</td></tr>
+<tr><th id="84">84</th><td>  <b>if</b> (!<a class="local col8 ref" href="#8container" title='container' data-ref="8container">container</a>) <b>return</b>;</td></tr>
+<tr><th id="85">85</th><td>  STLDeleteContainerPointers(<a class="local col8 ref" href="#8container" title='container' data-ref="8container">container</a>-&gt;begin(), <a class="local col8 ref" href="#8container" title='container' data-ref="8container">container</a>-&gt;end());</td></tr>
+<tr><th id="86">86</th><td>  <a class="local col8 ref" href="#8container" title='container' data-ref="8container">container</a>-&gt;clear();</td></tr>
+<tr><th id="87">87</th><td>}</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_INTERNAL_STL_UTIL_H_</u></td></tr>
+<tr><th id="92">92</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='block_random_access_diagonal_matrix.cc.html'>ceres-solver/internal/ceres/block_random_access_diagonal_matrix.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

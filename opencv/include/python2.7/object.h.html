@@ -1,0 +1,1029 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>object.h source code [include/python2.7/object.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/python2.7/object.h'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>include</a>/<a href='./'>python2.7</a>/<a href='object.h.html'>object.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><u>#<span data-ppcond="1">ifndef</span> <span class="macro" data-ref="_M/Py_OBJECT_H">Py_OBJECT_H</span></u></td></tr>
+<tr><th id="2">2</th><td><u>#define <dfn class="macro" id="_M/Py_OBJECT_H" data-ref="_M/Py_OBJECT_H">Py_OBJECT_H</dfn></u></td></tr>
+<tr><th id="3">3</th><td><u>#<span data-ppcond="3">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="4">4</th><td><b>extern</b> <q>"C"</q> {</td></tr>
+<tr><th id="5">5</th><td><u>#<span data-ppcond="3">endif</span></u></td></tr>
+<tr><th id="6">6</th><td></td></tr>
+<tr><th id="7">7</th><td></td></tr>
+<tr><th id="8">8</th><td><i>/* Object and type object interface */</i></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><i>/*</i></td></tr>
+<tr><th id="11">11</th><td><i>Objects are structures allocated on the heap.  Special rules apply to</i></td></tr>
+<tr><th id="12">12</th><td><i>the use of objects to ensure they are properly garbage-collected.</i></td></tr>
+<tr><th id="13">13</th><td><i>Objects are never allocated statically or on the stack; they must be</i></td></tr>
+<tr><th id="14">14</th><td><i>accessed through special macros and functions only.  (Type objects are</i></td></tr>
+<tr><th id="15">15</th><td><i>exceptions to the first rule; the standard types are represented by</i></td></tr>
+<tr><th id="16">16</th><td><i>statically initialized type objects, although work on type/class unification</i></td></tr>
+<tr><th id="17">17</th><td><i>for Python 2.2 made it possible to have heap-allocated type objects too).</i></td></tr>
+<tr><th id="18">18</th><td><i></i></td></tr>
+<tr><th id="19">19</th><td><i>An object has a 'reference count' that is increased or decreased when a</i></td></tr>
+<tr><th id="20">20</th><td><i>pointer to the object is copied or deleted; when the reference count</i></td></tr>
+<tr><th id="21">21</th><td><i>reaches zero there are no references to the object left and it can be</i></td></tr>
+<tr><th id="22">22</th><td><i>removed from the heap.</i></td></tr>
+<tr><th id="23">23</th><td><i></i></td></tr>
+<tr><th id="24">24</th><td><i>An object has a 'type' that determines what it represents and what kind</i></td></tr>
+<tr><th id="25">25</th><td><i>of data it contains.  An object's type is fixed when it is created.</i></td></tr>
+<tr><th id="26">26</th><td><i>Types themselves are represented as objects; an object contains a</i></td></tr>
+<tr><th id="27">27</th><td><i>pointer to the corresponding type object.  The type itself has a type</i></td></tr>
+<tr><th id="28">28</th><td><i>pointer pointing to the object representing the type 'type', which</i></td></tr>
+<tr><th id="29">29</th><td><i>contains a pointer to itself!).</i></td></tr>
+<tr><th id="30">30</th><td><i></i></td></tr>
+<tr><th id="31">31</th><td><i>Objects do not float around in memory; once allocated an object keeps</i></td></tr>
+<tr><th id="32">32</th><td><i>the same size and address.  Objects that must hold variable-size data</i></td></tr>
+<tr><th id="33">33</th><td><i>can contain pointers to variable-size parts of the object.  Not all</i></td></tr>
+<tr><th id="34">34</th><td><i>objects of the same type have the same size; but the size cannot change</i></td></tr>
+<tr><th id="35">35</th><td><i>after allocation.  (These restrictions are made so a reference to an</i></td></tr>
+<tr><th id="36">36</th><td><i>object can be simply a pointer -- moving an object would require</i></td></tr>
+<tr><th id="37">37</th><td><i>updating all the pointers, and changing an object's size would require</i></td></tr>
+<tr><th id="38">38</th><td><i>moving it if there was another object right next to it.)</i></td></tr>
+<tr><th id="39">39</th><td><i></i></td></tr>
+<tr><th id="40">40</th><td><i>Objects are always accessed through pointers of the type 'PyObject *'.</i></td></tr>
+<tr><th id="41">41</th><td><i>The type 'PyObject' is a structure that only contains the reference count</i></td></tr>
+<tr><th id="42">42</th><td><i>and the type pointer.  The actual memory allocated for an object</i></td></tr>
+<tr><th id="43">43</th><td><i>contains other data that can only be accessed after casting the pointer</i></td></tr>
+<tr><th id="44">44</th><td><i>to a pointer to a longer structure type.  This longer type must start</i></td></tr>
+<tr><th id="45">45</th><td><i>with the reference count and type fields; the macro PyObject_HEAD should be</i></td></tr>
+<tr><th id="46">46</th><td><i>used for this (to accommodate for future changes).  The implementation</i></td></tr>
+<tr><th id="47">47</th><td><i>of a particular object type can cast the object pointer to the proper</i></td></tr>
+<tr><th id="48">48</th><td><i>type and back.</i></td></tr>
+<tr><th id="49">49</th><td><i></i></td></tr>
+<tr><th id="50">50</th><td><i>A standard interface exists for objects that contain an array of items</i></td></tr>
+<tr><th id="51">51</th><td><i>whose size is determined when the object is allocated.</i></td></tr>
+<tr><th id="52">52</th><td><i>*/</i></td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><i>/* Py_DEBUG implies Py_TRACE_REFS. */</i></td></tr>
+<tr><th id="55">55</th><td><u>#<span data-ppcond="55">if</span> defined(<span class="macro" data-ref="_M/Py_DEBUG">Py_DEBUG</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/Py_TRACE_REFS">Py_TRACE_REFS</span>)</u></td></tr>
+<tr><th id="56">56</th><td><u>#define Py_TRACE_REFS</u></td></tr>
+<tr><th id="57">57</th><td><u>#<span data-ppcond="55">endif</span></u></td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><i>/* Py_TRACE_REFS implies Py_REF_DEBUG. */</i></td></tr>
+<tr><th id="60">60</th><td><u>#<span data-ppcond="60">if</span> defined(<span class="macro" data-ref="_M/Py_TRACE_REFS">Py_TRACE_REFS</span>) &amp;&amp; !defined(<span class="macro" data-ref="_M/Py_REF_DEBUG">Py_REF_DEBUG</span>)</u></td></tr>
+<tr><th id="61">61</th><td><u>#define Py_REF_DEBUG</u></td></tr>
+<tr><th id="62">62</th><td><u>#<span data-ppcond="60">endif</span></u></td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><u>#<span data-ppcond="64">ifdef</span> <span class="macro" data-ref="_M/Py_TRACE_REFS">Py_TRACE_REFS</span></u></td></tr>
+<tr><th id="65">65</th><td><i>/* Define pointers to support a doubly-linked list of all live heap objects. */</i></td></tr>
+<tr><th id="66">66</th><td><u>#define _PyObject_HEAD_EXTRA            \</u></td></tr>
+<tr><th id="67">67</th><td><u>    struct _object *_ob_next;           \</u></td></tr>
+<tr><th id="68">68</th><td><u>    struct _object *_ob_prev;</u></td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td><u>#define _PyObject_EXTRA_INIT 0, 0,</u></td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><u>#<span data-ppcond="64">else</span></u></td></tr>
+<tr><th id="73">73</th><td><u>#define <dfn class="macro" id="_M/_PyObject_HEAD_EXTRA" data-ref="_M/_PyObject_HEAD_EXTRA">_PyObject_HEAD_EXTRA</dfn></u></td></tr>
+<tr><th id="74">74</th><td><u>#define <dfn class="macro" id="_M/_PyObject_EXTRA_INIT" data-ref="_M/_PyObject_EXTRA_INIT">_PyObject_EXTRA_INIT</dfn></u></td></tr>
+<tr><th id="75">75</th><td><u>#<span data-ppcond="64">endif</span></u></td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><i>/* PyObject_HEAD defines the initial segment of every PyObject. */</i></td></tr>
+<tr><th id="78">78</th><td><u>#define <dfn class="macro" id="_M/PyObject_HEAD" data-ref="_M/PyObject_HEAD">PyObject_HEAD</dfn>                   \</u></td></tr>
+<tr><th id="79">79</th><td><u>    _PyObject_HEAD_EXTRA                \</u></td></tr>
+<tr><th id="80">80</th><td><u>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="_object::ob_refcnt" title='_object::ob_refcnt' data-ref="_object::ob_refcnt"><dfn class="decl" id="{anonymous}::ob_refcnt" title='&lt;anonymous struct&gt;::ob_refcnt' data-ref="{anonymous}::ob_refcnt"><dfn class="decl" id="_typeobject::ob_refcnt" title='_typeobject::ob_refcnt' data-ref="_typeobject::ob_refcnt">ob_refcnt</dfn></dfn></dfn>;               \</u></td></tr>
+<tr><th id="81">81</th><td><u>    struct <a class="type" href="#_typeobject" title='_typeobject' data-ref="_typeobject">_typeobject</a> *<dfn class="decl" id="_object::ob_type" title='_object::ob_type' data-ref="_object::ob_type"><dfn class="decl" id="{anonymous}::ob_type" title='&lt;anonymous struct&gt;::ob_type' data-ref="{anonymous}::ob_type"><dfn class="decl" id="_typeobject::ob_type" title='_typeobject::ob_type' data-ref="_typeobject::ob_type">ob_type</dfn></dfn></dfn>;</u></td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><u>#define <dfn class="macro" id="_M/PyObject_HEAD_INIT" data-ref="_M/PyObject_HEAD_INIT">PyObject_HEAD_INIT</dfn>(type)        \</u></td></tr>
+<tr><th id="84">84</th><td><u>    _PyObject_EXTRA_INIT                \</u></td></tr>
+<tr><th id="85">85</th><td><u>    1, type,</u></td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td><u>#define <dfn class="macro" id="_M/PyVarObject_HEAD_INIT" data-ref="_M/PyVarObject_HEAD_INIT">PyVarObject_HEAD_INIT</dfn>(type, size)       \</u></td></tr>
+<tr><th id="88">88</th><td><u>    PyObject_HEAD_INIT(type) size,</u></td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td><i>/* PyObject_VAR_HEAD defines the initial segment of all variable-size</i></td></tr>
+<tr><th id="91">91</th><td><i> * container objects.  These end with a declaration of an array with 1</i></td></tr>
+<tr><th id="92">92</th><td><i> * element, but enough space is malloc'ed so that the array actually</i></td></tr>
+<tr><th id="93">93</th><td><i> * has room for ob_size elements.  Note that ob_size is an element count,</i></td></tr>
+<tr><th id="94">94</th><td><i> * not necessarily a byte count.</i></td></tr>
+<tr><th id="95">95</th><td><i> */</i></td></tr>
+<tr><th id="96">96</th><td><u>#define <dfn class="macro" id="_M/PyObject_VAR_HEAD" data-ref="_M/PyObject_VAR_HEAD">PyObject_VAR_HEAD</dfn>               \</u></td></tr>
+<tr><th id="97">97</th><td><u>    PyObject_HEAD                       \</u></td></tr>
+<tr><th id="98">98</th><td><u>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="{anonymous}::ob_size" title='&lt;anonymous struct&gt;::ob_size' data-ref="{anonymous}::ob_size"><dfn class="decl" id="_typeobject::ob_size" title='_typeobject::ob_size' data-ref="_typeobject::ob_size">ob_size</dfn></dfn>; /* Number of items in variable part */</u></td></tr>
+<tr><th id="99">99</th><td><u>#define <dfn class="macro" id="_M/Py_INVALID_SIZE" data-ref="_M/Py_INVALID_SIZE">Py_INVALID_SIZE</dfn> (Py_ssize_t)-1</u></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><i>/* Nothing is actually declared to be a PyObject, but every pointer to</i></td></tr>
+<tr><th id="102">102</th><td><i> * a Python object can be cast to a PyObject*.  This is inheritance built</i></td></tr>
+<tr><th id="103">103</th><td><i> * by hand.  Similarly every pointer to a variable-size Python object can,</i></td></tr>
+<tr><th id="104">104</th><td><i> * in addition, be cast to PyVarObject*.</i></td></tr>
+<tr><th id="105">105</th><td><i> */</i></td></tr>
+<tr><th id="106">106</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="_object" title='_object' data-ref="_object"><a class="type" href="#_object" title='_object' data-ref="_object">_object</a></dfn> {</td></tr>
+<tr><th id="107">107</th><td>    <a class="macro" href="#78" title=" Py_ssize_t ob_refcnt; struct _typeobject *ob_type;" data-ref="_M/PyObject_HEAD">PyObject_HEAD</a></td></tr>
+<tr><th id="108">108</th><td>} <dfn class="typedef" id="PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</dfn>;</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td><b>typedef</b> <b>struct</b> {</td></tr>
+<tr><th id="111">111</th><td>    <a class="macro" href="#96" title=" Py_ssize_t ob_refcnt; struct _typeobject *ob_type; Py_ssize_t ob_size;" data-ref="_M/PyObject_VAR_HEAD">PyObject_VAR_HEAD</a></td></tr>
+<tr><th id="112">112</th><td>} <dfn class="typedef" id="PyVarObject" title='PyVarObject' data-type='struct PyVarObject' data-ref="PyVarObject">PyVarObject</dfn>;</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><u>#define <dfn class="macro" id="_M/Py_REFCNT" data-ref="_M/Py_REFCNT">Py_REFCNT</dfn>(ob)           (((PyObject*)(ob))-&gt;ob_refcnt)</u></td></tr>
+<tr><th id="115">115</th><td><u>#define <dfn class="macro" id="_M/Py_TYPE" data-ref="_M/Py_TYPE">Py_TYPE</dfn>(ob)             (((PyObject*)(ob))-&gt;ob_type)</u></td></tr>
+<tr><th id="116">116</th><td><u>#define <dfn class="macro" id="_M/Py_SIZE" data-ref="_M/Py_SIZE">Py_SIZE</dfn>(ob)             (((PyVarObject*)(ob))-&gt;ob_size)</u></td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td><i>/*</i></td></tr>
+<tr><th id="119">119</th><td><i>Type objects contain a string containing the type name (to help somewhat</i></td></tr>
+<tr><th id="120">120</th><td><i>in debugging), the allocation parameters (see PyObject_New() and</i></td></tr>
+<tr><th id="121">121</th><td><i>PyObject_NewVar()),</i></td></tr>
+<tr><th id="122">122</th><td><i>and methods for accessing objects of the type.  Methods are optional, a</i></td></tr>
+<tr><th id="123">123</th><td><i>nil pointer meaning that particular kind of access is not available for</i></td></tr>
+<tr><th id="124">124</th><td><i>this type.  The Py_DECREF() macro uses the tp_dealloc method without</i></td></tr>
+<tr><th id="125">125</th><td><i>checking for a nil pointer; it should always be implemented except if</i></td></tr>
+<tr><th id="126">126</th><td><i>the implementation can guarantee that the reference count will never</i></td></tr>
+<tr><th id="127">127</th><td><i>reach zero (e.g., for statically allocated type objects).</i></td></tr>
+<tr><th id="128">128</th><td><i></i></td></tr>
+<tr><th id="129">129</th><td><i>NB: the methods for certain type groups are now contained in separate</i></td></tr>
+<tr><th id="130">130</th><td><i>method blocks.</i></td></tr>
+<tr><th id="131">131</th><td><i>*/</i></td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> * (*<dfn class="typedef" id="unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="134">134</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> * (*<dfn class="typedef" id="binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="135">135</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> * (*<dfn class="typedef" id="ternaryfunc" title='ternaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *, PyObject *)' data-ref="ternaryfunc">ternaryfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="136">136</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="inquiry" title='inquiry' data-type='int (*)(PyObject *)' data-ref="inquiry">inquiry</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="137">137</th><td><b>typedef</b> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> (*<dfn class="typedef" id="lenfunc" title='lenfunc' data-type='Py_ssize_t (*)(PyObject *)' data-ref="lenfunc">lenfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="138">138</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="coercion" title='coercion' data-type='int (*)(PyObject **, PyObject **)' data-ref="coercion">coercion</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **);</td></tr>
+<tr><th id="139">139</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="intargfunc" title='intargfunc' data-type='PyObject *(*)(PyObject *, int)' data-ref="intargfunc">intargfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>) <a class="macro" href="pyport.h.html#630" title="__attribute__((__deprecated__))" data-ref="_M/Py_DEPRECATED">Py_DEPRECATED</a>(<var>2.5</var>);</td></tr>
+<tr><th id="140">140</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="intintargfunc" title='intintargfunc' data-type='PyObject *(*)(PyObject *, int, int)' data-ref="intintargfunc">intintargfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>, <em>int</em>) <a class="macro" href="pyport.h.html#630" title="__attribute__((__deprecated__))" data-ref="_M/Py_DEPRECATED">Py_DEPRECATED</a>(<var>2.5</var>);</td></tr>
+<tr><th id="141">141</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="ssizeargfunc" title='ssizeargfunc' data-type='PyObject *(*)(PyObject *, Py_ssize_t)' data-ref="ssizeargfunc">ssizeargfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="142">142</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="ssizessizeargfunc" title='ssizessizeargfunc' data-type='PyObject *(*)(PyObject *, Py_ssize_t, Py_ssize_t)' data-ref="ssizessizeargfunc">ssizessizeargfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="143">143</th><td><b>typedef</b> <em>int</em>(*<dfn class="typedef" id="intobjargproc" title='intobjargproc' data-type='int (*)(PyObject *, int, PyObject *)' data-ref="intobjargproc">intobjargproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="144">144</th><td><b>typedef</b> <em>int</em>(*<dfn class="typedef" id="intintobjargproc" title='intintobjargproc' data-type='int (*)(PyObject *, int, int, PyObject *)' data-ref="intintobjargproc">intintobjargproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>, <em>int</em>, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="145">145</th><td><b>typedef</b> <em>int</em>(*<dfn class="typedef" id="ssizeobjargproc" title='ssizeobjargproc' data-type='int (*)(PyObject *, Py_ssize_t, PyObject *)' data-ref="ssizeobjargproc">ssizeobjargproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="146">146</th><td><b>typedef</b> <em>int</em>(*<dfn class="typedef" id="ssizessizeobjargproc" title='ssizessizeobjargproc' data-type='int (*)(PyObject *, Py_ssize_t, Py_ssize_t, PyObject *)' data-ref="ssizessizeobjargproc">ssizessizeobjargproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="147">147</th><td><b>typedef</b> <em>int</em>(*<dfn class="typedef" id="objobjargproc" title='objobjargproc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="objobjargproc">objobjargproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td><i>/* int-based buffer interface */</i></td></tr>
+<tr><th id="152">152</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="getreadbufferproc" title='getreadbufferproc' data-type='int (*)(PyObject *, int, void **)' data-ref="getreadbufferproc">getreadbufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>, <em>void</em> **);</td></tr>
+<tr><th id="153">153</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="getwritebufferproc" title='getwritebufferproc' data-type='int (*)(PyObject *, int, void **)' data-ref="getwritebufferproc">getwritebufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>, <em>void</em> **);</td></tr>
+<tr><th id="154">154</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="getsegcountproc" title='getsegcountproc' data-type='int (*)(PyObject *, int *)' data-ref="getsegcountproc">getsegcountproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em> *);</td></tr>
+<tr><th id="155">155</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="getcharbufferproc" title='getcharbufferproc' data-type='int (*)(PyObject *, int, char **)' data-ref="getcharbufferproc">getcharbufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>, <em>char</em> **);</td></tr>
+<tr><th id="156">156</th><td><i>/* ssize_t-based buffer interface */</i></td></tr>
+<tr><th id="157">157</th><td><b>typedef</b> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> (*<dfn class="typedef" id="readbufferproc" title='readbufferproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t, void **)' data-ref="readbufferproc">readbufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <em>void</em> **);</td></tr>
+<tr><th id="158">158</th><td><b>typedef</b> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> (*<dfn class="typedef" id="writebufferproc" title='writebufferproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t, void **)' data-ref="writebufferproc">writebufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <em>void</em> **);</td></tr>
+<tr><th id="159">159</th><td><b>typedef</b> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> (*<dfn class="typedef" id="segcountproc" title='segcountproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t *)' data-ref="segcountproc">segcountproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *);</td></tr>
+<tr><th id="160">160</th><td><b>typedef</b> <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> (*<dfn class="typedef" id="charbufferproc" title='charbufferproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t, char **)' data-ref="charbufferproc">charbufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>, <em>char</em> **);</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td><i>/* Py3k buffer interface */</i></td></tr>
+<tr><th id="164">164</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="bufferinfo" title='bufferinfo' data-ref="bufferinfo"><a class="type" href="#bufferinfo" title='bufferinfo' data-ref="bufferinfo">bufferinfo</a></dfn> {</td></tr>
+<tr><th id="165">165</th><td>    <em>void</em> *<dfn class="decl" id="bufferinfo::buf" title='bufferinfo::buf' data-ref="bufferinfo::buf">buf</dfn>;</td></tr>
+<tr><th id="166">166</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="bufferinfo::obj" title='bufferinfo::obj' data-ref="bufferinfo::obj">obj</dfn>;        <i>/* owned reference */</i></td></tr>
+<tr><th id="167">167</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="bufferinfo::len" title='bufferinfo::len' data-ref="bufferinfo::len">len</dfn>;</td></tr>
+<tr><th id="168">168</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="bufferinfo::itemsize" title='bufferinfo::itemsize' data-ref="bufferinfo::itemsize">itemsize</dfn>;  <i>/* This is Py_ssize_t so it can be</i></td></tr>
+<tr><th id="169">169</th><td><i>                             pointed to by strides in simple case.*/</i></td></tr>
+<tr><th id="170">170</th><td>    <em>int</em> <dfn class="decl" id="bufferinfo::readonly" title='bufferinfo::readonly' data-ref="bufferinfo::readonly">readonly</dfn>;</td></tr>
+<tr><th id="171">171</th><td>    <em>int</em> <dfn class="decl" id="bufferinfo::ndim" title='bufferinfo::ndim' data-ref="bufferinfo::ndim">ndim</dfn>;</td></tr>
+<tr><th id="172">172</th><td>    <em>char</em> *<dfn class="decl" id="bufferinfo::format" title='bufferinfo::format' data-ref="bufferinfo::format">format</dfn>;</td></tr>
+<tr><th id="173">173</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="decl" id="bufferinfo::shape" title='bufferinfo::shape' data-ref="bufferinfo::shape">shape</dfn>;</td></tr>
+<tr><th id="174">174</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="decl" id="bufferinfo::strides" title='bufferinfo::strides' data-ref="bufferinfo::strides">strides</dfn>;</td></tr>
+<tr><th id="175">175</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> *<dfn class="decl" id="bufferinfo::suboffsets" title='bufferinfo::suboffsets' data-ref="bufferinfo::suboffsets">suboffsets</dfn>;</td></tr>
+<tr><th id="176">176</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="bufferinfo::smalltable" title='bufferinfo::smalltable' data-ref="bufferinfo::smalltable">smalltable</dfn>[<var>2</var>];  <i>/* static store for shape and strides of</i></td></tr>
+<tr><th id="177">177</th><td><i>                                  mono-dimensional buffers. */</i></td></tr>
+<tr><th id="178">178</th><td>    <em>void</em> *<dfn class="decl" id="bufferinfo::internal" title='bufferinfo::internal' data-ref="bufferinfo::internal">internal</dfn>;</td></tr>
+<tr><th id="179">179</th><td>} <dfn class="typedef" id="Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</dfn>;</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="getbufferproc" title='getbufferproc' data-type='int (*)(PyObject *, Py_buffer *, int)' data-ref="getbufferproc">getbufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *, <em>int</em>);</td></tr>
+<tr><th id="182">182</th><td><b>typedef</b> <em>void</em> (*<dfn class="typedef" id="releasebufferproc" title='releasebufferproc' data-type='void (*)(PyObject *, Py_buffer *)' data-ref="releasebufferproc">releasebufferproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#Py_buffer" title='Py_buffer' data-type='struct bufferinfo' data-ref="Py_buffer">Py_buffer</a> *);</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>    <i>/* Flags for getting buffers */</i></td></tr>
+<tr><th id="185">185</th><td><u>#define <dfn class="macro" id="_M/PyBUF_SIMPLE" data-ref="_M/PyBUF_SIMPLE">PyBUF_SIMPLE</dfn> 0</u></td></tr>
+<tr><th id="186">186</th><td><u>#define <dfn class="macro" id="_M/PyBUF_WRITABLE" data-ref="_M/PyBUF_WRITABLE">PyBUF_WRITABLE</dfn> 0x0001</u></td></tr>
+<tr><th id="187">187</th><td><i>/*  we used to include an E, backwards compatible alias  */</i></td></tr>
+<tr><th id="188">188</th><td><u>#define <dfn class="macro" id="_M/PyBUF_WRITEABLE" data-ref="_M/PyBUF_WRITEABLE">PyBUF_WRITEABLE</dfn> PyBUF_WRITABLE</u></td></tr>
+<tr><th id="189">189</th><td><u>#define <dfn class="macro" id="_M/PyBUF_FORMAT" data-ref="_M/PyBUF_FORMAT">PyBUF_FORMAT</dfn> 0x0004</u></td></tr>
+<tr><th id="190">190</th><td><u>#define <dfn class="macro" id="_M/PyBUF_ND" data-ref="_M/PyBUF_ND">PyBUF_ND</dfn> 0x0008</u></td></tr>
+<tr><th id="191">191</th><td><u>#define <dfn class="macro" id="_M/PyBUF_STRIDES" data-ref="_M/PyBUF_STRIDES">PyBUF_STRIDES</dfn> (0x0010 | PyBUF_ND)</u></td></tr>
+<tr><th id="192">192</th><td><u>#define <dfn class="macro" id="_M/PyBUF_C_CONTIGUOUS" data-ref="_M/PyBUF_C_CONTIGUOUS">PyBUF_C_CONTIGUOUS</dfn> (0x0020 | PyBUF_STRIDES)</u></td></tr>
+<tr><th id="193">193</th><td><u>#define <dfn class="macro" id="_M/PyBUF_F_CONTIGUOUS" data-ref="_M/PyBUF_F_CONTIGUOUS">PyBUF_F_CONTIGUOUS</dfn> (0x0040 | PyBUF_STRIDES)</u></td></tr>
+<tr><th id="194">194</th><td><u>#define <dfn class="macro" id="_M/PyBUF_ANY_CONTIGUOUS" data-ref="_M/PyBUF_ANY_CONTIGUOUS">PyBUF_ANY_CONTIGUOUS</dfn> (0x0080 | PyBUF_STRIDES)</u></td></tr>
+<tr><th id="195">195</th><td><u>#define <dfn class="macro" id="_M/PyBUF_INDIRECT" data-ref="_M/PyBUF_INDIRECT">PyBUF_INDIRECT</dfn> (0x0100 | PyBUF_STRIDES)</u></td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td><u>#define <dfn class="macro" id="_M/PyBUF_CONTIG" data-ref="_M/PyBUF_CONTIG">PyBUF_CONTIG</dfn> (PyBUF_ND | PyBUF_WRITABLE)</u></td></tr>
+<tr><th id="198">198</th><td><u>#define <dfn class="macro" id="_M/PyBUF_CONTIG_RO" data-ref="_M/PyBUF_CONTIG_RO">PyBUF_CONTIG_RO</dfn> (PyBUF_ND)</u></td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td><u>#define <dfn class="macro" id="_M/PyBUF_STRIDED" data-ref="_M/PyBUF_STRIDED">PyBUF_STRIDED</dfn> (PyBUF_STRIDES | PyBUF_WRITABLE)</u></td></tr>
+<tr><th id="201">201</th><td><u>#define <dfn class="macro" id="_M/PyBUF_STRIDED_RO" data-ref="_M/PyBUF_STRIDED_RO">PyBUF_STRIDED_RO</dfn> (PyBUF_STRIDES)</u></td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td><u>#define <dfn class="macro" id="_M/PyBUF_RECORDS" data-ref="_M/PyBUF_RECORDS">PyBUF_RECORDS</dfn> (PyBUF_STRIDES | PyBUF_WRITABLE | PyBUF_FORMAT)</u></td></tr>
+<tr><th id="204">204</th><td><u>#define <dfn class="macro" id="_M/PyBUF_RECORDS_RO" data-ref="_M/PyBUF_RECORDS_RO">PyBUF_RECORDS_RO</dfn> (PyBUF_STRIDES | PyBUF_FORMAT)</u></td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td><u>#define <dfn class="macro" id="_M/PyBUF_FULL" data-ref="_M/PyBUF_FULL">PyBUF_FULL</dfn> (PyBUF_INDIRECT | PyBUF_WRITABLE | PyBUF_FORMAT)</u></td></tr>
+<tr><th id="207">207</th><td><u>#define <dfn class="macro" id="_M/PyBUF_FULL_RO" data-ref="_M/PyBUF_FULL_RO">PyBUF_FULL_RO</dfn> (PyBUF_INDIRECT | PyBUF_FORMAT)</u></td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td><u>#define <dfn class="macro" id="_M/PyBUF_READ" data-ref="_M/PyBUF_READ">PyBUF_READ</dfn>  0x100</u></td></tr>
+<tr><th id="211">211</th><td><u>#define <dfn class="macro" id="_M/PyBUF_WRITE" data-ref="_M/PyBUF_WRITE">PyBUF_WRITE</dfn> 0x200</u></td></tr>
+<tr><th id="212">212</th><td><u>#define <dfn class="macro" id="_M/PyBUF_SHADOW" data-ref="_M/PyBUF_SHADOW">PyBUF_SHADOW</dfn> 0x400</u></td></tr>
+<tr><th id="213">213</th><td><i>/* end Py3k buffer interface */</i></td></tr>
+<tr><th id="214">214</th><td></td></tr>
+<tr><th id="215">215</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="objobjproc" title='objobjproc' data-type='int (*)(PyObject *, PyObject *)' data-ref="objobjproc">objobjproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="216">216</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="visitproc" title='visitproc' data-type='int (*)(PyObject *, void *)' data-ref="visitproc">visitproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>void</em> *);</td></tr>
+<tr><th id="217">217</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="traverseproc" title='traverseproc' data-type='int (*)(PyObject *, visitproc, void *)' data-ref="traverseproc">traverseproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#visitproc" title='visitproc' data-type='int (*)(PyObject *, void *)' data-ref="visitproc">visitproc</a>, <em>void</em> *);</td></tr>
+<tr><th id="218">218</th><td></td></tr>
+<tr><th id="219">219</th><td><b>typedef</b> <b>struct</b> {</td></tr>
+<tr><th id="220">220</th><td>    <i>/* For numbers without flag bit Py_TPFLAGS_CHECKTYPES set, all</i></td></tr>
+<tr><th id="221">221</th><td><i>       arguments are guaranteed to be of the object's type (modulo</i></td></tr>
+<tr><th id="222">222</th><td><i>       coercion hacks -- i.e. if the type's coercion function</i></td></tr>
+<tr><th id="223">223</th><td><i>       returns other types, then these are allowed as well).  Numbers that</i></td></tr>
+<tr><th id="224">224</th><td><i>       have the Py_TPFLAGS_CHECKTYPES flag bit set should check *both*</i></td></tr>
+<tr><th id="225">225</th><td><i>       arguments for proper type and implement the necessary conversions</i></td></tr>
+<tr><th id="226">226</th><td><i>       in the slot functions themselves. */</i></td></tr>
+<tr><th id="227">227</th><td></td></tr>
+<tr><th id="228">228</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_add" title='&lt;anonymous struct&gt;::nb_add' data-ref="{anonymous}::nb_add">nb_add</dfn>;</td></tr>
+<tr><th id="229">229</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_subtract" title='&lt;anonymous struct&gt;::nb_subtract' data-ref="{anonymous}::nb_subtract">nb_subtract</dfn>;</td></tr>
+<tr><th id="230">230</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_multiply" title='&lt;anonymous struct&gt;::nb_multiply' data-ref="{anonymous}::nb_multiply">nb_multiply</dfn>;</td></tr>
+<tr><th id="231">231</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_divide" title='&lt;anonymous struct&gt;::nb_divide' data-ref="{anonymous}::nb_divide">nb_divide</dfn>;</td></tr>
+<tr><th id="232">232</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_remainder" title='&lt;anonymous struct&gt;::nb_remainder' data-ref="{anonymous}::nb_remainder">nb_remainder</dfn>;</td></tr>
+<tr><th id="233">233</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_divmod" title='&lt;anonymous struct&gt;::nb_divmod' data-ref="{anonymous}::nb_divmod">nb_divmod</dfn>;</td></tr>
+<tr><th id="234">234</th><td>    <a class="typedef" href="#ternaryfunc" title='ternaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *, PyObject *)' data-ref="ternaryfunc">ternaryfunc</a> <dfn class="decl" id="{anonymous}::nb_power" title='&lt;anonymous struct&gt;::nb_power' data-ref="{anonymous}::nb_power">nb_power</dfn>;</td></tr>
+<tr><th id="235">235</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_negative" title='&lt;anonymous struct&gt;::nb_negative' data-ref="{anonymous}::nb_negative">nb_negative</dfn>;</td></tr>
+<tr><th id="236">236</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_positive" title='&lt;anonymous struct&gt;::nb_positive' data-ref="{anonymous}::nb_positive">nb_positive</dfn>;</td></tr>
+<tr><th id="237">237</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_absolute" title='&lt;anonymous struct&gt;::nb_absolute' data-ref="{anonymous}::nb_absolute">nb_absolute</dfn>;</td></tr>
+<tr><th id="238">238</th><td>    <a class="typedef" href="#inquiry" title='inquiry' data-type='int (*)(PyObject *)' data-ref="inquiry">inquiry</a> <dfn class="decl" id="{anonymous}::nb_nonzero" title='&lt;anonymous struct&gt;::nb_nonzero' data-ref="{anonymous}::nb_nonzero">nb_nonzero</dfn>;</td></tr>
+<tr><th id="239">239</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_invert" title='&lt;anonymous struct&gt;::nb_invert' data-ref="{anonymous}::nb_invert">nb_invert</dfn>;</td></tr>
+<tr><th id="240">240</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_lshift" title='&lt;anonymous struct&gt;::nb_lshift' data-ref="{anonymous}::nb_lshift">nb_lshift</dfn>;</td></tr>
+<tr><th id="241">241</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_rshift" title='&lt;anonymous struct&gt;::nb_rshift' data-ref="{anonymous}::nb_rshift">nb_rshift</dfn>;</td></tr>
+<tr><th id="242">242</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_and" title='&lt;anonymous struct&gt;::nb_and' data-ref="{anonymous}::nb_and">nb_and</dfn>;</td></tr>
+<tr><th id="243">243</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_xor" title='&lt;anonymous struct&gt;::nb_xor' data-ref="{anonymous}::nb_xor">nb_xor</dfn>;</td></tr>
+<tr><th id="244">244</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_or" title='&lt;anonymous struct&gt;::nb_or' data-ref="{anonymous}::nb_or">nb_or</dfn>;</td></tr>
+<tr><th id="245">245</th><td>    <a class="typedef" href="#coercion" title='coercion' data-type='int (*)(PyObject **, PyObject **)' data-ref="coercion">coercion</a> <dfn class="decl" id="{anonymous}::nb_coerce" title='&lt;anonymous struct&gt;::nb_coerce' data-ref="{anonymous}::nb_coerce">nb_coerce</dfn>;</td></tr>
+<tr><th id="246">246</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_int" title='&lt;anonymous struct&gt;::nb_int' data-ref="{anonymous}::nb_int">nb_int</dfn>;</td></tr>
+<tr><th id="247">247</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_long" title='&lt;anonymous struct&gt;::nb_long' data-ref="{anonymous}::nb_long">nb_long</dfn>;</td></tr>
+<tr><th id="248">248</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_float" title='&lt;anonymous struct&gt;::nb_float' data-ref="{anonymous}::nb_float">nb_float</dfn>;</td></tr>
+<tr><th id="249">249</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_oct" title='&lt;anonymous struct&gt;::nb_oct' data-ref="{anonymous}::nb_oct">nb_oct</dfn>;</td></tr>
+<tr><th id="250">250</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_hex" title='&lt;anonymous struct&gt;::nb_hex' data-ref="{anonymous}::nb_hex">nb_hex</dfn>;</td></tr>
+<tr><th id="251">251</th><td>    <i>/* Added in release 2.0 */</i></td></tr>
+<tr><th id="252">252</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_add" title='&lt;anonymous struct&gt;::nb_inplace_add' data-ref="{anonymous}::nb_inplace_add">nb_inplace_add</dfn>;</td></tr>
+<tr><th id="253">253</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_subtract" title='&lt;anonymous struct&gt;::nb_inplace_subtract' data-ref="{anonymous}::nb_inplace_subtract">nb_inplace_subtract</dfn>;</td></tr>
+<tr><th id="254">254</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_multiply" title='&lt;anonymous struct&gt;::nb_inplace_multiply' data-ref="{anonymous}::nb_inplace_multiply">nb_inplace_multiply</dfn>;</td></tr>
+<tr><th id="255">255</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_divide" title='&lt;anonymous struct&gt;::nb_inplace_divide' data-ref="{anonymous}::nb_inplace_divide">nb_inplace_divide</dfn>;</td></tr>
+<tr><th id="256">256</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_remainder" title='&lt;anonymous struct&gt;::nb_inplace_remainder' data-ref="{anonymous}::nb_inplace_remainder">nb_inplace_remainder</dfn>;</td></tr>
+<tr><th id="257">257</th><td>    <a class="typedef" href="#ternaryfunc" title='ternaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *, PyObject *)' data-ref="ternaryfunc">ternaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_power" title='&lt;anonymous struct&gt;::nb_inplace_power' data-ref="{anonymous}::nb_inplace_power">nb_inplace_power</dfn>;</td></tr>
+<tr><th id="258">258</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_lshift" title='&lt;anonymous struct&gt;::nb_inplace_lshift' data-ref="{anonymous}::nb_inplace_lshift">nb_inplace_lshift</dfn>;</td></tr>
+<tr><th id="259">259</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_rshift" title='&lt;anonymous struct&gt;::nb_inplace_rshift' data-ref="{anonymous}::nb_inplace_rshift">nb_inplace_rshift</dfn>;</td></tr>
+<tr><th id="260">260</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_and" title='&lt;anonymous struct&gt;::nb_inplace_and' data-ref="{anonymous}::nb_inplace_and">nb_inplace_and</dfn>;</td></tr>
+<tr><th id="261">261</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_xor" title='&lt;anonymous struct&gt;::nb_inplace_xor' data-ref="{anonymous}::nb_inplace_xor">nb_inplace_xor</dfn>;</td></tr>
+<tr><th id="262">262</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_or" title='&lt;anonymous struct&gt;::nb_inplace_or' data-ref="{anonymous}::nb_inplace_or">nb_inplace_or</dfn>;</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td>    <i>/* Added in release 2.2 */</i></td></tr>
+<tr><th id="265">265</th><td>    <i>/* The following require the Py_TPFLAGS_HAVE_CLASS flag */</i></td></tr>
+<tr><th id="266">266</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_floor_divide" title='&lt;anonymous struct&gt;::nb_floor_divide' data-ref="{anonymous}::nb_floor_divide">nb_floor_divide</dfn>;</td></tr>
+<tr><th id="267">267</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_true_divide" title='&lt;anonymous struct&gt;::nb_true_divide' data-ref="{anonymous}::nb_true_divide">nb_true_divide</dfn>;</td></tr>
+<tr><th id="268">268</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_floor_divide" title='&lt;anonymous struct&gt;::nb_inplace_floor_divide' data-ref="{anonymous}::nb_inplace_floor_divide">nb_inplace_floor_divide</dfn>;</td></tr>
+<tr><th id="269">269</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::nb_inplace_true_divide" title='&lt;anonymous struct&gt;::nb_inplace_true_divide' data-ref="{anonymous}::nb_inplace_true_divide">nb_inplace_true_divide</dfn>;</td></tr>
+<tr><th id="270">270</th><td></td></tr>
+<tr><th id="271">271</th><td>    <i>/* Added in release 2.5 */</i></td></tr>
+<tr><th id="272">272</th><td>    <a class="typedef" href="#unaryfunc" title='unaryfunc' data-type='PyObject *(*)(PyObject *)' data-ref="unaryfunc">unaryfunc</a> <dfn class="decl" id="{anonymous}::nb_index" title='&lt;anonymous struct&gt;::nb_index' data-ref="{anonymous}::nb_index">nb_index</dfn>;</td></tr>
+<tr><th id="273">273</th><td>} <dfn class="typedef" id="PyNumberMethods" title='PyNumberMethods' data-type='struct PyNumberMethods' data-ref="PyNumberMethods">PyNumberMethods</dfn>;</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td><b>typedef</b> <b>struct</b> {</td></tr>
+<tr><th id="276">276</th><td>    <a class="typedef" href="#lenfunc" title='lenfunc' data-type='Py_ssize_t (*)(PyObject *)' data-ref="lenfunc">lenfunc</a> <dfn class="decl" id="{anonymous}::sq_length" title='&lt;anonymous struct&gt;::sq_length' data-ref="{anonymous}::sq_length">sq_length</dfn>;</td></tr>
+<tr><th id="277">277</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::sq_concat" title='&lt;anonymous struct&gt;::sq_concat' data-ref="{anonymous}::sq_concat">sq_concat</dfn>;</td></tr>
+<tr><th id="278">278</th><td>    <a class="typedef" href="#ssizeargfunc" title='ssizeargfunc' data-type='PyObject *(*)(PyObject *, Py_ssize_t)' data-ref="ssizeargfunc">ssizeargfunc</a> <dfn class="decl" id="{anonymous}::sq_repeat" title='&lt;anonymous struct&gt;::sq_repeat' data-ref="{anonymous}::sq_repeat">sq_repeat</dfn>;</td></tr>
+<tr><th id="279">279</th><td>    <a class="typedef" href="#ssizeargfunc" title='ssizeargfunc' data-type='PyObject *(*)(PyObject *, Py_ssize_t)' data-ref="ssizeargfunc">ssizeargfunc</a> <dfn class="decl" id="{anonymous}::sq_item" title='&lt;anonymous struct&gt;::sq_item' data-ref="{anonymous}::sq_item">sq_item</dfn>;</td></tr>
+<tr><th id="280">280</th><td>    <a class="typedef" href="#ssizessizeargfunc" title='ssizessizeargfunc' data-type='PyObject *(*)(PyObject *, Py_ssize_t, Py_ssize_t)' data-ref="ssizessizeargfunc">ssizessizeargfunc</a> <dfn class="decl" id="{anonymous}::sq_slice" title='&lt;anonymous struct&gt;::sq_slice' data-ref="{anonymous}::sq_slice">sq_slice</dfn>;</td></tr>
+<tr><th id="281">281</th><td>    <a class="typedef" href="#ssizeobjargproc" title='ssizeobjargproc' data-type='int (*)(PyObject *, Py_ssize_t, PyObject *)' data-ref="ssizeobjargproc">ssizeobjargproc</a> <dfn class="decl" id="{anonymous}::sq_ass_item" title='&lt;anonymous struct&gt;::sq_ass_item' data-ref="{anonymous}::sq_ass_item">sq_ass_item</dfn>;</td></tr>
+<tr><th id="282">282</th><td>    <a class="typedef" href="#ssizessizeobjargproc" title='ssizessizeobjargproc' data-type='int (*)(PyObject *, Py_ssize_t, Py_ssize_t, PyObject *)' data-ref="ssizessizeobjargproc">ssizessizeobjargproc</a> <dfn class="decl" id="{anonymous}::sq_ass_slice" title='&lt;anonymous struct&gt;::sq_ass_slice' data-ref="{anonymous}::sq_ass_slice">sq_ass_slice</dfn>;</td></tr>
+<tr><th id="283">283</th><td>    <a class="typedef" href="#objobjproc" title='objobjproc' data-type='int (*)(PyObject *, PyObject *)' data-ref="objobjproc">objobjproc</a> <dfn class="decl" id="{anonymous}::sq_contains" title='&lt;anonymous struct&gt;::sq_contains' data-ref="{anonymous}::sq_contains">sq_contains</dfn>;</td></tr>
+<tr><th id="284">284</th><td>    <i>/* Added in release 2.0 */</i></td></tr>
+<tr><th id="285">285</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::sq_inplace_concat" title='&lt;anonymous struct&gt;::sq_inplace_concat' data-ref="{anonymous}::sq_inplace_concat">sq_inplace_concat</dfn>;</td></tr>
+<tr><th id="286">286</th><td>    <a class="typedef" href="#ssizeargfunc" title='ssizeargfunc' data-type='PyObject *(*)(PyObject *, Py_ssize_t)' data-ref="ssizeargfunc">ssizeargfunc</a> <dfn class="decl" id="{anonymous}::sq_inplace_repeat" title='&lt;anonymous struct&gt;::sq_inplace_repeat' data-ref="{anonymous}::sq_inplace_repeat">sq_inplace_repeat</dfn>;</td></tr>
+<tr><th id="287">287</th><td>} <dfn class="typedef" id="PySequenceMethods" title='PySequenceMethods' data-type='struct PySequenceMethods' data-ref="PySequenceMethods">PySequenceMethods</dfn>;</td></tr>
+<tr><th id="288">288</th><td></td></tr>
+<tr><th id="289">289</th><td><b>typedef</b> <b>struct</b> {</td></tr>
+<tr><th id="290">290</th><td>    <a class="typedef" href="#lenfunc" title='lenfunc' data-type='Py_ssize_t (*)(PyObject *)' data-ref="lenfunc">lenfunc</a> <dfn class="decl" id="{anonymous}::mp_length" title='&lt;anonymous struct&gt;::mp_length' data-ref="{anonymous}::mp_length">mp_length</dfn>;</td></tr>
+<tr><th id="291">291</th><td>    <a class="typedef" href="#binaryfunc" title='binaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="binaryfunc">binaryfunc</a> <dfn class="decl" id="{anonymous}::mp_subscript" title='&lt;anonymous struct&gt;::mp_subscript' data-ref="{anonymous}::mp_subscript">mp_subscript</dfn>;</td></tr>
+<tr><th id="292">292</th><td>    <a class="typedef" href="#objobjargproc" title='objobjargproc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="objobjargproc">objobjargproc</a> <dfn class="decl" id="{anonymous}::mp_ass_subscript" title='&lt;anonymous struct&gt;::mp_ass_subscript' data-ref="{anonymous}::mp_ass_subscript">mp_ass_subscript</dfn>;</td></tr>
+<tr><th id="293">293</th><td>} <dfn class="typedef" id="PyMappingMethods" title='PyMappingMethods' data-type='struct PyMappingMethods' data-ref="PyMappingMethods">PyMappingMethods</dfn>;</td></tr>
+<tr><th id="294">294</th><td></td></tr>
+<tr><th id="295">295</th><td><b>typedef</b> <b>struct</b> {</td></tr>
+<tr><th id="296">296</th><td>    <a class="typedef" href="#readbufferproc" title='readbufferproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t, void **)' data-ref="readbufferproc">readbufferproc</a> <dfn class="decl" id="{anonymous}::bf_getreadbuffer" title='&lt;anonymous struct&gt;::bf_getreadbuffer' data-ref="{anonymous}::bf_getreadbuffer">bf_getreadbuffer</dfn>;</td></tr>
+<tr><th id="297">297</th><td>    <a class="typedef" href="#writebufferproc" title='writebufferproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t, void **)' data-ref="writebufferproc">writebufferproc</a> <dfn class="decl" id="{anonymous}::bf_getwritebuffer" title='&lt;anonymous struct&gt;::bf_getwritebuffer' data-ref="{anonymous}::bf_getwritebuffer">bf_getwritebuffer</dfn>;</td></tr>
+<tr><th id="298">298</th><td>    <a class="typedef" href="#segcountproc" title='segcountproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t *)' data-ref="segcountproc">segcountproc</a> <dfn class="decl" id="{anonymous}::bf_getsegcount" title='&lt;anonymous struct&gt;::bf_getsegcount' data-ref="{anonymous}::bf_getsegcount">bf_getsegcount</dfn>;</td></tr>
+<tr><th id="299">299</th><td>    <a class="typedef" href="#charbufferproc" title='charbufferproc' data-type='Py_ssize_t (*)(PyObject *, Py_ssize_t, char **)' data-ref="charbufferproc">charbufferproc</a> <dfn class="decl" id="{anonymous}::bf_getcharbuffer" title='&lt;anonymous struct&gt;::bf_getcharbuffer' data-ref="{anonymous}::bf_getcharbuffer">bf_getcharbuffer</dfn>;</td></tr>
+<tr><th id="300">300</th><td>    <a class="typedef" href="#getbufferproc" title='getbufferproc' data-type='int (*)(PyObject *, Py_buffer *, int)' data-ref="getbufferproc">getbufferproc</a> <dfn class="decl" id="{anonymous}::bf_getbuffer" title='&lt;anonymous struct&gt;::bf_getbuffer' data-ref="{anonymous}::bf_getbuffer">bf_getbuffer</dfn>;</td></tr>
+<tr><th id="301">301</th><td>    <a class="typedef" href="#releasebufferproc" title='releasebufferproc' data-type='void (*)(PyObject *, Py_buffer *)' data-ref="releasebufferproc">releasebufferproc</a> <dfn class="decl" id="{anonymous}::bf_releasebuffer" title='&lt;anonymous struct&gt;::bf_releasebuffer' data-ref="{anonymous}::bf_releasebuffer">bf_releasebuffer</dfn>;</td></tr>
+<tr><th id="302">302</th><td>} <dfn class="typedef" id="PyBufferProcs" title='PyBufferProcs' data-type='struct PyBufferProcs' data-ref="PyBufferProcs">PyBufferProcs</dfn>;</td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td></td></tr>
+<tr><th id="305">305</th><td><b>typedef</b> <em>void</em> (*<dfn class="typedef" id="freefunc" title='freefunc' data-type='void (*)(void *)' data-ref="freefunc">freefunc</dfn>)(<em>void</em> *);</td></tr>
+<tr><th id="306">306</th><td><b>typedef</b> <em>void</em> (*<dfn class="typedef" id="destructor" title='destructor' data-type='void (*)(PyObject *)' data-ref="destructor">destructor</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="307">307</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="printfunc" title='printfunc' data-type='int (*)(PyObject *, FILE *, int)' data-ref="printfunc">printfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="../stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a> *, <em>int</em>);</td></tr>
+<tr><th id="308">308</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="getattrfunc" title='getattrfunc' data-type='PyObject *(*)(PyObject *, char *)' data-ref="getattrfunc">getattrfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>char</em> *);</td></tr>
+<tr><th id="309">309</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="getattrofunc" title='getattrofunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="getattrofunc">getattrofunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="310">310</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="setattrfunc" title='setattrfunc' data-type='int (*)(PyObject *, char *, PyObject *)' data-ref="setattrfunc">setattrfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>char</em> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="311">311</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="setattrofunc" title='setattrofunc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="setattrofunc">setattrofunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="312">312</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="cmpfunc" title='cmpfunc' data-type='int (*)(PyObject *, PyObject *)' data-ref="cmpfunc">cmpfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="313">313</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="reprfunc" title='reprfunc' data-type='PyObject *(*)(PyObject *)' data-ref="reprfunc">reprfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="314">314</th><td><b>typedef</b> <em>long</em> (*<dfn class="typedef" id="hashfunc" title='hashfunc' data-type='long (*)(PyObject *)' data-ref="hashfunc">hashfunc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="315">315</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="richcmpfunc" title='richcmpfunc' data-type='PyObject *(*)(PyObject *, PyObject *, int)' data-ref="richcmpfunc">richcmpfunc</dfn>) (<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>);</td></tr>
+<tr><th id="316">316</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="getiterfunc" title='getiterfunc' data-type='PyObject *(*)(PyObject *)' data-ref="getiterfunc">getiterfunc</dfn>) (<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="317">317</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="iternextfunc" title='iternextfunc' data-type='PyObject *(*)(PyObject *)' data-ref="iternextfunc">iternextfunc</dfn>) (<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="318">318</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="descrgetfunc" title='descrgetfunc' data-type='PyObject *(*)(PyObject *, PyObject *, PyObject *)' data-ref="descrgetfunc">descrgetfunc</dfn>) (<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="319">319</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="descrsetfunc" title='descrsetfunc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="descrsetfunc">descrsetfunc</dfn>) (<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="320">320</th><td><b>typedef</b> <em>int</em> (*<dfn class="typedef" id="initproc" title='initproc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="initproc">initproc</dfn>)(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="321">321</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="newfunc" title='newfunc' data-type='PyObject *(*)(struct _typeobject *, PyObject *, PyObject *)' data-ref="newfunc">newfunc</dfn>)(<b>struct</b> <a class="type" href="#_typeobject" title='_typeobject' data-ref="_typeobject">_typeobject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="322">322</th><td><b>typedef</b> <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *(*<dfn class="typedef" id="allocfunc" title='allocfunc' data-type='PyObject *(*)(struct _typeobject *, Py_ssize_t)' data-ref="allocfunc">allocfunc</dfn>)(<b>struct</b> <a class="type" href="#_typeobject" title='_typeobject' data-ref="_typeobject">_typeobject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="323">323</th><td></td></tr>
+<tr><th id="324">324</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="_typeobject" title='_typeobject' data-ref="_typeobject"><a class="type" href="#_typeobject" title='_typeobject' data-ref="_typeobject">_typeobject</a></dfn> {</td></tr>
+<tr><th id="325">325</th><td>    <a class="macro" href="#96" title=" Py_ssize_t ob_refcnt; struct _typeobject *ob_type; Py_ssize_t ob_size;" data-ref="_M/PyObject_VAR_HEAD">PyObject_VAR_HEAD</a></td></tr>
+<tr><th id="326">326</th><td>    <em>const</em> <em>char</em> *<dfn class="decl" id="_typeobject::tp_name" title='_typeobject::tp_name' data-ref="_typeobject::tp_name">tp_name</dfn>; <i>/* For printing, in format "&lt;module&gt;.&lt;name&gt;" */</i></td></tr>
+<tr><th id="327">327</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="_typeobject::tp_basicsize" title='_typeobject::tp_basicsize' data-ref="_typeobject::tp_basicsize">tp_basicsize</dfn>, <dfn class="decl" id="_typeobject::tp_itemsize" title='_typeobject::tp_itemsize' data-ref="_typeobject::tp_itemsize">tp_itemsize</dfn>; <i>/* For allocation */</i></td></tr>
+<tr><th id="328">328</th><td></td></tr>
+<tr><th id="329">329</th><td>    <i>/* Methods to implement standard operations */</i></td></tr>
+<tr><th id="330">330</th><td></td></tr>
+<tr><th id="331">331</th><td>    <a class="typedef" href="#destructor" title='destructor' data-type='void (*)(PyObject *)' data-ref="destructor">destructor</a> <dfn class="decl" id="_typeobject::tp_dealloc" title='_typeobject::tp_dealloc' data-ref="_typeobject::tp_dealloc">tp_dealloc</dfn>;</td></tr>
+<tr><th id="332">332</th><td>    <a class="typedef" href="#printfunc" title='printfunc' data-type='int (*)(PyObject *, FILE *, int)' data-ref="printfunc">printfunc</a> <dfn class="decl" id="_typeobject::tp_print" title='_typeobject::tp_print' data-ref="_typeobject::tp_print">tp_print</dfn>;</td></tr>
+<tr><th id="333">333</th><td>    <a class="typedef" href="#getattrfunc" title='getattrfunc' data-type='PyObject *(*)(PyObject *, char *)' data-ref="getattrfunc">getattrfunc</a> <dfn class="decl" id="_typeobject::tp_getattr" title='_typeobject::tp_getattr' data-ref="_typeobject::tp_getattr">tp_getattr</dfn>;</td></tr>
+<tr><th id="334">334</th><td>    <a class="typedef" href="#setattrfunc" title='setattrfunc' data-type='int (*)(PyObject *, char *, PyObject *)' data-ref="setattrfunc">setattrfunc</a> <dfn class="decl" id="_typeobject::tp_setattr" title='_typeobject::tp_setattr' data-ref="_typeobject::tp_setattr">tp_setattr</dfn>;</td></tr>
+<tr><th id="335">335</th><td>    <a class="typedef" href="#cmpfunc" title='cmpfunc' data-type='int (*)(PyObject *, PyObject *)' data-ref="cmpfunc">cmpfunc</a> <dfn class="decl" id="_typeobject::tp_compare" title='_typeobject::tp_compare' data-ref="_typeobject::tp_compare">tp_compare</dfn>;</td></tr>
+<tr><th id="336">336</th><td>    <a class="typedef" href="#reprfunc" title='reprfunc' data-type='PyObject *(*)(PyObject *)' data-ref="reprfunc">reprfunc</a> <dfn class="decl" id="_typeobject::tp_repr" title='_typeobject::tp_repr' data-ref="_typeobject::tp_repr">tp_repr</dfn>;</td></tr>
+<tr><th id="337">337</th><td></td></tr>
+<tr><th id="338">338</th><td>    <i>/* Method suites for standard classes */</i></td></tr>
+<tr><th id="339">339</th><td></td></tr>
+<tr><th id="340">340</th><td>    <a class="typedef" href="#PyNumberMethods" title='PyNumberMethods' data-type='struct PyNumberMethods' data-ref="PyNumberMethods">PyNumberMethods</a> *<dfn class="decl" id="_typeobject::tp_as_number" title='_typeobject::tp_as_number' data-ref="_typeobject::tp_as_number">tp_as_number</dfn>;</td></tr>
+<tr><th id="341">341</th><td>    <a class="typedef" href="#PySequenceMethods" title='PySequenceMethods' data-type='struct PySequenceMethods' data-ref="PySequenceMethods">PySequenceMethods</a> *<dfn class="decl" id="_typeobject::tp_as_sequence" title='_typeobject::tp_as_sequence' data-ref="_typeobject::tp_as_sequence">tp_as_sequence</dfn>;</td></tr>
+<tr><th id="342">342</th><td>    <a class="typedef" href="#PyMappingMethods" title='PyMappingMethods' data-type='struct PyMappingMethods' data-ref="PyMappingMethods">PyMappingMethods</a> *<dfn class="decl" id="_typeobject::tp_as_mapping" title='_typeobject::tp_as_mapping' data-ref="_typeobject::tp_as_mapping">tp_as_mapping</dfn>;</td></tr>
+<tr><th id="343">343</th><td></td></tr>
+<tr><th id="344">344</th><td>    <i>/* More standard operations (here for binary compatibility) */</i></td></tr>
+<tr><th id="345">345</th><td></td></tr>
+<tr><th id="346">346</th><td>    <a class="typedef" href="#hashfunc" title='hashfunc' data-type='long (*)(PyObject *)' data-ref="hashfunc">hashfunc</a> <dfn class="decl" id="_typeobject::tp_hash" title='_typeobject::tp_hash' data-ref="_typeobject::tp_hash">tp_hash</dfn>;</td></tr>
+<tr><th id="347">347</th><td>    <a class="typedef" href="#ternaryfunc" title='ternaryfunc' data-type='PyObject *(*)(PyObject *, PyObject *, PyObject *)' data-ref="ternaryfunc">ternaryfunc</a> <dfn class="decl" id="_typeobject::tp_call" title='_typeobject::tp_call' data-ref="_typeobject::tp_call">tp_call</dfn>;</td></tr>
+<tr><th id="348">348</th><td>    <a class="typedef" href="#reprfunc" title='reprfunc' data-type='PyObject *(*)(PyObject *)' data-ref="reprfunc">reprfunc</a> <dfn class="decl" id="_typeobject::tp_str" title='_typeobject::tp_str' data-ref="_typeobject::tp_str">tp_str</dfn>;</td></tr>
+<tr><th id="349">349</th><td>    <a class="typedef" href="#getattrofunc" title='getattrofunc' data-type='PyObject *(*)(PyObject *, PyObject *)' data-ref="getattrofunc">getattrofunc</a> <dfn class="decl" id="_typeobject::tp_getattro" title='_typeobject::tp_getattro' data-ref="_typeobject::tp_getattro">tp_getattro</dfn>;</td></tr>
+<tr><th id="350">350</th><td>    <a class="typedef" href="#setattrofunc" title='setattrofunc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="setattrofunc">setattrofunc</a> <dfn class="decl" id="_typeobject::tp_setattro" title='_typeobject::tp_setattro' data-ref="_typeobject::tp_setattro">tp_setattro</dfn>;</td></tr>
+<tr><th id="351">351</th><td></td></tr>
+<tr><th id="352">352</th><td>    <i>/* Functions to access object as input/output buffer */</i></td></tr>
+<tr><th id="353">353</th><td>    <a class="typedef" href="#PyBufferProcs" title='PyBufferProcs' data-type='struct PyBufferProcs' data-ref="PyBufferProcs">PyBufferProcs</a> *<dfn class="decl" id="_typeobject::tp_as_buffer" title='_typeobject::tp_as_buffer' data-ref="_typeobject::tp_as_buffer">tp_as_buffer</dfn>;</td></tr>
+<tr><th id="354">354</th><td></td></tr>
+<tr><th id="355">355</th><td>    <i>/* Flags to define presence of optional/expanded features */</i></td></tr>
+<tr><th id="356">356</th><td>    <em>long</em> <dfn class="decl" id="_typeobject::tp_flags" title='_typeobject::tp_flags' data-ref="_typeobject::tp_flags">tp_flags</dfn>;</td></tr>
+<tr><th id="357">357</th><td></td></tr>
+<tr><th id="358">358</th><td>    <em>const</em> <em>char</em> *<dfn class="decl" id="_typeobject::tp_doc" title='_typeobject::tp_doc' data-ref="_typeobject::tp_doc">tp_doc</dfn>; <i>/* Documentation string */</i></td></tr>
+<tr><th id="359">359</th><td></td></tr>
+<tr><th id="360">360</th><td>    <i>/* Assigned meaning in release 2.0 */</i></td></tr>
+<tr><th id="361">361</th><td>    <i>/* call function for all accessible objects */</i></td></tr>
+<tr><th id="362">362</th><td>    <a class="typedef" href="#traverseproc" title='traverseproc' data-type='int (*)(PyObject *, visitproc, void *)' data-ref="traverseproc">traverseproc</a> <dfn class="decl" id="_typeobject::tp_traverse" title='_typeobject::tp_traverse' data-ref="_typeobject::tp_traverse">tp_traverse</dfn>;</td></tr>
+<tr><th id="363">363</th><td></td></tr>
+<tr><th id="364">364</th><td>    <i>/* delete references to contained objects */</i></td></tr>
+<tr><th id="365">365</th><td>    <a class="typedef" href="#inquiry" title='inquiry' data-type='int (*)(PyObject *)' data-ref="inquiry">inquiry</a> <dfn class="decl" id="_typeobject::tp_clear" title='_typeobject::tp_clear' data-ref="_typeobject::tp_clear">tp_clear</dfn>;</td></tr>
+<tr><th id="366">366</th><td></td></tr>
+<tr><th id="367">367</th><td>    <i>/* Assigned meaning in release 2.1 */</i></td></tr>
+<tr><th id="368">368</th><td>    <i>/* rich comparisons */</i></td></tr>
+<tr><th id="369">369</th><td>    <a class="typedef" href="#richcmpfunc" title='richcmpfunc' data-type='PyObject *(*)(PyObject *, PyObject *, int)' data-ref="richcmpfunc">richcmpfunc</a> <dfn class="decl" id="_typeobject::tp_richcompare" title='_typeobject::tp_richcompare' data-ref="_typeobject::tp_richcompare">tp_richcompare</dfn>;</td></tr>
+<tr><th id="370">370</th><td></td></tr>
+<tr><th id="371">371</th><td>    <i>/* weak reference enabler */</i></td></tr>
+<tr><th id="372">372</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="_typeobject::tp_weaklistoffset" title='_typeobject::tp_weaklistoffset' data-ref="_typeobject::tp_weaklistoffset">tp_weaklistoffset</dfn>;</td></tr>
+<tr><th id="373">373</th><td></td></tr>
+<tr><th id="374">374</th><td>    <i>/* Added in release 2.2 */</i></td></tr>
+<tr><th id="375">375</th><td>    <i>/* Iterators */</i></td></tr>
+<tr><th id="376">376</th><td>    <a class="typedef" href="#getiterfunc" title='getiterfunc' data-type='PyObject *(*)(PyObject *)' data-ref="getiterfunc">getiterfunc</a> <dfn class="decl" id="_typeobject::tp_iter" title='_typeobject::tp_iter' data-ref="_typeobject::tp_iter">tp_iter</dfn>;</td></tr>
+<tr><th id="377">377</th><td>    <a class="typedef" href="#iternextfunc" title='iternextfunc' data-type='PyObject *(*)(PyObject *)' data-ref="iternextfunc">iternextfunc</a> <dfn class="decl" id="_typeobject::tp_iternext" title='_typeobject::tp_iternext' data-ref="_typeobject::tp_iternext">tp_iternext</dfn>;</td></tr>
+<tr><th id="378">378</th><td></td></tr>
+<tr><th id="379">379</th><td>    <i>/* Attribute descriptor and subclassing stuff */</i></td></tr>
+<tr><th id="380">380</th><td>    <b>struct</b> <a class="type" href="methodobject.h.html#PyMethodDef" title='PyMethodDef' data-ref="PyMethodDef" id="PyMethodDef"><a class="type" href="methodobject.h.html#PyMethodDef" title='PyMethodDef' data-ref="PyMethodDef">PyMethodDef</a></a> *<dfn class="decl" id="_typeobject::tp_methods" title='_typeobject::tp_methods' data-ref="_typeobject::tp_methods">tp_methods</dfn>;</td></tr>
+<tr><th id="381">381</th><td>    <b>struct</b> <dfn class="type" id="PyMemberDef" title='PyMemberDef' data-ref="PyMemberDef"><a class="type" href="#PyMemberDef" title='PyMemberDef' data-ref="PyMemberDef">PyMemberDef</a></dfn> *<dfn class="decl" id="_typeobject::tp_members" title='_typeobject::tp_members' data-ref="_typeobject::tp_members">tp_members</dfn>;</td></tr>
+<tr><th id="382">382</th><td>    <b>struct</b> <a class="type" href="descrobject.h.html#PyGetSetDef" title='PyGetSetDef' data-ref="PyGetSetDef" id="PyGetSetDef"><a class="type" href="descrobject.h.html#PyGetSetDef" title='PyGetSetDef' data-ref="PyGetSetDef">PyGetSetDef</a></a> *<dfn class="decl" id="_typeobject::tp_getset" title='_typeobject::tp_getset' data-ref="_typeobject::tp_getset">tp_getset</dfn>;</td></tr>
+<tr><th id="383">383</th><td>    <b>struct</b> <a class="type" href="#_typeobject" title='_typeobject' data-ref="_typeobject">_typeobject</a> *<dfn class="decl" id="_typeobject::tp_base" title='_typeobject::tp_base' data-ref="_typeobject::tp_base">tp_base</dfn>;</td></tr>
+<tr><th id="384">384</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_typeobject::tp_dict" title='_typeobject::tp_dict' data-ref="_typeobject::tp_dict">tp_dict</dfn>;</td></tr>
+<tr><th id="385">385</th><td>    <a class="typedef" href="#descrgetfunc" title='descrgetfunc' data-type='PyObject *(*)(PyObject *, PyObject *, PyObject *)' data-ref="descrgetfunc">descrgetfunc</a> <dfn class="decl" id="_typeobject::tp_descr_get" title='_typeobject::tp_descr_get' data-ref="_typeobject::tp_descr_get">tp_descr_get</dfn>;</td></tr>
+<tr><th id="386">386</th><td>    <a class="typedef" href="#descrsetfunc" title='descrsetfunc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="descrsetfunc">descrsetfunc</a> <dfn class="decl" id="_typeobject::tp_descr_set" title='_typeobject::tp_descr_set' data-ref="_typeobject::tp_descr_set">tp_descr_set</dfn>;</td></tr>
+<tr><th id="387">387</th><td>    <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a> <dfn class="decl" id="_typeobject::tp_dictoffset" title='_typeobject::tp_dictoffset' data-ref="_typeobject::tp_dictoffset">tp_dictoffset</dfn>;</td></tr>
+<tr><th id="388">388</th><td>    <a class="typedef" href="#initproc" title='initproc' data-type='int (*)(PyObject *, PyObject *, PyObject *)' data-ref="initproc">initproc</a> <dfn class="decl" id="_typeobject::tp_init" title='_typeobject::tp_init' data-ref="_typeobject::tp_init">tp_init</dfn>;</td></tr>
+<tr><th id="389">389</th><td>    <a class="typedef" href="#allocfunc" title='allocfunc' data-type='PyObject *(*)(struct _typeobject *, Py_ssize_t)' data-ref="allocfunc">allocfunc</a> <dfn class="decl" id="_typeobject::tp_alloc" title='_typeobject::tp_alloc' data-ref="_typeobject::tp_alloc">tp_alloc</dfn>;</td></tr>
+<tr><th id="390">390</th><td>    <a class="typedef" href="#newfunc" title='newfunc' data-type='PyObject *(*)(struct _typeobject *, PyObject *, PyObject *)' data-ref="newfunc">newfunc</a> <dfn class="decl" id="_typeobject::tp_new" title='_typeobject::tp_new' data-ref="_typeobject::tp_new">tp_new</dfn>;</td></tr>
+<tr><th id="391">391</th><td>    <a class="typedef" href="#freefunc" title='freefunc' data-type='void (*)(void *)' data-ref="freefunc">freefunc</a> <dfn class="decl" id="_typeobject::tp_free" title='_typeobject::tp_free' data-ref="_typeobject::tp_free">tp_free</dfn>; <i>/* Low-level free-memory routine */</i></td></tr>
+<tr><th id="392">392</th><td>    <a class="typedef" href="#inquiry" title='inquiry' data-type='int (*)(PyObject *)' data-ref="inquiry">inquiry</a> <dfn class="decl" id="_typeobject::tp_is_gc" title='_typeobject::tp_is_gc' data-ref="_typeobject::tp_is_gc">tp_is_gc</dfn>; <i>/* For PyObject_IS_GC */</i></td></tr>
+<tr><th id="393">393</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_typeobject::tp_bases" title='_typeobject::tp_bases' data-ref="_typeobject::tp_bases">tp_bases</dfn>;</td></tr>
+<tr><th id="394">394</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_typeobject::tp_mro" title='_typeobject::tp_mro' data-ref="_typeobject::tp_mro">tp_mro</dfn>; <i>/* method resolution order */</i></td></tr>
+<tr><th id="395">395</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_typeobject::tp_cache" title='_typeobject::tp_cache' data-ref="_typeobject::tp_cache">tp_cache</dfn>;</td></tr>
+<tr><th id="396">396</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_typeobject::tp_subclasses" title='_typeobject::tp_subclasses' data-ref="_typeobject::tp_subclasses">tp_subclasses</dfn>;</td></tr>
+<tr><th id="397">397</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_typeobject::tp_weaklist" title='_typeobject::tp_weaklist' data-ref="_typeobject::tp_weaklist">tp_weaklist</dfn>;</td></tr>
+<tr><th id="398">398</th><td>    <a class="typedef" href="#destructor" title='destructor' data-type='void (*)(PyObject *)' data-ref="destructor">destructor</a> <dfn class="decl" id="_typeobject::tp_del" title='_typeobject::tp_del' data-ref="_typeobject::tp_del">tp_del</dfn>;</td></tr>
+<tr><th id="399">399</th><td></td></tr>
+<tr><th id="400">400</th><td>    <i>/* Type attribute cache version tag. Added in version 2.6 */</i></td></tr>
+<tr><th id="401">401</th><td>    <em>unsigned</em> <em>int</em> <dfn class="decl" id="_typeobject::tp_version_tag" title='_typeobject::tp_version_tag' data-ref="_typeobject::tp_version_tag">tp_version_tag</dfn>;</td></tr>
+<tr><th id="402">402</th><td></td></tr>
+<tr><th id="403">403</th><td><u>#<span data-ppcond="403">ifdef</span> <span class="macro" data-ref="_M/COUNT_ALLOCS">COUNT_ALLOCS</span></u></td></tr>
+<tr><th id="404">404</th><td>    <i>/* these must be last and never explicitly initialized */</i></td></tr>
+<tr><th id="405">405</th><td>    Py_ssize_t tp_allocs;</td></tr>
+<tr><th id="406">406</th><td>    Py_ssize_t tp_frees;</td></tr>
+<tr><th id="407">407</th><td>    Py_ssize_t tp_maxalloc;</td></tr>
+<tr><th id="408">408</th><td>    <b>struct</b> _typeobject *tp_prev;</td></tr>
+<tr><th id="409">409</th><td>    <b>struct</b> _typeobject *tp_next;</td></tr>
+<tr><th id="410">410</th><td><u>#<span data-ppcond="403">endif</span></u></td></tr>
+<tr><th id="411">411</th><td>} <dfn class="typedef" id="PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</dfn>;</td></tr>
+<tr><th id="412">412</th><td></td></tr>
+<tr><th id="413">413</th><td></td></tr>
+<tr><th id="414">414</th><td><i>/* The *real* layout of a type object when allocated on the heap */</i></td></tr>
+<tr><th id="415">415</th><td><b>typedef</b> <b>struct</b> <dfn class="type def" id="_heaptypeobject" title='_heaptypeobject' data-ref="_heaptypeobject"><a class="type" href="#_heaptypeobject" title='_heaptypeobject' data-ref="_heaptypeobject">_heaptypeobject</a></dfn> {</td></tr>
+<tr><th id="416">416</th><td>    <i>/* Note: there's a dependency on the order of these members</i></td></tr>
+<tr><th id="417">417</th><td><i>       in slotptr() in typeobject.c . */</i></td></tr>
+<tr><th id="418">418</th><td>    <a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> <dfn class="decl" id="_heaptypeobject::ht_type" title='_heaptypeobject::ht_type' data-ref="_heaptypeobject::ht_type">ht_type</dfn>;</td></tr>
+<tr><th id="419">419</th><td>    <a class="typedef" href="#PyNumberMethods" title='PyNumberMethods' data-type='struct PyNumberMethods' data-ref="PyNumberMethods">PyNumberMethods</a> <dfn class="decl" id="_heaptypeobject::as_number" title='_heaptypeobject::as_number' data-ref="_heaptypeobject::as_number">as_number</dfn>;</td></tr>
+<tr><th id="420">420</th><td>    <a class="typedef" href="#PyMappingMethods" title='PyMappingMethods' data-type='struct PyMappingMethods' data-ref="PyMappingMethods">PyMappingMethods</a> <dfn class="decl" id="_heaptypeobject::as_mapping" title='_heaptypeobject::as_mapping' data-ref="_heaptypeobject::as_mapping">as_mapping</dfn>;</td></tr>
+<tr><th id="421">421</th><td>    <a class="typedef" href="#PySequenceMethods" title='PySequenceMethods' data-type='struct PySequenceMethods' data-ref="PySequenceMethods">PySequenceMethods</a> <dfn class="decl" id="_heaptypeobject::as_sequence" title='_heaptypeobject::as_sequence' data-ref="_heaptypeobject::as_sequence">as_sequence</dfn>; <i>/* as_sequence comes after as_mapping,</i></td></tr>
+<tr><th id="422">422</th><td><i>                                      so that the mapping wins when both</i></td></tr>
+<tr><th id="423">423</th><td><i>                                      the mapping and the sequence define</i></td></tr>
+<tr><th id="424">424</th><td><i>                                      a given operator (e.g. __getitem__).</i></td></tr>
+<tr><th id="425">425</th><td><i>                                      see add_operators() in typeobject.c . */</i></td></tr>
+<tr><th id="426">426</th><td>    <a class="typedef" href="#PyBufferProcs" title='PyBufferProcs' data-type='struct PyBufferProcs' data-ref="PyBufferProcs">PyBufferProcs</a> <dfn class="decl" id="_heaptypeobject::as_buffer" title='_heaptypeobject::as_buffer' data-ref="_heaptypeobject::as_buffer">as_buffer</dfn>;</td></tr>
+<tr><th id="427">427</th><td>    <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *<dfn class="decl" id="_heaptypeobject::ht_name" title='_heaptypeobject::ht_name' data-ref="_heaptypeobject::ht_name">ht_name</dfn>, *<dfn class="decl" id="_heaptypeobject::ht_slots" title='_heaptypeobject::ht_slots' data-ref="_heaptypeobject::ht_slots">ht_slots</dfn>;</td></tr>
+<tr><th id="428">428</th><td>    <i>/* here are optional user slots, followed by the members. */</i></td></tr>
+<tr><th id="429">429</th><td>} <dfn class="typedef" id="PyHeapTypeObject" title='PyHeapTypeObject' data-type='struct _heaptypeobject' data-ref="PyHeapTypeObject">PyHeapTypeObject</dfn>;</td></tr>
+<tr><th id="430">430</th><td></td></tr>
+<tr><th id="431">431</th><td><i>/* access macro to the members which are floating "behind" the object */</i></td></tr>
+<tr><th id="432">432</th><td><u>#define <dfn class="macro" id="_M/PyHeapType_GET_MEMBERS" data-ref="_M/PyHeapType_GET_MEMBERS">PyHeapType_GET_MEMBERS</dfn>(etype) \</u></td></tr>
+<tr><th id="433">433</th><td><u>    ((PyMemberDef *)(((char *)etype) + Py_TYPE(etype)-&gt;tp_basicsize))</u></td></tr>
+<tr><th id="434">434</th><td></td></tr>
+<tr><th id="435">435</th><td></td></tr>
+<tr><th id="436">436</th><td><i>/* Generic type check */</i></td></tr>
+<tr><th id="437">437</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyType_IsSubtype" title='PyType_IsSubtype' data-ref="PyType_IsSubtype">PyType_IsSubtype</dfn>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *, <a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *);</td></tr>
+<tr><th id="438">438</th><td><u>#define <dfn class="macro" id="_M/PyObject_TypeCheck" data-ref="_M/PyObject_TypeCheck">PyObject_TypeCheck</dfn>(ob, tp) \</u></td></tr>
+<tr><th id="439">439</th><td><u>    (Py_TYPE(ob) == (tp) || PyType_IsSubtype(Py_TYPE(ob), (tp)))</u></td></tr>
+<tr><th id="440">440</th><td></td></tr>
+<tr><th id="441">441</th><td><a class="macro" href="pyport.h.html#796" title="extern PyTypeObject" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a>) <dfn class="decl" id="PyType_Type" title='PyType_Type' data-ref="PyType_Type">PyType_Type</dfn>; <i>/* built-in 'type' */</i></td></tr>
+<tr><th id="442">442</th><td><a class="macro" href="pyport.h.html#796" title="extern PyTypeObject" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a>) <dfn class="decl" id="PyBaseObject_Type" title='PyBaseObject_Type' data-ref="PyBaseObject_Type">PyBaseObject_Type</dfn>; <i>/* built-in 'object' */</i></td></tr>
+<tr><th id="443">443</th><td><a class="macro" href="pyport.h.html#796" title="extern PyTypeObject" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a>) <dfn class="decl" id="PySuper_Type" title='PySuper_Type' data-ref="PySuper_Type">PySuper_Type</dfn>; <i>/* built-in 'super' */</i></td></tr>
+<tr><th id="444">444</th><td></td></tr>
+<tr><th id="445">445</th><td><u>#define <dfn class="macro" id="_M/PyType_Check" data-ref="_M/PyType_Check">PyType_Check</dfn>(op) \</u></td></tr>
+<tr><th id="446">446</th><td><u>    PyType_FastSubclass(Py_TYPE(op), Py_TPFLAGS_TYPE_SUBCLASS)</u></td></tr>
+<tr><th id="447">447</th><td><u>#define <dfn class="macro" id="_M/PyType_CheckExact" data-ref="_M/PyType_CheckExact">PyType_CheckExact</dfn>(op) (Py_TYPE(op) == &amp;PyType_Type)</u></td></tr>
+<tr><th id="448">448</th><td></td></tr>
+<tr><th id="449">449</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyType_Ready" title='PyType_Ready' data-ref="PyType_Ready">PyType_Ready</dfn>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *);</td></tr>
+<tr><th id="450">450</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyType_GenericAlloc" title='PyType_GenericAlloc' data-ref="PyType_GenericAlloc">PyType_GenericAlloc</dfn>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *, <a class="typedef" href="pyport.h.html#Py_ssize_t" title='Py_ssize_t' data-type='ssize_t' data-ref="Py_ssize_t">Py_ssize_t</a>);</td></tr>
+<tr><th id="451">451</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyType_GenericNew" title='PyType_GenericNew' data-ref="PyType_GenericNew">PyType_GenericNew</dfn>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *,</td></tr>
+<tr><th id="452">452</th><td>                                               <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="453">453</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyType_Lookup" title='_PyType_Lookup' data-ref="_PyType_Lookup">_PyType_Lookup</dfn>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="454">454</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_LookupSpecial" title='_PyObject_LookupSpecial' data-ref="_PyObject_LookupSpecial">_PyObject_LookupSpecial</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>char</em> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **);</td></tr>
+<tr><th id="455">455</th><td><a class="macro" href="pyport.h.html#793" title="unsigned int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>unsigned</em> <em>int</em>) <dfn class="decl" id="PyType_ClearCache" title='PyType_ClearCache' data-ref="PyType_ClearCache">PyType_ClearCache</dfn>(<em>void</em>);</td></tr>
+<tr><th id="456">456</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyType_Modified" title='PyType_Modified' data-ref="PyType_Modified">PyType_Modified</dfn>(<a class="typedef" href="#PyTypeObject" title='PyTypeObject' data-type='struct _typeobject' data-ref="PyTypeObject">PyTypeObject</a> *);</td></tr>
+<tr><th id="457">457</th><td></td></tr>
+<tr><th id="458">458</th><td><i>/* Generic operations on objects */</i></td></tr>
+<tr><th id="459">459</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_Print" title='PyObject_Print' data-ref="PyObject_Print">PyObject_Print</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="../stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a> *, <em>int</em>);</td></tr>
+<tr><th id="460">460</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_PyObject_Dump" title='_PyObject_Dump' data-ref="_PyObject_Dump">_PyObject_Dump</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="461">461</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Repr" title='PyObject_Repr' data-ref="PyObject_Repr">PyObject_Repr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="462">462</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_Str" title='_PyObject_Str' data-ref="_PyObject_Str">_PyObject_Str</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="463">463</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Str" title='PyObject_Str' data-ref="PyObject_Str">PyObject_Str</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="464">464</th><td><u>#define <dfn class="macro" id="_M/PyObject_Bytes" data-ref="_M/PyObject_Bytes">PyObject_Bytes</dfn> PyObject_Str</u></td></tr>
+<tr><th id="465">465</th><td><u>#<span data-ppcond="465">ifdef</span> <a class="macro" href="../x86_64-linux-gnu/python2.7/pyconfig.h.html#986" data-ref="_M/Py_USING_UNICODE">Py_USING_UNICODE</a></u></td></tr>
+<tr><th id="466">466</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Unicode" title='PyObject_Unicode' data-ref="PyObject_Unicode">PyObject_Unicode</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="467">467</th><td><u>#<span data-ppcond="465">endif</span></u></td></tr>
+<tr><th id="468">468</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_Compare" title='PyObject_Compare' data-ref="PyObject_Compare">PyObject_Compare</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="469">469</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_RichCompare" title='PyObject_RichCompare' data-ref="PyObject_RichCompare">PyObject_RichCompare</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>);</td></tr>
+<tr><th id="470">470</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_RichCompareBool" title='PyObject_RichCompareBool' data-ref="PyObject_RichCompareBool">PyObject_RichCompareBool</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>int</em>);</td></tr>
+<tr><th id="471">471</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_GetAttrString" title='PyObject_GetAttrString' data-ref="PyObject_GetAttrString">PyObject_GetAttrString</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>const</em> <em>char</em> *);</td></tr>
+<tr><th id="472">472</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_SetAttrString" title='PyObject_SetAttrString' data-ref="PyObject_SetAttrString">PyObject_SetAttrString</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>const</em> <em>char</em> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="473">473</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_HasAttrString" title='PyObject_HasAttrString' data-ref="PyObject_HasAttrString">PyObject_HasAttrString</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <em>const</em> <em>char</em> *);</td></tr>
+<tr><th id="474">474</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_GetAttr" title='PyObject_GetAttr' data-ref="PyObject_GetAttr">PyObject_GetAttr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="475">475</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_SetAttr" title='PyObject_SetAttr' data-ref="PyObject_SetAttr">PyObject_SetAttr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="476">476</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_HasAttr" title='PyObject_HasAttr' data-ref="PyObject_HasAttr">PyObject_HasAttr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="477">477</th><td><a class="macro" href="pyport.h.html#793" title="PyObject **" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **) <dfn class="decl" id="_PyObject_GetDictPtr" title='_PyObject_GetDictPtr' data-ref="_PyObject_GetDictPtr">_PyObject_GetDictPtr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="478">478</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_SelfIter" title='PyObject_SelfIter' data-ref="PyObject_SelfIter">PyObject_SelfIter</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="479">479</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyObject_NextNotImplemented" title='_PyObject_NextNotImplemented' data-ref="_PyObject_NextNotImplemented">_PyObject_NextNotImplemented</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="480">480</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_GenericGetAttr" title='PyObject_GenericGetAttr' data-ref="PyObject_GenericGetAttr">PyObject_GenericGetAttr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="481">481</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_GenericSetAttr" title='PyObject_GenericSetAttr' data-ref="PyObject_GenericSetAttr">PyObject_GenericSetAttr</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *,</td></tr>
+<tr><th id="482">482</th><td>                                              <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="483">483</th><td><a class="macro" href="pyport.h.html#793" title="long" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>long</em>) <dfn class="decl" id="PyObject_Hash" title='PyObject_Hash' data-ref="PyObject_Hash">PyObject_Hash</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="484">484</th><td><a class="macro" href="pyport.h.html#793" title="long" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>long</em>) <dfn class="decl" id="PyObject_HashNotImplemented" title='PyObject_HashNotImplemented' data-ref="PyObject_HashNotImplemented">PyObject_HashNotImplemented</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="485">485</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_IsTrue" title='PyObject_IsTrue' data-ref="PyObject_IsTrue">PyObject_IsTrue</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="486">486</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyObject_Not" title='PyObject_Not' data-ref="PyObject_Not">PyObject_Not</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="487">487</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyCallable_Check" title='PyCallable_Check' data-ref="PyCallable_Check">PyCallable_Check</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="488">488</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyNumber_Coerce" title='PyNumber_Coerce' data-ref="PyNumber_Coerce">PyNumber_Coerce</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **);</td></tr>
+<tr><th id="489">489</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="PyNumber_CoerceEx" title='PyNumber_CoerceEx' data-ref="PyNumber_CoerceEx">PyNumber_CoerceEx</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> **);</td></tr>
+<tr><th id="490">490</th><td></td></tr>
+<tr><th id="491">491</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="PyObject_ClearWeakRefs" title='PyObject_ClearWeakRefs' data-ref="PyObject_ClearWeakRefs">PyObject_ClearWeakRefs</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="492">492</th><td></td></tr>
+<tr><th id="493">493</th><td><i>/* A slot function whose address we need to compare */</i></td></tr>
+<tr><th id="494">494</th><td><b>extern</b> <em>int</em> <dfn class="decl" id="_PyObject_SlotCompare" title='_PyObject_SlotCompare' data-ref="_PyObject_SlotCompare">_PyObject_SlotCompare</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="495">495</th><td><i>/* Same as PyObject_Generic{Get,Set}Attr, but passing the attributes</i></td></tr>
+<tr><th id="496">496</th><td><i>   dict as the last parameter. */</i></td></tr>
+<tr><th id="497">497</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *)</td></tr>
+<tr><th id="498">498</th><td><dfn class="decl" id="_PyObject_GenericGetAttrWithDict" title='_PyObject_GenericGetAttrWithDict' data-ref="_PyObject_GenericGetAttrWithDict">_PyObject_GenericGetAttrWithDict</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="499">499</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>)</td></tr>
+<tr><th id="500">500</th><td><dfn class="decl" id="_PyObject_GenericSetAttrWithDict" title='_PyObject_GenericSetAttrWithDict' data-ref="_PyObject_GenericSetAttrWithDict">_PyObject_GenericSetAttrWithDict</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *,</td></tr>
+<tr><th id="501">501</th><td>                                 <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *, <a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="502">502</th><td></td></tr>
+<tr><th id="503">503</th><td></td></tr>
+<tr><th id="504">504</th><td><i>/* PyObject_Dir(obj) acts like Python __builtin__.dir(obj), returning a</i></td></tr>
+<tr><th id="505">505</th><td><i>   list of strings.  PyObject_Dir(NULL) is like __builtin__.dir(),</i></td></tr>
+<tr><th id="506">506</th><td><i>   returning the names of the current locals.  In this case, if there are</i></td></tr>
+<tr><th id="507">507</th><td><i>   no current locals, NULL is returned, and PyErr_Occurred() is false.</i></td></tr>
+<tr><th id="508">508</th><td><i>*/</i></td></tr>
+<tr><th id="509">509</th><td><a class="macro" href="pyport.h.html#793" title="PyObject *" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="PyObject_Dir" title='PyObject_Dir' data-ref="PyObject_Dir">PyObject_Dir</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="510">510</th><td></td></tr>
+<tr><th id="511">511</th><td></td></tr>
+<tr><th id="512">512</th><td><i>/* Helpers for printing recursive container types */</i></td></tr>
+<tr><th id="513">513</th><td><a class="macro" href="pyport.h.html#793" title="int" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>int</em>) <dfn class="decl" id="Py_ReprEnter" title='Py_ReprEnter' data-ref="Py_ReprEnter">Py_ReprEnter</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="514">514</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="Py_ReprLeave" title='Py_ReprLeave' data-ref="Py_ReprLeave">Py_ReprLeave</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="515">515</th><td></td></tr>
+<tr><th id="516">516</th><td><i>/* Helpers for hash functions */</i></td></tr>
+<tr><th id="517">517</th><td><a class="macro" href="pyport.h.html#793" title="long" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>long</em>) <dfn class="decl" id="_Py_HashDouble" title='_Py_HashDouble' data-ref="_Py_HashDouble">_Py_HashDouble</dfn>(<em>double</em>);</td></tr>
+<tr><th id="518">518</th><td><a class="macro" href="pyport.h.html#793" title="long" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>long</em>) <dfn class="decl" id="_Py_HashPointer" title='_Py_HashPointer' data-ref="_Py_HashPointer">_Py_HashPointer</dfn>(<em>void</em>*);</td></tr>
+<tr><th id="519">519</th><td></td></tr>
+<tr><th id="520">520</th><td><b>typedef</b> <b>struct</b> {</td></tr>
+<tr><th id="521">521</th><td>    <em>long</em> <dfn class="decl" id="{anonymous}::prefix" title='&lt;anonymous struct&gt;::prefix' data-ref="{anonymous}::prefix">prefix</dfn>;</td></tr>
+<tr><th id="522">522</th><td>    <em>long</em> <dfn class="decl" id="{anonymous}::suffix" title='&lt;anonymous struct&gt;::suffix' data-ref="{anonymous}::suffix">suffix</dfn>;</td></tr>
+<tr><th id="523">523</th><td>} <dfn class="typedef" id="_Py_HashSecret_t" title='_Py_HashSecret_t' data-type='struct _Py_HashSecret_t' data-ref="_Py_HashSecret_t">_Py_HashSecret_t</dfn>;</td></tr>
+<tr><th id="524">524</th><td><a class="macro" href="pyport.h.html#796" title="extern _Py_HashSecret_t" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#_Py_HashSecret_t" title='_Py_HashSecret_t' data-type='struct _Py_HashSecret_t' data-ref="_Py_HashSecret_t">_Py_HashSecret_t</a>) <dfn class="decl" id="_Py_HashSecret" title='_Py_HashSecret' data-ref="_Py_HashSecret">_Py_HashSecret</dfn>;</td></tr>
+<tr><th id="525">525</th><td></td></tr>
+<tr><th id="526">526</th><td><u>#<span data-ppcond="526">ifdef</span> <span class="macro" data-ref="_M/Py_DEBUG">Py_DEBUG</span></u></td></tr>
+<tr><th id="527">527</th><td>PyAPI_DATA(<em>int</em>) _Py_HashSecret_Initialized;</td></tr>
+<tr><th id="528">528</th><td><u>#<span data-ppcond="526">endif</span></u></td></tr>
+<tr><th id="529">529</th><td></td></tr>
+<tr><th id="530">530</th><td><i>/* Helper for passing objects to printf and the like */</i></td></tr>
+<tr><th id="531">531</th><td><u>#define <dfn class="macro" id="_M/PyObject_REPR" data-ref="_M/PyObject_REPR">PyObject_REPR</dfn>(obj) PyString_AS_STRING(PyObject_Repr(obj))</u></td></tr>
+<tr><th id="532">532</th><td></td></tr>
+<tr><th id="533">533</th><td><i>/* Flag bits for printing: */</i></td></tr>
+<tr><th id="534">534</th><td><u>#define <dfn class="macro" id="_M/Py_PRINT_RAW" data-ref="_M/Py_PRINT_RAW">Py_PRINT_RAW</dfn>    1       /* No string quotes etc. */</u></td></tr>
+<tr><th id="535">535</th><td></td></tr>
+<tr><th id="536">536</th><td><i>/*</i></td></tr>
+<tr><th id="537">537</th><td><i>`Type flags (tp_flags)</i></td></tr>
+<tr><th id="538">538</th><td><i></i></td></tr>
+<tr><th id="539">539</th><td><i>These flags are used to extend the type structure in a backwards-compatible</i></td></tr>
+<tr><th id="540">540</th><td><i>fashion. Extensions can use the flags to indicate (and test) when a given</i></td></tr>
+<tr><th id="541">541</th><td><i>type structure contains a new feature. The Python core will use these when</i></td></tr>
+<tr><th id="542">542</th><td><i>introducing new functionality between major revisions (to avoid mid-version</i></td></tr>
+<tr><th id="543">543</th><td><i>changes in the PYTHON_API_VERSION).</i></td></tr>
+<tr><th id="544">544</th><td><i></i></td></tr>
+<tr><th id="545">545</th><td><i>Arbitration of the flag bit positions will need to be coordinated among</i></td></tr>
+<tr><th id="546">546</th><td><i>all extension writers who publically release their extensions (this will</i></td></tr>
+<tr><th id="547">547</th><td><i>be fewer than you might expect!)..</i></td></tr>
+<tr><th id="548">548</th><td><i></i></td></tr>
+<tr><th id="549">549</th><td><i>Python 1.5.2 introduced the bf_getcharbuffer slot into PyBufferProcs.</i></td></tr>
+<tr><th id="550">550</th><td><i></i></td></tr>
+<tr><th id="551">551</th><td><i>Type definitions should use Py_TPFLAGS_DEFAULT for their tp_flags value.</i></td></tr>
+<tr><th id="552">552</th><td><i></i></td></tr>
+<tr><th id="553">553</th><td><i>Code can use PyType_HasFeature(type_ob, flag_value) to test whether the</i></td></tr>
+<tr><th id="554">554</th><td><i>given type object has a specified feature.</i></td></tr>
+<tr><th id="555">555</th><td><i></i></td></tr>
+<tr><th id="556">556</th><td><i>NOTE: when building the core, Py_TPFLAGS_DEFAULT includes</i></td></tr>
+<tr><th id="557">557</th><td><i>Py_TPFLAGS_HAVE_VERSION_TAG; outside the core, it doesn't.  This is so</i></td></tr>
+<tr><th id="558">558</th><td><i>that extensions that modify tp_dict of their own types directly don't</i></td></tr>
+<tr><th id="559">559</th><td><i>break, since this was allowed in 2.5.  In 3.0 they will have to</i></td></tr>
+<tr><th id="560">560</th><td><i>manually remove this flag though!</i></td></tr>
+<tr><th id="561">561</th><td><i>*/</i></td></tr>
+<tr><th id="562">562</th><td></td></tr>
+<tr><th id="563">563</th><td><i>/* PyBufferProcs contains bf_getcharbuffer */</i></td></tr>
+<tr><th id="564">564</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_GETCHARBUFFER" data-ref="_M/Py_TPFLAGS_HAVE_GETCHARBUFFER">Py_TPFLAGS_HAVE_GETCHARBUFFER</dfn>  (1L&lt;&lt;0)</u></td></tr>
+<tr><th id="565">565</th><td></td></tr>
+<tr><th id="566">566</th><td><i>/* PySequenceMethods contains sq_contains */</i></td></tr>
+<tr><th id="567">567</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_SEQUENCE_IN" data-ref="_M/Py_TPFLAGS_HAVE_SEQUENCE_IN">Py_TPFLAGS_HAVE_SEQUENCE_IN</dfn> (1L&lt;&lt;1)</u></td></tr>
+<tr><th id="568">568</th><td></td></tr>
+<tr><th id="569">569</th><td><i>/* This is here for backwards compatibility.  Extensions that use the old GC</i></td></tr>
+<tr><th id="570">570</th><td><i> * API will still compile but the objects will not be tracked by the GC. */</i></td></tr>
+<tr><th id="571">571</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_GC" data-ref="_M/Py_TPFLAGS_GC">Py_TPFLAGS_GC</dfn> 0 /* used to be (1L&lt;&lt;2) */</u></td></tr>
+<tr><th id="572">572</th><td></td></tr>
+<tr><th id="573">573</th><td><i>/* PySequenceMethods and PyNumberMethods contain in-place operators */</i></td></tr>
+<tr><th id="574">574</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_INPLACEOPS" data-ref="_M/Py_TPFLAGS_HAVE_INPLACEOPS">Py_TPFLAGS_HAVE_INPLACEOPS</dfn> (1L&lt;&lt;3)</u></td></tr>
+<tr><th id="575">575</th><td></td></tr>
+<tr><th id="576">576</th><td><i>/* PyNumberMethods do their own coercion */</i></td></tr>
+<tr><th id="577">577</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_CHECKTYPES" data-ref="_M/Py_TPFLAGS_CHECKTYPES">Py_TPFLAGS_CHECKTYPES</dfn> (1L&lt;&lt;4)</u></td></tr>
+<tr><th id="578">578</th><td></td></tr>
+<tr><th id="579">579</th><td><i>/* tp_richcompare is defined */</i></td></tr>
+<tr><th id="580">580</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_RICHCOMPARE" data-ref="_M/Py_TPFLAGS_HAVE_RICHCOMPARE">Py_TPFLAGS_HAVE_RICHCOMPARE</dfn> (1L&lt;&lt;5)</u></td></tr>
+<tr><th id="581">581</th><td></td></tr>
+<tr><th id="582">582</th><td><i>/* Objects which are weakly referencable if their tp_weaklistoffset is &gt;0 */</i></td></tr>
+<tr><th id="583">583</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_WEAKREFS" data-ref="_M/Py_TPFLAGS_HAVE_WEAKREFS">Py_TPFLAGS_HAVE_WEAKREFS</dfn> (1L&lt;&lt;6)</u></td></tr>
+<tr><th id="584">584</th><td></td></tr>
+<tr><th id="585">585</th><td><i>/* tp_iter is defined */</i></td></tr>
+<tr><th id="586">586</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_ITER" data-ref="_M/Py_TPFLAGS_HAVE_ITER">Py_TPFLAGS_HAVE_ITER</dfn> (1L&lt;&lt;7)</u></td></tr>
+<tr><th id="587">587</th><td></td></tr>
+<tr><th id="588">588</th><td><i>/* New members introduced by Python 2.2 exist */</i></td></tr>
+<tr><th id="589">589</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_CLASS" data-ref="_M/Py_TPFLAGS_HAVE_CLASS">Py_TPFLAGS_HAVE_CLASS</dfn> (1L&lt;&lt;8)</u></td></tr>
+<tr><th id="590">590</th><td></td></tr>
+<tr><th id="591">591</th><td><i>/* Set if the type object is dynamically allocated */</i></td></tr>
+<tr><th id="592">592</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HEAPTYPE" data-ref="_M/Py_TPFLAGS_HEAPTYPE">Py_TPFLAGS_HEAPTYPE</dfn> (1L&lt;&lt;9)</u></td></tr>
+<tr><th id="593">593</th><td></td></tr>
+<tr><th id="594">594</th><td><i>/* Set if the type allows subclassing */</i></td></tr>
+<tr><th id="595">595</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_BASETYPE" data-ref="_M/Py_TPFLAGS_BASETYPE">Py_TPFLAGS_BASETYPE</dfn> (1L&lt;&lt;10)</u></td></tr>
+<tr><th id="596">596</th><td></td></tr>
+<tr><th id="597">597</th><td><i>/* Set if the type is 'ready' -- fully initialized */</i></td></tr>
+<tr><th id="598">598</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_READY" data-ref="_M/Py_TPFLAGS_READY">Py_TPFLAGS_READY</dfn> (1L&lt;&lt;12)</u></td></tr>
+<tr><th id="599">599</th><td></td></tr>
+<tr><th id="600">600</th><td><i>/* Set while the type is being 'readied', to prevent recursive ready calls */</i></td></tr>
+<tr><th id="601">601</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_READYING" data-ref="_M/Py_TPFLAGS_READYING">Py_TPFLAGS_READYING</dfn> (1L&lt;&lt;13)</u></td></tr>
+<tr><th id="602">602</th><td></td></tr>
+<tr><th id="603">603</th><td><i>/* Objects support garbage collection (see objimp.h) */</i></td></tr>
+<tr><th id="604">604</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_GC" data-ref="_M/Py_TPFLAGS_HAVE_GC">Py_TPFLAGS_HAVE_GC</dfn> (1L&lt;&lt;14)</u></td></tr>
+<tr><th id="605">605</th><td></td></tr>
+<tr><th id="606">606</th><td><i>/* These two bits are preserved for Stackless Python, next after this is 17 */</i></td></tr>
+<tr><th id="607">607</th><td><u>#<span data-ppcond="607">ifdef</span> <span class="macro" data-ref="_M/STACKLESS">STACKLESS</span></u></td></tr>
+<tr><th id="608">608</th><td><u>#define Py_TPFLAGS_HAVE_STACKLESS_EXTENSION (3L&lt;&lt;15)</u></td></tr>
+<tr><th id="609">609</th><td><u>#<span data-ppcond="607">else</span></u></td></tr>
+<tr><th id="610">610</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_STACKLESS_EXTENSION" data-ref="_M/Py_TPFLAGS_HAVE_STACKLESS_EXTENSION">Py_TPFLAGS_HAVE_STACKLESS_EXTENSION</dfn> 0</u></td></tr>
+<tr><th id="611">611</th><td><u>#<span data-ppcond="607">endif</span></u></td></tr>
+<tr><th id="612">612</th><td></td></tr>
+<tr><th id="613">613</th><td><i>/* Objects support nb_index in PyNumberMethods */</i></td></tr>
+<tr><th id="614">614</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_INDEX" data-ref="_M/Py_TPFLAGS_HAVE_INDEX">Py_TPFLAGS_HAVE_INDEX</dfn> (1L&lt;&lt;17)</u></td></tr>
+<tr><th id="615">615</th><td></td></tr>
+<tr><th id="616">616</th><td><i>/* Objects support type attribute cache */</i></td></tr>
+<tr><th id="617">617</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_VERSION_TAG" data-ref="_M/Py_TPFLAGS_HAVE_VERSION_TAG">Py_TPFLAGS_HAVE_VERSION_TAG</dfn>   (1L&lt;&lt;18)</u></td></tr>
+<tr><th id="618">618</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_VALID_VERSION_TAG" data-ref="_M/Py_TPFLAGS_VALID_VERSION_TAG">Py_TPFLAGS_VALID_VERSION_TAG</dfn>  (1L&lt;&lt;19)</u></td></tr>
+<tr><th id="619">619</th><td></td></tr>
+<tr><th id="620">620</th><td><i>/* Type is abstract and cannot be instantiated */</i></td></tr>
+<tr><th id="621">621</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_IS_ABSTRACT" data-ref="_M/Py_TPFLAGS_IS_ABSTRACT">Py_TPFLAGS_IS_ABSTRACT</dfn> (1L&lt;&lt;20)</u></td></tr>
+<tr><th id="622">622</th><td></td></tr>
+<tr><th id="623">623</th><td><i>/* Has the new buffer protocol */</i></td></tr>
+<tr><th id="624">624</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_HAVE_NEWBUFFER" data-ref="_M/Py_TPFLAGS_HAVE_NEWBUFFER">Py_TPFLAGS_HAVE_NEWBUFFER</dfn> (1L&lt;&lt;21)</u></td></tr>
+<tr><th id="625">625</th><td></td></tr>
+<tr><th id="626">626</th><td><i>/* These flags are used to determine if a type is a subclass. */</i></td></tr>
+<tr><th id="627">627</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_INT_SUBCLASS" data-ref="_M/Py_TPFLAGS_INT_SUBCLASS">Py_TPFLAGS_INT_SUBCLASS</dfn>         (1L&lt;&lt;23)</u></td></tr>
+<tr><th id="628">628</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_LONG_SUBCLASS" data-ref="_M/Py_TPFLAGS_LONG_SUBCLASS">Py_TPFLAGS_LONG_SUBCLASS</dfn>        (1L&lt;&lt;24)</u></td></tr>
+<tr><th id="629">629</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_LIST_SUBCLASS" data-ref="_M/Py_TPFLAGS_LIST_SUBCLASS">Py_TPFLAGS_LIST_SUBCLASS</dfn>        (1L&lt;&lt;25)</u></td></tr>
+<tr><th id="630">630</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_TUPLE_SUBCLASS" data-ref="_M/Py_TPFLAGS_TUPLE_SUBCLASS">Py_TPFLAGS_TUPLE_SUBCLASS</dfn>       (1L&lt;&lt;26)</u></td></tr>
+<tr><th id="631">631</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_STRING_SUBCLASS" data-ref="_M/Py_TPFLAGS_STRING_SUBCLASS">Py_TPFLAGS_STRING_SUBCLASS</dfn>      (1L&lt;&lt;27)</u></td></tr>
+<tr><th id="632">632</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_UNICODE_SUBCLASS" data-ref="_M/Py_TPFLAGS_UNICODE_SUBCLASS">Py_TPFLAGS_UNICODE_SUBCLASS</dfn>     (1L&lt;&lt;28)</u></td></tr>
+<tr><th id="633">633</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_DICT_SUBCLASS" data-ref="_M/Py_TPFLAGS_DICT_SUBCLASS">Py_TPFLAGS_DICT_SUBCLASS</dfn>        (1L&lt;&lt;29)</u></td></tr>
+<tr><th id="634">634</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_BASE_EXC_SUBCLASS" data-ref="_M/Py_TPFLAGS_BASE_EXC_SUBCLASS">Py_TPFLAGS_BASE_EXC_SUBCLASS</dfn>    (1L&lt;&lt;30)</u></td></tr>
+<tr><th id="635">635</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_TYPE_SUBCLASS" data-ref="_M/Py_TPFLAGS_TYPE_SUBCLASS">Py_TPFLAGS_TYPE_SUBCLASS</dfn>        (1L&lt;&lt;31)</u></td></tr>
+<tr><th id="636">636</th><td></td></tr>
+<tr><th id="637">637</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_DEFAULT_EXTERNAL" data-ref="_M/Py_TPFLAGS_DEFAULT_EXTERNAL">Py_TPFLAGS_DEFAULT_EXTERNAL</dfn> ( \</u></td></tr>
+<tr><th id="638">638</th><td><u>                 Py_TPFLAGS_HAVE_GETCHARBUFFER | \</u></td></tr>
+<tr><th id="639">639</th><td><u>                 Py_TPFLAGS_HAVE_SEQUENCE_IN | \</u></td></tr>
+<tr><th id="640">640</th><td><u>                 Py_TPFLAGS_HAVE_INPLACEOPS | \</u></td></tr>
+<tr><th id="641">641</th><td><u>                 Py_TPFLAGS_HAVE_RICHCOMPARE | \</u></td></tr>
+<tr><th id="642">642</th><td><u>                 Py_TPFLAGS_HAVE_WEAKREFS | \</u></td></tr>
+<tr><th id="643">643</th><td><u>                 Py_TPFLAGS_HAVE_ITER | \</u></td></tr>
+<tr><th id="644">644</th><td><u>                 Py_TPFLAGS_HAVE_CLASS | \</u></td></tr>
+<tr><th id="645">645</th><td><u>                 Py_TPFLAGS_HAVE_STACKLESS_EXTENSION | \</u></td></tr>
+<tr><th id="646">646</th><td><u>                 Py_TPFLAGS_HAVE_INDEX | \</u></td></tr>
+<tr><th id="647">647</th><td><u>                 0)</u></td></tr>
+<tr><th id="648">648</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_DEFAULT_CORE" data-ref="_M/Py_TPFLAGS_DEFAULT_CORE">Py_TPFLAGS_DEFAULT_CORE</dfn> (Py_TPFLAGS_DEFAULT_EXTERNAL | \</u></td></tr>
+<tr><th id="649">649</th><td><u>                 Py_TPFLAGS_HAVE_VERSION_TAG)</u></td></tr>
+<tr><th id="650">650</th><td></td></tr>
+<tr><th id="651">651</th><td><u>#<span data-ppcond="651">ifdef</span> <span class="macro" data-ref="_M/Py_BUILD_CORE">Py_BUILD_CORE</span></u></td></tr>
+<tr><th id="652">652</th><td><u>#define Py_TPFLAGS_DEFAULT Py_TPFLAGS_DEFAULT_CORE</u></td></tr>
+<tr><th id="653">653</th><td><u>#<span data-ppcond="651">else</span></u></td></tr>
+<tr><th id="654">654</th><td><u>#define <dfn class="macro" id="_M/Py_TPFLAGS_DEFAULT" data-ref="_M/Py_TPFLAGS_DEFAULT">Py_TPFLAGS_DEFAULT</dfn> Py_TPFLAGS_DEFAULT_EXTERNAL</u></td></tr>
+<tr><th id="655">655</th><td><u>#<span data-ppcond="651">endif</span></u></td></tr>
+<tr><th id="656">656</th><td></td></tr>
+<tr><th id="657">657</th><td><u>#define <dfn class="macro" id="_M/PyType_HasFeature" data-ref="_M/PyType_HasFeature">PyType_HasFeature</dfn>(t,f)  (((t)-&gt;tp_flags &amp; (f)) != 0)</u></td></tr>
+<tr><th id="658">658</th><td><u>#define <dfn class="macro" id="_M/PyType_FastSubclass" data-ref="_M/PyType_FastSubclass">PyType_FastSubclass</dfn>(t,f)  PyType_HasFeature(t,f)</u></td></tr>
+<tr><th id="659">659</th><td></td></tr>
+<tr><th id="660">660</th><td></td></tr>
+<tr><th id="661">661</th><td><i>/*</i></td></tr>
+<tr><th id="662">662</th><td><i>The macros Py_INCREF(op) and Py_DECREF(op) are used to increment or decrement</i></td></tr>
+<tr><th id="663">663</th><td><i>reference counts.  Py_DECREF calls the object's deallocator function when</i></td></tr>
+<tr><th id="664">664</th><td><i>the refcount falls to 0; for</i></td></tr>
+<tr><th id="665">665</th><td><i>objects that don't contain references to other objects or heap memory</i></td></tr>
+<tr><th id="666">666</th><td><i>this can be the standard function free().  Both macros can be used</i></td></tr>
+<tr><th id="667">667</th><td><i>wherever a void expression is allowed.  The argument must not be a</i></td></tr>
+<tr><th id="668">668</th><td><i>NULL pointer.  If it may be NULL, use Py_XINCREF/Py_XDECREF instead.</i></td></tr>
+<tr><th id="669">669</th><td><i>The macro _Py_NewReference(op) initialize reference counts to 1, and</i></td></tr>
+<tr><th id="670">670</th><td><i>in special builds (Py_REF_DEBUG, Py_TRACE_REFS) performs additional</i></td></tr>
+<tr><th id="671">671</th><td><i>bookkeeping appropriate to the special build.</i></td></tr>
+<tr><th id="672">672</th><td><i></i></td></tr>
+<tr><th id="673">673</th><td><i>We assume that the reference count field can never overflow; this can</i></td></tr>
+<tr><th id="674">674</th><td><i>be proven when the size of the field is the same as the pointer size, so</i></td></tr>
+<tr><th id="675">675</th><td><i>we ignore the possibility.  Provided a C int is at least 32 bits (which</i></td></tr>
+<tr><th id="676">676</th><td><i>is implicitly assumed in many parts of this code), that's enough for</i></td></tr>
+<tr><th id="677">677</th><td><i>about 2**31 references to an object.</i></td></tr>
+<tr><th id="678">678</th><td><i></i></td></tr>
+<tr><th id="679">679</th><td><i>XXX The following became out of date in Python 2.2, but I'm not sure</i></td></tr>
+<tr><th id="680">680</th><td><i>XXX what the full truth is now.  Certainly, heap-allocated type objects</i></td></tr>
+<tr><th id="681">681</th><td><i>XXX can and should be deallocated.</i></td></tr>
+<tr><th id="682">682</th><td><i>Type objects should never be deallocated; the type pointer in an object</i></td></tr>
+<tr><th id="683">683</th><td><i>is not considered to be a reference to the type object, to save</i></td></tr>
+<tr><th id="684">684</th><td><i>complications in the deallocation function.  (This is actually a</i></td></tr>
+<tr><th id="685">685</th><td><i>decision that's up to the implementer of each new type so if you want,</i></td></tr>
+<tr><th id="686">686</th><td><i>you can count such references to the type object.)</i></td></tr>
+<tr><th id="687">687</th><td><i></i></td></tr>
+<tr><th id="688">688</th><td><i>*** WARNING*** The Py_DECREF macro must have a side-effect-free argument</i></td></tr>
+<tr><th id="689">689</th><td><i>since it may evaluate its argument multiple times.  (The alternative</i></td></tr>
+<tr><th id="690">690</th><td><i>would be to mace it a proper function or assign it to a global temporary</i></td></tr>
+<tr><th id="691">691</th><td><i>variable first, both of which are slower; and in a multi-threaded</i></td></tr>
+<tr><th id="692">692</th><td><i>environment the global variable trick is not safe.)</i></td></tr>
+<tr><th id="693">693</th><td><i>*/</i></td></tr>
+<tr><th id="694">694</th><td></td></tr>
+<tr><th id="695">695</th><td><i>/* First define a pile of simple helper macros, one set per special</i></td></tr>
+<tr><th id="696">696</th><td><i> * build symbol.  These either expand to the obvious things, or to</i></td></tr>
+<tr><th id="697">697</th><td><i> * nothing at all when the special mode isn't in effect.  The main</i></td></tr>
+<tr><th id="698">698</th><td><i> * macros can later be defined just once then, yet expand to different</i></td></tr>
+<tr><th id="699">699</th><td><i> * things depending on which special build options are and aren't in effect.</i></td></tr>
+<tr><th id="700">700</th><td><i> * Trust me &lt;wink&gt;:  while painful, this is 20x easier to understand than,</i></td></tr>
+<tr><th id="701">701</th><td><i> * e.g, defining _Py_NewReference five different times in a maze of nested</i></td></tr>
+<tr><th id="702">702</th><td><i> * #ifdefs (we used to do that -- it was impenetrable).</i></td></tr>
+<tr><th id="703">703</th><td><i> */</i></td></tr>
+<tr><th id="704">704</th><td><u>#<span data-ppcond="704">ifdef</span> <span class="macro" data-ref="_M/Py_REF_DEBUG">Py_REF_DEBUG</span></u></td></tr>
+<tr><th id="705">705</th><td>PyAPI_DATA(Py_ssize_t) _Py_RefTotal;</td></tr>
+<tr><th id="706">706</th><td>PyAPI_FUNC(<em>void</em>) _Py_NegativeRefcount(<em>const</em> <em>char</em> *fname,</td></tr>
+<tr><th id="707">707</th><td>                                            <em>int</em> lineno, PyObject *op);</td></tr>
+<tr><th id="708">708</th><td>PyAPI_FUNC(PyObject *) _PyDict_Dummy(<em>void</em>);</td></tr>
+<tr><th id="709">709</th><td>PyAPI_FUNC(PyObject *) _PySet_Dummy(<em>void</em>);</td></tr>
+<tr><th id="710">710</th><td>PyAPI_FUNC(Py_ssize_t) _Py_GetRefTotal(<em>void</em>);</td></tr>
+<tr><th id="711">711</th><td><u>#define _Py_INC_REFTOTAL        _Py_RefTotal++</u></td></tr>
+<tr><th id="712">712</th><td><u>#define _Py_DEC_REFTOTAL        _Py_RefTotal--</u></td></tr>
+<tr><th id="713">713</th><td><u>#define _Py_REF_DEBUG_COMMA     ,</u></td></tr>
+<tr><th id="714">714</th><td><u>#define _Py_CHECK_REFCNT(OP)                                    \</u></td></tr>
+<tr><th id="715">715</th><td><u>{       if (((PyObject*)OP)-&gt;ob_refcnt &lt; 0)                             \</u></td></tr>
+<tr><th id="716">716</th><td><u>                _Py_NegativeRefcount(__FILE__, __LINE__,        \</u></td></tr>
+<tr><th id="717">717</th><td><u>                                     (PyObject *)(OP));         \</u></td></tr>
+<tr><th id="718">718</th><td><u>}</u></td></tr>
+<tr><th id="719">719</th><td><u>#<span data-ppcond="704">else</span></u></td></tr>
+<tr><th id="720">720</th><td><u>#define <dfn class="macro" id="_M/_Py_INC_REFTOTAL" data-ref="_M/_Py_INC_REFTOTAL">_Py_INC_REFTOTAL</dfn></u></td></tr>
+<tr><th id="721">721</th><td><u>#define <dfn class="macro" id="_M/_Py_DEC_REFTOTAL" data-ref="_M/_Py_DEC_REFTOTAL">_Py_DEC_REFTOTAL</dfn></u></td></tr>
+<tr><th id="722">722</th><td><u>#define <dfn class="macro" id="_M/_Py_REF_DEBUG_COMMA" data-ref="_M/_Py_REF_DEBUG_COMMA">_Py_REF_DEBUG_COMMA</dfn></u></td></tr>
+<tr><th id="723">723</th><td><u>#define <dfn class="macro" id="_M/_Py_CHECK_REFCNT" data-ref="_M/_Py_CHECK_REFCNT">_Py_CHECK_REFCNT</dfn>(OP)    /* a semicolon */;</u></td></tr>
+<tr><th id="724">724</th><td><u>#<span data-ppcond="704">endif</span> /* Py_REF_DEBUG */</u></td></tr>
+<tr><th id="725">725</th><td></td></tr>
+<tr><th id="726">726</th><td><u>#<span data-ppcond="726">ifdef</span> <span class="macro" data-ref="_M/COUNT_ALLOCS">COUNT_ALLOCS</span></u></td></tr>
+<tr><th id="727">727</th><td>PyAPI_FUNC(<em>void</em>) inc_count(PyTypeObject *);</td></tr>
+<tr><th id="728">728</th><td>PyAPI_FUNC(<em>void</em>) dec_count(PyTypeObject *);</td></tr>
+<tr><th id="729">729</th><td><u>#define _Py_INC_TPALLOCS(OP)    inc_count(Py_TYPE(OP))</u></td></tr>
+<tr><th id="730">730</th><td><u>#define _Py_INC_TPFREES(OP)     dec_count(Py_TYPE(OP))</u></td></tr>
+<tr><th id="731">731</th><td><u>#define _Py_DEC_TPFREES(OP)     Py_TYPE(OP)-&gt;tp_frees--</u></td></tr>
+<tr><th id="732">732</th><td><u>#define _Py_COUNT_ALLOCS_COMMA  ,</u></td></tr>
+<tr><th id="733">733</th><td><u>#<span data-ppcond="726">else</span></u></td></tr>
+<tr><th id="734">734</th><td><u>#define <dfn class="macro" id="_M/_Py_INC_TPALLOCS" data-ref="_M/_Py_INC_TPALLOCS">_Py_INC_TPALLOCS</dfn>(OP)</u></td></tr>
+<tr><th id="735">735</th><td><u>#define <dfn class="macro" id="_M/_Py_INC_TPFREES" data-ref="_M/_Py_INC_TPFREES">_Py_INC_TPFREES</dfn>(OP)</u></td></tr>
+<tr><th id="736">736</th><td><u>#define <dfn class="macro" id="_M/_Py_DEC_TPFREES" data-ref="_M/_Py_DEC_TPFREES">_Py_DEC_TPFREES</dfn>(OP)</u></td></tr>
+<tr><th id="737">737</th><td><u>#define <dfn class="macro" id="_M/_Py_COUNT_ALLOCS_COMMA" data-ref="_M/_Py_COUNT_ALLOCS_COMMA">_Py_COUNT_ALLOCS_COMMA</dfn></u></td></tr>
+<tr><th id="738">738</th><td><u>#<span data-ppcond="726">endif</span> /* COUNT_ALLOCS */</u></td></tr>
+<tr><th id="739">739</th><td></td></tr>
+<tr><th id="740">740</th><td><u>#<span data-ppcond="740">ifdef</span> <span class="macro" data-ref="_M/Py_TRACE_REFS">Py_TRACE_REFS</span></u></td></tr>
+<tr><th id="741">741</th><td><i>/* Py_TRACE_REFS is such major surgery that we call external routines. */</i></td></tr>
+<tr><th id="742">742</th><td>PyAPI_FUNC(<em>void</em>) _Py_NewReference(PyObject *);</td></tr>
+<tr><th id="743">743</th><td>PyAPI_FUNC(<em>void</em>) _Py_ForgetReference(PyObject *);</td></tr>
+<tr><th id="744">744</th><td>PyAPI_FUNC(<em>void</em>) _Py_Dealloc(PyObject *);</td></tr>
+<tr><th id="745">745</th><td>PyAPI_FUNC(<em>void</em>) _Py_PrintReferences(FILE *);</td></tr>
+<tr><th id="746">746</th><td>PyAPI_FUNC(<em>void</em>) _Py_PrintReferenceAddresses(FILE *);</td></tr>
+<tr><th id="747">747</th><td>PyAPI_FUNC(<em>void</em>) _Py_AddToAllObjects(PyObject *, <em>int</em> force);</td></tr>
+<tr><th id="748">748</th><td></td></tr>
+<tr><th id="749">749</th><td><u>#<span data-ppcond="740">else</span></u></td></tr>
+<tr><th id="750">750</th><td><i>/* Without Py_TRACE_REFS, there's little enough to do that we expand code</i></td></tr>
+<tr><th id="751">751</th><td><i> * inline.</i></td></tr>
+<tr><th id="752">752</th><td><i> */</i></td></tr>
+<tr><th id="753">753</th><td><u>#define <dfn class="macro" id="_M/_Py_NewReference" data-ref="_M/_Py_NewReference">_Py_NewReference</dfn>(op) (                          \</u></td></tr>
+<tr><th id="754">754</th><td><u>    _Py_INC_TPALLOCS(op) _Py_COUNT_ALLOCS_COMMA         \</u></td></tr>
+<tr><th id="755">755</th><td><u>    _Py_INC_REFTOTAL  _Py_REF_DEBUG_COMMA               \</u></td></tr>
+<tr><th id="756">756</th><td><u>    Py_REFCNT(op) = 1)</u></td></tr>
+<tr><th id="757">757</th><td></td></tr>
+<tr><th id="758">758</th><td><u>#define <dfn class="macro" id="_M/_Py_ForgetReference" data-ref="_M/_Py_ForgetReference">_Py_ForgetReference</dfn>(op) _Py_INC_TPFREES(op)</u></td></tr>
+<tr><th id="759">759</th><td></td></tr>
+<tr><th id="760">760</th><td><u>#define <dfn class="macro" id="_M/_Py_Dealloc" data-ref="_M/_Py_Dealloc">_Py_Dealloc</dfn>(op) (                               \</u></td></tr>
+<tr><th id="761">761</th><td><u>    _Py_INC_TPFREES(op) _Py_COUNT_ALLOCS_COMMA          \</u></td></tr>
+<tr><th id="762">762</th><td><u>    (*Py_TYPE(op)-&gt;tp_dealloc)((PyObject *)(op)))</u></td></tr>
+<tr><th id="763">763</th><td><u>#<span data-ppcond="740">endif</span> /* !Py_TRACE_REFS */</u></td></tr>
+<tr><th id="764">764</th><td></td></tr>
+<tr><th id="765">765</th><td><u>#define <dfn class="macro" id="_M/Py_INCREF" data-ref="_M/Py_INCREF">Py_INCREF</dfn>(op) (                         \</u></td></tr>
+<tr><th id="766">766</th><td><u>    _Py_INC_REFTOTAL  _Py_REF_DEBUG_COMMA       \</u></td></tr>
+<tr><th id="767">767</th><td><u>    ((PyObject*)(op))-&gt;ob_refcnt++)</u></td></tr>
+<tr><th id="768">768</th><td></td></tr>
+<tr><th id="769">769</th><td><u>#define <dfn class="macro" id="_M/Py_DECREF" data-ref="_M/Py_DECREF">Py_DECREF</dfn>(op)                                   \</u></td></tr>
+<tr><th id="770">770</th><td><u>    do {                                                \</u></td></tr>
+<tr><th id="771">771</th><td><u>        if (_Py_DEC_REFTOTAL  _Py_REF_DEBUG_COMMA       \</u></td></tr>
+<tr><th id="772">772</th><td><u>        --((PyObject*)(op))-&gt;ob_refcnt != 0)            \</u></td></tr>
+<tr><th id="773">773</th><td><u>            _Py_CHECK_REFCNT(op)                        \</u></td></tr>
+<tr><th id="774">774</th><td><u>        else                                            \</u></td></tr>
+<tr><th id="775">775</th><td><u>        _Py_Dealloc((PyObject *)(op));                  \</u></td></tr>
+<tr><th id="776">776</th><td><u>    } while (0)</u></td></tr>
+<tr><th id="777">777</th><td></td></tr>
+<tr><th id="778">778</th><td><i>/* Safely decref `op` and set `op` to NULL, especially useful in tp_clear</i></td></tr>
+<tr><th id="779">779</th><td><i> * and tp_dealloc implementatons.</i></td></tr>
+<tr><th id="780">780</th><td><i> *</i></td></tr>
+<tr><th id="781">781</th><td><i> * Note that "the obvious" code can be deadly:</i></td></tr>
+<tr><th id="782">782</th><td><i> *</i></td></tr>
+<tr><th id="783">783</th><td><i> *     Py_XDECREF(op);</i></td></tr>
+<tr><th id="784">784</th><td><i> *     op = NULL;</i></td></tr>
+<tr><th id="785">785</th><td><i> *</i></td></tr>
+<tr><th id="786">786</th><td><i> * Typically, `op` is something like self-&gt;containee, and `self` is done</i></td></tr>
+<tr><th id="787">787</th><td><i> * using its `containee` member.  In the code sequence above, suppose</i></td></tr>
+<tr><th id="788">788</th><td><i> * `containee` is non-NULL with a refcount of 1.  Its refcount falls to</i></td></tr>
+<tr><th id="789">789</th><td><i> * 0 on the first line, which can trigger an arbitrary amount of code,</i></td></tr>
+<tr><th id="790">790</th><td><i> * possibly including finalizers (like __del__ methods or weakref callbacks)</i></td></tr>
+<tr><th id="791">791</th><td><i> * coded in Python, which in turn can release the GIL and allow other threads</i></td></tr>
+<tr><th id="792">792</th><td><i> * to run, etc.  Such code may even invoke methods of `self` again, or cause</i></td></tr>
+<tr><th id="793">793</th><td><i> * cyclic gc to trigger, but-- oops! --self-&gt;containee still points to the</i></td></tr>
+<tr><th id="794">794</th><td><i> * object being torn down, and it may be in an insane state while being torn</i></td></tr>
+<tr><th id="795">795</th><td><i> * down.  This has in fact been a rich historic source of miserable (rare &amp;</i></td></tr>
+<tr><th id="796">796</th><td><i> * hard-to-diagnose) segfaulting (and other) bugs.</i></td></tr>
+<tr><th id="797">797</th><td><i> *</i></td></tr>
+<tr><th id="798">798</th><td><i> * The safe way is:</i></td></tr>
+<tr><th id="799">799</th><td><i> *</i></td></tr>
+<tr><th id="800">800</th><td><i> *      Py_CLEAR(op);</i></td></tr>
+<tr><th id="801">801</th><td><i> *</i></td></tr>
+<tr><th id="802">802</th><td><i> * That arranges to set `op` to NULL _before_ decref'ing, so that any code</i></td></tr>
+<tr><th id="803">803</th><td><i> * triggered as a side-effect of `op` getting torn down no longer believes</i></td></tr>
+<tr><th id="804">804</th><td><i> * `op` points to a valid object.</i></td></tr>
+<tr><th id="805">805</th><td><i> *</i></td></tr>
+<tr><th id="806">806</th><td><i> * There are cases where it's safe to use the naive code, but they're brittle.</i></td></tr>
+<tr><th id="807">807</th><td><i> * For example, if `op` points to a Python integer, you know that destroying</i></td></tr>
+<tr><th id="808">808</th><td><i> * one of those can't cause problems -- but in part that relies on that</i></td></tr>
+<tr><th id="809">809</th><td><i> * Python integers aren't currently weakly referencable.  Best practice is</i></td></tr>
+<tr><th id="810">810</th><td><i> * to use Py_CLEAR() even if you can't think of a reason for why you need to.</i></td></tr>
+<tr><th id="811">811</th><td><i> */</i></td></tr>
+<tr><th id="812">812</th><td><u>#define <dfn class="macro" id="_M/Py_CLEAR" data-ref="_M/Py_CLEAR">Py_CLEAR</dfn>(op)                            \</u></td></tr>
+<tr><th id="813">813</th><td><u>    do {                                        \</u></td></tr>
+<tr><th id="814">814</th><td><u>        if (op) {                               \</u></td></tr>
+<tr><th id="815">815</th><td><u>            PyObject *_py_tmp = (PyObject *)(op);               \</u></td></tr>
+<tr><th id="816">816</th><td><u>            (op) = NULL;                        \</u></td></tr>
+<tr><th id="817">817</th><td><u>            Py_DECREF(_py_tmp);                 \</u></td></tr>
+<tr><th id="818">818</th><td><u>        }                                       \</u></td></tr>
+<tr><th id="819">819</th><td><u>    } while (0)</u></td></tr>
+<tr><th id="820">820</th><td></td></tr>
+<tr><th id="821">821</th><td><i>/* Macros to use in case the object pointer may be NULL: */</i></td></tr>
+<tr><th id="822">822</th><td><u>#define <dfn class="macro" id="_M/Py_XINCREF" data-ref="_M/Py_XINCREF">Py_XINCREF</dfn>(op) do { if ((op) == NULL) ; else Py_INCREF(op); } while (0)</u></td></tr>
+<tr><th id="823">823</th><td><u>#define <dfn class="macro" id="_M/Py_XDECREF" data-ref="_M/Py_XDECREF">Py_XDECREF</dfn>(op) do { if ((op) == NULL) ; else Py_DECREF(op); } while (0)</u></td></tr>
+<tr><th id="824">824</th><td></td></tr>
+<tr><th id="825">825</th><td><i>/*</i></td></tr>
+<tr><th id="826">826</th><td><i>These are provided as conveniences to Python runtime embedders, so that</i></td></tr>
+<tr><th id="827">827</th><td><i>they can have object code that is not dependent on Python compilation flags.</i></td></tr>
+<tr><th id="828">828</th><td><i>*/</i></td></tr>
+<tr><th id="829">829</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="Py_IncRef" title='Py_IncRef' data-ref="Py_IncRef">Py_IncRef</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="830">830</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="Py_DecRef" title='Py_DecRef' data-ref="Py_DecRef">Py_DecRef</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *);</td></tr>
+<tr><th id="831">831</th><td></td></tr>
+<tr><th id="832">832</th><td><i>/*</i></td></tr>
+<tr><th id="833">833</th><td><i>_Py_NoneStruct is an object of undefined type which can be used in contexts</i></td></tr>
+<tr><th id="834">834</th><td><i>where NULL (nil) is not suitable (since NULL often means 'error').</i></td></tr>
+<tr><th id="835">835</th><td><i></i></td></tr>
+<tr><th id="836">836</th><td><i>Don't forget to apply Py_INCREF() when returning this value!!!</i></td></tr>
+<tr><th id="837">837</th><td><i>*/</i></td></tr>
+<tr><th id="838">838</th><td><a class="macro" href="pyport.h.html#796" title="extern PyObject" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a>) <dfn class="decl" id="_Py_NoneStruct" title='_Py_NoneStruct' data-ref="_Py_NoneStruct">_Py_NoneStruct</dfn>; <i>/* Don't use this directly */</i></td></tr>
+<tr><th id="839">839</th><td><u>#define <dfn class="macro" id="_M/Py_None" data-ref="_M/Py_None">Py_None</dfn> (&amp;_Py_NoneStruct)</u></td></tr>
+<tr><th id="840">840</th><td></td></tr>
+<tr><th id="841">841</th><td><i>/* Macro for returning Py_None from a function */</i></td></tr>
+<tr><th id="842">842</th><td><u>#define <dfn class="macro" id="_M/Py_RETURN_NONE" data-ref="_M/Py_RETURN_NONE">Py_RETURN_NONE</dfn> return Py_INCREF(Py_None), Py_None</u></td></tr>
+<tr><th id="843">843</th><td></td></tr>
+<tr><th id="844">844</th><td><i>/*</i></td></tr>
+<tr><th id="845">845</th><td><i>Py_NotImplemented is a singleton used to signal that an operation is</i></td></tr>
+<tr><th id="846">846</th><td><i>not implemented for a given type combination.</i></td></tr>
+<tr><th id="847">847</th><td><i>*/</i></td></tr>
+<tr><th id="848">848</th><td><a class="macro" href="pyport.h.html#796" title="extern PyObject" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a>) <dfn class="decl" id="_Py_NotImplementedStruct" title='_Py_NotImplementedStruct' data-ref="_Py_NotImplementedStruct">_Py_NotImplementedStruct</dfn>; <i>/* Don't use this directly */</i></td></tr>
+<tr><th id="849">849</th><td><u>#define <dfn class="macro" id="_M/Py_NotImplemented" data-ref="_M/Py_NotImplemented">Py_NotImplemented</dfn> (&amp;_Py_NotImplementedStruct)</u></td></tr>
+<tr><th id="850">850</th><td></td></tr>
+<tr><th id="851">851</th><td><i>/* Rich comparison opcodes */</i></td></tr>
+<tr><th id="852">852</th><td><u>#define <dfn class="macro" id="_M/Py_LT" data-ref="_M/Py_LT">Py_LT</dfn> 0</u></td></tr>
+<tr><th id="853">853</th><td><u>#define <dfn class="macro" id="_M/Py_LE" data-ref="_M/Py_LE">Py_LE</dfn> 1</u></td></tr>
+<tr><th id="854">854</th><td><u>#define <dfn class="macro" id="_M/Py_EQ" data-ref="_M/Py_EQ">Py_EQ</dfn> 2</u></td></tr>
+<tr><th id="855">855</th><td><u>#define <dfn class="macro" id="_M/Py_NE" data-ref="_M/Py_NE">Py_NE</dfn> 3</u></td></tr>
+<tr><th id="856">856</th><td><u>#define <dfn class="macro" id="_M/Py_GT" data-ref="_M/Py_GT">Py_GT</dfn> 4</u></td></tr>
+<tr><th id="857">857</th><td><u>#define <dfn class="macro" id="_M/Py_GE" data-ref="_M/Py_GE">Py_GE</dfn> 5</u></td></tr>
+<tr><th id="858">858</th><td></td></tr>
+<tr><th id="859">859</th><td><i>/* Maps Py_LT to Py_GT, ..., Py_GE to Py_LE.</i></td></tr>
+<tr><th id="860">860</th><td><i> * Defined in object.c.</i></td></tr>
+<tr><th id="861">861</th><td><i> */</i></td></tr>
+<tr><th id="862">862</th><td><a class="macro" href="pyport.h.html#796" title="extern int" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<em>int</em>) <dfn class="decl" id="_Py_SwappedOp" title='_Py_SwappedOp' data-ref="_Py_SwappedOp">_Py_SwappedOp</dfn>[];</td></tr>
+<tr><th id="863">863</th><td></td></tr>
+<tr><th id="864">864</th><td><i>/*</i></td></tr>
+<tr><th id="865">865</th><td><i>Define staticforward and statichere for source compatibility with old</i></td></tr>
+<tr><th id="866">866</th><td><i>C extensions.</i></td></tr>
+<tr><th id="867">867</th><td><i></i></td></tr>
+<tr><th id="868">868</th><td><i>The staticforward define was needed to support certain broken C</i></td></tr>
+<tr><th id="869">869</th><td><i>compilers (notably SCO ODT 3.0, perhaps early AIX as well) botched the</i></td></tr>
+<tr><th id="870">870</th><td><i>static keyword when it was used with a forward declaration of a static</i></td></tr>
+<tr><th id="871">871</th><td><i>initialized structure.  Standard C allows the forward declaration with</i></td></tr>
+<tr><th id="872">872</th><td><i>static, and we've decided to stop catering to broken C compilers.</i></td></tr>
+<tr><th id="873">873</th><td><i>(In fact, we expect that the compilers are all fixed eight years later.)</i></td></tr>
+<tr><th id="874">874</th><td><i>*/</i></td></tr>
+<tr><th id="875">875</th><td></td></tr>
+<tr><th id="876">876</th><td><u>#define <dfn class="macro" id="_M/staticforward" data-ref="_M/staticforward">staticforward</dfn> static</u></td></tr>
+<tr><th id="877">877</th><td><u>#define <dfn class="macro" id="_M/statichere" data-ref="_M/statichere">statichere</dfn> static</u></td></tr>
+<tr><th id="878">878</th><td></td></tr>
+<tr><th id="879">879</th><td></td></tr>
+<tr><th id="880">880</th><td><i>/*</i></td></tr>
+<tr><th id="881">881</th><td><i>More conventions</i></td></tr>
+<tr><th id="882">882</th><td><i>================</i></td></tr>
+<tr><th id="883">883</th><td><i></i></td></tr>
+<tr><th id="884">884</th><td><i>Argument Checking</i></td></tr>
+<tr><th id="885">885</th><td><i>-----------------</i></td></tr>
+<tr><th id="886">886</th><td><i></i></td></tr>
+<tr><th id="887">887</th><td><i>Functions that take objects as arguments normally don't check for nil</i></td></tr>
+<tr><th id="888">888</th><td><i>arguments, but they do check the type of the argument, and return an</i></td></tr>
+<tr><th id="889">889</th><td><i>error if the function doesn't apply to the type.</i></td></tr>
+<tr><th id="890">890</th><td><i></i></td></tr>
+<tr><th id="891">891</th><td><i>Failure Modes</i></td></tr>
+<tr><th id="892">892</th><td><i>-------------</i></td></tr>
+<tr><th id="893">893</th><td><i></i></td></tr>
+<tr><th id="894">894</th><td><i>Functions may fail for a variety of reasons, including running out of</i></td></tr>
+<tr><th id="895">895</th><td><i>memory.  This is communicated to the caller in two ways: an error string</i></td></tr>
+<tr><th id="896">896</th><td><i>is set (see errors.h), and the function result differs: functions that</i></td></tr>
+<tr><th id="897">897</th><td><i>normally return a pointer return NULL for failure, functions returning</i></td></tr>
+<tr><th id="898">898</th><td><i>an integer return -1 (which could be a legal return value too!), and</i></td></tr>
+<tr><th id="899">899</th><td><i>other functions return 0 for success and -1 for failure.</i></td></tr>
+<tr><th id="900">900</th><td><i>Callers should always check for errors before using the result.  If</i></td></tr>
+<tr><th id="901">901</th><td><i>an error was set, the caller must either explicitly clear it, or pass</i></td></tr>
+<tr><th id="902">902</th><td><i>the error on to its caller.</i></td></tr>
+<tr><th id="903">903</th><td><i></i></td></tr>
+<tr><th id="904">904</th><td><i>Reference Counts</i></td></tr>
+<tr><th id="905">905</th><td><i>----------------</i></td></tr>
+<tr><th id="906">906</th><td><i></i></td></tr>
+<tr><th id="907">907</th><td><i>It takes a while to get used to the proper usage of reference counts.</i></td></tr>
+<tr><th id="908">908</th><td><i></i></td></tr>
+<tr><th id="909">909</th><td><i>Functions that create an object set the reference count to 1; such new</i></td></tr>
+<tr><th id="910">910</th><td><i>objects must be stored somewhere or destroyed again with Py_DECREF().</i></td></tr>
+<tr><th id="911">911</th><td><i>Some functions that 'store' objects, such as PyTuple_SetItem() and</i></td></tr>
+<tr><th id="912">912</th><td><i>PyList_SetItem(),</i></td></tr>
+<tr><th id="913">913</th><td><i>don't increment the reference count of the object, since the most</i></td></tr>
+<tr><th id="914">914</th><td><i>frequent use is to store a fresh object.  Functions that 'retrieve'</i></td></tr>
+<tr><th id="915">915</th><td><i>objects, such as PyTuple_GetItem() and PyDict_GetItemString(), also</i></td></tr>
+<tr><th id="916">916</th><td><i>don't increment</i></td></tr>
+<tr><th id="917">917</th><td><i>the reference count, since most frequently the object is only looked at</i></td></tr>
+<tr><th id="918">918</th><td><i>quickly.  Thus, to retrieve an object and store it again, the caller</i></td></tr>
+<tr><th id="919">919</th><td><i>must call Py_INCREF() explicitly.</i></td></tr>
+<tr><th id="920">920</th><td><i></i></td></tr>
+<tr><th id="921">921</th><td><i>NOTE: functions that 'consume' a reference count, like</i></td></tr>
+<tr><th id="922">922</th><td><i>PyList_SetItem(), consume the reference even if the object wasn't</i></td></tr>
+<tr><th id="923">923</th><td><i>successfully stored, to simplify error handling.</i></td></tr>
+<tr><th id="924">924</th><td><i></i></td></tr>
+<tr><th id="925">925</th><td><i>It seems attractive to make other functions that take an object as</i></td></tr>
+<tr><th id="926">926</th><td><i>argument consume a reference count; however, this may quickly get</i></td></tr>
+<tr><th id="927">927</th><td><i>confusing (even the current practice is already confusing).  Consider</i></td></tr>
+<tr><th id="928">928</th><td><i>it carefully, it may save lots of calls to Py_INCREF() and Py_DECREF() at</i></td></tr>
+<tr><th id="929">929</th><td><i>times.</i></td></tr>
+<tr><th id="930">930</th><td><i>*/</i></td></tr>
+<tr><th id="931">931</th><td></td></tr>
+<tr><th id="932">932</th><td></td></tr>
+<tr><th id="933">933</th><td><i>/* Trashcan mechanism, thanks to Christian Tismer.</i></td></tr>
+<tr><th id="934">934</th><td><i></i></td></tr>
+<tr><th id="935">935</th><td><i>When deallocating a container object, it's possible to trigger an unbounded</i></td></tr>
+<tr><th id="936">936</th><td><i>chain of deallocations, as each Py_DECREF in turn drops the refcount on "the</i></td></tr>
+<tr><th id="937">937</th><td><i>next" object in the chain to 0.  This can easily lead to stack faults, and</i></td></tr>
+<tr><th id="938">938</th><td><i>especially in threads (which typically have less stack space to work with).</i></td></tr>
+<tr><th id="939">939</th><td><i></i></td></tr>
+<tr><th id="940">940</th><td><i>A container object that participates in cyclic gc can avoid this by</i></td></tr>
+<tr><th id="941">941</th><td><i>bracketing the body of its tp_dealloc function with a pair of macros:</i></td></tr>
+<tr><th id="942">942</th><td><i></i></td></tr>
+<tr><th id="943">943</th><td><i>static void</i></td></tr>
+<tr><th id="944">944</th><td><i>mytype_dealloc(mytype *p)</i></td></tr>
+<tr><th id="945">945</th><td><i>{</i></td></tr>
+<tr><th id="946">946</th><td><i>    ... declarations go here ...</i></td></tr>
+<tr><th id="947">947</th><td><i></i></td></tr>
+<tr><th id="948">948</th><td><i>    PyObject_GC_UnTrack(p);        // must untrack first</i></td></tr>
+<tr><th id="949">949</th><td><i>    Py_TRASHCAN_SAFE_BEGIN(p)</i></td></tr>
+<tr><th id="950">950</th><td><i>    ... The body of the deallocator goes here, including all calls ...</i></td></tr>
+<tr><th id="951">951</th><td><i>    ... to Py_DECREF on contained objects.                         ...</i></td></tr>
+<tr><th id="952">952</th><td><i>    Py_TRASHCAN_SAFE_END(p)</i></td></tr>
+<tr><th id="953">953</th><td><i>}</i></td></tr>
+<tr><th id="954">954</th><td><i></i></td></tr>
+<tr><th id="955">955</th><td><i>CAUTION:  Never return from the middle of the body!  If the body needs to</i></td></tr>
+<tr><th id="956">956</th><td><i>"get out early", put a label immediately before the Py_TRASHCAN_SAFE_END</i></td></tr>
+<tr><th id="957">957</th><td><i>call, and goto it.  Else the call-depth counter (see below) will stay</i></td></tr>
+<tr><th id="958">958</th><td><i>above 0 forever, and the trashcan will never get emptied.</i></td></tr>
+<tr><th id="959">959</th><td><i></i></td></tr>
+<tr><th id="960">960</th><td><i>How it works:  The BEGIN macro increments a call-depth counter.  So long</i></td></tr>
+<tr><th id="961">961</th><td><i>as this counter is small, the body of the deallocator is run directly without</i></td></tr>
+<tr><th id="962">962</th><td><i>further ado.  But if the counter gets large, it instead adds p to a list of</i></td></tr>
+<tr><th id="963">963</th><td><i>objects to be deallocated later, skips the body of the deallocator, and</i></td></tr>
+<tr><th id="964">964</th><td><i>resumes execution after the END macro.  The tp_dealloc routine then returns</i></td></tr>
+<tr><th id="965">965</th><td><i>without deallocating anything (and so unbounded call-stack depth is avoided).</i></td></tr>
+<tr><th id="966">966</th><td><i></i></td></tr>
+<tr><th id="967">967</th><td><i>When the call stack finishes unwinding again, code generated by the END macro</i></td></tr>
+<tr><th id="968">968</th><td><i>notices this, and calls another routine to deallocate all the objects that</i></td></tr>
+<tr><th id="969">969</th><td><i>may have been added to the list of deferred deallocations.  In effect, a</i></td></tr>
+<tr><th id="970">970</th><td><i>chain of N deallocations is broken into N / PyTrash_UNWIND_LEVEL pieces,</i></td></tr>
+<tr><th id="971">971</th><td><i>with the call stack never exceeding a depth of PyTrash_UNWIND_LEVEL.</i></td></tr>
+<tr><th id="972">972</th><td><i>*/</i></td></tr>
+<tr><th id="973">973</th><td></td></tr>
+<tr><th id="974">974</th><td><i>/* This is the old private API, invoked by the macros before 2.7.4.</i></td></tr>
+<tr><th id="975">975</th><td><i>   Kept for binary compatibility of extensions. */</i></td></tr>
+<tr><th id="976">976</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_PyTrash_deposit_object" title='_PyTrash_deposit_object' data-ref="_PyTrash_deposit_object">_PyTrash_deposit_object</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a>*);</td></tr>
+<tr><th id="977">977</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_PyTrash_destroy_chain" title='_PyTrash_destroy_chain' data-ref="_PyTrash_destroy_chain">_PyTrash_destroy_chain</dfn>(<em>void</em>);</td></tr>
+<tr><th id="978">978</th><td><a class="macro" href="pyport.h.html#796" title="extern int" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<em>int</em>) <dfn class="decl" id="_PyTrash_delete_nesting" title='_PyTrash_delete_nesting' data-ref="_PyTrash_delete_nesting">_PyTrash_delete_nesting</dfn>;</td></tr>
+<tr><th id="979">979</th><td><a class="macro" href="pyport.h.html#796" title="extern PyObject *" data-ref="_M/PyAPI_DATA">PyAPI_DATA</a>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a> *) <dfn class="decl" id="_PyTrash_delete_later" title='_PyTrash_delete_later' data-ref="_PyTrash_delete_later">_PyTrash_delete_later</dfn>;</td></tr>
+<tr><th id="980">980</th><td></td></tr>
+<tr><th id="981">981</th><td><i>/* The new thread-safe private API, invoked by the macros below. */</i></td></tr>
+<tr><th id="982">982</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_PyTrash_thread_deposit_object" title='_PyTrash_thread_deposit_object' data-ref="_PyTrash_thread_deposit_object">_PyTrash_thread_deposit_object</dfn>(<a class="typedef" href="#PyObject" title='PyObject' data-type='struct _object' data-ref="PyObject">PyObject</a>*);</td></tr>
+<tr><th id="983">983</th><td><a class="macro" href="pyport.h.html#793" title="void" data-ref="_M/PyAPI_FUNC">PyAPI_FUNC</a>(<em>void</em>) <dfn class="decl" id="_PyTrash_thread_destroy_chain" title='_PyTrash_thread_destroy_chain' data-ref="_PyTrash_thread_destroy_chain">_PyTrash_thread_destroy_chain</dfn>(<em>void</em>);</td></tr>
+<tr><th id="984">984</th><td></td></tr>
+<tr><th id="985">985</th><td><u>#define <dfn class="macro" id="_M/PyTrash_UNWIND_LEVEL" data-ref="_M/PyTrash_UNWIND_LEVEL">PyTrash_UNWIND_LEVEL</dfn> 50</u></td></tr>
+<tr><th id="986">986</th><td></td></tr>
+<tr><th id="987">987</th><td><i>/* Note the workaround for when the thread state is NULL (issue #17703) */</i></td></tr>
+<tr><th id="988">988</th><td><u>#define <dfn class="macro" id="_M/Py_TRASHCAN_SAFE_BEGIN" data-ref="_M/Py_TRASHCAN_SAFE_BEGIN">Py_TRASHCAN_SAFE_BEGIN</dfn>(op) \</u></td></tr>
+<tr><th id="989">989</th><td><u>    do { \</u></td></tr>
+<tr><th id="990">990</th><td><u>        PyThreadState *_tstate = PyThreadState_GET(); \</u></td></tr>
+<tr><th id="991">991</th><td><u>        if (!_tstate || \</u></td></tr>
+<tr><th id="992">992</th><td><u>            _tstate-&gt;trash_delete_nesting &lt; PyTrash_UNWIND_LEVEL) { \</u></td></tr>
+<tr><th id="993">993</th><td><u>            if (_tstate) \</u></td></tr>
+<tr><th id="994">994</th><td><u>                ++_tstate-&gt;trash_delete_nesting;</u></td></tr>
+<tr><th id="995">995</th><td>            <i>/* The body of the deallocator is here. */</i></td></tr>
+<tr><th id="996">996</th><td><u>#define <dfn class="macro" id="_M/Py_TRASHCAN_SAFE_END" data-ref="_M/Py_TRASHCAN_SAFE_END">Py_TRASHCAN_SAFE_END</dfn>(op) \</u></td></tr>
+<tr><th id="997">997</th><td><u>            if (_tstate) { \</u></td></tr>
+<tr><th id="998">998</th><td><u>                --_tstate-&gt;trash_delete_nesting; \</u></td></tr>
+<tr><th id="999">999</th><td><u>                if (_tstate-&gt;trash_delete_later \</u></td></tr>
+<tr><th id="1000">1000</th><td><u>                    &amp;&amp; _tstate-&gt;trash_delete_nesting &lt;= 0) \</u></td></tr>
+<tr><th id="1001">1001</th><td><u>                    _PyTrash_thread_destroy_chain(); \</u></td></tr>
+<tr><th id="1002">1002</th><td><u>            } \</u></td></tr>
+<tr><th id="1003">1003</th><td><u>        } \</u></td></tr>
+<tr><th id="1004">1004</th><td><u>        else \</u></td></tr>
+<tr><th id="1005">1005</th><td><u>            _PyTrash_thread_deposit_object((PyObject*)op); \</u></td></tr>
+<tr><th id="1006">1006</th><td><u>    } while (0);</u></td></tr>
+<tr><th id="1007">1007</th><td></td></tr>
+<tr><th id="1008">1008</th><td><u>#<span data-ppcond="1008">ifdef</span> <span class="macro" data-ref="_M/__cplusplus">__cplusplus</span></u></td></tr>
+<tr><th id="1009">1009</th><td>}</td></tr>
+<tr><th id="1010">1010</th><td><u>#<span data-ppcond="1008">endif</span></u></td></tr>
+<tr><th id="1011">1011</th><td><u>#<span data-ppcond="1">endif</span> /* !Py_OBJECT_H */</u></td></tr>
+<tr><th id="1012">1012</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../opencv/modules/python/src2/cv2.cpp.html'>opencv/modules/python/src2/cv2.cpp</a><br/>Generated on <em>2017-May-11</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

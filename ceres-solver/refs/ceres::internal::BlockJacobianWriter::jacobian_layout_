@@ -1,0 +1,46 @@
+<dec f='ceres-solver/internal/ceres/block_jacobian_writer.h' l='118' type='std::vector&lt;int *&gt;'/>
+<use f='ceres-solver/internal/ceres/block_jacobian_writer.cc' l='134' u='a' c='_ZN5ceres8internal19BlockJacobianWriterC1ERKNS0_9Evaluator7OptionsEPNS0_7ProgramE'/>
+<use f='ceres-solver/internal/ceres/block_jacobian_writer.cc' l='147' u='m' c='_ZN5ceres8internal19BlockJacobianWriter23CreateEvaluatePreparersEi'/>
+<use f='ceres-solver/internal/ceres/block_jacobian_writer.cc' l='197' u='m' c='_ZNK5ceres8internal19BlockJacobianWriter14CreateJacobianEv'/>
+<offset>64</offset>
+<doc f='ceres-solver/internal/ceres/block_jacobian_writer.h' l='77'>// Stores the position of each residual / parameter jacobian.
+  //
+  // The block sparse matrix that this writer writes to is stored as a set of
+  // contiguos dense blocks, one after each other; see BlockSparseMatrix. The
+  // &quot;double* values_&quot; member of the block sparse matrix contains all of these
+  // blocks. Given a pointer to the first element of a block and the size of
+  // that block, it&apos;s possible to write to it.
+  //
+  // In the case of a block sparse jacobian, the jacobian writer needs a way to
+  // find the offset in the values_ array of each residual/parameter jacobian
+  // block.
+  //
+  // That is the purpose of jacobian_layout_.
+  //
+  // In particular, jacobian_layout_[i][j] is the offset in the values_ array of
+  // the derivative of residual block i with respect to the parameter block at
+  // active argument position j.
+  //
+  // The active qualifier means that non-active parameters do not count. Care
+  // must be taken when indexing into jacobian_layout_ to account for this.
+  // Consider a single residual example:
+  //
+  //   r(x, y, z)
+  //
+  // with r in R^3, x in R^4, y in R^2, and z in R^5.
+  // Take y as a constant (non-active) parameter.
+  // Take r as residual number 0.
+  //
+  // In this case, the active arguments are only (x, z), so the active argument
+  // position for x is 0, and the active argument position for z is 1. This is
+  // similar to thinking of r as taking only 2 parameters:
+  //
+  //   r(x, z)
+  //
+  // There are only 2 jacobian blocks: dr/dx and dr/dz. jacobian_layout_ would
+  // have the following contents:
+  //
+  //   jacobian_layout_[0] = { 0, 12 }
+  //
+  // which indicates that dr/dx is located at values_[0], and dr/dz is at
+  // values_[12]. See BlockEvaluatePreparer::Prepare()&apos;s comments about &apos;j&apos;.</doc>

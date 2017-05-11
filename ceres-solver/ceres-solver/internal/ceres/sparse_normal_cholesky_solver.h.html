@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>sparse_normal_cholesky_solver.h source code [ceres-solver/internal/ceres/sparse_normal_cholesky_solver.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::SparseNormalCholeskySolver "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/sparse_normal_cholesky_solver.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='sparse_normal_cholesky_solver.h.html'>sparse_normal_cholesky_solver.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td><i>//</i></td></tr>
+<tr><th id="31">31</th><td><i>// A solver for sparse linear least squares problem based on solving</i></td></tr>
+<tr><th id="32">32</th><td><i>// the normal equations via a sparse cholesky factorization.</i></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#<span data-ppcond="34">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_SPARSE_NORMAL_CHOLESKY_SOLVER_H_">CERES_INTERNAL_SPARSE_NORMAL_CHOLESKY_SOLVER_H_</span></u></td></tr>
+<tr><th id="35">35</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_SPARSE_NORMAL_CHOLESKY_SOLVER_H_" data-ref="_M/CERES_INTERNAL_SPARSE_NORMAL_CHOLESKY_SOLVER_H_">CERES_INTERNAL_SPARSE_NORMAL_CHOLESKY_SOLVER_H_</dfn></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><i>// This include must come before any #ifndef check on Ceres compile options.</i></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../../include/ceres/internal/port.h.html">"ceres/internal/port.h"</a></u></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="../../include/ceres/internal/macros.h.html">"ceres/internal/macros.h"</a></u></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="linear_solver.h.html">"ceres/linear_solver.h"</a></u></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="suitesparse.h.html">"ceres/suitesparse.h"</a></u></td></tr>
+<tr><th id="45">45</th><td><u>#include <a href="cxsparse.h.html">"ceres/cxsparse.h"</a></u></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><u>#<span data-ppcond="47">ifdef</span> <span class="macro" data-ref="_M/CERES_USE_EIGEN_SPARSE">CERES_USE_EIGEN_SPARSE</span></u></td></tr>
+<tr><th id="48">48</th><td><u>#include "Eigen/SparseCholesky"</u></td></tr>
+<tr><th id="49">49</th><td><u>#<span data-ppcond="47">endif</span></u></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="52">52</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><b>class</b> <a class="type" href="compressed_row_sparse_matrix.h.html#ceres::internal::CompressedRowSparseMatrix" title='ceres::internal::CompressedRowSparseMatrix' data-ref="ceres::internal::CompressedRowSparseMatrix" id="ceres::internal::CompressedRowSparseMatrix">CompressedRowSparseMatrix</a>;</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><i>// Solves the normal equations (A'A + D'D) x = A'b, using the CHOLMOD sparse</i></td></tr>
+<tr><th id="57">57</th><td><i>// cholesky solver.</i></td></tr>
+<tr><th id="58">58</th><td><b>class</b> <dfn class="type def" id="ceres::internal::SparseNormalCholeskySolver" title='ceres::internal::SparseNormalCholeskySolver' data-ref="ceres::internal::SparseNormalCholeskySolver">SparseNormalCholeskySolver</dfn> : <b>public</b> <a class="typedef" href="linear_solver.h.html#ceres::internal::CompressedRowSparseMatrixSolver" title='ceres::internal::CompressedRowSparseMatrixSolver' data-type='TypedLinearSolver&lt;ceres::internal::CompressedRowSparseMatrix&gt;' data-ref="ceres::internal::CompressedRowSparseMatrixSolver">CompressedRowSparseMatrixSolver</a> {</td></tr>
+<tr><th id="59">59</th><td> <b>public</b>:</td></tr>
+<tr><th id="60">60</th><td>  <b>explicit</b> <dfn class="decl" id="_ZN5ceres8internal26SparseNormalCholeskySolverC1ERKNS0_12LinearSolver7OptionsE" title='ceres::internal::SparseNormalCholeskySolver::SparseNormalCholeskySolver' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolverC1ERKNS0_12LinearSolver7OptionsE">SparseNormalCholeskySolver</dfn>(<em>const</em> <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::Options" title='ceres::internal::LinearSolver::Options' data-ref="ceres::internal::LinearSolver::Options">Options</a>&amp; <dfn class="local col7 decl" id="27options" title='options' data-type='const LinearSolver::Options &amp;' data-ref="27options">options</dfn>);</td></tr>
+<tr><th id="61">61</th><td>  <b>virtual</b> <dfn class="virtual decl" id="_ZN5ceres8internal26SparseNormalCholeskySolverD1Ev" title='ceres::internal::SparseNormalCholeskySolver::~SparseNormalCholeskySolver' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolverD1Ev">~</dfn>SparseNormalCholeskySolver();</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td> <b>private</b>:</td></tr>
+<tr><th id="64">64</th><td>  <b>virtual</b> <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::Summary" title='ceres::internal::LinearSolver::Summary' data-ref="ceres::internal::LinearSolver::Summary">Summary</a> <dfn class="virtual decl" id="_ZN5ceres8internal26SparseNormalCholeskySolver9SolveImplEPNS0_25CompressedRowSparseMatrixEPKdRKNS0_12LinearSolver15PerSolveOptionsEPd" title='ceres::internal::SparseNormalCholeskySolver::SolveImpl' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolver9SolveImplEPNS0_25CompressedRowSparseMatrixEPKdRKNS0_12LinearSolver15PerSolveOptionsEPd">SolveImpl</dfn>(</td></tr>
+<tr><th id="65">65</th><td>      <a class="type" href="compressed_row_sparse_matrix.h.html#ceres::internal::CompressedRowSparseMatrix" title='ceres::internal::CompressedRowSparseMatrix' data-ref="ceres::internal::CompressedRowSparseMatrix">CompressedRowSparseMatrix</a>* <dfn class="local col8 decl" id="28A" title='A' data-type='ceres::internal::CompressedRowSparseMatrix *' data-ref="28A">A</dfn>,</td></tr>
+<tr><th id="66">66</th><td>      <em>const</em> <em>double</em>* <dfn class="local col9 decl" id="29b" title='b' data-type='const double *' data-ref="29b">b</dfn>,</td></tr>
+<tr><th id="67">67</th><td>      <em>const</em> <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::PerSolveOptions" title='ceres::internal::LinearSolver::PerSolveOptions' data-ref="ceres::internal::LinearSolver::PerSolveOptions">PerSolveOptions</a>&amp; <dfn class="local col0 decl" id="30options" title='options' data-type='const LinearSolver::PerSolveOptions &amp;' data-ref="30options">options</dfn>,</td></tr>
+<tr><th id="68">68</th><td>      <em>double</em>* <dfn class="local col1 decl" id="31x" title='x' data-type='double *' data-ref="31x">x</dfn>);</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>  <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::Summary" title='ceres::internal::LinearSolver::Summary' data-ref="ceres::internal::LinearSolver::Summary">Summary</a> <dfn class="decl" id="_ZN5ceres8internal26SparseNormalCholeskySolver25SolveImplUsingSuiteSparseEPd" title='ceres::internal::SparseNormalCholeskySolver::SolveImplUsingSuiteSparse' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolver25SolveImplUsingSuiteSparseEPd">SolveImplUsingSuiteSparse</dfn>(<em>double</em>* <dfn class="local col2 decl" id="32rhs_and_solution" title='rhs_and_solution' data-type='double *' data-ref="32rhs_and_solution">rhs_and_solution</dfn>);</td></tr>
+<tr><th id="71">71</th><td>  <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::Summary" title='ceres::internal::LinearSolver::Summary' data-ref="ceres::internal::LinearSolver::Summary">Summary</a> <dfn class="decl" id="_ZN5ceres8internal26SparseNormalCholeskySolver22SolveImplUsingCXSparseEPd" title='ceres::internal::SparseNormalCholeskySolver::SolveImplUsingCXSparse' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolver22SolveImplUsingCXSparseEPd">SolveImplUsingCXSparse</dfn>(<em>double</em>* <dfn class="local col3 decl" id="33rhs_and_solution" title='rhs_and_solution' data-type='double *' data-ref="33rhs_and_solution">rhs_and_solution</dfn>);</td></tr>
+<tr><th id="72">72</th><td>  <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::Summary" title='ceres::internal::LinearSolver::Summary' data-ref="ceres::internal::LinearSolver::Summary">Summary</a> <dfn class="decl" id="_ZN5ceres8internal26SparseNormalCholeskySolver19SolveImplUsingEigenEPd" title='ceres::internal::SparseNormalCholeskySolver::SolveImplUsingEigen' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolver19SolveImplUsingEigenEPd">SolveImplUsingEigen</dfn>(<em>double</em>* <dfn class="local col4 decl" id="34rhs_and_solution" title='rhs_and_solution' data-type='double *' data-ref="34rhs_and_solution">rhs_and_solution</dfn>);</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>  <em>void</em> <dfn class="decl" id="_ZN5ceres8internal26SparseNormalCholeskySolver17FreeFactorizationEv" title='ceres::internal::SparseNormalCholeskySolver::FreeFactorization' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolver17FreeFactorizationEv">FreeFactorization</dfn>();</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>  <a class="type" href="suitesparse.h.html#ceres::internal::SuiteSparse" title='ceres::internal::SuiteSparse' data-ref="ceres::internal::SuiteSparse">SuiteSparse</a> <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::ss_" title='ceres::internal::SparseNormalCholeskySolver::ss_' data-ref="ceres::internal::SparseNormalCholeskySolver::ss_">ss_</dfn>;</td></tr>
+<tr><th id="77">77</th><td>  <i>// Cached factorization</i></td></tr>
+<tr><th id="78">78</th><td>  <a class="typedef" href="../../../include/suitesparse/cholmod_core.h.html#cholmod_factor" title='cholmod_factor' data-type='struct cholmod_factor_struct' data-ref="cholmod_factor">cholmod_factor</a>* <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::factor_" title='ceres::internal::SparseNormalCholeskySolver::factor_' data-ref="ceres::internal::SparseNormalCholeskySolver::factor_">factor_</dfn>;</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>  <a class="type" href="cxsparse.h.html#ceres::internal::CXSparse" title='ceres::internal::CXSparse' data-ref="ceres::internal::CXSparse">CXSparse</a> <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::cxsparse_" title='ceres::internal::SparseNormalCholeskySolver::cxsparse_' data-ref="ceres::internal::SparseNormalCholeskySolver::cxsparse_">cxsparse_</dfn>;</td></tr>
+<tr><th id="81">81</th><td>  <i>// Cached factorization</i></td></tr>
+<tr><th id="82">82</th><td>  <a class="typedef" href="../../../include/suitesparse/cs.h.html#cs_dis" title='cs_dis' data-type='struct cs_di_symbolic' data-ref="cs_dis">cs_dis</a>* <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::cxsparse_factor_" title='ceres::internal::SparseNormalCholeskySolver::cxsparse_factor_' data-ref="ceres::internal::SparseNormalCholeskySolver::cxsparse_factor_">cxsparse_factor_</dfn>;</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td><u>#<span data-ppcond="84">ifdef</span> <span class="macro" data-ref="_M/CERES_USE_EIGEN_SPARSE">CERES_USE_EIGEN_SPARSE</span></u></td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td>  <i>// The preprocessor gymnastics here are dealing with the fact that</i></td></tr>
+<tr><th id="87">87</th><td><i>  // before version 3.2.2, Eigen did not support a third template</i></td></tr>
+<tr><th id="88">88</th><td><i>  // parameter to specify the ordering.</i></td></tr>
+<tr><th id="89">89</th><td><u>#if EIGEN_VERSION_AT_LEAST(3,2,2)</u></td></tr>
+<tr><th id="90">90</th><td>  <b>typedef</b> Eigen::SimplicialLDLT&lt;Eigen::SparseMatrix&lt;<em>double</em>&gt;, Eigen::Upper,</td></tr>
+<tr><th id="91">91</th><td>                                Eigen::NaturalOrdering&lt;<em>int</em>&gt; &gt;</td></tr>
+<tr><th id="92">92</th><td>  SimplicialLDLTWithNaturalOrdering;</td></tr>
+<tr><th id="93">93</th><td>  scoped_ptr&lt;SimplicialLDLTWithNaturalOrdering&gt; natural_ldlt_;</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>  <b>typedef</b> Eigen::SimplicialLDLT&lt;Eigen::SparseMatrix&lt;<em>double</em>&gt;, Eigen::Upper,</td></tr>
+<tr><th id="96">96</th><td>                                Eigen::AMDOrdering&lt;<em>int</em>&gt; &gt;</td></tr>
+<tr><th id="97">97</th><td>  SimplicialLDLTWithAMDOrdering;</td></tr>
+<tr><th id="98">98</th><td>  scoped_ptr&lt;SimplicialLDLTWithAMDOrdering&gt; amd_ldlt_;</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td><u>#else</u></td></tr>
+<tr><th id="101">101</th><td>  <b>typedef</b> Eigen::SimplicialLDLT&lt;Eigen::SparseMatrix&lt;<em>double</em>&gt;, Eigen::Upper&gt;</td></tr>
+<tr><th id="102">102</th><td>  SimplicialLDLTWithAMDOrdering;</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>  scoped_ptr&lt;SimplicialLDLTWithAMDOrdering&gt; amd_ldlt_;</td></tr>
+<tr><th id="105">105</th><td><u>#endif</u></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td><u>#<span data-ppcond="84">endif</span></u></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <a class="type" href="../../include/ceres/internal/scoped_ptr.h.html#ceres::internal::scoped_ptr" title='ceres::internal::scoped_ptr' data-ref="ceres::internal::scoped_ptr">scoped_ptr</a>&lt;<a class="type" href="compressed_row_sparse_matrix.h.html#ceres::internal::CompressedRowSparseMatrix" title='ceres::internal::CompressedRowSparseMatrix' data-ref="ceres::internal::CompressedRowSparseMatrix">CompressedRowSparseMatrix</a>&gt; <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::outer_product_" title='ceres::internal::SparseNormalCholeskySolver::outer_product_' data-ref="ceres::internal::SparseNormalCholeskySolver::outer_product_">outer_product_</dfn>;</td></tr>
+<tr><th id="110">110</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>int</em>&gt; <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::pattern_" title='ceres::internal::SparseNormalCholeskySolver::pattern_' data-ref="ceres::internal::SparseNormalCholeskySolver::pattern_">pattern_</dfn>;</td></tr>
+<tr><th id="111">111</th><td>  <em>const</em> <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>::<a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver::Options" title='ceres::internal::LinearSolver::Options' data-ref="ceres::internal::LinearSolver::Options">Options</a> <dfn class="decl" id="ceres::internal::SparseNormalCholeskySolver::options_" title='ceres::internal::SparseNormalCholeskySolver::options_' data-ref="ceres::internal::SparseNormalCholeskySolver::options_">options_</dfn>;</td></tr>
+<tr><th id="112">112</th><td>  <a class="macro" href="../../include/ceres/internal/macros.h.html#52" title="SparseNormalCholeskySolver(const SparseNormalCholeskySolver&amp;); void operator=(const SparseNormalCholeskySolver&amp;)" data-ref="_M/CERES_DISALLOW_COPY_AND_ASSIGN">CERES_DISALLOW_COPY_AND_ASSIGN</a>(<dfn class="decl" id="_ZN5ceres8internal26SparseNormalCholeskySolverC1ERKS1_" title='ceres::internal::SparseNormalCholeskySolver::SparseNormalCholeskySolver' data-ref="_ZN5ceres8internal26SparseNormalCholeskySolverC1ERKS1_"><a class="type" href="#ceres::internal::SparseNormalCholeskySolver" title='ceres::internal::SparseNormalCholeskySolver' data-ref="ceres::internal::SparseNormalCholeskySolver"><a class="type" href="#ceres::internal::SparseNormalCholeskySolver" title='ceres::internal::SparseNormalCholeskySolver' data-ref="ceres::internal::SparseNormalCholeskySolver">SparseNormalCholeskySolver</a></a></dfn>);</td></tr>
+<tr><th id="113">113</th><td>};</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="116">116</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td><u>#<span data-ppcond="34">endif</span>  // CERES_INTERNAL_SPARSE_NORMAL_CHOLESKY_SOLVER_H_</u></td></tr>
+<tr><th id="119">119</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='linear_solver.cc.html'>ceres-solver/internal/ceres/linear_solver.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

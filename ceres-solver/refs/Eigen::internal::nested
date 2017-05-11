@@ -1,0 +1,32 @@
+<def f='include/eigen3/Eigen/src/Core/util/XprHelper.h' l='316' ll='341'/>
+<def f='include/eigen3/Eigen/src/Core/ReturnByValue.h' l='42' ll='46'/>
+<def f='include/eigen3/Eigen/src/Core/ProductBase.h' l='180' ll='184'/>
+<def f='include/eigen3/Eigen/src/Core/products/CoeffBasedProduct.h' l='224' ll='228'/>
+<doc f='include/eigen3/Eigen/src/Core/util/XprHelper.h' l='296'>/** \internal Determines how a given expression should be nested into another one.
+  * For example, when you do a * (b+c), Eigen will determine how the expression b+c should be
+  * nested into the bigger product expression. The choice is between nesting the expression b+c as-is, or
+  * evaluating that expression b+c into a temporary variable d, and nest d so that the resulting expression is
+  * a*d. Evaluating can be beneficial for example if every coefficient access in the resulting expression causes
+  * many coefficient accesses in the nested expressions -- as is the case with matrix product for example.
+  *
+  * \param T the type of the expression being nested
+  * \param n the number of coefficient accesses in the nested expression for each coefficient access in the bigger expression.
+  *
+  * Note that if no evaluation occur, then the constness of T is preserved.
+  *
+  * Example. Suppose that a, b, and c are of type Matrix3d. The user forms the expression a*(b+c).
+  * b+c is an expression &quot;sum of matrices&quot;, which we will denote by S. In order to determine how to nest it,
+  * the Product expression uses: nested&lt;S, 3&gt;::ret, which turns out to be Matrix3d because the internal logic of
+  * nested determined that in this case it was better to evaluate the expression b+c into a temporary. On the other hand,
+  * since a is of type Matrix3d, the Product expression nests it as nested&lt;Matrix3d, 3&gt;::ret, which turns out to be
+  * const Matrix3d&amp;, because the internal logic of nested determined that since a was already a matrix, there was no point
+  * in copying it into another matrix.
+  */</doc>
+<doc f='include/eigen3/Eigen/src/Core/ReturnByValue.h' l='36'>/* The ReturnByValue object doesn&apos;t even have a coeff() method.
+ * So the only way that nesting it in an expression can work, is by evaluating it into a plain matrix.
+ * So internal::nested always gives the plain return matrix type.
+ *
+ * FIXME: I don&apos;t understand why we need this specialization: isn&apos;t this taken care of by the EvalBeforeNestingBit ??
+ */</doc>
+<doc f='include/eigen3/Eigen/src/Core/products/CoeffBasedProduct.h' l='222'>// here we need to overload the nested rule for products
+// such that the nested type is a const reference to a plain matrix</doc>

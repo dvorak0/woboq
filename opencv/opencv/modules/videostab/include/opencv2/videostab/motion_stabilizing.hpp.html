@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>motion_stabilizing.hpp source code [opencv/modules/videostab/include/opencv2/videostab/motion_stabilizing.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="cv::videostab::GaussianMotionFilter,cv::videostab::IMotionStabilizer,cv::videostab::MotionFilterBase "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/videostab/include/opencv2/videostab/motion_stabilizing.hpp'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data';</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>opencv</a>/<a href='../../../..'>modules</a>/<a href='../../..'>videostab</a>/<a href='../..'>include</a>/<a href='..'>opencv2</a>/<a href='./'>videostab</a>/<a href='motion_stabilizing.hpp.html'>motion_stabilizing.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#<span data-ppcond="43">ifndef</span> <span class="macro" data-ref="_M/__OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__">__OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__</span></u></td></tr>
+<tr><th id="44">44</th><td><u>#define <dfn class="macro" id="_M/__OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__" data-ref="_M/__OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__">__OPENCV_VIDEOSTAB_MOTION_STABILIZING_HPP__</dfn></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><u>#include <a href="../../../../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="47">47</th><td><u>#include <a href="../../../../core/include/opencv2/core/core.hpp.html">"opencv2/core/core.hpp"</a></u></td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="50">50</th><td>{</td></tr>
+<tr><th id="51">51</th><td><b>namespace</b> <span class="namespace">videostab</span></td></tr>
+<tr><th id="52">52</th><td>{</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><b>class</b> <a class="macro" href="../../../../core/include/opencv2/core/types_c.h.html#159" title="" data-ref="_M/CV_EXPORTS">CV_EXPORTS</a> <dfn class="type def" id="cv::videostab::IMotionStabilizer" title='cv::videostab::IMotionStabilizer' data-ref="cv::videostab::IMotionStabilizer">IMotionStabilizer</dfn></td></tr>
+<tr><th id="55">55</th><td>{</td></tr>
+<tr><th id="56">56</th><td><b>public</b>:</td></tr>
+<tr><th id="57">57</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl" id="_ZNK2cv9videostab17IMotionStabilizer9stabilizeEPKNS_3MatEiPS2_" title='cv::videostab::IMotionStabilizer::stabilize' data-ref="_ZNK2cv9videostab17IMotionStabilizer9stabilizeEPKNS_3MatEiPS2_">stabilize</dfn>(<em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> *<dfn class="local col1 decl" id="1motions" title='motions' data-type='const cv::Mat *' data-ref="1motions">motions</dfn>, <em>int</em> <dfn class="local col2 decl" id="2size" title='size' data-type='int' data-ref="2size">size</dfn>, <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> *<dfn class="local col3 decl" id="3stabilizationMotions" title='stabilizationMotions' data-type='cv::Mat *' data-ref="3stabilizationMotions">stabilizationMotions</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><u>#<span data-ppcond="59">ifdef</span> <span class="macro" data-ref="_M/OPENCV_CAN_BREAK_BINARY_COMPATIBILITY">OPENCV_CAN_BREAK_BINARY_COMPATIBILITY</span></u></td></tr>
+<tr><th id="60">60</th><td>    <b>virtual</b> ~IMotionStabilizer() {}</td></tr>
+<tr><th id="61">61</th><td><u>#<span data-ppcond="59">endif</span></u></td></tr>
+<tr><th id="62">62</th><td>};</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><b>class</b> <a class="macro" href="../../../../core/include/opencv2/core/types_c.h.html#159" title="" data-ref="_M/CV_EXPORTS">CV_EXPORTS</a> <dfn class="type def" id="cv::videostab::MotionFilterBase" title='cv::videostab::MotionFilterBase' data-ref="cv::videostab::MotionFilterBase">MotionFilterBase</dfn> : <b>public</b> <a class="type" href="#cv::videostab::IMotionStabilizer" title='cv::videostab::IMotionStabilizer' data-ref="cv::videostab::IMotionStabilizer">IMotionStabilizer</a></td></tr>
+<tr><th id="65">65</th><td>{</td></tr>
+<tr><th id="66">66</th><td><b>public</b>:</td></tr>
+<tr><th id="67">67</th><td>    <dfn class="decl def" id="_ZN2cv9videostab16MotionFilterBaseC1Ev" title='cv::videostab::MotionFilterBase::MotionFilterBase' data-ref="_ZN2cv9videostab16MotionFilterBaseC1Ev">MotionFilterBase</dfn>() : <a class="member" href="#cv::videostab::MotionFilterBase::radius_" title='cv::videostab::MotionFilterBase::radius_' data-ref="cv::videostab::MotionFilterBase::radius_">radius_</a>(<var>0</var>) {}</td></tr>
+<tr><th id="68">68</th><td>    <b>virtual</b> <dfn class="virtual decl def" id="_ZN2cv9videostab16MotionFilterBaseD1Ev" title='cv::videostab::MotionFilterBase::~MotionFilterBase' data-ref="_ZN2cv9videostab16MotionFilterBaseD1Ev">~</dfn>MotionFilterBase() {}</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZN2cv9videostab16MotionFilterBase9setRadiusEi" title='cv::videostab::MotionFilterBase::setRadius' data-ref="_ZN2cv9videostab16MotionFilterBase9setRadiusEi">setRadius</dfn>(<em>int</em> <dfn class="local col4 decl" id="4val" title='val' data-type='int' data-ref="4val">val</dfn>) { <a class="member" href="#cv::videostab::MotionFilterBase::radius_" title='cv::videostab::MotionFilterBase::radius_' data-ref="cv::videostab::MotionFilterBase::radius_">radius_</a> = <a class="local col4 ref" href="#4val" title='val' data-ref="4val">val</a>; }</td></tr>
+<tr><th id="71">71</th><td>    <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK2cv9videostab16MotionFilterBase6radiusEv" title='cv::videostab::MotionFilterBase::radius' data-ref="_ZNK2cv9videostab16MotionFilterBase6radiusEv">radius</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#cv::videostab::MotionFilterBase::radius_" title='cv::videostab::MotionFilterBase::radius_' data-ref="cv::videostab::MotionFilterBase::radius_">radius_</a>; }</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZN2cv9videostab16MotionFilterBase6updateEv" title='cv::videostab::MotionFilterBase::update' data-ref="_ZN2cv9videostab16MotionFilterBase6updateEv">update</dfn>() {}</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>    <b>virtual</b> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> <dfn class="virtual decl" id="_ZNK2cv9videostab16MotionFilterBase9stabilizeEiPKNS_3MatEi" title='cv::videostab::MotionFilterBase::stabilize' data-ref="_ZNK2cv9videostab16MotionFilterBase9stabilizeEiPKNS_3MatEi">stabilize</dfn>(<em>int</em> <dfn class="local col5 decl" id="5index" title='index' data-type='int' data-ref="5index">index</dfn>, <em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> *<dfn class="local col6 decl" id="6motions" title='motions' data-type='const cv::Mat *' data-ref="6motions">motions</dfn>, <em>int</em> <dfn class="local col7 decl" id="7size" title='size' data-type='int' data-ref="7size">size</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="76">76</th><td>    <b>virtual</b> <em>void</em> <a class="virtual decl" href="../../../src/motion_stabilizing.cpp.html#_ZNK2cv9videostab16MotionFilterBase9stabilizeEPKNS_3MatEiPS2_" title='cv::videostab::MotionFilterBase::stabilize' data-ref="_ZNK2cv9videostab16MotionFilterBase9stabilizeEPKNS_3MatEiPS2_" id="_ZNK2cv9videostab16MotionFilterBase9stabilizeEPKNS_3MatEiPS2_">stabilize</a>(<em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> *<dfn class="local col8 decl" id="8motions" title='motions' data-type='const cv::Mat *' data-ref="8motions">motions</dfn>, <em>int</em> <dfn class="local col9 decl" id="9size" title='size' data-type='int' data-ref="9size">size</dfn>, <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> *<dfn class="local col0 decl" id="10stabilizationMotions" title='stabilizationMotions' data-type='cv::Mat *' data-ref="10stabilizationMotions">stabilizationMotions</dfn>) <em>const</em>;</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td><b>protected</b>:</td></tr>
+<tr><th id="79">79</th><td>    <em>int</em> <dfn class="decl" id="cv::videostab::MotionFilterBase::radius_" title='cv::videostab::MotionFilterBase::radius_' data-ref="cv::videostab::MotionFilterBase::radius_">radius_</dfn>;</td></tr>
+<tr><th id="80">80</th><td>};</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><b>class</b> <a class="macro" href="../../../../core/include/opencv2/core/types_c.h.html#159" title="" data-ref="_M/CV_EXPORTS">CV_EXPORTS</a> <dfn class="type def" id="cv::videostab::GaussianMotionFilter" title='cv::videostab::GaussianMotionFilter' data-ref="cv::videostab::GaussianMotionFilter">GaussianMotionFilter</dfn> : <b>public</b> <a class="type" href="#cv::videostab::MotionFilterBase" title='cv::videostab::MotionFilterBase' data-ref="cv::videostab::MotionFilterBase">MotionFilterBase</a></td></tr>
+<tr><th id="83">83</th><td>{</td></tr>
+<tr><th id="84">84</th><td><b>public</b>:</td></tr>
+<tr><th id="85">85</th><td>    <dfn class="decl def" id="_ZN2cv9videostab20GaussianMotionFilterC1Ev" title='cv::videostab::GaussianMotionFilter::GaussianMotionFilter' data-ref="_ZN2cv9videostab20GaussianMotionFilterC1Ev">GaussianMotionFilter</dfn>() : <a class="member" href="#cv::videostab::GaussianMotionFilter::stdev_" title='cv::videostab::GaussianMotionFilter::stdev_' data-ref="cv::videostab::GaussianMotionFilter::stdev_">stdev_</a>(-<var>1.f</var>) {}</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>    <em>void</em> <dfn class="decl def" id="_ZN2cv9videostab20GaussianMotionFilter8setStdevEf" title='cv::videostab::GaussianMotionFilter::setStdev' data-ref="_ZN2cv9videostab20GaussianMotionFilter8setStdevEf">setStdev</dfn>(<em>float</em> <dfn class="local col1 decl" id="11val" title='val' data-type='float' data-ref="11val">val</dfn>) { <a class="member" href="#cv::videostab::GaussianMotionFilter::stdev_" title='cv::videostab::GaussianMotionFilter::stdev_' data-ref="cv::videostab::GaussianMotionFilter::stdev_">stdev_</a> = <a class="local col1 ref" href="#11val" title='val' data-ref="11val">val</a>; }</td></tr>
+<tr><th id="88">88</th><td>    <em>float</em> <dfn class="decl def" id="_ZNK2cv9videostab20GaussianMotionFilter5stdevEv" title='cv::videostab::GaussianMotionFilter::stdev' data-ref="_ZNK2cv9videostab20GaussianMotionFilter5stdevEv">stdev</dfn>() <em>const</em> { <b>return</b> <a class="member" href="#cv::videostab::GaussianMotionFilter::stdev_" title='cv::videostab::GaussianMotionFilter::stdev_' data-ref="cv::videostab::GaussianMotionFilter::stdev_">stdev_</a>; }</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>    <b>virtual</b> <em>void</em> <a class="virtual decl" href="../../../src/motion_stabilizing.cpp.html#_ZN2cv9videostab20GaussianMotionFilter6updateEv" title='cv::videostab::GaussianMotionFilter::update' data-ref="_ZN2cv9videostab20GaussianMotionFilter6updateEv" id="_ZN2cv9videostab20GaussianMotionFilter6updateEv">update</a>();</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <b>virtual</b> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> <a class="virtual decl" href="../../../src/motion_stabilizing.cpp.html#_ZNK2cv9videostab20GaussianMotionFilter9stabilizeEiPKNS_3MatEi" title='cv::videostab::GaussianMotionFilter::stabilize' data-ref="_ZNK2cv9videostab20GaussianMotionFilter9stabilizeEiPKNS_3MatEi" id="_ZNK2cv9videostab20GaussianMotionFilter9stabilizeEiPKNS_3MatEi">stabilize</a>(<em>int</em> <dfn class="local col2 decl" id="12index" title='index' data-type='int' data-ref="12index">index</dfn>, <em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> *<dfn class="local col3 decl" id="13motions" title='motions' data-type='const cv::Mat *' data-ref="13motions">motions</dfn>, <em>int</em> <dfn class="local col4 decl" id="14size" title='size' data-type='int' data-ref="14size">size</dfn>) <em>const</em>;</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td><b>private</b>:</td></tr>
+<tr><th id="95">95</th><td>    <em>float</em> <dfn class="decl" id="cv::videostab::GaussianMotionFilter::stdev_" title='cv::videostab::GaussianMotionFilter::stdev_' data-ref="cv::videostab::GaussianMotionFilter::stdev_">stdev_</dfn>;</td></tr>
+<tr><th id="96">96</th><td>    <span class="namespace">std::</span><a class="type" href="../../../../../../include/c++/4.8/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>float</em>&gt; <dfn class="decl" id="cv::videostab::GaussianMotionFilter::weight_" title='cv::videostab::GaussianMotionFilter::weight_' data-ref="cv::videostab::GaussianMotionFilter::weight_">weight_</dfn>;</td></tr>
+<tr><th id="97">97</th><td>};</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td><a class="macro" href="../../../../core/include/opencv2/core/types_c.h.html#159" title="" data-ref="_M/CV_EXPORTS">CV_EXPORTS</a> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> <a class="decl" href="../../../src/motion_stabilizing.cpp.html#_ZN2cv9videostab25ensureInclusionConstraintERKNS_3MatENS_5Size_IiEEf" title='cv::videostab::ensureInclusionConstraint' data-ref="_ZN2cv9videostab25ensureInclusionConstraintERKNS_3MatENS_5Size_IiEEf" id="_ZN2cv9videostab25ensureInclusionConstraintERKNS_3MatENS_5Size_IiEEf">ensureInclusionConstraint</a>(<em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> &amp;<dfn class="local col5 decl" id="15M" title='M' data-type='const cv::Mat &amp;' data-ref="15M">M</dfn>, <a class="typedef" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Size" title='cv::Size' data-type='Size2i' data-ref="cv::Size">Size</a> <dfn class="local col6 decl" id="16size" title='size' data-type='Size' data-ref="16size">size</dfn>, <em>float</em> <dfn class="local col7 decl" id="17trimRatio" title='trimRatio' data-type='float' data-ref="17trimRatio">trimRatio</dfn>);</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><a class="macro" href="../../../../core/include/opencv2/core/types_c.h.html#159" title="" data-ref="_M/CV_EXPORTS">CV_EXPORTS</a> <em>float</em> <a class="decl" href="../../../src/motion_stabilizing.cpp.html#_ZN2cv9videostab24estimateOptimalTrimRatioERKNS_3MatENS_5Size_IiEE" title='cv::videostab::estimateOptimalTrimRatio' data-ref="_ZN2cv9videostab24estimateOptimalTrimRatioERKNS_3MatENS_5Size_IiEE" id="_ZN2cv9videostab24estimateOptimalTrimRatioERKNS_3MatENS_5Size_IiEE">estimateOptimalTrimRatio</a>(<em>const</em> <a class="type" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Mat" title='cv::Mat' data-ref="cv::Mat">Mat</a> &amp;<dfn class="local col8 decl" id="18M" title='M' data-type='const cv::Mat &amp;' data-ref="18M">M</dfn>, <a class="typedef" href="../../../../core/include/opencv2/core/core.hpp.html#cv::Size" title='cv::Size' data-type='Size2i' data-ref="cv::Size">Size</a> <dfn class="local col9 decl" id="19size" title='size' data-type='Size' data-ref="19size">size</dfn>);</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>} <i>// namespace videostab</i></td></tr>
+<tr><th id="104">104</th><td>} <i>// namespace</i></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td><u>#<span data-ppcond="43">endif</span></u></td></tr>
+<tr><th id="107">107</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../src/motion_stabilizing.cpp.html'>opencv/modules/videostab/src/motion_stabilizing.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

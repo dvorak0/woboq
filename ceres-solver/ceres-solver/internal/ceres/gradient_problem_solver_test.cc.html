@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>gradient_problem_solver_test.cc source code [ceres-solver/internal/ceres/gradient_problem_solver_test.cc] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::Rosenbrock "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/gradient_problem_solver_test.cc'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='gradient_problem_solver_test.cc.html'>gradient_problem_solver_test.cc</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: strandmark@google.com (Petter Strandmark)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../../include/ceres/gradient_problem.h.html">"ceres/gradient_problem.h"</a></u></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../../include/ceres/gradient_problem_solver.h.html">"ceres/gradient_problem_solver.h"</a></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="gtest/gtest.h.html">"gtest/gtest.h"</a></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="37">37</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><i>// Rosenbrock function; see <a href="http://en.wikipedia.org/wiki/Rosenbrock_function">http://en.wikipedia.org/wiki/Rosenbrock_function</a> .</i></td></tr>
+<tr><th id="40">40</th><td><b>class</b> <dfn class="type def" id="ceres::internal::Rosenbrock" title='ceres::internal::Rosenbrock' data-ref="ceres::internal::Rosenbrock">Rosenbrock</dfn> : <b>public</b> <span class="namespace">ceres::</span><a class="type" href="../../include/ceres/gradient_problem.h.html#ceres::FirstOrderFunction" title='ceres::FirstOrderFunction' data-ref="ceres::FirstOrderFunction">FirstOrderFunction</a> {</td></tr>
+<tr><th id="41">41</th><td> <b>public</b>:</td></tr>
+<tr><th id="42">42</th><td>  <b>virtual</b> <dfn class="virtual decl def" id="_ZN5ceres8internal10RosenbrockD1Ev" title='ceres::internal::Rosenbrock::~Rosenbrock' data-ref="_ZN5ceres8internal10RosenbrockD1Ev">~</dfn>Rosenbrock() {}</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal10Rosenbrock8EvaluateEPKdPdS4_" title='ceres::internal::Rosenbrock::Evaluate' data-ref="_ZNK5ceres8internal10Rosenbrock8EvaluateEPKdPdS4_">Evaluate</dfn>(<em>const</em> <em>double</em>* <dfn class="local col1 decl" id="1parameters" title='parameters' data-type='const double *' data-ref="1parameters">parameters</dfn>,</td></tr>
+<tr><th id="45">45</th><td>                        <em>double</em>* <dfn class="local col2 decl" id="2cost" title='cost' data-type='double *' data-ref="2cost">cost</dfn>,</td></tr>
+<tr><th id="46">46</th><td>                        <em>double</em>* <dfn class="local col3 decl" id="3gradient" title='gradient' data-type='double *' data-ref="3gradient">gradient</dfn>) <em>const</em> {</td></tr>
+<tr><th id="47">47</th><td>    <em>const</em> <em>double</em> <dfn class="local col4 decl" id="4x" title='x' data-type='const double' data-ref="4x">x</dfn> = <a class="local col1 ref" href="#1parameters" title='parameters' data-ref="1parameters">parameters</a>[<var>0</var>];</td></tr>
+<tr><th id="48">48</th><td>    <em>const</em> <em>double</em> <dfn class="local col5 decl" id="5y" title='y' data-type='const double' data-ref="5y">y</dfn> = <a class="local col1 ref" href="#1parameters" title='parameters' data-ref="1parameters">parameters</a>[<var>1</var>];</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td>    <a class="local col2 ref" href="#2cost" title='cost' data-ref="2cost">cost</a>[<var>0</var>] = (<var>1.0</var> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>) * (<var>1.0</var> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>) + <var>100.0</var> * (<a class="local col5 ref" href="#5y" title='y' data-ref="5y">y</a> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a> * <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>) * (<a class="local col5 ref" href="#5y" title='y' data-ref="5y">y</a> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a> * <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>);</td></tr>
+<tr><th id="51">51</th><td>    <b>if</b> (<a class="local col3 ref" href="#3gradient" title='gradient' data-ref="3gradient">gradient</a> != <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="52">52</th><td>      <a class="local col3 ref" href="#3gradient" title='gradient' data-ref="3gradient">gradient</a>[<var>0</var>] = -<var>2.0</var> * (<var>1.0</var> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>) - <var>200.0</var> * (<a class="local col5 ref" href="#5y" title='y' data-ref="5y">y</a> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a> * <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>) * <var>2.0</var> * <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>;</td></tr>
+<tr><th id="53">53</th><td>      <a class="local col3 ref" href="#3gradient" title='gradient' data-ref="3gradient">gradient</a>[<var>1</var>] = <var>200.0</var> * (<a class="local col5 ref" href="#5y" title='y' data-ref="5y">y</a> - <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a> * <a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a>);</td></tr>
+<tr><th id="54">54</th><td>    }</td></tr>
+<tr><th id="55">55</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="56">56</th><td>  }</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>  <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK5ceres8internal10Rosenbrock13NumParametersEv" title='ceres::internal::Rosenbrock::NumParameters' data-ref="_ZNK5ceres8internal10Rosenbrock13NumParametersEv">NumParameters</dfn>() <em>const</em> { <b>return</b> <var>2</var>; }</td></tr>
+<tr><th id="59">59</th><td>};</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td><a class="macro" href="gtest/gtest.h.html#21153" title="class GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test : public ::testing::Test { public: GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test() {} private: virtual void TestBody(); static ::testing::TestInfo* const test_info_ __attribute__ ((unused)); GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test(GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test const &amp;); void operator=(GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test const &amp;);};::testing::TestInfo* const GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test ::test_info_ = ::testing::internal::MakeAndRegisterTestInfo( &quot;GradientProblemSolver&quot;, &quot;SolvesRosenbrockWithDefaultOptions&quot;, __null, __null, ::testing::internal::CodeLocation(&quot;/home/yzf/code/ceres-solver/internal/ceres/gradient_problem_solver_test.cc&quot;, 61), (::testing::internal::GetTestTypeId()), ::testing::Test::SetUpTestCase, ::testing::Test::TearDownTestCase, new ::testing::internal::TestFactoryImpl&lt; GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test&gt;);void GradientProblemSolver_SolvesRosenbrockWithDefaultOptions_Test::TestBody()" data-ref="_M/TEST">TEST</a>(GradientProblemSolver, SolvesRosenbrockWithDefaultOptions) {</td></tr>
+<tr><th id="62">62</th><td>  <em>const</em> <em>double</em> <dfn class="local col6 decl" id="6expected_tolerance" title='expected_tolerance' data-type='const double' data-ref="6expected_tolerance">expected_tolerance</dfn> = <var>1e-9</var>;</td></tr>
+<tr><th id="63">63</th><td>  <em>double</em> <dfn class="local col7 decl" id="7parameters" title='parameters' data-type='double [2]' data-ref="7parameters">parameters</dfn>[<var>2</var>] = {-<var>1.2</var>, <var>0.0</var>};</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td>  <span class="namespace">ceres::</span><a class="type" href="../../include/ceres/gradient_problem_solver.h.html#ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</a>::<a class="type" href="../../include/ceres/gradient_problem_solver.h.html#ceres::GradientProblemSolver::Options" title='ceres::GradientProblemSolver::Options' data-ref="ceres::GradientProblemSolver::Options">Options</a> <a class="ref fake" href="../../include/ceres/gradient_problem_solver.h.html#_ZN5ceres21GradientProblemSolver7OptionsC1Ev" title='ceres::GradientProblemSolver::Options::Options' data-ref="_ZN5ceres21GradientProblemSolver7OptionsC1Ev"></a><dfn class="local col8 decl" id="8options" title='options' data-type='ceres::GradientProblemSolver::Options' data-ref="8options">options</dfn>;</td></tr>
+<tr><th id="66">66</th><td>  <span class="namespace">ceres::</span><a class="type" href="../../include/ceres/gradient_problem_solver.h.html#ceres::GradientProblemSolver" title='ceres::GradientProblemSolver' data-ref="ceres::GradientProblemSolver">GradientProblemSolver</a>::<a class="type" href="../../include/ceres/gradient_problem_solver.h.html#ceres::GradientProblemSolver::Summary" title='ceres::GradientProblemSolver::Summary' data-ref="ceres::GradientProblemSolver::Summary">Summary</a> <a class="ref fake" href="../../include/ceres/gradient_problem_solver.h.html#_ZN5ceres21GradientProblemSolver7SummaryC1Ev" title='ceres::GradientProblemSolver::Summary::Summary' data-ref="_ZN5ceres21GradientProblemSolver7SummaryC1Ev"></a><dfn class="local col9 decl" id="9summary" title='summary' data-type='ceres::GradientProblemSolver::Summary' data-ref="9summary">summary</dfn>;</td></tr>
+<tr><th id="67">67</th><td>  <span class="namespace">ceres::</span><a class="type" href="../../include/ceres/gradient_problem.h.html#ceres::GradientProblem" title='ceres::GradientProblem' data-ref="ceres::GradientProblem">GradientProblem</a> <dfn class="local col0 decl" id="10problem" title='problem' data-type='ceres::GradientProblem' data-ref="10problem">problem</dfn><a class="ref" href="../../include/ceres/gradient_problem.h.html#_ZN5ceres15GradientProblemC1EPNS_18FirstOrderFunctionE" title='ceres::GradientProblem::GradientProblem' data-ref="_ZN5ceres15GradientProblemC1EPNS_18FirstOrderFunctionE">(</a><b>new</b> <a class="type" href="#ceres::internal::Rosenbrock" title='ceres::internal::Rosenbrock' data-ref="ceres::internal::Rosenbrock">Rosenbrock</a><a class="tu ref" href="#40" title='ceres::internal::Rosenbrock::Rosenbrock' data-use='c' data-ref="_ZN5ceres8internal10RosenbrockC1Ev">(</a>));</td></tr>
+<tr><th id="68">68</th><td>  <span class="namespace">ceres::</span><a class="ref" href="../../include/ceres/gradient_problem_solver.h.html#_ZN5ceres5SolveERKNS_21GradientProblemSolver7OptionsERKNS_15GradientProblemEPdPNS0_7SummaryE" title='ceres::Solve' data-ref="_ZN5ceres5SolveERKNS_21GradientProblemSolver7OptionsERKNS_15GradientProblemEPdPNS0_7SummaryE">Solve</a>(<a class="local col8 ref" href="#8options" title='options' data-ref="8options">options</a>, <a class="local col0 ref" href="#10problem" title='problem' data-ref="10problem">problem</a>, <a class="local col7 ref" href="#7parameters" title='parameters' data-ref="7parameters">parameters</a>, &amp;<a class="local col9 ref" href="#9summary" title='summary' data-ref="9summary">summary</a>);</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>  <a class="macro" href="gtest/gtest.h.html#20888" title="switch (0) case 0: default: if (const ::testing::AssertionResult gtest_ar = (::testing::internal:: EqHelper&lt;(sizeof(::testing::internal::IsNullLiteralHelper(CONVERGENCE)) == 1)&gt;::Compare(&quot;CONVERGENCE&quot;, &quot;summary.termination_type&quot;, CONVERGENCE, summary.termination_type))) ; else ::testing::internal::AssertHelper(::testing::TestPartResult::kNonFatalFailure, &quot;/home/yzf/code/ceres-solver/internal/ceres/gradient_problem_solver_test.cc&quot;, 70, gtest_ar.failure_message()) = ::testing::Message()" data-ref="_M/EXPECT_EQ">EXPECT_EQ</a>(<a class="enum" href="../../include/ceres/types.h.html#ceres::TerminationType::CONVERGENCE" title='ceres::TerminationType::CONVERGENCE' data-ref="ceres::TerminationType::CONVERGENCE">CONVERGENCE</a>, <a class="local col9 ref" href="#9summary" title='summary' data-ref="9summary">summary</a>.<a class="ref" href="../../include/ceres/gradient_problem_solver.h.html#ceres::GradientProblemSolver::Summary::termination_type" title='ceres::GradientProblemSolver::Summary::termination_type' data-ref="ceres::GradientProblemSolver::Summary::termination_type">termination_type</a>);</td></tr>
+<tr><th id="71">71</th><td>  <a class="macro" href="gtest/gtest.h.html#21009" title="switch (0) case 0: default: if (const ::testing::AssertionResult gtest_ar = (::testing::internal::DoubleNearPredFormat(&quot;1.0&quot;, &quot;parameters[0]&quot;, &quot;expected_tolerance&quot;, 1.0, parameters[0], expected_tolerance))) ; else ::testing::internal::AssertHelper(::testing::TestPartResult::kNonFatalFailure, &quot;/home/yzf/code/ceres-solver/internal/ceres/gradient_problem_solver_test.cc&quot;, 71, gtest_ar.failure_message()) = ::testing::Message()" data-ref="_M/EXPECT_NEAR">EXPECT_NEAR</a>(<var>1.0</var>, <a class="local col7 ref" href="#7parameters" title='parameters' data-ref="7parameters">parameters</a>[<var>0</var>], <a class="local col6 ref" href="#6expected_tolerance" title='expected_tolerance' data-ref="6expected_tolerance">expected_tolerance</a>);</td></tr>
+<tr><th id="72">72</th><td>  <a class="macro" href="gtest/gtest.h.html#21009" title="switch (0) case 0: default: if (const ::testing::AssertionResult gtest_ar = (::testing::internal::DoubleNearPredFormat(&quot;1.0&quot;, &quot;parameters[1]&quot;, &quot;expected_tolerance&quot;, 1.0, parameters[1], expected_tolerance))) ; else ::testing::internal::AssertHelper(::testing::TestPartResult::kNonFatalFailure, &quot;/home/yzf/code/ceres-solver/internal/ceres/gradient_problem_solver_test.cc&quot;, 72, gtest_ar.failure_message()) = ::testing::Message()" data-ref="_M/EXPECT_NEAR">EXPECT_NEAR</a>(<var>1.0</var>, <a class="local col7 ref" href="#7parameters" title='parameters' data-ref="7parameters">parameters</a>[<var>1</var>], <a class="local col6 ref" href="#6expected_tolerance" title='expected_tolerance' data-ref="6expected_tolerance">expected_tolerance</a>);</td></tr>
+<tr><th id="73">73</th><td>}</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="76">76</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="77">77</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

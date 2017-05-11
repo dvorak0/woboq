@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>frame_queue.cpp source code [opencv/modules/gpu/src/frame_queue.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/gpu/src/frame_queue.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>gpu</a>/<a href='./'>src</a>/<a href='frame_queue.cpp.html'>frame_queue.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2009, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="frame_queue.h.html">"frame_queue.h"</a></u></td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><u>#<span data-ppcond="45">if</span> defined(<a class="macro" href="../../../cvconfig.h.html#44" data-ref="_M/HAVE_CUDA">HAVE_CUDA</a>) &amp;&amp; defined(<span class="macro" data-ref="_M/HAVE_NVCUVID">HAVE_NVCUVID</span>)</u></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td>cv::gpu::detail::FrameQueue::FrameQueue() :</td></tr>
+<tr><th id="48">48</th><td>    endOfDecode_(<var>0</var>),</td></tr>
+<tr><th id="49">49</th><td>    framesInQueue_(<var>0</var>),</td></tr>
+<tr><th id="50">50</th><td>    readPosition_(<var>0</var>)</td></tr>
+<tr><th id="51">51</th><td>{</td></tr>
+<tr><th id="52">52</th><td>    std::memset(displayQueue_, <var>0</var>, <b>sizeof</b>(displayQueue_));</td></tr>
+<tr><th id="53">53</th><td>    std::memset((<em>void</em>*)isFrameInUse_, <var>0</var>, <b>sizeof</b>(isFrameInUse_));</td></tr>
+<tr><th id="54">54</th><td>}</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><em>bool</em> cv::gpu::detail::FrameQueue::waitUntilFrameAvailable(<em>int</em> pictureIndex)</td></tr>
+<tr><th id="57">57</th><td>{</td></tr>
+<tr><th id="58">58</th><td>    <b>while</b> (isInUse(pictureIndex))</td></tr>
+<tr><th id="59">59</th><td>    {</td></tr>
+<tr><th id="60">60</th><td>        <i>// Decoder is getting too far ahead from display</i></td></tr>
+<tr><th id="61">61</th><td>        Thread::sleep(<var>1</var>);</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>        <b>if</b> (isEndOfDecode())</td></tr>
+<tr><th id="64">64</th><td>            <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="65">65</th><td>    }</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="68">68</th><td>}</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td><em>void</em> cv::gpu::detail::FrameQueue::enqueue(<em>const</em> CUVIDPARSERDISPINFO* picParams)</td></tr>
+<tr><th id="71">71</th><td>{</td></tr>
+<tr><th id="72">72</th><td>    <i>// Mark the frame as 'in-use' so we don't re-use it for decoding until it is no longer needed</i></td></tr>
+<tr><th id="73">73</th><td><i>    // for display</i></td></tr>
+<tr><th id="74">74</th><td>    isFrameInUse_[picParams-&gt;picture_index] = <b>true</b>;</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>    <i>// Wait until we have a free entry in the display queue (should never block if we have enough entries)</i></td></tr>
+<tr><th id="77">77</th><td>    <b>do</b></td></tr>
+<tr><th id="78">78</th><td>    {</td></tr>
+<tr><th id="79">79</th><td>        <em>bool</em> isFramePlaced = <b>false</b>;</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>        {</td></tr>
+<tr><th id="82">82</th><td>            CriticalSection::AutoLock autoLock(criticalSection_);</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td>            <b>if</b> (framesInQueue_ &lt; MaximumSize)</td></tr>
+<tr><th id="85">85</th><td>            {</td></tr>
+<tr><th id="86">86</th><td>                <em>int</em> writePosition = (readPosition_ + framesInQueue_) % MaximumSize;</td></tr>
+<tr><th id="87">87</th><td>                displayQueue_[writePosition] = *picParams;</td></tr>
+<tr><th id="88">88</th><td>                framesInQueue_++;</td></tr>
+<tr><th id="89">89</th><td>                isFramePlaced = <b>true</b>;</td></tr>
+<tr><th id="90">90</th><td>            }</td></tr>
+<tr><th id="91">91</th><td>        }</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>        <b>if</b> (isFramePlaced) <i>// Done</i></td></tr>
+<tr><th id="94">94</th><td>            <b>break</b>;</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>        <i>// Wait a bit</i></td></tr>
+<tr><th id="97">97</th><td>        Thread::sleep(<var>1</var>);</td></tr>
+<tr><th id="98">98</th><td>    } <b>while</b> (!isEndOfDecode());</td></tr>
+<tr><th id="99">99</th><td>}</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><em>bool</em> cv::gpu::detail::FrameQueue::dequeue(CUVIDPARSERDISPINFO&amp; displayInfo)</td></tr>
+<tr><th id="102">102</th><td>{</td></tr>
+<tr><th id="103">103</th><td>    CriticalSection::AutoLock autoLock(criticalSection_);</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>    <b>if</b> (framesInQueue_ &gt; <var>0</var>)</td></tr>
+<tr><th id="106">106</th><td>    {</td></tr>
+<tr><th id="107">107</th><td>        <em>int</em> entry = readPosition_;</td></tr>
+<tr><th id="108">108</th><td>        displayInfo = displayQueue_[entry];</td></tr>
+<tr><th id="109">109</th><td>        readPosition_ = (entry + <var>1</var>) % MaximumSize;</td></tr>
+<tr><th id="110">110</th><td>        framesInQueue_--;</td></tr>
+<tr><th id="111">111</th><td>        <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="112">112</th><td>    }</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>    <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="115">115</th><td>}</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td><u>#<span data-ppcond="45">endif</span> // HAVE_CUDA</u></td></tr>
+<tr><th id="118">118</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

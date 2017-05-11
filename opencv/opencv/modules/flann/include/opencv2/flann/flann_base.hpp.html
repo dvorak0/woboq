@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>flann_base.hpp source code [opencv/modules/flann/include/opencv2/flann/flann_base.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="cvflann::Index,cvflann::SavedIndexParams "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/flann/include/opencv2/flann/flann_base.hpp'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data';</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>opencv</a>/<a href='../../../..'>modules</a>/<a href='../../..'>flann</a>/<a href='../..'>include</a>/<a href='..'>opencv2</a>/<a href='./'>flann</a>/<a href='flann_base.hpp.html'>flann_base.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/***********************************************************************</i></td></tr>
+<tr><th id="2">2</th><td><i> * Software License Agreement (BSD License)</i></td></tr>
+<tr><th id="3">3</th><td><i> *</i></td></tr>
+<tr><th id="4">4</th><td><i> * Copyright 2008-2009  Marius Muja (mariusm@cs.ubc.ca). All rights reserved.</i></td></tr>
+<tr><th id="5">5</th><td><i> * Copyright 2008-2009  David G. Lowe (lowe@cs.ubc.ca). All rights reserved.</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * THE BSD LICENSE</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="10">10</th><td><i> * modification, are permitted provided that the following conditions</i></td></tr>
+<tr><th id="11">11</th><td><i> * are met:</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> * 1. Redistributions of source code must retain the above copyright</i></td></tr>
+<tr><th id="14">14</th><td><i> *    notice, this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="15">15</th><td><i> * 2. Redistributions in binary form must reproduce the above copyright</i></td></tr>
+<tr><th id="16">16</th><td><i> *    notice, this list of conditions and the following disclaimer in the</i></td></tr>
+<tr><th id="17">17</th><td><i> *    documentation and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR</i></td></tr>
+<tr><th id="20">20</th><td><i> * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES</i></td></tr>
+<tr><th id="21">21</th><td><i> * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.</i></td></tr>
+<tr><th id="22">22</th><td><i> * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,</i></td></tr>
+<tr><th id="23">23</th><td><i> * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT</i></td></tr>
+<tr><th id="24">24</th><td><i> * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,</i></td></tr>
+<tr><th id="25">25</th><td><i> * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY</i></td></tr>
+<tr><th id="26">26</th><td><i> * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT</i></td></tr>
+<tr><th id="27">27</th><td><i> * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF</i></td></tr>
+<tr><th id="28">28</th><td><i> * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="29">29</th><td><i> *************************************************************************/</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/OPENCV_FLANN_BASE_HPP_">OPENCV_FLANN_BASE_HPP_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/OPENCV_FLANN_BASE_HPP_" data-ref="_M/OPENCV_FLANN_BASE_HPP_">OPENCV_FLANN_BASE_HPP_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../../../../include/c++/4.8/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../../../../include/c++/4.8/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../../../../include/c++/4.8/cassert.html">&lt;cassert&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../../../../include/c++/4.8/cstdio.html">&lt;cstdio&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="general.h.html">"general.h"</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="matrix.h.html">"matrix.h"</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="params.h.html">"params.h"</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="saving.h.html">"saving.h"</a></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="all_indices.h.html">"all_indices.h"</a></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><b>namespace</b> <span class="namespace">cvflann</span></td></tr>
+<tr><th id="47">47</th><td>{</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> * Sets the log level used for all flann functions</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">level</span> Verbosity level</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="53">53</th><td><b>inline</b> <em>void</em> <dfn class="decl def" id="_ZN7cvflann13log_verbosityEi" title='cvflann::log_verbosity' data-ref="_ZN7cvflann13log_verbosityEi">log_verbosity</dfn>(<em>int</em> <dfn class="local col7 decl" id="2817level" title='level' data-type='int' data-ref="2817level">level</dfn>)</td></tr>
+<tr><th id="54">54</th><td>{</td></tr>
+<tr><th id="55">55</th><td>    <b>if</b> (<a class="local col7 ref" href="#2817level" title='level' data-ref="2817level">level</a> &gt;= <var>0</var>) {</td></tr>
+<tr><th id="56">56</th><td>        <a class="type" href="logger.h.html#cvflann::Logger" title='cvflann::Logger' data-ref="cvflann::Logger">Logger</a>::<a class="ref" href="logger.h.html#_ZN7cvflann6Logger8setLevelEi" title='cvflann::Logger::setLevel' data-ref="_ZN7cvflann6Logger8setLevelEi">setLevel</a>(<a class="local col7 ref" href="#2817level" title='level' data-ref="2817level">level</a>);</td></tr>
+<tr><th id="57">57</th><td>    }</td></tr>
+<tr><th id="58">58</th><td>}</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> * (Deprecated) Index parameters for creating a saved index.</i></td></tr>
+<tr><th id="62">62</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="63">63</th><td><b>struct</b> <dfn class="type def" id="cvflann::SavedIndexParams" title='cvflann::SavedIndexParams' data-ref="cvflann::SavedIndexParams">SavedIndexParams</dfn> : <b>public</b> <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a></td></tr>
+<tr><th id="64">64</th><td>{</td></tr>
+<tr><th id="65">65</th><td>    <dfn class="decl def" id="_ZN7cvflann16SavedIndexParamsC1ESs" title='cvflann::SavedIndexParams::SavedIndexParams' data-ref="_ZN7cvflann16SavedIndexParamsC1ESs">SavedIndexParams</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="local col8 decl" id="2818filename" title='filename' data-type='std::string' data-ref="2818filename">filename</dfn>)</td></tr>
+<tr><th id="66">66</th><td>    {</td></tr>
+<tr><th id="67">67</th><td>        (* <b>this</b>)<a class="member" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapixERKT_" title='std::map::operator[]' data-ref="_ZNSt3mapixERKT_">[<a class="ref fake" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"algorithm"</q>]</a> <a class="ref" href="any.h.html#_ZN7cvflann3anyaSERKT_" title='cvflann::any::operator=' data-ref="_ZN7cvflann3anyaSERKT_">=</a> <a class="enum" href="defines.h.html#cvflann::flann_algorithm_t::FLANN_INDEX_SAVED" title='cvflann::flann_algorithm_t::FLANN_INDEX_SAVED' data-ref="cvflann::flann_algorithm_t::FLANN_INDEX_SAVED">FLANN_INDEX_SAVED</a>;</td></tr>
+<tr><th id="68">68</th><td>        (*<b>this</b>)<a class="member" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapixERKT_" title='std::map::operator[]' data-ref="_ZNSt3mapixERKT_">[<a class="ref fake" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"filename"</q>]</a> <a class="ref" href="any.h.html#_ZN7cvflann3anyaSERKT_" title='cvflann::any::operator=' data-ref="_ZN7cvflann3anyaSERKT_">=</a> <a class="local col8 ref" href="#2818filename" title='filename' data-ref="2818filename">filename</a>;</td></tr>
+<tr><th id="69">69</th><td>    }</td></tr>
+<tr><th id="70">70</th><td>};</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td><b>template</b>&lt;<b>typename</b> Distance&gt;</td></tr>
+<tr><th id="74">74</th><td><a class="type" href="nn_index.h.html#cvflann::NNIndex" title='cvflann::NNIndex' data-ref="cvflann::NNIndex">NNIndex</a>&lt;Distance&gt;* <dfn class="decl def" id="_ZN7cvflann16load_saved_indexERKNS_6MatrixINT_11ElementTypeEEERKSsS1_" title='cvflann::load_saved_index' data-ref="_ZN7cvflann16load_saved_indexERKNS_6MatrixINT_11ElementTypeEEERKSsS1_">load_saved_index</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<b>typename</b> Distance::ElementType&gt;&amp; <dfn class="local col9 decl" id="2819dataset" title='dataset' data-type='const Matrix&lt;typename Distance::ElementType&gt; &amp;' data-ref="2819dataset">dataset</dfn>, <em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col0 decl" id="2820filename" title='filename' data-type='const std::string &amp;' data-ref="2820filename">filename</dfn>, Distance <dfn class="local col1 decl" id="2821distance" title='distance' data-type='Distance' data-ref="2821distance">distance</dfn>)</td></tr>
+<tr><th id="75">75</th><td>{</td></tr>
+<tr><th id="76">76</th><td>    <b>typedef</b> <b>typename</b> Distance::ElementType <dfn class="local col2 typedef" id="2822ElementType" title='ElementType' data-type='typename Distance::ElementType' data-ref="2822ElementType">ElementType</dfn>;</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td>    <a class="typedef" href="../../../../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>* <dfn class="local col3 decl" id="2823fin" title='fin' data-type='FILE *' data-ref="2823fin">fin</dfn> = <a class="ref" href="../../../../../../include/stdio.h.html#fopen" title='fopen' data-ref="fopen">fopen</a>(<a class="local col0 ref" href="#2820filename" title='filename' data-ref="2820filename">filename</a>.<a class="ref" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>(), <q>"rb"</q>);</td></tr>
+<tr><th id="79">79</th><td>    <b>if</b> (<a class="local col3 ref" href="#2823fin" title='fin' data-ref="2823fin">fin</a> == <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="80">80</th><td>        <b>return</b> <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>;</td></tr>
+<tr><th id="81">81</th><td>    }</td></tr>
+<tr><th id="82">82</th><td>    <a class="type" href="saving.h.html#cvflann::IndexHeader" title='cvflann::IndexHeader' data-ref="cvflann::IndexHeader">IndexHeader</a> <dfn class="local col4 decl" id="2824header" title='header' data-type='cvflann::IndexHeader' data-ref="2824header">header</dfn> = <a class="ref" href="saving.h.html#_ZN7cvflann11load_headerEP8_IO_FILE" title='cvflann::load_header' data-ref="_ZN7cvflann11load_headerEP8_IO_FILE">load_header</a>(<a class="local col3 ref" href="#2823fin" title='fin' data-ref="2823fin">fin</a>);</td></tr>
+<tr><th id="83">83</th><td>    <b>if</b> (<a class="local col4 ref" href="#2824header" title='header' data-ref="2824header">header</a>.<a class="ref" href="saving.h.html#cvflann::IndexHeader::data_type" title='cvflann::IndexHeader::data_type' data-ref="cvflann::IndexHeader::data_type">data_type</a> != <a class="type" href="saving.h.html#cvflann::Datatype" title='cvflann::Datatype' data-ref="cvflann::Datatype">Datatype</a>&lt;<a class="local col2 typedef" href="#2822ElementType" title='ElementType' data-type='typename Distance::ElementType' data-ref="2822ElementType">ElementType</a>&gt;::type()) {</td></tr>
+<tr><th id="84">84</th><td>        <b>throw</b> <a class="type" href="general.h.html#cvflann::FLANNException" title='cvflann::FLANNException' data-ref="cvflann::FLANNException"><a class="ref" href="general.h.html#_ZN7cvflann14FLANNExceptionC1EPKc" title='cvflann::FLANNException::FLANNException' data-ref="_ZN7cvflann14FLANNExceptionC1EPKc">FLANNException</a></a>(<q>"Datatype of saved index is different than of the one to be created."</q>);</td></tr>
+<tr><th id="85">85</th><td>    }</td></tr>
+<tr><th id="86">86</th><td>    <b>if</b> ((<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>(<a class="local col4 ref" href="#2824header" title='header' data-ref="2824header">header</a>.<a class="ref" href="saving.h.html#cvflann::IndexHeader::rows" title='cvflann::IndexHeader::rows' data-ref="cvflann::IndexHeader::rows">rows</a>) != <a class="local col9 ref" href="#2819dataset" title='dataset' data-ref="2819dataset">dataset</a>.rows)||(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>(<a class="local col4 ref" href="#2824header" title='header' data-ref="2824header">header</a>.<a class="ref" href="saving.h.html#cvflann::IndexHeader::cols" title='cvflann::IndexHeader::cols' data-ref="cvflann::IndexHeader::cols">cols</a>) != <a class="local col9 ref" href="#2819dataset" title='dataset' data-ref="2819dataset">dataset</a>.cols)) {</td></tr>
+<tr><th id="87">87</th><td>        <b>throw</b> <a class="type" href="general.h.html#cvflann::FLANNException" title='cvflann::FLANNException' data-ref="cvflann::FLANNException"><a class="ref" href="general.h.html#_ZN7cvflann14FLANNExceptionC1EPKc" title='cvflann::FLANNException::FLANNException' data-ref="_ZN7cvflann14FLANNExceptionC1EPKc">FLANNException</a></a>(<q>"The index saved belongs to a different dataset"</q>);</td></tr>
+<tr><th id="88">88</th><td>    }</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>    <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a> <a class="ref fake" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapC1Ev" title='std::map::map&lt;_Key, _Tp, _Compare, _Alloc&gt;' data-ref="_ZNSt3mapC1Ev"></a><dfn class="local col5 decl" id="2825params" title='params' data-type='IndexParams' data-ref="2825params">params</dfn>;</td></tr>
+<tr><th id="91">91</th><td>    <a class="local col5 ref" href="#2825params" title='params' data-ref="2825params">params</a><a class="ref" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapixERKT_" title='std::map::operator[]' data-ref="_ZNSt3mapixERKT_">[<a class="ref fake" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"algorithm"</q>]</a> <a class="ref" href="any.h.html#_ZN7cvflann3anyaSERKT_" title='cvflann::any::operator=' data-ref="_ZN7cvflann3anyaSERKT_">=</a> <a class="local col4 ref" href="#2824header" title='header' data-ref="2824header">header</a>.<a class="ref" href="saving.h.html#cvflann::IndexHeader::index_type" title='cvflann::IndexHeader::index_type' data-ref="cvflann::IndexHeader::index_type">index_type</a>;</td></tr>
+<tr><th id="92">92</th><td>    <a class="type" href="nn_index.h.html#cvflann::NNIndex" title='cvflann::NNIndex' data-ref="cvflann::NNIndex">NNIndex</a>&lt;Distance&gt;* <dfn class="local col6 decl" id="2826nnIndex" title='nnIndex' data-type='NNIndex&lt;Distance&gt; *' data-ref="2826nnIndex">nnIndex</dfn> = create_index_by_type&lt;Distance&gt;(<a class="local col9 ref" href="#2819dataset" title='dataset' data-ref="2819dataset">dataset</a>, <a class="local col5 ref" href="#2825params" title='params' data-ref="2825params">params</a>, <a class="local col1 ref" href="#2821distance" title='distance' data-ref="2821distance">distance</a>);</td></tr>
+<tr><th id="93">93</th><td>    <a class="local col6 ref" href="#2826nnIndex" title='nnIndex' data-ref="2826nnIndex">nnIndex</a>-&gt;loadIndex(<a class="local col3 ref" href="#2823fin" title='fin' data-ref="2823fin">fin</a>);</td></tr>
+<tr><th id="94">94</th><td>    <a class="ref" href="../../../../../../include/stdio.h.html#fclose" title='fclose' data-ref="fclose">fclose</a>(<a class="local col3 ref" href="#2823fin" title='fin' data-ref="2823fin">fin</a>);</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>    <b>return</b> <a class="local col6 ref" href="#2826nnIndex" title='nnIndex' data-ref="2826nnIndex">nnIndex</a>;</td></tr>
+<tr><th id="97">97</th><td>}</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td><b>template</b>&lt;<b>typename</b> Distance&gt;</td></tr>
+<tr><th id="101">101</th><td><b>class</b> <dfn class="type def" id="cvflann::Index" title='cvflann::Index' data-ref="cvflann::Index">Index</dfn> : <b>public</b> <a class="type" href="nn_index.h.html#cvflann::NNIndex" title='cvflann::NNIndex' data-ref="cvflann::NNIndex">NNIndex</a>&lt;Distance&gt;</td></tr>
+<tr><th id="102">102</th><td>{</td></tr>
+<tr><th id="103">103</th><td><b>public</b>:</td></tr>
+<tr><th id="104">104</th><td>    <b>typedef</b> <b>typename</b> Distance::ElementType <dfn class="typedef" id="cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</dfn>;</td></tr>
+<tr><th id="105">105</th><td>    <b>typedef</b> <b>typename</b> Distance::ResultType <dfn class="typedef" id="cvflann::Index::DistanceType" title='cvflann::Index::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::Index::DistanceType">DistanceType</dfn>;</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>    <dfn class="decl def" id="_ZN7cvflann5IndexC1ERKNS_6MatrixINT_11ElementTypeEEERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS8_EEES2_" title='cvflann::Index::Index&lt;Distance&gt;' data-ref="_ZN7cvflann5IndexC1ERKNS_6MatrixINT_11ElementTypeEEERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS8_EEES2_">Index</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</a>&gt;&amp; <dfn class="local col7 decl" id="2827features" title='features' data-type='const Matrix&lt;ElementType&gt; &amp;' data-ref="2827features">features</dfn>, <em>const</em> <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a>&amp; <dfn class="local col8 decl" id="2828params" title='params' data-type='const IndexParams &amp;' data-ref="2828params">params</dfn>, Distance <dfn class="local col9 decl" id="2829distance" title='distance' data-type='Distance' data-ref="2829distance">distance</dfn> = Distance() )</td></tr>
+<tr><th id="108">108</th><td>        : <a class="member" href="#cvflann::Index::index_params_" title='cvflann::Index::index_params_' data-ref="cvflann::Index::index_params_">index_params_</a><a class="ref" href="../../../../../../include/c++/4.8/bits/stl_map.h.html#_ZNSt3mapC1ERKSt3mapIT_T0_T1_T2_E" title='std::map::map&lt;_Key, _Tp, _Compare, _Alloc&gt;' data-ref="_ZNSt3mapC1ERKSt3mapIT_T0_T1_T2_E">(</a><a class="local col8 ref" href="#2828params" title='params' data-ref="2828params">params</a>)</td></tr>
+<tr><th id="109">109</th><td>    {</td></tr>
+<tr><th id="110">110</th><td>        <a class="type" href="defines.h.html#cvflann::flann_algorithm_t" title='cvflann::flann_algorithm_t' data-ref="cvflann::flann_algorithm_t">flann_algorithm_t</a> <dfn class="local col0 decl" id="2830index_type" title='index_type' data-type='cvflann::flann_algorithm_t' data-ref="2830index_type">index_type</dfn> = <a class="ref" href="params.h.html#_ZN7cvflann9get_paramERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS1_EEESs" title='cvflann::get_param' data-ref="_ZN7cvflann9get_paramERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS1_EEESs">get_param</a>&lt;<a class="type" href="defines.h.html#cvflann::flann_algorithm_t" title='cvflann::flann_algorithm_t' data-ref="cvflann::flann_algorithm_t">flann_algorithm_t</a>&gt;(<a class="local col8 ref" href="#2828params" title='params' data-ref="2828params">params</a>,<a class="ref fake" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"algorithm"</q>);</td></tr>
+<tr><th id="111">111</th><td>        <a class="member" href="#cvflann::Index::loaded_" title='cvflann::Index::loaded_' data-ref="cvflann::Index::loaded_">loaded_</a> = <b>false</b>;</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>        <b>if</b> (<a class="local col0 ref" href="#2830index_type" title='index_type' data-ref="2830index_type">index_type</a> == <a class="enum" href="defines.h.html#cvflann::flann_algorithm_t::FLANN_INDEX_SAVED" title='cvflann::flann_algorithm_t::FLANN_INDEX_SAVED' data-ref="cvflann::flann_algorithm_t::FLANN_INDEX_SAVED">FLANN_INDEX_SAVED</a>) {</td></tr>
+<tr><th id="114">114</th><td>            <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a> = load_saved_index&lt;Distance&gt;(<a class="local col7 ref" href="#2827features" title='features' data-ref="2827features">features</a>, <a class="ref" href="params.h.html#_ZN7cvflann9get_paramERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS1_EEESs" title='cvflann::get_param' data-ref="_ZN7cvflann9get_paramERKSt3mapISsNS_3anyESt4lessISsESaISt4pairIKSsS1_EEESs">get_param</a>&lt;<span class="namespace">std::</span><a class="typedef" href="../../../../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&gt;(<a class="local col8 ref" href="#2828params" title='params' data-ref="2828params">params</a>,<a class="ref fake" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"filename"</q>), <a class="local col9 ref" href="#2829distance" title='distance' data-ref="2829distance">distance</a>);</td></tr>
+<tr><th id="115">115</th><td>            <a class="member" href="#cvflann::Index::loaded_" title='cvflann::Index::loaded_' data-ref="cvflann::Index::loaded_">loaded_</a> = <b>true</b>;</td></tr>
+<tr><th id="116">116</th><td>        }</td></tr>
+<tr><th id="117">117</th><td>        <b>else</b> {</td></tr>
+<tr><th id="118">118</th><td>            <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a> = create_index_by_type&lt;Distance&gt;(<a class="local col7 ref" href="#2827features" title='features' data-ref="2827features">features</a>, <a class="local col8 ref" href="#2828params" title='params' data-ref="2828params">params</a>, <a class="local col9 ref" href="#2829distance" title='distance' data-ref="2829distance">distance</a>);</td></tr>
+<tr><th id="119">119</th><td>        }</td></tr>
+<tr><th id="120">120</th><td>    }</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    <dfn class="decl def" id="_ZN7cvflann5IndexD1Ev" title='cvflann::Index::~Index&lt;Distance&gt;' data-ref="_ZN7cvflann5IndexD1Ev">~</dfn>Index()</td></tr>
+<tr><th id="123">123</th><td>    {</td></tr>
+<tr><th id="124">124</th><td>        <b>delete</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>;</td></tr>
+<tr><th id="125">125</th><td>    }</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">    * implementation for algorithms of addable indexes after that.</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="130">130</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann5Index8addIndexERKNS_6MatrixINT_11ElementTypeEEES6_" title='cvflann::Index::addIndex' data-ref="_ZN7cvflann5Index8addIndexERKNS_6MatrixINT_11ElementTypeEEES6_">addIndex</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</a>&gt;&amp; <dfn class="local col1 decl" id="2831wholeData" title='wholeData' data-type='const Matrix&lt;ElementType&gt; &amp;' data-ref="2831wholeData">wholeData</dfn>, <em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</a>&gt;&amp; <dfn class="local col2 decl" id="2832additionalData" title='additionalData' data-type='const Matrix&lt;ElementType&gt; &amp;' data-ref="2832additionalData">additionalData</dfn>)</td></tr>
+<tr><th id="131">131</th><td>    {</td></tr>
+<tr><th id="132">132</th><td>        <b>if</b> (!<a class="member" href="#cvflann::Index::loaded_" title='cvflann::Index::loaded_' data-ref="cvflann::Index::loaded_">loaded_</a>) {</td></tr>
+<tr><th id="133">133</th><td>            <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;addIndex(<a class="local col1 ref" href="#2831wholeData" title='wholeData' data-ref="2831wholeData">wholeData</a>, <a class="local col2 ref" href="#2832additionalData" title='additionalData' data-ref="2832additionalData">additionalData</a>);</td></tr>
+<tr><th id="134">134</th><td>        }</td></tr>
+<tr><th id="135">135</th><td>    }</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">     * Builds the index.</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="140">140</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann5Index10buildIndexEv" title='cvflann::Index::buildIndex' data-ref="_ZN7cvflann5Index10buildIndexEv">buildIndex</dfn>()</td></tr>
+<tr><th id="141">141</th><td>    {</td></tr>
+<tr><th id="142">142</th><td>        <b>if</b> (!<a class="member" href="#cvflann::Index::loaded_" title='cvflann::Index::loaded_' data-ref="cvflann::Index::loaded_">loaded_</a>) {</td></tr>
+<tr><th id="143">143</th><td>            <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;buildIndex();</td></tr>
+<tr><th id="144">144</th><td>        }</td></tr>
+<tr><th id="145">145</th><td>    }</td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann5Index4saveESs" title='cvflann::Index::save' data-ref="_ZN7cvflann5Index4saveESs">save</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../../../../include/c++/4.8/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="local col3 decl" id="2833filename" title='filename' data-type='std::string' data-ref="2833filename">filename</dfn>)</td></tr>
+<tr><th id="148">148</th><td>    {</td></tr>
+<tr><th id="149">149</th><td>        <a class="typedef" href="../../../../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>* <dfn class="local col4 decl" id="2834fout" title='fout' data-type='FILE *' data-ref="2834fout">fout</dfn> = <a class="ref" href="../../../../../../include/stdio.h.html#fopen" title='fopen' data-ref="fopen">fopen</a>(<a class="local col3 ref" href="#2833filename" title='filename' data-ref="2833filename">filename</a>.<a class="ref" href="../../../../../../include/c++/4.8/bits/basic_string.h.html#_ZNKSt12basic_string5c_strEv" title='std::basic_string::c_str' data-ref="_ZNKSt12basic_string5c_strEv">c_str</a>(), <q>"wb"</q>);</td></tr>
+<tr><th id="150">150</th><td>        <b>if</b> (<a class="local col4 ref" href="#2834fout" title='fout' data-ref="2834fout">fout</a> == <span class="macro" title="__null" data-ref="_M/NULL">NULL</span>) {</td></tr>
+<tr><th id="151">151</th><td>            <b>throw</b> <a class="type" href="general.h.html#cvflann::FLANNException" title='cvflann::FLANNException' data-ref="cvflann::FLANNException"><a class="ref" href="general.h.html#_ZN7cvflann14FLANNExceptionC1EPKc" title='cvflann::FLANNException::FLANNException' data-ref="_ZN7cvflann14FLANNExceptionC1EPKc">FLANNException</a></a>(<q>"Cannot open file"</q>);</td></tr>
+<tr><th id="152">152</th><td>        }</td></tr>
+<tr><th id="153">153</th><td>        save_header(<a class="local col4 ref" href="#2834fout" title='fout' data-ref="2834fout">fout</a>, *<a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>);</td></tr>
+<tr><th id="154">154</th><td>        <a class="virtual member" href="#_ZN7cvflann5Index9saveIndexEP8_IO_FILE" title='cvflann::Index::saveIndex' data-ref="_ZN7cvflann5Index9saveIndexEP8_IO_FILE">saveIndex</a>(<a class="local col4 ref" href="#2834fout" title='fout' data-ref="2834fout">fout</a>);</td></tr>
+<tr><th id="155">155</th><td>        <a class="ref" href="../../../../../../include/stdio.h.html#fclose" title='fclose' data-ref="fclose">fclose</a>(<a class="local col4 ref" href="#2834fout" title='fout' data-ref="2834fout">fout</a>);</td></tr>
+<tr><th id="156">156</th><td>    }</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="159">159</th><td><i class="doc">     * <span class="command">\brief</span> Saves the index to a stream</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">     * <span class="command">\param</span> <span class="arg">stream</span> The stream to save the index to</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="162">162</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZN7cvflann5Index9saveIndexEP8_IO_FILE" title='cvflann::Index::saveIndex' data-ref="_ZN7cvflann5Index9saveIndexEP8_IO_FILE">saveIndex</dfn>(<a class="typedef" href="../../../../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>* <dfn class="local col5 decl" id="2835stream" title='stream' data-type='FILE *' data-ref="2835stream">stream</dfn>)</td></tr>
+<tr><th id="163">163</th><td>    {</td></tr>
+<tr><th id="164">164</th><td>        <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;saveIndex(<a class="local col5 ref" href="#2835stream" title='stream' data-ref="2835stream">stream</a>);</td></tr>
+<tr><th id="165">165</th><td>    }</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="168">168</th><td><i class="doc">     * <span class="command">\brief</span> Loads the index from a stream</i></td></tr>
+<tr><th id="169">169</th><td><i class="doc">     * <span class="command">\param</span> <span class="arg">stream</span> The stream from which the index is loaded</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="171">171</th><td>    <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZN7cvflann5Index9loadIndexEP8_IO_FILE" title='cvflann::Index::loadIndex' data-ref="_ZN7cvflann5Index9loadIndexEP8_IO_FILE">loadIndex</dfn>(<a class="typedef" href="../../../../../../include/stdio.h.html#FILE" title='FILE' data-type='struct _IO_FILE' data-ref="FILE">FILE</a>* <dfn class="local col6 decl" id="2836stream" title='stream' data-type='FILE *' data-ref="2836stream">stream</dfn>)</td></tr>
+<tr><th id="172">172</th><td>    {</td></tr>
+<tr><th id="173">173</th><td>        <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;loadIndex(<a class="local col6 ref" href="#2836stream" title='stream' data-ref="2836stream">stream</a>);</td></tr>
+<tr><th id="174">174</th><td>    }</td></tr>
+<tr><th id="175">175</th><td></td></tr>
+<tr><th id="176">176</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="177">177</th><td><i class="doc">     * <span class="command">\returns</span> number of features in this index.</i></td></tr>
+<tr><th id="178">178</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="179">179</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def" id="_ZNK7cvflann5Index6veclenEv" title='cvflann::Index::veclen' data-ref="_ZNK7cvflann5Index6veclenEv">veclen</dfn>() <em>const</em></td></tr>
+<tr><th id="180">180</th><td>    {</td></tr>
+<tr><th id="181">181</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;veclen();</td></tr>
+<tr><th id="182">182</th><td>    }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="185">185</th><td><i class="doc">     * <span class="command">\returns</span> The dimensionality of the features in this index.</i></td></tr>
+<tr><th id="186">186</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="187">187</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def" id="_ZNK7cvflann5Index4sizeEv" title='cvflann::Index::size' data-ref="_ZNK7cvflann5Index4sizeEv">size</dfn>() <em>const</em></td></tr>
+<tr><th id="188">188</th><td>    {</td></tr>
+<tr><th id="189">189</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;size();</td></tr>
+<tr><th id="190">190</th><td>    }</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc">     * <span class="command">\returns</span> The index type (kdtree, kmeans,...)</i></td></tr>
+<tr><th id="194">194</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="195">195</th><td>    <a class="type" href="defines.h.html#cvflann::flann_algorithm_t" title='cvflann::flann_algorithm_t' data-ref="cvflann::flann_algorithm_t">flann_algorithm_t</a> <dfn class="decl def" id="_ZNK7cvflann5Index7getTypeEv" title='cvflann::Index::getType' data-ref="_ZNK7cvflann5Index7getTypeEv">getType</dfn>() <em>const</em></td></tr>
+<tr><th id="196">196</th><td>    {</td></tr>
+<tr><th id="197">197</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;getType();</td></tr>
+<tr><th id="198">198</th><td>    }</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="201">201</th><td><i class="doc">     * <span class="command">\returns</span> The amount of memory (in bytes) used by the index.</i></td></tr>
+<tr><th id="202">202</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="203">203</th><td>    <b>virtual</b> <em>int</em> <dfn class="virtual decl def" id="_ZNK7cvflann5Index10usedMemoryEv" title='cvflann::Index::usedMemory' data-ref="_ZNK7cvflann5Index10usedMemoryEv">usedMemory</dfn>() <em>const</em></td></tr>
+<tr><th id="204">204</th><td>    {</td></tr>
+<tr><th id="205">205</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;usedMemory();</td></tr>
+<tr><th id="206">206</th><td>    }</td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="210">210</th><td><i class="doc">     * <span class="command">\returns</span> The index parameters</i></td></tr>
+<tr><th id="211">211</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="212">212</th><td>    <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a> <dfn class="decl def" id="_ZNK7cvflann5Index13getParametersEv" title='cvflann::Index::getParameters' data-ref="_ZNK7cvflann5Index13getParametersEv">getParameters</dfn>() <em>const</em></td></tr>
+<tr><th id="213">213</th><td>    {</td></tr>
+<tr><th id="214">214</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;getParameters();</td></tr>
+<tr><th id="215">215</th><td>    }</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="218">218</th><td><i class="doc">     * <span class="command">\brief</span> Perform k-nearest neighbor search</i></td></tr>
+<tr><th id="219">219</th><td><i class="doc">     * <span class="command">\param</span>[in] <span class="arg">queries</span> The query points for which to find the nearest neighbors</i></td></tr>
+<tr><th id="220">220</th><td><i class="doc">     * <span class="command">\param</span>[out] <span class="arg">indices</span> The indices of the nearest neighbors found</i></td></tr>
+<tr><th id="221">221</th><td><i class="doc">     * <span class="command">\param</span>[out] <span class="arg">dists</span> Distances to the nearest neighbors found</i></td></tr>
+<tr><th id="222">222</th><td><i class="doc">     * <span class="command">\param</span>[in] <span class="arg">knn</span> Number of nearest neighbors to return</i></td></tr>
+<tr><th id="223">223</th><td><i class="doc">     * <span class="command">\param</span>[in] <span class="arg">params</span> Search parameters</i></td></tr>
+<tr><th id="224">224</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="225">225</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann5Index9knnSearchERKNS_6MatrixINT_11ElementTypeEEERNS1_IiEERNS1_INS2_10ResultTypeEEEiRKNS_12SearchParamsE" title='cvflann::Index::knnSearch' data-ref="_ZN7cvflann5Index9knnSearchERKNS_6MatrixINT_11ElementTypeEEERNS1_IiEERNS1_INS2_10ResultTypeEEEiRKNS_12SearchParamsE">knnSearch</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</a>&gt;&amp; <dfn class="local col7 decl" id="2837queries" title='queries' data-type='const Matrix&lt;ElementType&gt; &amp;' data-ref="2837queries">queries</dfn>, <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<em>int</em>&gt;&amp; <dfn class="local col8 decl" id="2838indices" title='indices' data-type='Matrix&lt;int&gt; &amp;' data-ref="2838indices">indices</dfn>, <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::DistanceType" title='cvflann::Index::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::Index::DistanceType">DistanceType</a>&gt;&amp; <dfn class="local col9 decl" id="2839dists" title='dists' data-type='Matrix&lt;DistanceType&gt; &amp;' data-ref="2839dists">dists</dfn>, <em>int</em> <dfn class="local col0 decl" id="2840knn" title='knn' data-type='int' data-ref="2840knn">knn</dfn>, <em>const</em> <a class="type" href="params.h.html#cvflann::SearchParams" title='cvflann::SearchParams' data-ref="cvflann::SearchParams">SearchParams</a>&amp; <dfn class="local col1 decl" id="2841params" title='params' data-type='const cvflann::SearchParams &amp;' data-ref="2841params">params</dfn>)</td></tr>
+<tr><th id="226">226</th><td>    {</td></tr>
+<tr><th id="227">227</th><td>        <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;knnSearch(<a class="local col7 ref" href="#2837queries" title='queries' data-ref="2837queries">queries</a>, <a class="local col8 ref" href="#2838indices" title='indices' data-ref="2838indices">indices</a>, <a class="local col9 ref" href="#2839dists" title='dists' data-ref="2839dists">dists</a>, <a class="local col0 ref" href="#2840knn" title='knn' data-ref="2840knn">knn</a>, <a class="local col1 ref" href="#2841params" title='params' data-ref="2841params">params</a>);</td></tr>
+<tr><th id="228">228</th><td>    }</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="231">231</th><td><i class="doc">     * <span class="command">\brief</span> Perform radius search</i></td></tr>
+<tr><th id="232">232</th><td><i class="doc">     * <span class="command">\param</span>[in] <span class="arg">query</span> The query point</i></td></tr>
+<tr><th id="233">233</th><td><i class="doc">     * <span class="command">\param</span>[out] <span class="arg">indices</span> The indinces of the neighbors found within the given radius</i></td></tr>
+<tr><th id="234">234</th><td><i class="doc">     * <span class="command">\param</span>[out] <span class="arg">dists</span> The distances to the nearest neighbors found</i></td></tr>
+<tr><th id="235">235</th><td><i class="doc">     * <span class="command">\param</span>[in] <span class="arg">radius</span> The radius used for search</i></td></tr>
+<tr><th id="236">236</th><td><i class="doc">     * <span class="command">\param</span>[in] <span class="arg">params</span> Search parameters</i></td></tr>
+<tr><th id="237">237</th><td><i class="doc">     * <span class="command">\returns</span> Number of neighbors found</i></td></tr>
+<tr><th id="238">238</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="239">239</th><td>    <em>int</em> <dfn class="decl def" id="_ZN7cvflann5Index12radiusSearchERKNS_6MatrixINT_11ElementTypeEEERNS1_IiEERNS1_INS2_10ResultTypeEEEfRKNS_12SearchParamsE" title='cvflann::Index::radiusSearch' data-ref="_ZN7cvflann5Index12radiusSearchERKNS_6MatrixINT_11ElementTypeEEERNS1_IiEERNS1_INS2_10ResultTypeEEEfRKNS_12SearchParamsE">radiusSearch</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</a>&gt;&amp; <dfn class="local col2 decl" id="2842query" title='query' data-type='const Matrix&lt;ElementType&gt; &amp;' data-ref="2842query">query</dfn>, <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<em>int</em>&gt;&amp; <dfn class="local col3 decl" id="2843indices" title='indices' data-type='Matrix&lt;int&gt; &amp;' data-ref="2843indices">indices</dfn>, <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<a class="typedef" href="#cvflann::Index::DistanceType" title='cvflann::Index::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::Index::DistanceType">DistanceType</a>&gt;&amp; <dfn class="local col4 decl" id="2844dists" title='dists' data-type='Matrix&lt;DistanceType&gt; &amp;' data-ref="2844dists">dists</dfn>, <em>float</em> <dfn class="local col5 decl" id="2845radius" title='radius' data-type='float' data-ref="2845radius">radius</dfn>, <em>const</em> <a class="type" href="params.h.html#cvflann::SearchParams" title='cvflann::SearchParams' data-ref="cvflann::SearchParams">SearchParams</a>&amp; <dfn class="local col6 decl" id="2846params" title='params' data-type='const cvflann::SearchParams &amp;' data-ref="2846params">params</dfn>)</td></tr>
+<tr><th id="240">240</th><td>    {</td></tr>
+<tr><th id="241">241</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;radiusSearch(<a class="local col2 ref" href="#2842query" title='query' data-ref="2842query">query</a>, <a class="local col3 ref" href="#2843indices" title='indices' data-ref="2843indices">indices</a>, <a class="local col4 ref" href="#2844dists" title='dists' data-ref="2844dists">dists</a>, <a class="local col5 ref" href="#2845radius" title='radius' data-ref="2845radius">radius</a>, <a class="local col6 ref" href="#2846params" title='params' data-ref="2846params">params</a>);</td></tr>
+<tr><th id="242">242</th><td>    }</td></tr>
+<tr><th id="243">243</th><td></td></tr>
+<tr><th id="244">244</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="245">245</th><td><i class="doc">     * <span class="command">\brief</span> Method that searches for nearest-neighbours</i></td></tr>
+<tr><th id="246">246</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="247">247</th><td>    <em>void</em> <dfn class="decl def" id="_ZN7cvflann5Index13findNeighborsERNS_9ResultSetINT_10ResultTypeEEEPKNS2_11ElementTypeERKNS_12SearchParamsE" title='cvflann::Index::findNeighbors' data-ref="_ZN7cvflann5Index13findNeighborsERNS_9ResultSetINT_10ResultTypeEEEPKNS2_11ElementTypeERKNS_12SearchParamsE">findNeighbors</dfn>(<a class="type" href="result_set.h.html#cvflann::ResultSet" title='cvflann::ResultSet' data-ref="cvflann::ResultSet">ResultSet</a>&lt;<a class="typedef" href="#cvflann::Index::DistanceType" title='cvflann::Index::DistanceType' data-type='typename Distance::ResultType' data-ref="cvflann::Index::DistanceType">DistanceType</a>&gt;&amp; <dfn class="local col7 decl" id="2847result" title='result' data-type='ResultSet&lt;DistanceType&gt; &amp;' data-ref="2847result">result</dfn>, <em>const</em> <a class="typedef" href="#cvflann::Index::ElementType" title='cvflann::Index::ElementType' data-type='typename Distance::ElementType' data-ref="cvflann::Index::ElementType">ElementType</a>* <dfn class="local col8 decl" id="2848vec" title='vec' data-type='const ElementType *' data-ref="2848vec">vec</dfn>, <em>const</em> <a class="type" href="params.h.html#cvflann::SearchParams" title='cvflann::SearchParams' data-ref="cvflann::SearchParams">SearchParams</a>&amp; <dfn class="local col9 decl" id="2849searchParams" title='searchParams' data-type='const cvflann::SearchParams &amp;' data-ref="2849searchParams">searchParams</dfn>)</td></tr>
+<tr><th id="248">248</th><td>    {</td></tr>
+<tr><th id="249">249</th><td>        <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>-&gt;findNeighbors(<a class="local col7 ref" href="#2847result" title='result' data-ref="2847result">result</a>, <a class="local col8 ref" href="#2848vec" title='vec' data-ref="2848vec">vec</a>, <a class="local col9 ref" href="#2849searchParams" title='searchParams' data-ref="2849searchParams">searchParams</a>);</td></tr>
+<tr><th id="250">250</th><td>    }</td></tr>
+<tr><th id="251">251</th><td></td></tr>
+<tr><th id="252">252</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="253">253</th><td><i class="doc">     * <span class="command">\brief</span> Returns actual index</i></td></tr>
+<tr><th id="254">254</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="255">255</th><td>    <a class="macro" href="defines.h.html#57" title="__attribute__ ((deprecated))" data-ref="_M/FLANN_DEPRECATED">FLANN_DEPRECATED</a> <a class="type" href="nn_index.h.html#cvflann::NNIndex" title='cvflann::NNIndex' data-ref="cvflann::NNIndex">NNIndex</a>&lt;Distance&gt;* <dfn class="decl def" id="_ZN7cvflann5Index8getIndexEv" title='cvflann::Index::getIndex' data-ref="_ZN7cvflann5Index8getIndexEv">getIndex</dfn>()</td></tr>
+<tr><th id="256">256</th><td>    {</td></tr>
+<tr><th id="257">257</th><td>        <b>return</b> <a class="member" href="#cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</a>;</td></tr>
+<tr><th id="258">258</th><td>    }</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td>    <i>/**</i></td></tr>
+<tr><th id="261">261</th><td><i>     * \brief Returns index parameters.</i></td></tr>
+<tr><th id="262">262</th><td><i>     * \deprecated use getParameters() instead.</i></td></tr>
+<tr><th id="263">263</th><td><i>     */</i></td></tr>
+<tr><th id="264">264</th><td>    <a class="macro" href="defines.h.html#57" title="__attribute__ ((deprecated))" data-ref="_M/FLANN_DEPRECATED">FLANN_DEPRECATED</a>  <em>const</em> <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a>* <dfn class="decl def" id="_ZN7cvflann5Index18getIndexParametersEv" title='cvflann::Index::getIndexParameters' data-ref="_ZN7cvflann5Index18getIndexParametersEv">getIndexParameters</dfn>()</td></tr>
+<tr><th id="265">265</th><td>    {</td></tr>
+<tr><th id="266">266</th><td>        <b>return</b> &amp;<a class="member" href="#cvflann::Index::index_params_" title='cvflann::Index::index_params_' data-ref="cvflann::Index::index_params_">index_params_</a>;</td></tr>
+<tr><th id="267">267</th><td>    }</td></tr>
+<tr><th id="268">268</th><td></td></tr>
+<tr><th id="269">269</th><td><b>private</b>:</td></tr>
+<tr><th id="270">270</th><td>    <i class="doc">/** Pointer to actual index class */</i></td></tr>
+<tr><th id="271">271</th><td>    <a class="type" href="nn_index.h.html#cvflann::NNIndex" title='cvflann::NNIndex' data-ref="cvflann::NNIndex">NNIndex</a>&lt;Distance&gt;* <dfn class="decl" id="cvflann::Index::nnIndex_" title='cvflann::Index::nnIndex_' data-ref="cvflann::Index::nnIndex_">nnIndex_</dfn>;</td></tr>
+<tr><th id="272">272</th><td>    <i class="doc">/** Indices if the index was loaded from a file */</i></td></tr>
+<tr><th id="273">273</th><td>    <em>bool</em> <dfn class="decl" id="cvflann::Index::loaded_" title='cvflann::Index::loaded_' data-ref="cvflann::Index::loaded_">loaded_</dfn>;</td></tr>
+<tr><th id="274">274</th><td>    <i class="doc">/** Parameters passed to the index */</i></td></tr>
+<tr><th id="275">275</th><td>    <a class="typedef" href="params.h.html#cvflann::IndexParams" title='cvflann::IndexParams' data-type='std::map&lt;std::string, any&gt;' data-ref="cvflann::IndexParams">IndexParams</a> <dfn class="decl" id="cvflann::Index::index_params_" title='cvflann::Index::index_params_' data-ref="cvflann::Index::index_params_">index_params_</dfn>;</td></tr>
+<tr><th id="276">276</th><td>};</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="279">279</th><td><i class="doc"> * Performs a hierarchical clustering of the points passed as argument and then takes a cut in the</i></td></tr>
+<tr><th id="280">280</th><td><i class="doc"> * the clustering tree to return a flat clustering.</i></td></tr>
+<tr><th id="281">281</th><td><i class="doc"> * <span class="command">@param</span>[in] <span class="arg">points</span> Points to be clustered</i></td></tr>
+<tr><th id="282">282</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">centers</span> The computed cluster centres. Matrix should be preallocated and centers.rows is the</i></td></tr>
+<tr><th id="283">283</th><td><i class="doc"> *  number of clusters requested.</i></td></tr>
+<tr><th id="284">284</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">params</span> Clustering parameters (The same as for cvflann::KMeansIndex)</i></td></tr>
+<tr><th id="285">285</th><td><i class="doc"> * <span class="command">@param</span> <span class="arg">d</span> Distance to be used for clustering (eg: cvflann::L2)</i></td></tr>
+<tr><th id="286">286</th><td><i class="doc"> * <span class="command">@return</span> number of clusters computed (can be different than clusters.rows and is the highest number</i></td></tr>
+<tr><th id="287">287</th><td><i class="doc"> * of the form (branching-1)*K+1 smaller than clusters.rows).</i></td></tr>
+<tr><th id="288">288</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="289">289</th><td><b>template</b> &lt;<b>typename</b> Distance&gt;</td></tr>
+<tr><th id="290">290</th><td><em>int</em> <dfn class="decl def" id="_ZN7cvflann22hierarchicalClusteringERKNS_6MatrixINT_11ElementTypeEEERNS0_INS1_10ResultTypeEEERKNS_17KMeansIndexParamsES1_" title='cvflann::hierarchicalClustering' data-ref="_ZN7cvflann22hierarchicalClusteringERKNS_6MatrixINT_11ElementTypeEEERNS0_INS1_10ResultTypeEEERKNS_17KMeansIndexParamsES1_">hierarchicalClustering</dfn>(<em>const</em> <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<b>typename</b> Distance::ElementType&gt;&amp; <dfn class="local col0 decl" id="2850points" title='points' data-type='const Matrix&lt;typename Distance::ElementType&gt; &amp;' data-ref="2850points">points</dfn>, <a class="type" href="matrix.h.html#cvflann::Matrix" title='cvflann::Matrix' data-ref="cvflann::Matrix">Matrix</a>&lt;<b>typename</b> Distance::ResultType&gt;&amp; <dfn class="local col1 decl" id="2851centers" title='centers' data-type='Matrix&lt;typename Distance::ResultType&gt; &amp;' data-ref="2851centers">centers</dfn>,</td></tr>
+<tr><th id="291">291</th><td>                           <em>const</em> <a class="type" href="kmeans_index.h.html#cvflann::KMeansIndexParams" title='cvflann::KMeansIndexParams' data-ref="cvflann::KMeansIndexParams">KMeansIndexParams</a>&amp; <dfn class="local col2 decl" id="2852params" title='params' data-type='const cvflann::KMeansIndexParams &amp;' data-ref="2852params">params</dfn>, Distance <dfn class="local col3 decl" id="2853d" title='d' data-type='Distance' data-ref="2853d">d</dfn> = Distance())</td></tr>
+<tr><th id="292">292</th><td>{</td></tr>
+<tr><th id="293">293</th><td>    <a class="type" href="kmeans_index.h.html#cvflann::KMeansIndex" title='cvflann::KMeansIndex' data-ref="cvflann::KMeansIndex">KMeansIndex</a>&lt;Distance&gt; <dfn class="local col4 decl" id="2854kmeans" title='kmeans' data-type='KMeansIndex&lt;Distance&gt;' data-ref="2854kmeans">kmeans</dfn>(<a class="local col0 ref" href="#2850points" title='points' data-ref="2850points">points</a>, <a class="local col2 ref" href="#2852params" title='params' data-ref="2852params">params</a>, <a class="local col3 ref" href="#2853d" title='d' data-ref="2853d">d</a>);</td></tr>
+<tr><th id="294">294</th><td>    <a class="local col4 ref" href="#2854kmeans" title='kmeans' data-ref="2854kmeans">kmeans</a>.buildIndex();</td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td>    <em>int</em> <dfn class="local col5 decl" id="2855clusterNum" title='clusterNum' data-type='int' data-ref="2855clusterNum">clusterNum</dfn> = <a class="local col4 ref" href="#2854kmeans" title='kmeans' data-ref="2854kmeans">kmeans</a>.getClusterCenters(<a class="local col1 ref" href="#2851centers" title='centers' data-ref="2851centers">centers</a>);</td></tr>
+<tr><th id="297">297</th><td>    <b>return</b> <a class="local col5 ref" href="#2855clusterNum" title='clusterNum' data-ref="2855clusterNum">clusterNum</a>;</td></tr>
+<tr><th id="298">298</th><td>}</td></tr>
+<tr><th id="299">299</th><td></td></tr>
+<tr><th id="300">300</th><td>}</td></tr>
+<tr><th id="301">301</th><td><u>#<span data-ppcond="31">endif</span> /* OPENCV_FLANN_BASE_HPP_ */</u></td></tr>
+<tr><th id="302">302</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../apps/haartraining/createsamples.cpp.html'>opencv/apps/haartraining/createsamples.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

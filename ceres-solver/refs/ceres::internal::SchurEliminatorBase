@@ -1,0 +1,145 @@
+<def f='ceres-solver/internal/ceres/schur_eliminator.h' l='164' ll='211'/>
+<ovr f='ceres-solver/internal/ceres/schur_eliminator.h' l='226' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_2_2.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<size>8</size>
+<doc f='ceres-solver/internal/ceres/schur_eliminator.h' l='47'>// Classes implementing the SchurEliminatorBase interface implement
+// variable elimination for linear least squares problems. Assuming
+// that the input linear system Ax = b can be partitioned into
+//
+//  E y + F z = b
+//
+// Where x = [y;z] is a partition of the variables.  The paritioning
+// of the variables is such that, E&apos;E is a block diagonal matrix. Or
+// in other words, the parameter blocks in E form an independent set
+// of the of the graph implied by the block matrix A&apos;A. Then, this
+// class provides the functionality to compute the Schur complement
+// system
+//
+//   S z = r
+//
+// where
+//
+//   S = F&apos;F - F&apos;E (E&apos;E)^{-1} E&apos;F and r = F&apos;b - F&apos;E(E&apos;E)^(-1) E&apos;b
+//
+// This is the Eliminate operation, i.e., construct the linear system
+// obtained by eliminating the variables in E.
+//
+// The eliminator also provides the reverse functionality, i.e. given
+// values for z it can back substitute for the values of y, by solving the
+// linear system
+//
+//  Ey = b - F z
+//
+// which is done by observing that
+//
+//  y = (E&apos;E)^(-1) [E&apos;b - E&apos;F z]
+//
+// The eliminator has a number of requirements.
+//
+// The rows of A are ordered so that for every variable block in y,
+// all the rows containing that variable block occur as a vertically
+// contiguous block. i.e the matrix A looks like
+//
+//              E                 F                   chunk
+//  A = [ y1   0   0   0 |  z1    0    0   0    z5]     1
+//      [ y1   0   0   0 |  z1   z2    0   0     0]     1
+//      [  0  y2   0   0 |   0    0   z3   0     0]     2
+//      [  0   0  y3   0 |  z1   z2   z3  z4    z5]     3
+//      [  0   0  y3   0 |  z1    0    0   0    z5]     3
+//      [  0   0   0  y4 |   0    0    0   0    z5]     4
+//      [  0   0   0  y4 |   0   z2    0   0     0]     4
+//      [  0   0   0  y4 |   0    0    0   0     0]     4
+//      [  0   0   0   0 |  z1    0    0   0     0] non chunk blocks
+//      [  0   0   0   0 |   0    0   z3  z4    z5] non chunk blocks
+//
+// This structure should be reflected in the corresponding
+// CompressedRowBlockStructure object associated with A. The linear
+// system Ax = b should either be well posed or the array D below
+// should be non-null and the diagonal matrix corresponding to it
+// should be non-singular. For simplicity of exposition only the case
+// with a null D is described.
+//
+// The usual way to do the elimination is as follows. Starting with
+//
+//  E y + F z = b
+//
+// we can form the normal equations,
+//
+//  E&apos;E y + E&apos;F z = E&apos;b
+//  F&apos;E y + F&apos;F z = F&apos;b
+//
+// multiplying both sides of the first equation by (E&apos;E)^(-1) and then
+// by F&apos;E we get
+//
+//  F&apos;E y + F&apos;E (E&apos;E)^(-1) E&apos;F z =  F&apos;E (E&apos;E)^(-1) E&apos;b
+//  F&apos;E y +                F&apos;F z =  F&apos;b
+//
+// now subtracting the two equations we get
+//
+// [FF&apos; - F&apos;E (E&apos;E)^(-1) E&apos;F] z = F&apos;b - F&apos;E(E&apos;E)^(-1) E&apos;b
+//
+// Instead of forming the normal equations and operating on them as
+// general sparse matrices, the algorithm here deals with one
+// parameter block in y at a time. The rows corresponding to a single
+// parameter block yi are known as a chunk, and the algorithm operates
+// on one chunk at a time. The mathematics remains the same since the
+// reduced linear system can be shown to be the sum of the reduced
+// linear systems for each chunk. This can be seen by observing two
+// things.
+//
+//  1. E&apos;E is a block diagonal matrix.
+//
+//  2. When E&apos;F is computed, only the terms within a single chunk
+//  interact, i.e for y1 column blocks when transposed and multiplied
+//  with F, the only non-zero contribution comes from the blocks in
+//  chunk1.
+//
+// Thus, the reduced linear system
+//
+//  FF&apos; - F&apos;E (E&apos;E)^(-1) E&apos;F
+//
+// can be re-written as
+//
+//  sum_k F_k F_k&apos; - F_k&apos;E_k (E_k&apos;E_k)^(-1) E_k&apos; F_k
+//
+// Where the sum is over chunks and E_k&apos;E_k is dense matrix of size y1
+// x y1.
+//
+// Advanced usage. Uptil now it has been assumed that the user would
+// be interested in all of the Schur Complement S. However, it is also
+// possible to use this eliminator to obtain an arbitrary submatrix of
+// the full Schur complement. When the eliminator is generating the
+// blocks of S, it asks the RandomAccessBlockMatrix instance passed to
+// it if it has storage for that block. If it does, the eliminator
+// computes/updates it, if not it is skipped. This is useful when one
+// is interested in constructing a preconditioner based on the Schur
+// Complement, e.g., computing the block diagonal of S so that it can
+// be used as a preconditioner for an Iterative Substructuring based
+// solver [See Agarwal et al, Bundle Adjustment in the Large, ECCV
+// 2008 for an example of such use].
+//
+// Example usage: Please see schur_complement_solver.cc</doc>
+<fun r='_ZN5ceres8internal19SchurEliminatorBaseD1Ev'/>
+<fun r='_ZN5ceres8internal19SchurEliminatorBase4InitEibPKNS0_27CompressedRowBlockStructureE'/>
+<fun r='_ZN5ceres8internal19SchurEliminatorBase9EliminateEPKNS0_17BlockSparseMatrixEPKdS6_PNS0_23BlockRandomAccessMatrixEPd'/>
+<fun r='_ZN5ceres8internal19SchurEliminatorBase14BackSubstituteEPKNS0_17BlockSparseMatrixEPKdS6_S6_Pd'/>
+<fun r='_ZN5ceres8internal19SchurEliminatorBase6CreateERKNS0_12LinearSolver7OptionsE'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_2_3.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_2_4.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_2_d.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_3_3.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_3_4.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_3_6.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_3_9.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_3_d.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_4_3.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_4_4.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_4_8.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_4_9.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_4_d.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_2_d_d.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_4_4_2.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_4_4_3.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_4_4_4.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_4_4_d.cc' l='53' c='ceres::internal::SchurEliminator'/>
+<ovr f='ceres-solver/internal/ceres/generated/schur_eliminator_d_d_d.cc' l='49' c='ceres::internal::SchurEliminator'/>

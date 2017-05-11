@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>fgd_bgfg_common.hpp source code [opencv/modules/gpu/src/cuda/fgd_bgfg_common.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="bgfg::BGPixelStat "/>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/gpu/src/cuda/fgd_bgfg_common.hpp'; var root_path = '../../../../..'; var data_path = '../../../../../../data';</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>opencv</a>/<a href='../../..'>modules</a>/<a href='../..'>gpu</a>/<a href='..'>src</a>/<a href='./'>cuda</a>/<a href='fgd_bgfg_common.hpp.html'>fgd_bgfg_common.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2009, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#<span data-ppcond="43">ifndef</span> <span class="macro" data-ref="_M/__FGD_BGFG_COMMON_HPP__">__FGD_BGFG_COMMON_HPP__</span></u></td></tr>
+<tr><th id="44">44</th><td><u>#define <dfn class="macro" id="_M/__FGD_BGFG_COMMON_HPP__" data-ref="_M/__FGD_BGFG_COMMON_HPP__">__FGD_BGFG_COMMON_HPP__</dfn></u></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><u>#include <a href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html">"opencv2/core/cuda_devptrs.hpp"</a></u></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><b>namespace</b> <span class="namespace">bgfg</span></td></tr>
+<tr><th id="49">49</th><td>{</td></tr>
+<tr><th id="50">50</th><td>    <b>struct</b> <dfn class="type def" id="bgfg::BGPixelStat" title='bgfg::BGPixelStat' data-ref="bgfg::BGPixelStat">BGPixelStat</dfn></td></tr>
+<tr><th id="51">51</th><td>    {</td></tr>
+<tr><th id="52">52</th><td>    <b>public</b>:</td></tr>
+<tr><th id="53">53</th><td><u>#<span data-ppcond="53">ifdef</span> <span class="macro" data-ref="_M/__CUDACC__">__CUDACC__</span></u></td></tr>
+<tr><th id="54">54</th><td>        __device__ <em>float</em>&amp; Pbc(<em>int</em> i, <em>int</em> j);</td></tr>
+<tr><th id="55">55</th><td>        __device__ <em>float</em>&amp; Pbcc(<em>int</em> i, <em>int</em> j);</td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>        __device__ <em>unsigned</em> <em>char</em>&amp; is_trained_st_model(<em>int</em> i, <em>int</em> j);</td></tr>
+<tr><th id="58">58</th><td>        __device__ <em>unsigned</em> <em>char</em>&amp; is_trained_dyn_model(<em>int</em> i, <em>int</em> j);</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>        __device__ <em>float</em>&amp; PV_C(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="61">61</th><td>        __device__ <em>float</em>&amp; PVB_C(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="62">62</th><td>        <b>template</b> &lt;<b>typename</b> T&gt; __device__ T&amp; V_C(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>        __device__ <em>float</em>&amp; PV_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="65">65</th><td>        __device__ <em>float</em>&amp; PVB_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="66">66</th><td>        <b>template</b> &lt;<b>typename</b> T&gt; __device__ T&amp; V1_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="67">67</th><td>        <b>template</b> &lt;<b>typename</b> T&gt; __device__ T&amp; V2_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k);</td></tr>
+<tr><th id="68">68</th><td><u>#<span data-ppcond="53">endif</span></u></td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>        <em>int</em> <dfn class="decl" id="bgfg::BGPixelStat::rows_" title='bgfg::BGPixelStat::rows_' data-ref="bgfg::BGPixelStat::rows_">rows_</dfn>;</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::Pbc_data_" title='bgfg::BGPixelStat::Pbc_data_' data-ref="bgfg::BGPixelStat::Pbc_data_">Pbc_data_</dfn>;</td></tr>
+<tr><th id="73">73</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::Pbc_step_" title='bgfg::BGPixelStat::Pbc_step_' data-ref="bgfg::BGPixelStat::Pbc_step_">Pbc_step_</dfn>;</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::Pbcc_data_" title='bgfg::BGPixelStat::Pbcc_data_' data-ref="bgfg::BGPixelStat::Pbcc_data_">Pbcc_data_</dfn>;</td></tr>
+<tr><th id="76">76</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::Pbcc_step_" title='bgfg::BGPixelStat::Pbcc_step_' data-ref="bgfg::BGPixelStat::Pbcc_step_">Pbcc_step_</dfn>;</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::is_trained_st_model_data_" title='bgfg::BGPixelStat::is_trained_st_model_data_' data-ref="bgfg::BGPixelStat::is_trained_st_model_data_">is_trained_st_model_data_</dfn>;</td></tr>
+<tr><th id="79">79</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::is_trained_st_model_step_" title='bgfg::BGPixelStat::is_trained_st_model_step_' data-ref="bgfg::BGPixelStat::is_trained_st_model_step_">is_trained_st_model_step_</dfn>;</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::is_trained_dyn_model_data_" title='bgfg::BGPixelStat::is_trained_dyn_model_data_' data-ref="bgfg::BGPixelStat::is_trained_dyn_model_data_">is_trained_dyn_model_data_</dfn>;</td></tr>
+<tr><th id="82">82</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::is_trained_dyn_model_step_" title='bgfg::BGPixelStat::is_trained_dyn_model_step_' data-ref="bgfg::BGPixelStat::is_trained_dyn_model_step_">is_trained_dyn_model_step_</dfn>;</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::ctable_Pv_data_" title='bgfg::BGPixelStat::ctable_Pv_data_' data-ref="bgfg::BGPixelStat::ctable_Pv_data_">ctable_Pv_data_</dfn>;</td></tr>
+<tr><th id="85">85</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::ctable_Pv_step_" title='bgfg::BGPixelStat::ctable_Pv_step_' data-ref="bgfg::BGPixelStat::ctable_Pv_step_">ctable_Pv_step_</dfn>;</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::ctable_Pvb_data_" title='bgfg::BGPixelStat::ctable_Pvb_data_' data-ref="bgfg::BGPixelStat::ctable_Pvb_data_">ctable_Pvb_data_</dfn>;</td></tr>
+<tr><th id="88">88</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::ctable_Pvb_step_" title='bgfg::BGPixelStat::ctable_Pvb_step_' data-ref="bgfg::BGPixelStat::ctable_Pvb_step_">ctable_Pvb_step_</dfn>;</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::ctable_v_data_" title='bgfg::BGPixelStat::ctable_v_data_' data-ref="bgfg::BGPixelStat::ctable_v_data_">ctable_v_data_</dfn>;</td></tr>
+<tr><th id="91">91</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::ctable_v_step_" title='bgfg::BGPixelStat::ctable_v_step_' data-ref="bgfg::BGPixelStat::ctable_v_step_">ctable_v_step_</dfn>;</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::cctable_Pv_data_" title='bgfg::BGPixelStat::cctable_Pv_data_' data-ref="bgfg::BGPixelStat::cctable_Pv_data_">cctable_Pv_data_</dfn>;</td></tr>
+<tr><th id="94">94</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::cctable_Pv_step_" title='bgfg::BGPixelStat::cctable_Pv_step_' data-ref="bgfg::BGPixelStat::cctable_Pv_step_">cctable_Pv_step_</dfn>;</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::cctable_Pvb_data_" title='bgfg::BGPixelStat::cctable_Pvb_data_' data-ref="bgfg::BGPixelStat::cctable_Pvb_data_">cctable_Pvb_data_</dfn>;</td></tr>
+<tr><th id="97">97</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::cctable_Pvb_step_" title='bgfg::BGPixelStat::cctable_Pvb_step_' data-ref="bgfg::BGPixelStat::cctable_Pvb_step_">cctable_Pvb_step_</dfn>;</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::cctable_v1_data_" title='bgfg::BGPixelStat::cctable_v1_data_' data-ref="bgfg::BGPixelStat::cctable_v1_data_">cctable_v1_data_</dfn>;</td></tr>
+<tr><th id="100">100</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::cctable_v1_step_" title='bgfg::BGPixelStat::cctable_v1_step_' data-ref="bgfg::BGPixelStat::cctable_v1_step_">cctable_v1_step_</dfn>;</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>        <em>unsigned</em> <em>char</em>* <dfn class="decl" id="bgfg::BGPixelStat::cctable_v2_data_" title='bgfg::BGPixelStat::cctable_v2_data_' data-ref="bgfg::BGPixelStat::cctable_v2_data_">cctable_v2_data_</dfn>;</td></tr>
+<tr><th id="103">103</th><td>        <a class="typedef" href="../../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl" id="bgfg::BGPixelStat::cctable_v2_step_" title='bgfg::BGPixelStat::cctable_v2_step_' data-ref="bgfg::BGPixelStat::cctable_v2_step_">cctable_v2_step_</dfn>;</td></tr>
+<tr><th id="104">104</th><td>    };</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td><u>#<span data-ppcond="106">ifdef</span> <span class="macro" data-ref="_M/__CUDACC__">__CUDACC__</span></u></td></tr>
+<tr><th id="107">107</th><td>    __device__ __forceinline__ <em>float</em>&amp; BGPixelStat::Pbc(<em>int</em> i, <em>int</em> j)</td></tr>
+<tr><th id="108">108</th><td>    {</td></tr>
+<tr><th id="109">109</th><td>        <b>return</b> *((<em>float</em>*)(Pbc_data_ + i * Pbc_step_) + j);</td></tr>
+<tr><th id="110">110</th><td>    }</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>    __device__ __forceinline__ <em>float</em>&amp; BGPixelStat::Pbcc(<em>int</em> i, <em>int</em> j)</td></tr>
+<tr><th id="113">113</th><td>    {</td></tr>
+<tr><th id="114">114</th><td>        <b>return</b> *((<em>float</em>*)(Pbcc_data_ + i * Pbcc_step_) + j);</td></tr>
+<tr><th id="115">115</th><td>    }</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td>    __device__ __forceinline__ <em>unsigned</em> <em>char</em>&amp; BGPixelStat::is_trained_st_model(<em>int</em> i, <em>int</em> j)</td></tr>
+<tr><th id="118">118</th><td>    {</td></tr>
+<tr><th id="119">119</th><td>        <b>return</b> *((<em>unsigned</em> <em>char</em>*)(is_trained_st_model_data_ + i * is_trained_st_model_step_) + j);</td></tr>
+<tr><th id="120">120</th><td>    }</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    __device__ __forceinline__ <em>unsigned</em> <em>char</em>&amp; BGPixelStat::is_trained_dyn_model(<em>int</em> i, <em>int</em> j)</td></tr>
+<tr><th id="123">123</th><td>    {</td></tr>
+<tr><th id="124">124</th><td>        <b>return</b> *((<em>unsigned</em> <em>char</em>*)(is_trained_dyn_model_data_ + i * is_trained_dyn_model_step_) + j);</td></tr>
+<tr><th id="125">125</th><td>    }</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>    __device__ __forceinline__ <em>float</em>&amp; BGPixelStat::PV_C(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="128">128</th><td>    {</td></tr>
+<tr><th id="129">129</th><td>        <b>return</b> *((<em>float</em>*)(ctable_Pv_data_ + ((k * rows_) + i) * ctable_Pv_step_) + j);</td></tr>
+<tr><th id="130">130</th><td>    }</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>    __device__ __forceinline__ <em>float</em>&amp; BGPixelStat::PVB_C(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="133">133</th><td>    {</td></tr>
+<tr><th id="134">134</th><td>        <b>return</b> *((<em>float</em>*)(ctable_Pvb_data_ + ((k * rows_) + i) * ctable_Pvb_step_) + j);</td></tr>
+<tr><th id="135">135</th><td>    }</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>    <b>template</b> &lt;<b>typename</b> T&gt; __device__ __forceinline__ T&amp; BGPixelStat::V_C(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="138">138</th><td>    {</td></tr>
+<tr><th id="139">139</th><td>        <b>return</b> *((T*)(ctable_v_data_ + ((k * rows_) + i) * ctable_v_step_) + j);</td></tr>
+<tr><th id="140">140</th><td>    }</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>    __device__ __forceinline__ <em>float</em>&amp; BGPixelStat::PV_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="143">143</th><td>    {</td></tr>
+<tr><th id="144">144</th><td>        <b>return</b> *((<em>float</em>*)(cctable_Pv_data_ + ((k * rows_) + i) * cctable_Pv_step_) + j);</td></tr>
+<tr><th id="145">145</th><td>    }</td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>    __device__ __forceinline__ <em>float</em>&amp; BGPixelStat::PVB_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="148">148</th><td>    {</td></tr>
+<tr><th id="149">149</th><td>        <b>return</b> *((<em>float</em>*)(cctable_Pvb_data_ + ((k * rows_) + i) * cctable_Pvb_step_) + j);</td></tr>
+<tr><th id="150">150</th><td>    }</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>    <b>template</b> &lt;<b>typename</b> T&gt; __device__ __forceinline__ T&amp; BGPixelStat::V1_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="153">153</th><td>    {</td></tr>
+<tr><th id="154">154</th><td>        <b>return</b> *((T*)(cctable_v1_data_ + ((k * rows_) + i) * cctable_v1_step_) + j);</td></tr>
+<tr><th id="155">155</th><td>    }</td></tr>
+<tr><th id="156">156</th><td></td></tr>
+<tr><th id="157">157</th><td>    <b>template</b> &lt;<b>typename</b> T&gt; __device__ __forceinline__ T&amp; BGPixelStat::V2_CC(<em>int</em> i, <em>int</em> j, <em>int</em> k)</td></tr>
+<tr><th id="158">158</th><td>    {</td></tr>
+<tr><th id="159">159</th><td>        <b>return</b> *((T*)(cctable_v2_data_ + ((k * rows_) + i) * cctable_v2_step_) + j);</td></tr>
+<tr><th id="160">160</th><td>    }</td></tr>
+<tr><th id="161">161</th><td><u>#<span data-ppcond="106">endif</span></u></td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>    <em>const</em> <em>int</em> <dfn class="decl def" id="bgfg::PARTIAL_HISTOGRAM_COUNT" title='bgfg::PARTIAL_HISTOGRAM_COUNT' data-ref="bgfg::PARTIAL_HISTOGRAM_COUNT">PARTIAL_HISTOGRAM_COUNT</dfn> = <var>240</var>;</td></tr>
+<tr><th id="164">164</th><td>    <em>const</em> <em>int</em> <dfn class="decl def" id="bgfg::HISTOGRAM_BIN_COUNT" title='bgfg::HISTOGRAM_BIN_COUNT' data-ref="bgfg::HISTOGRAM_BIN_COUNT">HISTOGRAM_BIN_COUNT</dfn> = <var>256</var>;</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>    <b>template</b> &lt;<b>typename</b> PT, <b>typename</b> CT&gt;</td></tr>
+<tr><th id="167">167</th><td>    <em>void</em> <dfn class="decl" id="_ZN4bgfg21calcDiffHistogram_gpuEN2cv3gpu9PtrStepSzIhEES3_PjS4_S4_S4_S4_S4_bP11CUstream_st" title='bgfg::calcDiffHistogram_gpu' data-ref="_ZN4bgfg21calcDiffHistogram_gpuEN2cv3gpu9PtrStepSzIhEES3_PjS4_S4_S4_S4_S4_bP11CUstream_st">calcDiffHistogram_gpu</dfn>(<span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col1 decl" id="1prevFrame" title='prevFrame' data-type='cv::gpu::PtrStepSzb' data-ref="1prevFrame">prevFrame</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col2 decl" id="2curFrame" title='curFrame' data-type='cv::gpu::PtrStepSzb' data-ref="2curFrame">curFrame</dfn>,</td></tr>
+<tr><th id="168">168</th><td>                               <em>unsigned</em> <em>int</em>* <dfn class="local col3 decl" id="3hist0" title='hist0' data-type='unsigned int *' data-ref="3hist0">hist0</dfn>, <em>unsigned</em> <em>int</em>* <dfn class="local col4 decl" id="4hist1" title='hist1' data-type='unsigned int *' data-ref="4hist1">hist1</dfn>, <em>unsigned</em> <em>int</em>* <dfn class="local col5 decl" id="5hist2" title='hist2' data-type='unsigned int *' data-ref="5hist2">hist2</dfn>,</td></tr>
+<tr><th id="169">169</th><td>                               <em>unsigned</em> <em>int</em>* <dfn class="local col6 decl" id="6partialBuf0" title='partialBuf0' data-type='unsigned int *' data-ref="6partialBuf0">partialBuf0</dfn>, <em>unsigned</em> <em>int</em>* <dfn class="local col7 decl" id="7partialBuf1" title='partialBuf1' data-type='unsigned int *' data-ref="7partialBuf1">partialBuf1</dfn>, <em>unsigned</em> <em>int</em>* <dfn class="local col8 decl" id="8partialBuf2" title='partialBuf2' data-type='unsigned int *' data-ref="8partialBuf2">partialBuf2</dfn>,</td></tr>
+<tr><th id="170">170</th><td>                               <em>bool</em> <dfn class="local col9 decl" id="9cc20" title='cc20' data-type='bool' data-ref="9cc20">cc20</dfn>, <span class='typedef' title='cudaStream_t' data-type='struct CUstream_st *' data-ref="cudaStream_t">cudaStream_t</span> <dfn class="local col0 decl" id="10stream" title='stream' data-type='cudaStream_t' data-ref="10stream">stream</dfn>);</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td>    <b>template</b> &lt;<b>typename</b> PT, <b>typename</b> CT&gt;</td></tr>
+<tr><th id="173">173</th><td>    <em>void</em> <dfn class="decl" id="_ZN4bgfg22calcDiffThreshMask_gpuEN2cv3gpu9PtrStepSzIhEES3_6uchar3S3_P11CUstream_st" title='bgfg::calcDiffThreshMask_gpu' data-ref="_ZN4bgfg22calcDiffThreshMask_gpuEN2cv3gpu9PtrStepSzIhEES3_6uchar3S3_P11CUstream_st">calcDiffThreshMask_gpu</dfn>(<span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col1 decl" id="11prevFrame" title='prevFrame' data-type='cv::gpu::PtrStepSzb' data-ref="11prevFrame">prevFrame</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col2 decl" id="12curFrame" title='curFrame' data-type='cv::gpu::PtrStepSzb' data-ref="12curFrame">curFrame</dfn>, <span class='typedef' title='uchar3' data-type='struct uchar3' data-ref="uchar3">uchar3</span> <dfn class="local col3 decl" id="13bestThres" title='bestThres' data-type='uchar3' data-ref="13bestThres">bestThres</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col4 decl" id="14changeMask" title='changeMask' data-type='cv::gpu::PtrStepSzb' data-ref="14changeMask">changeMask</dfn>, <span class='typedef' title='cudaStream_t' data-type='struct CUstream_st *' data-ref="cudaStream_t">cudaStream_t</span> <dfn class="local col5 decl" id="15stream" title='stream' data-type='cudaStream_t' data-ref="15stream">stream</dfn>);</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>    <em>void</em> <dfn class="decl" id="_ZN4bgfg14setBGPixelStatERKNS_11BGPixelStatE" title='bgfg::setBGPixelStat' data-ref="_ZN4bgfg14setBGPixelStatERKNS_11BGPixelStatE">setBGPixelStat</dfn>(<em>const</em> <a class="type" href="#bgfg::BGPixelStat" title='bgfg::BGPixelStat' data-ref="bgfg::BGPixelStat">BGPixelStat</a>&amp; <dfn class="local col6 decl" id="16stat" title='stat' data-type='const bgfg::BGPixelStat &amp;' data-ref="16stat">stat</dfn>);</td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td>    <b>template</b> &lt;<b>typename</b> PT, <b>typename</b> CT, <b>typename</b> OT&gt;</td></tr>
+<tr><th id="178">178</th><td>    <em>void</em> <dfn class="decl" id="_ZN4bgfg22bgfgClassification_gpuEN2cv3gpu9PtrStepSzIhEES3_S3_S3_S3_iifiiP11CUstream_st" title='bgfg::bgfgClassification_gpu' data-ref="_ZN4bgfg22bgfgClassification_gpuEN2cv3gpu9PtrStepSzIhEES3_S3_S3_S3_iifiiP11CUstream_st">bgfgClassification_gpu</dfn>(<span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col7 decl" id="17prevFrame" title='prevFrame' data-type='cv::gpu::PtrStepSzb' data-ref="17prevFrame">prevFrame</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col8 decl" id="18curFrame" title='curFrame' data-type='cv::gpu::PtrStepSzb' data-ref="18curFrame">curFrame</dfn>,</td></tr>
+<tr><th id="179">179</th><td>                                <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col9 decl" id="19Ftd" title='Ftd' data-type='cv::gpu::PtrStepSzb' data-ref="19Ftd">Ftd</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col0 decl" id="20Fbd" title='Fbd' data-type='cv::gpu::PtrStepSzb' data-ref="20Fbd">Fbd</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col1 decl" id="21foreground" title='foreground' data-type='cv::gpu::PtrStepSzb' data-ref="21foreground">foreground</dfn>,</td></tr>
+<tr><th id="180">180</th><td>                                <em>int</em> <dfn class="local col2 decl" id="22deltaC" title='deltaC' data-type='int' data-ref="22deltaC">deltaC</dfn>, <em>int</em> <dfn class="local col3 decl" id="23deltaCC" title='deltaCC' data-type='int' data-ref="23deltaCC">deltaCC</dfn>, <em>float</em> <dfn class="local col4 decl" id="24alpha2" title='alpha2' data-type='float' data-ref="24alpha2">alpha2</dfn>, <em>int</em> <dfn class="local col5 decl" id="25N1c" title='N1c' data-type='int' data-ref="25N1c">N1c</dfn>, <em>int</em> <dfn class="local col6 decl" id="26N1cc" title='N1cc' data-type='int' data-ref="26N1cc">N1cc</dfn>, <span class='typedef' title='cudaStream_t' data-type='struct CUstream_st *' data-ref="cudaStream_t">cudaStream_t</span> <dfn class="local col7 decl" id="27stream" title='stream' data-type='cudaStream_t' data-ref="27stream">stream</dfn>);</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>    <b>template</b> &lt;<b>typename</b> PT, <b>typename</b> CT, <b>typename</b> OT&gt;</td></tr>
+<tr><th id="183">183</th><td>    <em>void</em> <dfn class="decl" id="_ZN4bgfg25updateBackgroundModel_gpuEN2cv3gpu9PtrStepSzIhEES3_S3_S3_S3_S3_iifffiiiifP11CUstream_st" title='bgfg::updateBackgroundModel_gpu' data-ref="_ZN4bgfg25updateBackgroundModel_gpuEN2cv3gpu9PtrStepSzIhEES3_S3_S3_S3_S3_iifffiiiifP11CUstream_st">updateBackgroundModel_gpu</dfn>(<span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col8 decl" id="28prevFrame" title='prevFrame' data-type='cv::gpu::PtrStepSzb' data-ref="28prevFrame">prevFrame</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col9 decl" id="29curFrame" title='curFrame' data-type='cv::gpu::PtrStepSzb' data-ref="29curFrame">curFrame</dfn>,</td></tr>
+<tr><th id="184">184</th><td>                                   <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col0 decl" id="30Ftd" title='Ftd' data-type='cv::gpu::PtrStepSzb' data-ref="30Ftd">Ftd</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col1 decl" id="31Fbd" title='Fbd' data-type='cv::gpu::PtrStepSzb' data-ref="31Fbd">Fbd</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col2 decl" id="32foreground" title='foreground' data-type='cv::gpu::PtrStepSzb' data-ref="32foreground">foreground</dfn>, <span class="namespace">cv::gpu::</span><a class="typedef" href="../../../core/include/opencv2/core/cuda_devptrs.hpp.html#cv::gpu::PtrStepSzb" title='cv::gpu::PtrStepSzb' data-type='PtrStepSz&lt;unsigned char&gt;' data-ref="cv::gpu::PtrStepSzb">PtrStepSzb</a> <dfn class="local col3 decl" id="33background" title='background' data-type='cv::gpu::PtrStepSzb' data-ref="33background">background</dfn>,</td></tr>
+<tr><th id="185">185</th><td>                                   <em>int</em> <dfn class="local col4 decl" id="34deltaC" title='deltaC' data-type='int' data-ref="34deltaC">deltaC</dfn>, <em>int</em> <dfn class="local col5 decl" id="35deltaCC" title='deltaCC' data-type='int' data-ref="35deltaCC">deltaCC</dfn>, <em>float</em> <dfn class="local col6 decl" id="36alpha1" title='alpha1' data-type='float' data-ref="36alpha1">alpha1</dfn>, <em>float</em> <dfn class="local col7 decl" id="37alpha2" title='alpha2' data-type='float' data-ref="37alpha2">alpha2</dfn>, <em>float</em> <dfn class="local col8 decl" id="38alpha3" title='alpha3' data-type='float' data-ref="38alpha3">alpha3</dfn>, <em>int</em> <dfn class="local col9 decl" id="39N1c" title='N1c' data-type='int' data-ref="39N1c">N1c</dfn>, <em>int</em> <dfn class="local col0 decl" id="40N1cc" title='N1cc' data-type='int' data-ref="40N1cc">N1cc</dfn>, <em>int</em> <dfn class="local col1 decl" id="41N2c" title='N2c' data-type='int' data-ref="41N2c">N2c</dfn>, <em>int</em> <dfn class="local col2 decl" id="42N2cc" title='N2cc' data-type='int' data-ref="42N2cc">N2cc</dfn>, <em>float</em> <dfn class="local col3 decl" id="43T" title='T' data-type='float' data-ref="43T">T</dfn>,</td></tr>
+<tr><th id="186">186</th><td>                                   <span class='typedef' title='cudaStream_t' data-type='struct CUstream_st *' data-ref="cudaStream_t">cudaStream_t</span> <dfn class="local col4 decl" id="44stream" title='stream' data-type='cudaStream_t' data-ref="44stream">stream</dfn>);</td></tr>
+<tr><th id="187">187</th><td>}</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td><u>#<span data-ppcond="43">endif</span> // __FGD_BGFG_COMMON_HPP__</u></td></tr>
+<tr><th id="190">190</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../fgd_bgfg.cpp.html'>opencv/modules/gpu/src/fgd_bgfg.cpp</a><br/>Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>levenberg_marquardt_strategy.h source code [ceres-solver/internal/ceres/levenberg_marquardt_strategy.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ceres::internal::LevenbergMarquardtStrategy "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/internal/ceres/levenberg_marquardt_strategy.h'; var root_path = '../../..'; var data_path = '../../../../data';</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>ceres-solver</a>/<a href='..'>internal</a>/<a href='./'>ceres</a>/<a href='levenberg_marquardt_strategy.h.html'>levenberg_marquardt_strategy.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/CERES_INTERNAL_LEVENBERG_MARQUARDT_STRATEGY_H_">CERES_INTERNAL_LEVENBERG_MARQUARDT_STRATEGY_H_</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/CERES_INTERNAL_LEVENBERG_MARQUARDT_STRATEGY_H_" data-ref="_M/CERES_INTERNAL_LEVENBERG_MARQUARDT_STRATEGY_H_">CERES_INTERNAL_LEVENBERG_MARQUARDT_STRATEGY_H_</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../include/ceres/internal/eigen.h.html">"ceres/internal/eigen.h"</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="trust_region_strategy.h.html">"ceres/trust_region_strategy.h"</a></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><b>namespace</b> <span class="namespace">ceres</span> {</td></tr>
+<tr><th id="38">38</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><i>// Levenberg-Marquardt step computation and trust region sizing</i></td></tr>
+<tr><th id="41">41</th><td><i>// strategy based on on "Methods for Nonlinear Least Squares" by</i></td></tr>
+<tr><th id="42">42</th><td><i>// K. Madsen, H.B. Nielsen and O. Tingleff. Available to download from</i></td></tr>
+<tr><th id="43">43</th><td><i>//</i></td></tr>
+<tr><th id="44">44</th><td><i>// <a href="http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/3215/pdf/imm3215.pdf">http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/3215/pdf/imm3215.pdf</a></i></td></tr>
+<tr><th id="45">45</th><td><b>class</b> <dfn class="type def" id="ceres::internal::LevenbergMarquardtStrategy" title='ceres::internal::LevenbergMarquardtStrategy' data-ref="ceres::internal::LevenbergMarquardtStrategy">LevenbergMarquardtStrategy</dfn> : <b>public</b> <a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</a> {</td></tr>
+<tr><th id="46">46</th><td> <b>public</b>:</td></tr>
+<tr><th id="47">47</th><td>  <b>explicit</b> <a class="decl" href="levenberg_marquardt_strategy.cc.html#_ZN5ceres8internal26LevenbergMarquardtStrategyC1ERKNS0_19TrustRegionStrategy7OptionsE" title='ceres::internal::LevenbergMarquardtStrategy::LevenbergMarquardtStrategy' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategyC1ERKNS0_19TrustRegionStrategy7OptionsE" id="_ZN5ceres8internal26LevenbergMarquardtStrategyC1ERKNS0_19TrustRegionStrategy7OptionsE">LevenbergMarquardtStrategy</a>(</td></tr>
+<tr><th id="48">48</th><td>      <em>const</em> <a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</a>::<a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy::Options" title='ceres::internal::TrustRegionStrategy::Options' data-ref="ceres::internal::TrustRegionStrategy::Options">Options</a>&amp; <dfn class="local col1 decl" id="1options" title='options' data-type='const TrustRegionStrategy::Options &amp;' data-ref="1options">options</dfn>);</td></tr>
+<tr><th id="49">49</th><td>  <b>virtual</b> <a class="virtual decl" href="levenberg_marquardt_strategy.cc.html#_ZN5ceres8internal26LevenbergMarquardtStrategyD1Ev" title='ceres::internal::LevenbergMarquardtStrategy::~LevenbergMarquardtStrategy' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategyD1Ev" id="_ZN5ceres8internal26LevenbergMarquardtStrategyD1Ev">~</a>LevenbergMarquardtStrategy();</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td>  <i>// TrustRegionStrategy interface</i></td></tr>
+<tr><th id="52">52</th><td>  <b>virtual</b> <a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</a>::<a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy::Summary" title='ceres::internal::TrustRegionStrategy::Summary' data-ref="ceres::internal::TrustRegionStrategy::Summary">Summary</a> <a class="virtual decl" href="levenberg_marquardt_strategy.cc.html#_ZN5ceres8internal26LevenbergMarquardtStrategy11ComputeStepERKNS0_19TrustRegionStrategy15PerSolveOptionsEPNS0_12SparseMatrixEPKdPd" title='ceres::internal::LevenbergMarquardtStrategy::ComputeStep' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategy11ComputeStepERKNS0_19TrustRegionStrategy15PerSolveOptionsEPNS0_12SparseMatrixEPKdPd" id="_ZN5ceres8internal26LevenbergMarquardtStrategy11ComputeStepERKNS0_19TrustRegionStrategy15PerSolveOptionsEPNS0_12SparseMatrixEPKdPd">ComputeStep</a>(</td></tr>
+<tr><th id="53">53</th><td>      <em>const</em> <a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy" title='ceres::internal::TrustRegionStrategy' data-ref="ceres::internal::TrustRegionStrategy">TrustRegionStrategy</a>::<a class="type" href="trust_region_strategy.h.html#ceres::internal::TrustRegionStrategy::PerSolveOptions" title='ceres::internal::TrustRegionStrategy::PerSolveOptions' data-ref="ceres::internal::TrustRegionStrategy::PerSolveOptions">PerSolveOptions</a>&amp; <dfn class="local col2 decl" id="2per_solve_options" title='per_solve_options' data-type='const TrustRegionStrategy::PerSolveOptions &amp;' data-ref="2per_solve_options">per_solve_options</dfn>,</td></tr>
+<tr><th id="54">54</th><td>      <a class="type" href="sparse_matrix.h.html#ceres::internal::SparseMatrix" title='ceres::internal::SparseMatrix' data-ref="ceres::internal::SparseMatrix">SparseMatrix</a>* <dfn class="local col3 decl" id="3jacobian" title='jacobian' data-type='ceres::internal::SparseMatrix *' data-ref="3jacobian">jacobian</dfn>,</td></tr>
+<tr><th id="55">55</th><td>      <em>const</em> <em>double</em>* <dfn class="local col4 decl" id="4residuals" title='residuals' data-type='const double *' data-ref="4residuals">residuals</dfn>,</td></tr>
+<tr><th id="56">56</th><td>      <em>double</em>* <dfn class="local col5 decl" id="5step" title='step' data-type='double *' data-ref="5step">step</dfn>);</td></tr>
+<tr><th id="57">57</th><td>  <b>virtual</b> <em>void</em> <a class="virtual decl" href="levenberg_marquardt_strategy.cc.html#_ZN5ceres8internal26LevenbergMarquardtStrategy12StepAcceptedEd" title='ceres::internal::LevenbergMarquardtStrategy::StepAccepted' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategy12StepAcceptedEd" id="_ZN5ceres8internal26LevenbergMarquardtStrategy12StepAcceptedEd">StepAccepted</a>(<em>double</em> <dfn class="local col6 decl" id="6step_quality" title='step_quality' data-type='double' data-ref="6step_quality">step_quality</dfn>);</td></tr>
+<tr><th id="58">58</th><td>  <b>virtual</b> <em>void</em> <a class="virtual decl" href="levenberg_marquardt_strategy.cc.html#_ZN5ceres8internal26LevenbergMarquardtStrategy12StepRejectedEd" title='ceres::internal::LevenbergMarquardtStrategy::StepRejected' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategy12StepRejectedEd" id="_ZN5ceres8internal26LevenbergMarquardtStrategy12StepRejectedEd">StepRejected</a>(<em>double</em> <dfn class="local col7 decl" id="7step_quality" title='step_quality' data-type='double' data-ref="7step_quality">step_quality</dfn>);</td></tr>
+<tr><th id="59">59</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl def" id="_ZN5ceres8internal26LevenbergMarquardtStrategy13StepIsInvalidEv" title='ceres::internal::LevenbergMarquardtStrategy::StepIsInvalid' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategy13StepIsInvalidEv">StepIsInvalid</dfn>() {</td></tr>
+<tr><th id="60">60</th><td>    <i>// Treat the current step as a rejected step with no increase in</i></td></tr>
+<tr><th id="61">61</th><td><i>    // solution quality. Since rejected steps lead to decrease in the</i></td></tr>
+<tr><th id="62">62</th><td><i>    // size of the trust region, the next time ComputeStep is called,</i></td></tr>
+<tr><th id="63">63</th><td><i>    // this will lead to a better conditioned system.</i></td></tr>
+<tr><th id="64">64</th><td>    <a class="virtual member" href="levenberg_marquardt_strategy.cc.html#_ZN5ceres8internal26LevenbergMarquardtStrategy12StepRejectedEd" title='ceres::internal::LevenbergMarquardtStrategy::StepRejected' data-ref="_ZN5ceres8internal26LevenbergMarquardtStrategy12StepRejectedEd">StepRejected</a>(<var>0.0</var>);</td></tr>
+<tr><th id="65">65</th><td>  }</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>  <b>virtual</b> <em>double</em> <a class="virtual decl" href="levenberg_marquardt_strategy.cc.html#_ZNK5ceres8internal26LevenbergMarquardtStrategy6RadiusEv" title='ceres::internal::LevenbergMarquardtStrategy::Radius' data-ref="_ZNK5ceres8internal26LevenbergMarquardtStrategy6RadiusEv" id="_ZNK5ceres8internal26LevenbergMarquardtStrategy6RadiusEv">Radius</a>() <em>const</em>;</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td> <b>private</b>:</td></tr>
+<tr><th id="70">70</th><td>  <a class="type" href="linear_solver.h.html#ceres::internal::LinearSolver" title='ceres::internal::LinearSolver' data-ref="ceres::internal::LinearSolver">LinearSolver</a>* <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::linear_solver_" title='ceres::internal::LevenbergMarquardtStrategy::linear_solver_' data-ref="ceres::internal::LevenbergMarquardtStrategy::linear_solver_">linear_solver_</dfn>;</td></tr>
+<tr><th id="71">71</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::radius_" title='ceres::internal::LevenbergMarquardtStrategy::radius_' data-ref="ceres::internal::LevenbergMarquardtStrategy::radius_">radius_</dfn>;</td></tr>
+<tr><th id="72">72</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::max_radius_" title='ceres::internal::LevenbergMarquardtStrategy::max_radius_' data-ref="ceres::internal::LevenbergMarquardtStrategy::max_radius_">max_radius_</dfn>;</td></tr>
+<tr><th id="73">73</th><td>  <em>const</em> <em>double</em> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::min_diagonal_" title='ceres::internal::LevenbergMarquardtStrategy::min_diagonal_' data-ref="ceres::internal::LevenbergMarquardtStrategy::min_diagonal_">min_diagonal_</dfn>;</td></tr>
+<tr><th id="74">74</th><td>  <em>const</em> <em>double</em> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::max_diagonal_" title='ceres::internal::LevenbergMarquardtStrategy::max_diagonal_' data-ref="ceres::internal::LevenbergMarquardtStrategy::max_diagonal_">max_diagonal_</dfn>;</td></tr>
+<tr><th id="75">75</th><td>  <em>double</em> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::decrease_factor_" title='ceres::internal::LevenbergMarquardtStrategy::decrease_factor_' data-ref="ceres::internal::LevenbergMarquardtStrategy::decrease_factor_">decrease_factor_</dfn>;</td></tr>
+<tr><th id="76">76</th><td>  <em>bool</em> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::reuse_diagonal_" title='ceres::internal::LevenbergMarquardtStrategy::reuse_diagonal_' data-ref="ceres::internal::LevenbergMarquardtStrategy::reuse_diagonal_">reuse_diagonal_</dfn>;</td></tr>
+<tr><th id="77">77</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::diagonal_" title='ceres::internal::LevenbergMarquardtStrategy::diagonal_' data-ref="ceres::internal::LevenbergMarquardtStrategy::diagonal_">diagonal_</dfn>;   <i>// diagonal_ =  diag(J'J)</i></td></tr>
+<tr><th id="78">78</th><td>  <i>// Scaled copy of diagonal_. Stored here as optimization to prevent</i></td></tr>
+<tr><th id="79">79</th><td><i>  // allocations in every iteration and reuse when a step fails and</i></td></tr>
+<tr><th id="80">80</th><td><i>  // ComputeStep is called again.</i></td></tr>
+<tr><th id="81">81</th><td>  <a class="typedef" href="../../include/ceres/internal/eigen.h.html#ceres::Vector" title='ceres::Vector' data-type='Eigen::Matrix&lt;double, Eigen::Dynamic, 1&gt;' data-ref="ceres::Vector">Vector</a> <dfn class="decl" id="ceres::internal::LevenbergMarquardtStrategy::lm_diagonal_" title='ceres::internal::LevenbergMarquardtStrategy::lm_diagonal_' data-ref="ceres::internal::LevenbergMarquardtStrategy::lm_diagonal_">lm_diagonal_</dfn>;  <i>// lm_diagonal_ = diagonal_ / radius_;</i></td></tr>
+<tr><th id="82">82</th><td>};</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td>}  <i>// namespace internal</i></td></tr>
+<tr><th id="85">85</th><td>}  <i>// namespace ceres</i></td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td><u>#<span data-ppcond="31">endif</span>  // CERES_INTERNAL_LEVENBERG_MARQUARDT_STRATEGY_H_</u></td></tr>
+<tr><th id="88">88</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='levenberg_marquardt_strategy.cc.html'>ceres-solver/internal/ceres/levenberg_marquardt_strategy.cc</a><br/>Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

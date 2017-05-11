@@ -1,0 +1,731 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>alloc.cpp source code [opencv/modules/core/src/alloc.cpp] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'opencv/modules/core/src/alloc.cpp'; var root_path = '../../../..'; var data_path = '../../../../../data';</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>opencv</a>/<a href='../..'>modules</a>/<a href='..'>core</a>/<a href='./'>src</a>/<a href='alloc.cpp.html'>alloc.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*M///////////////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>//  By downloading, copying, installing or using the software you agree to this license.</i></td></tr>
+<tr><th id="6">6</th><td><i>//  If you do not agree to this license, do not download, install,</i></td></tr>
+<tr><th id="7">7</th><td><i>//  copy or use the software.</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>//</i></td></tr>
+<tr><th id="10">10</th><td><i>//                           License Agreement</i></td></tr>
+<tr><th id="11">11</th><td><i>//                For Open Source Computer Vision Library</i></td></tr>
+<tr><th id="12">12</th><td><i>//</i></td></tr>
+<tr><th id="13">13</th><td><i>// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.</i></td></tr>
+<tr><th id="14">14</th><td><i>// Copyright (C) 2009, Willow Garage Inc., all rights reserved.</i></td></tr>
+<tr><th id="15">15</th><td><i>// Third party copyrights are property of their respective owners.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// Redistribution and use in source and binary forms, with or without modification,</i></td></tr>
+<tr><th id="18">18</th><td><i>// are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="19">19</th><td><i>//</i></td></tr>
+<tr><th id="20">20</th><td><i>//   * Redistribution's of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="21">21</th><td><i>//     this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="22">22</th><td><i>//</i></td></tr>
+<tr><th id="23">23</th><td><i>//   * Redistribution's in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="24">24</th><td><i>//     this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="25">25</th><td><i>//     and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="26">26</th><td><i>//</i></td></tr>
+<tr><th id="27">27</th><td><i>//   * The name of the copyright holders may not be used to endorse or promote products</i></td></tr>
+<tr><th id="28">28</th><td><i>//     derived from this software without specific prior written permission.</i></td></tr>
+<tr><th id="29">29</th><td><i>//</i></td></tr>
+<tr><th id="30">30</th><td><i>// This software is provided by the copyright holders and contributors "as is" and</i></td></tr>
+<tr><th id="31">31</th><td><i>// any express or implied warranties, including, but not limited to, the implied</i></td></tr>
+<tr><th id="32">32</th><td><i>// warranties of merchantability and fitness for a particular purpose are disclaimed.</i></td></tr>
+<tr><th id="33">33</th><td><i>// In no event shall the Intel Corporation or contributors be liable for any direct,</i></td></tr>
+<tr><th id="34">34</th><td><i>// indirect, incidental, special, exemplary, or consequential damages</i></td></tr>
+<tr><th id="35">35</th><td><i>// (including, but not limited to, procurement of substitute goods or services;</i></td></tr>
+<tr><th id="36">36</th><td><i>// loss of use, data, or profits; or business interruption) however caused</i></td></tr>
+<tr><th id="37">37</th><td><i>// and on any theory of liability, whether in contract, strict liability,</i></td></tr>
+<tr><th id="38">38</th><td><i>// or tort (including negligence or otherwise) arising in any way out of</i></td></tr>
+<tr><th id="39">39</th><td><i>// the use of this software, even if advised of the possibility of such damage.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>//M*/</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="precomp.hpp.html">"precomp.hpp"</a></u></td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><u>#define <dfn class="macro" id="_M/CV_USE_SYSTEM_MALLOC" data-ref="_M/CV_USE_SYSTEM_MALLOC">CV_USE_SYSTEM_MALLOC</dfn> 1</u></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><b>namespace</b> <span class="namespace">cv</span></td></tr>
+<tr><th id="48">48</th><td>{</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><em>static</em> <em>void</em>* <dfn class="tu decl def" id="_ZN2cvL16OutOfMemoryErrorEm" title='cv::OutOfMemoryError' data-type='void * cv::OutOfMemoryError(size_t size)' data-ref="_ZN2cvL16OutOfMemoryErrorEm">OutOfMemoryError</dfn>(<a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="1size" title='size' data-type='size_t' data-ref="1size">size</dfn>)</td></tr>
+<tr><th id="51">51</th><td>{</td></tr>
+<tr><th id="52">52</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#219" title="cv::error( cv::Exception(CV_StsNoMem, cv::format (&quot;Failed to allocate %lu bytes&quot;, (unsigned long)size), __func__, &quot;/home/yzf/code/opencv/modules/core/src/alloc.cpp&quot;, 52) )" data-ref="_M/CV_Error_">CV_Error_</a>(<a class="enum" href="../include/opencv2/core/types_c.h.html#::CV_StsNoMem" title='::CV_StsNoMem' data-ref="::CV_StsNoMem">CV_StsNoMem</a>, (<q>"Failed to allocate %lu bytes"</q>, (<em>unsigned</em> <em>long</em>)<a class="local col1 ref" href="#1size" title='size' data-ref="1size">size</a>));</td></tr>
+<tr><th id="53">53</th><td>    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="54">54</th><td>}</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><u>#<span data-ppcond="56">if</span> <a class="macro" href="#45" title="1" data-ref="_M/CV_USE_SYSTEM_MALLOC">CV_USE_SYSTEM_MALLOC</a></u></td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><u>#<span data-ppcond="58">if</span> defined <span class="macro" data-ref="_M/WIN32">WIN32</span> || defined <span class="macro" data-ref="_M/_WIN32">_WIN32</span></u></td></tr>
+<tr><th id="59">59</th><td><em>void</em> deleteThreadAllocData() {}</td></tr>
+<tr><th id="60">60</th><td><u>#<span data-ppcond="58">endif</span></u></td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td><em>void</em>* <dfn class="decl def" id="_ZN2cv10fastMallocEm" title='cv::fastMalloc' data-ref="_ZN2cv10fastMallocEm">fastMalloc</dfn>( <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="2size" title='size' data-type='size_t' data-ref="2size">size</dfn> )</td></tr>
+<tr><th id="63">63</th><td>{</td></tr>
+<tr><th id="64">64</th><td>    <a class="typedef" href="../include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>* <dfn class="local col3 decl" id="3udata" title='udata' data-type='uchar *' data-ref="3udata">udata</dfn> = (<a class="typedef" href="../include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>*)<a class="ref" href="../../../../include/stdlib.h.html#malloc" title='malloc' data-ref="malloc">malloc</a>(<a class="local col2 ref" href="#2size" title='size' data-ref="2size">size</a> + <b>sizeof</b>(<em>void</em>*) + <a class="macro" href="../include/opencv2/core/internal.hpp.html#337" title="16" data-ref="_M/CV_MALLOC_ALIGN">CV_MALLOC_ALIGN</a>);</td></tr>
+<tr><th id="65">65</th><td>    <b>if</b>(!<a class="local col3 ref" href="#3udata" title='udata' data-ref="3udata">udata</a>)</td></tr>
+<tr><th id="66">66</th><td>        <b>return</b> <a class="tu ref" href="#_ZN2cvL16OutOfMemoryErrorEm" title='cv::OutOfMemoryError' data-use='c' data-ref="_ZN2cvL16OutOfMemoryErrorEm">OutOfMemoryError</a>(<a class="local col2 ref" href="#2size" title='size' data-ref="2size">size</a>);</td></tr>
+<tr><th id="67">67</th><td>    <a class="typedef" href="../include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>** <dfn class="local col4 decl" id="4adata" title='adata' data-type='uchar **' data-ref="4adata">adata</dfn> = <a class="ref" href="../include/opencv2/core/core.hpp.html#_ZN2cvL8alignPtrEPT_i" title='cv::alignPtr' data-ref="_ZN2cvL8alignPtrEPT_i">alignPtr</a>((<a class="typedef" href="../include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>**)<a class="local col3 ref" href="#3udata" title='udata' data-ref="3udata">udata</a> + <var>1</var>, <a class="macro" href="../include/opencv2/core/internal.hpp.html#337" title="16" data-ref="_M/CV_MALLOC_ALIGN">CV_MALLOC_ALIGN</a>);</td></tr>
+<tr><th id="68">68</th><td>    <a class="local col4 ref" href="#4adata" title='adata' data-ref="4adata">adata</a>[-<var>1</var>] = <a class="local col3 ref" href="#3udata" title='udata' data-ref="3udata">udata</a>;</td></tr>
+<tr><th id="69">69</th><td>    <b>return</b> <a class="local col4 ref" href="#4adata" title='adata' data-ref="4adata">adata</a>;</td></tr>
+<tr><th id="70">70</th><td>}</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><em>void</em> <dfn class="decl def" id="_ZN2cv8fastFreeEPv" title='cv::fastFree' data-ref="_ZN2cv8fastFreeEPv">fastFree</dfn>(<em>void</em>* <dfn class="local col5 decl" id="5ptr" title='ptr' data-type='void *' data-ref="5ptr">ptr</dfn>)</td></tr>
+<tr><th id="73">73</th><td>{</td></tr>
+<tr><th id="74">74</th><td>    <b>if</b>(<a class="local col5 ref" href="#5ptr" title='ptr' data-ref="5ptr">ptr</a>)</td></tr>
+<tr><th id="75">75</th><td>    {</td></tr>
+<tr><th id="76">76</th><td>        <a class="typedef" href="../include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>* <dfn class="local col6 decl" id="6udata" title='udata' data-type='uchar *' data-ref="6udata">udata</dfn> = ((<a class="typedef" href="../include/opencv2/core/types_c.h.html#uchar" title='uchar' data-type='unsigned char' data-ref="uchar">uchar</a>**)<a class="local col5 ref" href="#5ptr" title='ptr' data-ref="5ptr">ptr</a>)[-<var>1</var>];</td></tr>
+<tr><th id="77">77</th><td>        <a class="macro" href="../include/opencv2/core/core.hpp.html#225" title="" data-ref="_M/CV_DbgAssert">CV_DbgAssert</a>(udata &lt; (uchar*)ptr &amp;&amp;</td></tr>
+<tr><th id="78">78</th><td>               ((uchar*)ptr - udata) &lt;= (ptrdiff_t)(<b>sizeof</b>(<em>void</em>*)+CV_MALLOC_ALIGN));</td></tr>
+<tr><th id="79">79</th><td>        <a class="ref" href="../../../../include/stdlib.h.html#free" title='free' data-ref="free">free</a>(<a class="local col6 ref" href="#6udata" title='udata' data-ref="6udata">udata</a>);</td></tr>
+<tr><th id="80">80</th><td>    }</td></tr>
+<tr><th id="81">81</th><td>}</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><u>#<span data-ppcond="56">else</span> //CV_USE_SYSTEM_MALLOC</u></td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td><u>#if 0</u></td></tr>
+<tr><th id="86">86</th><td><u>#define SANITY_CHECK(block) \</u></td></tr>
+<tr><th id="87">87</th><td><u>    CV_Assert(((size_t)(block) &amp; (MEM_BLOCK_SIZE-1)) == 0 &amp;&amp; \</u></td></tr>
+<tr><th id="88">88</th><td><u>        (unsigned)(block)-&gt;binIdx &lt;= (unsigned)MAX_BIN &amp;&amp; \</u></td></tr>
+<tr><th id="89">89</th><td><u>        (block)-&gt;signature == MEM_BLOCK_SIGNATURE)</u></td></tr>
+<tr><th id="90">90</th><td><u>#else</u></td></tr>
+<tr><th id="91">91</th><td><u>#define SANITY_CHECK(block)</u></td></tr>
+<tr><th id="92">92</th><td><u>#endif</u></td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td><u>#define STAT(stmt)</u></td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td><u>#ifdef WIN32</u></td></tr>
+<tr><th id="97">97</th><td><u>#if (_WIN32_WINNT &gt;= 0x0602)</u></td></tr>
+<tr><th id="98">98</th><td><u>#include &lt;synchapi.h&gt;</u></td></tr>
+<tr><th id="99">99</th><td><u>#endif</u></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><b>struct</b> CriticalSection</td></tr>
+<tr><th id="102">102</th><td>{</td></tr>
+<tr><th id="103">103</th><td>    CriticalSection()</td></tr>
+<tr><th id="104">104</th><td>    {</td></tr>
+<tr><th id="105">105</th><td><u>#if (_WIN32_WINNT &gt;= 0x0600)</u></td></tr>
+<tr><th id="106">106</th><td>        InitializeCriticalSectionEx(&amp;cs, <var>1000</var>, <var>0</var>);</td></tr>
+<tr><th id="107">107</th><td><u>#else</u></td></tr>
+<tr><th id="108">108</th><td>        InitializeCriticalSection(&amp;cs);</td></tr>
+<tr><th id="109">109</th><td><u>#endif</u></td></tr>
+<tr><th id="110">110</th><td>    }</td></tr>
+<tr><th id="111">111</th><td>    ~CriticalSection() { DeleteCriticalSection(&amp;cs); }</td></tr>
+<tr><th id="112">112</th><td>    <em>void</em> lock() { EnterCriticalSection(&amp;cs); }</td></tr>
+<tr><th id="113">113</th><td>    <em>void</em> unlock() { LeaveCriticalSection(&amp;cs); }</td></tr>
+<tr><th id="114">114</th><td>    <em>bool</em> trylock() { <b>return</b> TryEnterCriticalSection(&amp;cs) != <var>0</var>; }</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>    CRITICAL_SECTION cs;</td></tr>
+<tr><th id="117">117</th><td>};</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td><em>void</em>* SystemAlloc(size_t size)</td></tr>
+<tr><th id="120">120</th><td>{</td></tr>
+<tr><th id="121">121</th><td>    <em>void</em>* ptr = malloc(size);</td></tr>
+<tr><th id="122">122</th><td>    <b>return</b> ptr ? ptr : OutOfMemoryError(size);</td></tr>
+<tr><th id="123">123</th><td>}</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td><em>void</em> SystemFree(<em>void</em>* ptr, size_t)</td></tr>
+<tr><th id="126">126</th><td>{</td></tr>
+<tr><th id="127">127</th><td>    free(ptr);</td></tr>
+<tr><th id="128">128</th><td>}</td></tr>
+<tr><th id="129">129</th><td><u>#else //WIN32</u></td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td><u>#include &lt;sys/mman.h&gt;</u></td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><b>struct</b> CriticalSection</td></tr>
+<tr><th id="134">134</th><td>{</td></tr>
+<tr><th id="135">135</th><td>    CriticalSection() { pthread_mutex_init(&amp;mutex, <var>0</var>); }</td></tr>
+<tr><th id="136">136</th><td>    ~CriticalSection() { pthread_mutex_destroy(&amp;mutex); }</td></tr>
+<tr><th id="137">137</th><td>    <em>void</em> lock() { pthread_mutex_lock(&amp;mutex); }</td></tr>
+<tr><th id="138">138</th><td>    <em>void</em> unlock() { pthread_mutex_unlock(&amp;mutex); }</td></tr>
+<tr><th id="139">139</th><td>    <em>bool</em> trylock() { <b>return</b> pthread_mutex_trylock(&amp;mutex) == <var>0</var>; }</td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td>    pthread_mutex_t mutex;</td></tr>
+<tr><th id="142">142</th><td>};</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><em>void</em>* SystemAlloc(size_t size)</td></tr>
+<tr><th id="145">145</th><td>{</td></tr>
+<tr><th id="146">146</th><td>    <u>#ifndef MAP_ANONYMOUS</u></td></tr>
+<tr><th id="147">147</th><td>    <u>#define MAP_ANONYMOUS MAP_ANON</u></td></tr>
+<tr><th id="148">148</th><td>    <u>#endif</u></td></tr>
+<tr><th id="149">149</th><td>    <em>void</em>* ptr = <var>0</var>;</td></tr>
+<tr><th id="150">150</th><td>    ptr = mmap(ptr, size, (PROT_READ | PROT_WRITE), MAP_PRIVATE|MAP_ANONYMOUS, -<var>1</var>, <var>0</var>);</td></tr>
+<tr><th id="151">151</th><td>    <b>return</b> ptr != MAP_FAILED ? ptr : OutOfMemoryError(size);</td></tr>
+<tr><th id="152">152</th><td>}</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td><em>void</em> SystemFree(<em>void</em>* ptr, size_t size)</td></tr>
+<tr><th id="155">155</th><td>{</td></tr>
+<tr><th id="156">156</th><td>    munmap(ptr, size);</td></tr>
+<tr><th id="157">157</th><td>}</td></tr>
+<tr><th id="158">158</th><td><u>#endif //WIN32</u></td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td><b>struct</b> AutoLock</td></tr>
+<tr><th id="161">161</th><td>{</td></tr>
+<tr><th id="162">162</th><td>    AutoLock(CriticalSection&amp; _cs) : cs(&amp;_cs) { cs-&gt;lock(); }</td></tr>
+<tr><th id="163">163</th><td>    ~AutoLock() { cs-&gt;unlock(); }</td></tr>
+<tr><th id="164">164</th><td>    CriticalSection* cs;</td></tr>
+<tr><th id="165">165</th><td>};</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td><em>const</em> size_t MEM_BLOCK_SIGNATURE = <var>0x01234567</var>;</td></tr>
+<tr><th id="168">168</th><td><em>const</em> <em>int</em> MEM_BLOCK_SHIFT = <var>14</var>;</td></tr>
+<tr><th id="169">169</th><td><em>const</em> size_t MEM_BLOCK_SIZE = <var>1</var> &lt;&lt; MEM_BLOCK_SHIFT;</td></tr>
+<tr><th id="170">170</th><td><em>const</em> size_t HDR_SIZE = <var>128</var>;</td></tr>
+<tr><th id="171">171</th><td><em>const</em> size_t MAX_BLOCK_SIZE = MEM_BLOCK_SIZE - HDR_SIZE;</td></tr>
+<tr><th id="172">172</th><td><em>const</em> <em>int</em> MAX_BIN = <var>28</var>;</td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td><em>static</em> <em>const</em> <em>int</em> binSizeTab[MAX_BIN+<var>1</var>] =</td></tr>
+<tr><th id="175">175</th><td>{ <var>8</var>, <var>16</var>, <var>24</var>, <var>32</var>, <var>40</var>, <var>48</var>, <var>56</var>, <var>64</var>, <var>80</var>, <var>96</var>, <var>128</var>, <var>160</var>, <var>192</var>, <var>256</var>, <var>320</var>, <var>384</var>, <var>480</var>, <var>544</var>, <var>672</var>, <var>768</var>,</td></tr>
+<tr><th id="176">176</th><td><var>896</var>, <var>1056</var>, <var>1328</var>, <var>1600</var>, <var>2688</var>, <var>4048</var>, <var>5408</var>, <var>8128</var>, <var>16256</var> };</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td><b>struct</b> MallocTables</td></tr>
+<tr><th id="179">179</th><td>{</td></tr>
+<tr><th id="180">180</th><td>    <em>void</em> initBinTab()</td></tr>
+<tr><th id="181">181</th><td>    {</td></tr>
+<tr><th id="182">182</th><td>        <em>int</em> i, j = <var>0</var>, n;</td></tr>
+<tr><th id="183">183</th><td>        <b>for</b>( i = <var>0</var>; i &lt;= MAX_BIN; i++ )</td></tr>
+<tr><th id="184">184</th><td>        {</td></tr>
+<tr><th id="185">185</th><td>            n = binSizeTab[i]&gt;&gt;<var>3</var>;</td></tr>
+<tr><th id="186">186</th><td>            <b>for</b>( ; j &lt;= n; j++ )</td></tr>
+<tr><th id="187">187</th><td>                binIdx[j] = (uchar)i;</td></tr>
+<tr><th id="188">188</th><td>        }</td></tr>
+<tr><th id="189">189</th><td>    }</td></tr>
+<tr><th id="190">190</th><td>    <em>int</em> bin(size_t size)</td></tr>
+<tr><th id="191">191</th><td>    {</td></tr>
+<tr><th id="192">192</th><td>        assert( size &lt;= MAX_BLOCK_SIZE );</td></tr>
+<tr><th id="193">193</th><td>        <b>return</b> binIdx[(size + <var>7</var>)&gt;&gt;<var>3</var>];</td></tr>
+<tr><th id="194">194</th><td>    }</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td>    MallocTables()</td></tr>
+<tr><th id="197">197</th><td>    {</td></tr>
+<tr><th id="198">198</th><td>        initBinTab();</td></tr>
+<tr><th id="199">199</th><td>    }</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td>    uchar binIdx[MAX_BLOCK_SIZE/<var>8</var>+<var>1</var>];</td></tr>
+<tr><th id="202">202</th><td>};</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>MallocTables mallocTables;</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td><b>struct</b> Node</td></tr>
+<tr><th id="207">207</th><td>{</td></tr>
+<tr><th id="208">208</th><td>    Node* next;</td></tr>
+<tr><th id="209">209</th><td>};</td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td><b>struct</b> ThreadData;</td></tr>
+<tr><th id="212">212</th><td></td></tr>
+<tr><th id="213">213</th><td><b>struct</b> Block</td></tr>
+<tr><th id="214">214</th><td>{</td></tr>
+<tr><th id="215">215</th><td>    Block(Block* _next)</td></tr>
+<tr><th id="216">216</th><td>    {</td></tr>
+<tr><th id="217">217</th><td>        signature = MEM_BLOCK_SIGNATURE;</td></tr>
+<tr><th id="218">218</th><td>        prev = <var>0</var>;</td></tr>
+<tr><th id="219">219</th><td>        next = _next;</td></tr>
+<tr><th id="220">220</th><td>        privateFreeList = publicFreeList = <var>0</var>;</td></tr>
+<tr><th id="221">221</th><td>        bumpPtr = endPtr = <var>0</var>;</td></tr>
+<tr><th id="222">222</th><td>        objSize = <var>0</var>;</td></tr>
+<tr><th id="223">223</th><td>        threadData = <var>0</var>;</td></tr>
+<tr><th id="224">224</th><td>        data = (uchar*)<b>this</b> + HDR_SIZE;</td></tr>
+<tr><th id="225">225</th><td>    }</td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>    ~Block() {}</td></tr>
+<tr><th id="228">228</th><td></td></tr>
+<tr><th id="229">229</th><td>    <em>void</em> init(Block* _prev, Block* _next, <em>int</em> _objSize, ThreadData* _threadData)</td></tr>
+<tr><th id="230">230</th><td>    {</td></tr>
+<tr><th id="231">231</th><td>        prev = _prev;</td></tr>
+<tr><th id="232">232</th><td>        <b>if</b>(prev)</td></tr>
+<tr><th id="233">233</th><td>            prev-&gt;next = <b>this</b>;</td></tr>
+<tr><th id="234">234</th><td>        next = _next;</td></tr>
+<tr><th id="235">235</th><td>        <b>if</b>(next)</td></tr>
+<tr><th id="236">236</th><td>            next-&gt;prev = <b>this</b>;</td></tr>
+<tr><th id="237">237</th><td>        objSize = _objSize;</td></tr>
+<tr><th id="238">238</th><td>        binIdx = mallocTables.bin(objSize);</td></tr>
+<tr><th id="239">239</th><td>        threadData = _threadData;</td></tr>
+<tr><th id="240">240</th><td>        privateFreeList = publicFreeList = <var>0</var>;</td></tr>
+<tr><th id="241">241</th><td>        bumpPtr = data;</td></tr>
+<tr><th id="242">242</th><td>        <em>int</em> nobjects = MAX_BLOCK_SIZE/objSize;</td></tr>
+<tr><th id="243">243</th><td>        endPtr = bumpPtr + nobjects*objSize;</td></tr>
+<tr><th id="244">244</th><td>        almostEmptyThreshold = (nobjects + <var>1</var>)/<var>2</var>;</td></tr>
+<tr><th id="245">245</th><td>        allocated = <var>0</var>;</td></tr>
+<tr><th id="246">246</th><td>    }</td></tr>
+<tr><th id="247">247</th><td></td></tr>
+<tr><th id="248">248</th><td>    <em>bool</em> isFilled() <em>const</em> { <b>return</b> allocated &gt; almostEmptyThreshold; }</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>    size_t signature;</td></tr>
+<tr><th id="251">251</th><td>    Block* prev;</td></tr>
+<tr><th id="252">252</th><td>    Block* next;</td></tr>
+<tr><th id="253">253</th><td>    Node* privateFreeList;</td></tr>
+<tr><th id="254">254</th><td>    Node* publicFreeList;</td></tr>
+<tr><th id="255">255</th><td>    uchar* bumpPtr;</td></tr>
+<tr><th id="256">256</th><td>    uchar* endPtr;</td></tr>
+<tr><th id="257">257</th><td>    uchar* data;</td></tr>
+<tr><th id="258">258</th><td>    ThreadData* threadData;</td></tr>
+<tr><th id="259">259</th><td>    <em>int</em> objSize;</td></tr>
+<tr><th id="260">260</th><td>    <em>int</em> binIdx;</td></tr>
+<tr><th id="261">261</th><td>    <em>int</em> allocated;</td></tr>
+<tr><th id="262">262</th><td>    <em>int</em> almostEmptyThreshold;</td></tr>
+<tr><th id="263">263</th><td>    CriticalSection cs;</td></tr>
+<tr><th id="264">264</th><td>};</td></tr>
+<tr><th id="265">265</th><td></td></tr>
+<tr><th id="266">266</th><td><b>struct</b> BigBlock</td></tr>
+<tr><th id="267">267</th><td>{</td></tr>
+<tr><th id="268">268</th><td>    BigBlock(<em>int</em> bigBlockSize, BigBlock* _next)</td></tr>
+<tr><th id="269">269</th><td>    {</td></tr>
+<tr><th id="270">270</th><td>        first = alignPtr((Block*)(<b>this</b>+<var>1</var>), MEM_BLOCK_SIZE);</td></tr>
+<tr><th id="271">271</th><td>        next = _next;</td></tr>
+<tr><th id="272">272</th><td>        nblocks = (<em>int</em>)(((<em>char</em>*)<b>this</b> + bigBlockSize - (<em>char</em>*)first)/MEM_BLOCK_SIZE);</td></tr>
+<tr><th id="273">273</th><td>        Block* p = <var>0</var>;</td></tr>
+<tr><th id="274">274</th><td>        <b>for</b>( <em>int</em> i = nblocks-<var>1</var>; i &gt;= <var>0</var>; i-- )</td></tr>
+<tr><th id="275">275</th><td>            p = ::<b>new</b>((uchar*)first + i*MEM_BLOCK_SIZE) Block(p);</td></tr>
+<tr><th id="276">276</th><td>    }</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td>    ~BigBlock()</td></tr>
+<tr><th id="279">279</th><td>    {</td></tr>
+<tr><th id="280">280</th><td>        <b>for</b>( <em>int</em> i = nblocks-<var>1</var>; i &gt;= <var>0</var>; i-- )</td></tr>
+<tr><th id="281">281</th><td>            ((Block*)((uchar*)first+i*MEM_BLOCK_SIZE))-&gt;~Block();</td></tr>
+<tr><th id="282">282</th><td>    }</td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td>    BigBlock* next;</td></tr>
+<tr><th id="285">285</th><td>    Block* first;</td></tr>
+<tr><th id="286">286</th><td>    <em>int</em> nblocks;</td></tr>
+<tr><th id="287">287</th><td>};</td></tr>
+<tr><th id="288">288</th><td></td></tr>
+<tr><th id="289">289</th><td><b>struct</b> BlockPool</td></tr>
+<tr><th id="290">290</th><td>{</td></tr>
+<tr><th id="291">291</th><td>    BlockPool(<em>int</em> _bigBlockSize=<var>1</var>&lt;&lt;<var>20</var>) : pool(<var>0</var>), bigBlockSize(_bigBlockSize)</td></tr>
+<tr><th id="292">292</th><td>    {</td></tr>
+<tr><th id="293">293</th><td>    }</td></tr>
+<tr><th id="294">294</th><td></td></tr>
+<tr><th id="295">295</th><td>    ~BlockPool()</td></tr>
+<tr><th id="296">296</th><td>    {</td></tr>
+<tr><th id="297">297</th><td>        AutoLock lock(cs);</td></tr>
+<tr><th id="298">298</th><td>        <b>while</b>( pool )</td></tr>
+<tr><th id="299">299</th><td>        {</td></tr>
+<tr><th id="300">300</th><td>            BigBlock* nextBlock = pool-&gt;next;</td></tr>
+<tr><th id="301">301</th><td>            pool-&gt;~BigBlock();</td></tr>
+<tr><th id="302">302</th><td>            SystemFree(pool, bigBlockSize);</td></tr>
+<tr><th id="303">303</th><td>            pool = nextBlock;</td></tr>
+<tr><th id="304">304</th><td>        }</td></tr>
+<tr><th id="305">305</th><td>    }</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td>    Block* alloc()</td></tr>
+<tr><th id="308">308</th><td>    {</td></tr>
+<tr><th id="309">309</th><td>        AutoLock lock(cs);</td></tr>
+<tr><th id="310">310</th><td>        Block* block;</td></tr>
+<tr><th id="311">311</th><td>        <b>if</b>( !freeBlocks )</td></tr>
+<tr><th id="312">312</th><td>        {</td></tr>
+<tr><th id="313">313</th><td>            BigBlock* bblock = ::<b>new</b>(SystemAlloc(bigBlockSize)) BigBlock(bigBlockSize, pool);</td></tr>
+<tr><th id="314">314</th><td>            assert( bblock != <var>0</var> );</td></tr>
+<tr><th id="315">315</th><td>            freeBlocks = bblock-&gt;first;</td></tr>
+<tr><th id="316">316</th><td>            pool = bblock;</td></tr>
+<tr><th id="317">317</th><td>        }</td></tr>
+<tr><th id="318">318</th><td>        block = freeBlocks;</td></tr>
+<tr><th id="319">319</th><td>        freeBlocks = freeBlocks-&gt;next;</td></tr>
+<tr><th id="320">320</th><td>        <b>if</b>( freeBlocks )</td></tr>
+<tr><th id="321">321</th><td>            freeBlocks-&gt;prev = <var>0</var>;</td></tr>
+<tr><th id="322">322</th><td>        STAT(stat.bruttoBytes += MEM_BLOCK_SIZE);</td></tr>
+<tr><th id="323">323</th><td>        <b>return</b> block;</td></tr>
+<tr><th id="324">324</th><td>    }</td></tr>
+<tr><th id="325">325</th><td></td></tr>
+<tr><th id="326">326</th><td>    <em>void</em> free(Block* block)</td></tr>
+<tr><th id="327">327</th><td>    {</td></tr>
+<tr><th id="328">328</th><td>        AutoLock lock(cs);</td></tr>
+<tr><th id="329">329</th><td>        block-&gt;prev = <var>0</var>;</td></tr>
+<tr><th id="330">330</th><td>        block-&gt;next = freeBlocks;</td></tr>
+<tr><th id="331">331</th><td>        freeBlocks = block;</td></tr>
+<tr><th id="332">332</th><td>        STAT(stat.bruttoBytes -= MEM_BLOCK_SIZE);</td></tr>
+<tr><th id="333">333</th><td>    }</td></tr>
+<tr><th id="334">334</th><td></td></tr>
+<tr><th id="335">335</th><td>    CriticalSection cs;</td></tr>
+<tr><th id="336">336</th><td>    Block* freeBlocks;</td></tr>
+<tr><th id="337">337</th><td>    BigBlock* pool;</td></tr>
+<tr><th id="338">338</th><td>    <em>int</em> bigBlockSize;</td></tr>
+<tr><th id="339">339</th><td>    <em>int</em> blocksPerBigBlock;</td></tr>
+<tr><th id="340">340</th><td>};</td></tr>
+<tr><th id="341">341</th><td></td></tr>
+<tr><th id="342">342</th><td>BlockPool mallocPool;</td></tr>
+<tr><th id="343">343</th><td></td></tr>
+<tr><th id="344">344</th><td><b>enum</b> { START=<var>0</var>, FREE=<var>1</var>, GC=<var>2</var> };</td></tr>
+<tr><th id="345">345</th><td></td></tr>
+<tr><th id="346">346</th><td><b>struct</b> ThreadData</td></tr>
+<tr><th id="347">347</th><td>{</td></tr>
+<tr><th id="348">348</th><td>    ThreadData() { <b>for</b>(<em>int</em> i = <var>0</var>; i &lt;= MAX_BIN; i++) bins[i][START] = bins[i][FREE] = bins[i][GC] = <var>0</var>; }</td></tr>
+<tr><th id="349">349</th><td>    ~ThreadData()</td></tr>
+<tr><th id="350">350</th><td>    {</td></tr>
+<tr><th id="351">351</th><td>        <i>// mark all the thread blocks as abandoned or even release them</i></td></tr>
+<tr><th id="352">352</th><td>        <b>for</b>( <em>int</em> i = <var>0</var>; i &lt;= MAX_BIN; i++ )</td></tr>
+<tr><th id="353">353</th><td>        {</td></tr>
+<tr><th id="354">354</th><td>            Block *bin = bins[i][START], *block = bin;</td></tr>
+<tr><th id="355">355</th><td>            bins[i][START] = bins[i][FREE] = bins[i][GC] = <var>0</var>;</td></tr>
+<tr><th id="356">356</th><td>            <b>if</b>( block )</td></tr>
+<tr><th id="357">357</th><td>            {</td></tr>
+<tr><th id="358">358</th><td>                <b>do</b></td></tr>
+<tr><th id="359">359</th><td>                {</td></tr>
+<tr><th id="360">360</th><td>                    Block* next = block-&gt;next;</td></tr>
+<tr><th id="361">361</th><td>                    <em>int</em> allocated = block-&gt;allocated;</td></tr>
+<tr><th id="362">362</th><td>                    {</td></tr>
+<tr><th id="363">363</th><td>                    AutoLock lock(block-&gt;cs);</td></tr>
+<tr><th id="364">364</th><td>                    block-&gt;next = block-&gt;prev = <var>0</var>;</td></tr>
+<tr><th id="365">365</th><td>                    block-&gt;threadData = <var>0</var>;</td></tr>
+<tr><th id="366">366</th><td>                    Node *node = block-&gt;publicFreeList;</td></tr>
+<tr><th id="367">367</th><td>                    <b>for</b>( ; node != <var>0</var>; node = node-&gt;next )</td></tr>
+<tr><th id="368">368</th><td>                        allocated--;</td></tr>
+<tr><th id="369">369</th><td>                    }</td></tr>
+<tr><th id="370">370</th><td>                    <b>if</b>( allocated == <var>0</var> )</td></tr>
+<tr><th id="371">371</th><td>                        mallocPool.free(block);</td></tr>
+<tr><th id="372">372</th><td>                    block = next;</td></tr>
+<tr><th id="373">373</th><td>                }</td></tr>
+<tr><th id="374">374</th><td>                <b>while</b>( block != bin );</td></tr>
+<tr><th id="375">375</th><td>            }</td></tr>
+<tr><th id="376">376</th><td>        }</td></tr>
+<tr><th id="377">377</th><td>    }</td></tr>
+<tr><th id="378">378</th><td></td></tr>
+<tr><th id="379">379</th><td>    <em>void</em> moveBlockToFreeList( Block* block )</td></tr>
+<tr><th id="380">380</th><td>    {</td></tr>
+<tr><th id="381">381</th><td>        <em>int</em> i = block-&gt;binIdx;</td></tr>
+<tr><th id="382">382</th><td>        Block*&amp; freePtr = bins[i][FREE];</td></tr>
+<tr><th id="383">383</th><td>        CV_DbgAssert( block-&gt;next-&gt;prev == block &amp;&amp; block-&gt;prev-&gt;next == block );</td></tr>
+<tr><th id="384">384</th><td>        <b>if</b>( block != freePtr )</td></tr>
+<tr><th id="385">385</th><td>        {</td></tr>
+<tr><th id="386">386</th><td>            Block*&amp; gcPtr = bins[i][GC];</td></tr>
+<tr><th id="387">387</th><td>            <b>if</b>( gcPtr == block )</td></tr>
+<tr><th id="388">388</th><td>                gcPtr = block-&gt;next;</td></tr>
+<tr><th id="389">389</th><td>            <b>if</b>( block-&gt;next != block )</td></tr>
+<tr><th id="390">390</th><td>            {</td></tr>
+<tr><th id="391">391</th><td>                block-&gt;prev-&gt;next = block-&gt;next;</td></tr>
+<tr><th id="392">392</th><td>                block-&gt;next-&gt;prev = block-&gt;prev;</td></tr>
+<tr><th id="393">393</th><td>            }</td></tr>
+<tr><th id="394">394</th><td>            block-&gt;next = freePtr-&gt;next;</td></tr>
+<tr><th id="395">395</th><td>            block-&gt;prev = freePtr;</td></tr>
+<tr><th id="396">396</th><td>            freePtr = block-&gt;next-&gt;prev = block-&gt;prev-&gt;next = block;</td></tr>
+<tr><th id="397">397</th><td>        }</td></tr>
+<tr><th id="398">398</th><td>    }</td></tr>
+<tr><th id="399">399</th><td></td></tr>
+<tr><th id="400">400</th><td>    Block* bins[MAX_BIN+<var>1</var>][<var>3</var>];</td></tr>
+<tr><th id="401">401</th><td></td></tr>
+<tr><th id="402">402</th><td><u>#ifdef WIN32</u></td></tr>
+<tr><th id="403">403</th><td><u>#ifdef WINCE</u></td></tr>
+<tr><th id="404">404</th><td><u>#   define TLS_OUT_OF_INDEXES ((DWORD)0xFFFFFFFF)</u></td></tr>
+<tr><th id="405">405</th><td><u>#endif //WINCE</u></td></tr>
+<tr><th id="406">406</th><td></td></tr>
+<tr><th id="407">407</th><td>    <em>static</em> DWORD tlsKey;</td></tr>
+<tr><th id="408">408</th><td>    <em>static</em> ThreadData* get()</td></tr>
+<tr><th id="409">409</th><td>    {</td></tr>
+<tr><th id="410">410</th><td>        ThreadData* data;</td></tr>
+<tr><th id="411">411</th><td>        <b>if</b>( tlsKey == TLS_OUT_OF_INDEXES )</td></tr>
+<tr><th id="412">412</th><td>            tlsKey = TlsAlloc();</td></tr>
+<tr><th id="413">413</th><td>        data = (ThreadData*)TlsGetValue(tlsKey);</td></tr>
+<tr><th id="414">414</th><td>        <b>if</b>( !data )</td></tr>
+<tr><th id="415">415</th><td>        {</td></tr>
+<tr><th id="416">416</th><td>            data = <b>new</b> ThreadData;</td></tr>
+<tr><th id="417">417</th><td>            TlsSetValue(tlsKey, data);</td></tr>
+<tr><th id="418">418</th><td>        }</td></tr>
+<tr><th id="419">419</th><td>        <b>return</b> data;</td></tr>
+<tr><th id="420">420</th><td>    }</td></tr>
+<tr><th id="421">421</th><td><u>#else //WIN32</u></td></tr>
+<tr><th id="422">422</th><td>    <em>static</em> <em>void</em> deleteData(<em>void</em>* data)</td></tr>
+<tr><th id="423">423</th><td>    {</td></tr>
+<tr><th id="424">424</th><td>        <b>delete</b> (ThreadData*)data;</td></tr>
+<tr><th id="425">425</th><td>    }</td></tr>
+<tr><th id="426">426</th><td></td></tr>
+<tr><th id="427">427</th><td>    <em>static</em> pthread_key_t tlsKey;</td></tr>
+<tr><th id="428">428</th><td>    <em>static</em> ThreadData* get()</td></tr>
+<tr><th id="429">429</th><td>    {</td></tr>
+<tr><th id="430">430</th><td>        ThreadData* data;</td></tr>
+<tr><th id="431">431</th><td>        <b>if</b>( !tlsKey )</td></tr>
+<tr><th id="432">432</th><td>            pthread_key_create(&amp;tlsKey, deleteData);</td></tr>
+<tr><th id="433">433</th><td>        data = (ThreadData*)pthread_getspecific(tlsKey);</td></tr>
+<tr><th id="434">434</th><td>        <b>if</b>( !data )</td></tr>
+<tr><th id="435">435</th><td>        {</td></tr>
+<tr><th id="436">436</th><td>            data = <b>new</b> ThreadData;</td></tr>
+<tr><th id="437">437</th><td>            pthread_setspecific(tlsKey, data);</td></tr>
+<tr><th id="438">438</th><td>        }</td></tr>
+<tr><th id="439">439</th><td>        <b>return</b> data;</td></tr>
+<tr><th id="440">440</th><td>    }</td></tr>
+<tr><th id="441">441</th><td><u>#endif //WIN32</u></td></tr>
+<tr><th id="442">442</th><td>};</td></tr>
+<tr><th id="443">443</th><td></td></tr>
+<tr><th id="444">444</th><td><u>#ifdef WIN32</u></td></tr>
+<tr><th id="445">445</th><td>DWORD ThreadData::tlsKey = TLS_OUT_OF_INDEXES;</td></tr>
+<tr><th id="446">446</th><td></td></tr>
+<tr><th id="447">447</th><td><em>void</em> deleteThreadAllocData()</td></tr>
+<tr><th id="448">448</th><td>{</td></tr>
+<tr><th id="449">449</th><td>    <b>if</b>( ThreadData::tlsKey != TLS_OUT_OF_INDEXES )</td></tr>
+<tr><th id="450">450</th><td>        <b>delete</b> (ThreadData*)TlsGetValue( ThreadData::tlsKey );</td></tr>
+<tr><th id="451">451</th><td>}</td></tr>
+<tr><th id="452">452</th><td></td></tr>
+<tr><th id="453">453</th><td><u>#else //WIN32</u></td></tr>
+<tr><th id="454">454</th><td>pthread_key_t ThreadData::tlsKey = <var>0</var>;</td></tr>
+<tr><th id="455">455</th><td><u>#endif //WIN32</u></td></tr>
+<tr><th id="456">456</th><td></td></tr>
+<tr><th id="457">457</th><td><u>#if 0</u></td></tr>
+<tr><th id="458">458</th><td><em>static</em> <em>void</em> checkList(ThreadData* tls, <em>int</em> idx)</td></tr>
+<tr><th id="459">459</th><td>{</td></tr>
+<tr><th id="460">460</th><td>    Block* block = tls-&gt;bins[idx][START];</td></tr>
+<tr><th id="461">461</th><td>    <b>if</b>( !block )</td></tr>
+<tr><th id="462">462</th><td>    {</td></tr>
+<tr><th id="463">463</th><td>        CV_DbgAssert( tls-&gt;bins[idx][FREE] == <var>0</var> &amp;&amp; tls-&gt;bins[idx][GC] == <var>0</var> );</td></tr>
+<tr><th id="464">464</th><td>    }</td></tr>
+<tr><th id="465">465</th><td>    <b>else</b></td></tr>
+<tr><th id="466">466</th><td>    {</td></tr>
+<tr><th id="467">467</th><td>        <em>bool</em> gcInside = <b>false</b>;</td></tr>
+<tr><th id="468">468</th><td>        <em>bool</em> freeInside = <b>false</b>;</td></tr>
+<tr><th id="469">469</th><td>        <b>do</b></td></tr>
+<tr><th id="470">470</th><td>        {</td></tr>
+<tr><th id="471">471</th><td>            <b>if</b>( tls-&gt;bins[idx][FREE] == block )</td></tr>
+<tr><th id="472">472</th><td>                freeInside = <b>true</b>;</td></tr>
+<tr><th id="473">473</th><td>            <b>if</b>( tls-&gt;bins[idx][GC] == block )</td></tr>
+<tr><th id="474">474</th><td>                gcInside = <b>true</b>;</td></tr>
+<tr><th id="475">475</th><td>            block = block-&gt;next;</td></tr>
+<tr><th id="476">476</th><td>        }</td></tr>
+<tr><th id="477">477</th><td>        <b>while</b>( block != tls-&gt;bins[idx][START] );</td></tr>
+<tr><th id="478">478</th><td>        CV_DbgAssert( gcInside &amp;&amp; freeInside );</td></tr>
+<tr><th id="479">479</th><td>    }</td></tr>
+<tr><th id="480">480</th><td>}</td></tr>
+<tr><th id="481">481</th><td><u>#else</u></td></tr>
+<tr><th id="482">482</th><td><u>#define checkList(tls, idx)</u></td></tr>
+<tr><th id="483">483</th><td><u>#endif</u></td></tr>
+<tr><th id="484">484</th><td></td></tr>
+<tr><th id="485">485</th><td><em>void</em>* fastMalloc( size_t size )</td></tr>
+<tr><th id="486">486</th><td>{</td></tr>
+<tr><th id="487">487</th><td>    <b>if</b>( size &gt; MAX_BLOCK_SIZE )</td></tr>
+<tr><th id="488">488</th><td>    {</td></tr>
+<tr><th id="489">489</th><td>        size_t size1 = size + <b>sizeof</b>(uchar*)*<var>2</var> + MEM_BLOCK_SIZE;</td></tr>
+<tr><th id="490">490</th><td>        uchar* udata = (uchar*)SystemAlloc(size1);</td></tr>
+<tr><th id="491">491</th><td>        uchar** adata = alignPtr((uchar**)udata + <var>2</var>, MEM_BLOCK_SIZE);</td></tr>
+<tr><th id="492">492</th><td>        adata[-<var>1</var>] = udata;</td></tr>
+<tr><th id="493">493</th><td>        adata[-<var>2</var>] = (uchar*)size1;</td></tr>
+<tr><th id="494">494</th><td>        <b>return</b> adata;</td></tr>
+<tr><th id="495">495</th><td>    }</td></tr>
+<tr><th id="496">496</th><td></td></tr>
+<tr><th id="497">497</th><td>    {</td></tr>
+<tr><th id="498">498</th><td>    ThreadData* tls = ThreadData::get();</td></tr>
+<tr><th id="499">499</th><td>    <em>int</em> idx = mallocTables.bin(size);</td></tr>
+<tr><th id="500">500</th><td>    Block*&amp; startPtr = tls-&gt;bins[idx][START];</td></tr>
+<tr><th id="501">501</th><td>    Block*&amp; gcPtr = tls-&gt;bins[idx][GC];</td></tr>
+<tr><th id="502">502</th><td>    Block*&amp; freePtr = tls-&gt;bins[idx][FREE], *block = freePtr;</td></tr>
+<tr><th id="503">503</th><td>    checkList(tls, idx);</td></tr>
+<tr><th id="504">504</th><td>    size = binSizeTab[idx];</td></tr>
+<tr><th id="505">505</th><td>    STAT(</td></tr>
+<tr><th id="506">506</th><td>        stat.nettoBytes += size;</td></tr>
+<tr><th id="507">507</th><td>        stat.mallocCalls++;</td></tr>
+<tr><th id="508">508</th><td>        );</td></tr>
+<tr><th id="509">509</th><td>    uchar* data = <var>0</var>;</td></tr>
+<tr><th id="510">510</th><td></td></tr>
+<tr><th id="511">511</th><td>    <b>for</b>(;;)</td></tr>
+<tr><th id="512">512</th><td>    {</td></tr>
+<tr><th id="513">513</th><td>        <b>if</b>( block )</td></tr>
+<tr><th id="514">514</th><td>        {</td></tr>
+<tr><th id="515">515</th><td>            <i>// try to find non-full block</i></td></tr>
+<tr><th id="516">516</th><td>            <b>for</b>(;;)</td></tr>
+<tr><th id="517">517</th><td>            {</td></tr>
+<tr><th id="518">518</th><td>                CV_DbgAssert( block-&gt;next-&gt;prev == block &amp;&amp; block-&gt;prev-&gt;next == block );</td></tr>
+<tr><th id="519">519</th><td>                <b>if</b>( block-&gt;bumpPtr )</td></tr>
+<tr><th id="520">520</th><td>                {</td></tr>
+<tr><th id="521">521</th><td>                    data = block-&gt;bumpPtr;</td></tr>
+<tr><th id="522">522</th><td>                    <b>if</b>( (block-&gt;bumpPtr += size) &gt;= block-&gt;endPtr )</td></tr>
+<tr><th id="523">523</th><td>                        block-&gt;bumpPtr = <var>0</var>;</td></tr>
+<tr><th id="524">524</th><td>                    <b>break</b>;</td></tr>
+<tr><th id="525">525</th><td>                }</td></tr>
+<tr><th id="526">526</th><td></td></tr>
+<tr><th id="527">527</th><td>                <b>if</b>( block-&gt;privateFreeList )</td></tr>
+<tr><th id="528">528</th><td>                {</td></tr>
+<tr><th id="529">529</th><td>                    data = (uchar*)block-&gt;privateFreeList;</td></tr>
+<tr><th id="530">530</th><td>                    block-&gt;privateFreeList = block-&gt;privateFreeList-&gt;next;</td></tr>
+<tr><th id="531">531</th><td>                    <b>break</b>;</td></tr>
+<tr><th id="532">532</th><td>                }</td></tr>
+<tr><th id="533">533</th><td></td></tr>
+<tr><th id="534">534</th><td>                <b>if</b>( block == startPtr )</td></tr>
+<tr><th id="535">535</th><td>                    <b>break</b>;</td></tr>
+<tr><th id="536">536</th><td>                block = block-&gt;next;</td></tr>
+<tr><th id="537">537</th><td>            }</td></tr>
+<tr><th id="538">538</th><td><u>#if 0</u></td></tr>
+<tr><th id="539">539</th><td>            avg_k += _k;</td></tr>
+<tr><th id="540">540</th><td>            avg_nk++;</td></tr>
+<tr><th id="541">541</th><td>            <b>if</b>( avg_nk == <var>1000</var> )</td></tr>
+<tr><th id="542">542</th><td>            {</td></tr>
+<tr><th id="543">543</th><td>                printf(<q>"avg search iters per 1e3 allocs = %g\n"</q>, (<em>double</em>)avg_k/avg_nk );</td></tr>
+<tr><th id="544">544</th><td>                avg_k = avg_nk = <var>0</var>;</td></tr>
+<tr><th id="545">545</th><td>            }</td></tr>
+<tr><th id="546">546</th><td><u>#endif</u></td></tr>
+<tr><th id="547">547</th><td></td></tr>
+<tr><th id="548">548</th><td>            freePtr = block;</td></tr>
+<tr><th id="549">549</th><td>            <b>if</b>( !data )</td></tr>
+<tr><th id="550">550</th><td>            {</td></tr>
+<tr><th id="551">551</th><td>                block = gcPtr;</td></tr>
+<tr><th id="552">552</th><td>                <b>for</b>( <em>int</em> k = <var>0</var>; k &lt; <var>2</var>; k++ )</td></tr>
+<tr><th id="553">553</th><td>                {</td></tr>
+<tr><th id="554">554</th><td>                    SANITY_CHECK(block);</td></tr>
+<tr><th id="555">555</th><td>                    CV_DbgAssert( block-&gt;next-&gt;prev == block &amp;&amp; block-&gt;prev-&gt;next == block );</td></tr>
+<tr><th id="556">556</th><td>                    <b>if</b>( block-&gt;publicFreeList )</td></tr>
+<tr><th id="557">557</th><td>                    {</td></tr>
+<tr><th id="558">558</th><td>                        {</td></tr>
+<tr><th id="559">559</th><td>                        AutoLock lock(block-&gt;cs);</td></tr>
+<tr><th id="560">560</th><td>                        block-&gt;privateFreeList = block-&gt;publicFreeList;</td></tr>
+<tr><th id="561">561</th><td>                        block-&gt;publicFreeList = <var>0</var>;</td></tr>
+<tr><th id="562">562</th><td>                        }</td></tr>
+<tr><th id="563">563</th><td>                        Node* node = block-&gt;privateFreeList;</td></tr>
+<tr><th id="564">564</th><td>                        <b>for</b>(;node != <var>0</var>; node = node-&gt;next)</td></tr>
+<tr><th id="565">565</th><td>                            --block-&gt;allocated;</td></tr>
+<tr><th id="566">566</th><td>                        data = (uchar*)block-&gt;privateFreeList;</td></tr>
+<tr><th id="567">567</th><td>                        block-&gt;privateFreeList = block-&gt;privateFreeList-&gt;next;</td></tr>
+<tr><th id="568">568</th><td>                        gcPtr = block-&gt;next;</td></tr>
+<tr><th id="569">569</th><td>                        <b>if</b>( block-&gt;allocated+<var>1</var> &lt;= block-&gt;almostEmptyThreshold )</td></tr>
+<tr><th id="570">570</th><td>                            tls-&gt;moveBlockToFreeList(block);</td></tr>
+<tr><th id="571">571</th><td>                        <b>break</b>;</td></tr>
+<tr><th id="572">572</th><td>                    }</td></tr>
+<tr><th id="573">573</th><td>                    block = block-&gt;next;</td></tr>
+<tr><th id="574">574</th><td>                }</td></tr>
+<tr><th id="575">575</th><td>                <b>if</b>( !data )</td></tr>
+<tr><th id="576">576</th><td>                    gcPtr = block;</td></tr>
+<tr><th id="577">577</th><td>            }</td></tr>
+<tr><th id="578">578</th><td>        }</td></tr>
+<tr><th id="579">579</th><td></td></tr>
+<tr><th id="580">580</th><td>        <b>if</b>( data )</td></tr>
+<tr><th id="581">581</th><td>            <b>break</b>;</td></tr>
+<tr><th id="582">582</th><td>        block = mallocPool.alloc();</td></tr>
+<tr><th id="583">583</th><td>        block-&gt;init(startPtr ? startPtr-&gt;prev : block, startPtr ? startPtr : block, (<em>int</em>)size, tls);</td></tr>
+<tr><th id="584">584</th><td>        <b>if</b>( !startPtr )</td></tr>
+<tr><th id="585">585</th><td>            startPtr = gcPtr = freePtr = block;</td></tr>
+<tr><th id="586">586</th><td>        checkList(tls, block-&gt;binIdx);</td></tr>
+<tr><th id="587">587</th><td>        SANITY_CHECK(block);</td></tr>
+<tr><th id="588">588</th><td>    }</td></tr>
+<tr><th id="589">589</th><td></td></tr>
+<tr><th id="590">590</th><td>    ++block-&gt;allocated;</td></tr>
+<tr><th id="591">591</th><td>    <b>return</b> data;</td></tr>
+<tr><th id="592">592</th><td>    }</td></tr>
+<tr><th id="593">593</th><td>}</td></tr>
+<tr><th id="594">594</th><td></td></tr>
+<tr><th id="595">595</th><td><em>void</em> fastFree( <em>void</em>* ptr )</td></tr>
+<tr><th id="596">596</th><td>{</td></tr>
+<tr><th id="597">597</th><td>    <b>if</b>( ((size_t)ptr &amp; (MEM_BLOCK_SIZE-<var>1</var>)) == <var>0</var> )</td></tr>
+<tr><th id="598">598</th><td>    {</td></tr>
+<tr><th id="599">599</th><td>        <b>if</b>( ptr != <var>0</var> )</td></tr>
+<tr><th id="600">600</th><td>        {</td></tr>
+<tr><th id="601">601</th><td>            <em>void</em>* origPtr = ((<em>void</em>**)ptr)[-<var>1</var>];</td></tr>
+<tr><th id="602">602</th><td>            size_t sz = (size_t)((<em>void</em>**)ptr)[-<var>2</var>];</td></tr>
+<tr><th id="603">603</th><td>            SystemFree( origPtr, sz );</td></tr>
+<tr><th id="604">604</th><td>        }</td></tr>
+<tr><th id="605">605</th><td>        <b>return</b>;</td></tr>
+<tr><th id="606">606</th><td>    }</td></tr>
+<tr><th id="607">607</th><td></td></tr>
+<tr><th id="608">608</th><td>    {</td></tr>
+<tr><th id="609">609</th><td>    ThreadData* tls = ThreadData::get();</td></tr>
+<tr><th id="610">610</th><td>    Node* node = (Node*)ptr;</td></tr>
+<tr><th id="611">611</th><td>    Block* block = (Block*)((size_t)ptr &amp; -(<em>int</em>)MEM_BLOCK_SIZE);</td></tr>
+<tr><th id="612">612</th><td>    assert( block-&gt;signature == MEM_BLOCK_SIGNATURE );</td></tr>
+<tr><th id="613">613</th><td></td></tr>
+<tr><th id="614">614</th><td>    <b>if</b>( block-&gt;threadData == tls )</td></tr>
+<tr><th id="615">615</th><td>    {</td></tr>
+<tr><th id="616">616</th><td>        STAT(</td></tr>
+<tr><th id="617">617</th><td>        stat.nettoBytes -= block-&gt;objSize;</td></tr>
+<tr><th id="618">618</th><td>        stat.freeCalls++;</td></tr>
+<tr><th id="619">619</th><td>        <em>float</em> ratio = (<em>float</em>)stat.nettoBytes/stat.bruttoBytes;</td></tr>
+<tr><th id="620">620</th><td>        <b>if</b>( stat.minUsageRatio &gt; ratio )</td></tr>
+<tr><th id="621">621</th><td>            stat.minUsageRatio = ratio;</td></tr>
+<tr><th id="622">622</th><td>        );</td></tr>
+<tr><th id="623">623</th><td></td></tr>
+<tr><th id="624">624</th><td>        SANITY_CHECK(block);</td></tr>
+<tr><th id="625">625</th><td></td></tr>
+<tr><th id="626">626</th><td>        <em>bool</em> prevFilled = block-&gt;isFilled();</td></tr>
+<tr><th id="627">627</th><td>        --block-&gt;allocated;</td></tr>
+<tr><th id="628">628</th><td>        <b>if</b>( !block-&gt;isFilled() &amp;&amp; (block-&gt;allocated == <var>0</var> || prevFilled) )</td></tr>
+<tr><th id="629">629</th><td>        {</td></tr>
+<tr><th id="630">630</th><td>            <b>if</b>( block-&gt;allocated == <var>0</var> )</td></tr>
+<tr><th id="631">631</th><td>            {</td></tr>
+<tr><th id="632">632</th><td>                <em>int</em> idx = block-&gt;binIdx;</td></tr>
+<tr><th id="633">633</th><td>                Block*&amp; startPtr = tls-&gt;bins[idx][START];</td></tr>
+<tr><th id="634">634</th><td>                Block*&amp; freePtr = tls-&gt;bins[idx][FREE];</td></tr>
+<tr><th id="635">635</th><td>                Block*&amp; gcPtr = tls-&gt;bins[idx][GC];</td></tr>
+<tr><th id="636">636</th><td></td></tr>
+<tr><th id="637">637</th><td>                <b>if</b>( block == block-&gt;next )</td></tr>
+<tr><th id="638">638</th><td>                {</td></tr>
+<tr><th id="639">639</th><td>                    CV_DbgAssert( startPtr == block &amp;&amp; freePtr == block &amp;&amp; gcPtr == block );</td></tr>
+<tr><th id="640">640</th><td>                    startPtr = freePtr = gcPtr = <var>0</var>;</td></tr>
+<tr><th id="641">641</th><td>                }</td></tr>
+<tr><th id="642">642</th><td>                <b>else</b></td></tr>
+<tr><th id="643">643</th><td>                {</td></tr>
+<tr><th id="644">644</th><td>                    <b>if</b>( freePtr == block )</td></tr>
+<tr><th id="645">645</th><td>                        freePtr = block-&gt;next;</td></tr>
+<tr><th id="646">646</th><td>                    <b>if</b>( gcPtr == block )</td></tr>
+<tr><th id="647">647</th><td>                        gcPtr = block-&gt;next;</td></tr>
+<tr><th id="648">648</th><td>                    <b>if</b>( startPtr == block )</td></tr>
+<tr><th id="649">649</th><td>                        startPtr = block-&gt;next;</td></tr>
+<tr><th id="650">650</th><td>                    block-&gt;prev-&gt;next = block-&gt;next;</td></tr>
+<tr><th id="651">651</th><td>                    block-&gt;next-&gt;prev = block-&gt;prev;</td></tr>
+<tr><th id="652">652</th><td>                }</td></tr>
+<tr><th id="653">653</th><td>                mallocPool.free(block);</td></tr>
+<tr><th id="654">654</th><td>                checkList(tls, idx);</td></tr>
+<tr><th id="655">655</th><td>                <b>return</b>;</td></tr>
+<tr><th id="656">656</th><td>            }</td></tr>
+<tr><th id="657">657</th><td></td></tr>
+<tr><th id="658">658</th><td>            tls-&gt;moveBlockToFreeList(block);</td></tr>
+<tr><th id="659">659</th><td>        }</td></tr>
+<tr><th id="660">660</th><td>        node-&gt;next = block-&gt;privateFreeList;</td></tr>
+<tr><th id="661">661</th><td>        block-&gt;privateFreeList = node;</td></tr>
+<tr><th id="662">662</th><td>    }</td></tr>
+<tr><th id="663">663</th><td>    <b>else</b></td></tr>
+<tr><th id="664">664</th><td>    {</td></tr>
+<tr><th id="665">665</th><td>        AutoLock lock(block-&gt;cs);</td></tr>
+<tr><th id="666">666</th><td>        SANITY_CHECK(block);</td></tr>
+<tr><th id="667">667</th><td></td></tr>
+<tr><th id="668">668</th><td>        node-&gt;next = block-&gt;publicFreeList;</td></tr>
+<tr><th id="669">669</th><td>        block-&gt;publicFreeList = node;</td></tr>
+<tr><th id="670">670</th><td>        <b>if</b>( block-&gt;threadData == <var>0</var> )</td></tr>
+<tr><th id="671">671</th><td>        {</td></tr>
+<tr><th id="672">672</th><td>            <i>// take ownership of the abandoned block.</i></td></tr>
+<tr><th id="673">673</th><td><i>            // note that it can happen at the same time as</i></td></tr>
+<tr><th id="674">674</th><td><i>            // ThreadData::deleteData() marks the blocks as abandoned,</i></td></tr>
+<tr><th id="675">675</th><td><i>            // so this part of the algorithm needs to be checked for data races</i></td></tr>
+<tr><th id="676">676</th><td>            <em>int</em> idx = block-&gt;binIdx;</td></tr>
+<tr><th id="677">677</th><td>            block-&gt;threadData = tls;</td></tr>
+<tr><th id="678">678</th><td>            Block*&amp; startPtr = tls-&gt;bins[idx][START];</td></tr>
+<tr><th id="679">679</th><td></td></tr>
+<tr><th id="680">680</th><td>            <b>if</b>( startPtr )</td></tr>
+<tr><th id="681">681</th><td>            {</td></tr>
+<tr><th id="682">682</th><td>                block-&gt;next = startPtr;</td></tr>
+<tr><th id="683">683</th><td>                block-&gt;prev = startPtr-&gt;prev;</td></tr>
+<tr><th id="684">684</th><td>                block-&gt;next-&gt;prev = block-&gt;prev-&gt;next = block;</td></tr>
+<tr><th id="685">685</th><td>            }</td></tr>
+<tr><th id="686">686</th><td>            <b>else</b></td></tr>
+<tr><th id="687">687</th><td>                startPtr = tls-&gt;bins[idx][FREE] = tls-&gt;bins[idx][GC] = block;</td></tr>
+<tr><th id="688">688</th><td>        }</td></tr>
+<tr><th id="689">689</th><td>    }</td></tr>
+<tr><th id="690">690</th><td>    }</td></tr>
+<tr><th id="691">691</th><td>}</td></tr>
+<tr><th id="692">692</th><td></td></tr>
+<tr><th id="693">693</th><td><u>#<span data-ppcond="56">endif</span> //CV_USE_SYSTEM_MALLOC</u></td></tr>
+<tr><th id="694">694</th><td></td></tr>
+<tr><th id="695">695</th><td>}</td></tr>
+<tr><th id="696">696</th><td></td></tr>
+<tr><th id="697">697</th><td><a class="macro" href="../include/opencv2/core/internal.hpp.html#376" title="extern &quot;C&quot;" data-ref="_M/CV_IMPL">CV_IMPL</a> <em>void</em> <dfn class="decl def" id="cvSetMemoryManager" title='cvSetMemoryManager' data-ref="cvSetMemoryManager">cvSetMemoryManager</dfn>( <a class="typedef" href="../include/opencv2/core/core_c.h.html#CvAllocFunc" title='CvAllocFunc' data-type='void *(*)(size_t, void *)' data-ref="CvAllocFunc">CvAllocFunc</a>, <a class="typedef" href="../include/opencv2/core/core_c.h.html#CvFreeFunc" title='CvFreeFunc' data-type='int (*)(void *, void *)' data-ref="CvFreeFunc">CvFreeFunc</a>, <em>void</em> * )</td></tr>
+<tr><th id="698">698</th><td>{</td></tr>
+<tr><th id="699">699</th><td>    <a class="macro" href="../include/opencv2/core/core.hpp.html#218" title="cv::error( cv::Exception(-1, &quot;Custom memory allocator is not supported&quot;, __func__, &quot;/home/yzf/code/opencv/modules/core/src/alloc.cpp&quot;, 699) )" data-ref="_M/CV_Error">CV_Error</a>( -<var>1</var>, <a class="ref fake" href="../../../../include/c++/4.8/bits/basic_string.h.html#_ZNSt12basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt12basic_stringC1EPKT_RKT1_"></a><q>"Custom memory allocator is not supported"</q> );</td></tr>
+<tr><th id="700">700</th><td>}</td></tr>
+<tr><th id="701">701</th><td></td></tr>
+<tr><th id="702">702</th><td><a class="macro" href="../include/opencv2/core/internal.hpp.html#376" title="extern &quot;C&quot;" data-ref="_M/CV_IMPL">CV_IMPL</a> <em>void</em>* <dfn class="decl def" id="cvAlloc" title='cvAlloc' data-ref="cvAlloc">cvAlloc</dfn>( <a class="typedef" href="../../../../include/x86_64-linux-gnu/c++/4.8/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="7size" title='size' data-type='size_t' data-ref="7size">size</dfn> )</td></tr>
+<tr><th id="703">703</th><td>{</td></tr>
+<tr><th id="704">704</th><td>    <b>return</b> <span class="namespace">cv::</span><a class="ref" href="#_ZN2cv10fastMallocEm" title='cv::fastMalloc' data-ref="_ZN2cv10fastMallocEm">fastMalloc</a>( <a class="local col7 ref" href="#7size" title='size' data-ref="7size">size</a> );</td></tr>
+<tr><th id="705">705</th><td>}</td></tr>
+<tr><th id="706">706</th><td></td></tr>
+<tr><th id="707">707</th><td><a class="macro" href="../include/opencv2/core/internal.hpp.html#376" title="extern &quot;C&quot;" data-ref="_M/CV_IMPL">CV_IMPL</a> <em>void</em> <dfn class="decl def" id="cvFree_" title='cvFree_' data-ref="cvFree_">cvFree_</dfn>( <em>void</em>* <dfn class="local col8 decl" id="8ptr" title='ptr' data-type='void *' data-ref="8ptr">ptr</dfn> )</td></tr>
+<tr><th id="708">708</th><td>{</td></tr>
+<tr><th id="709">709</th><td>    <span class="namespace">cv::</span><a class="ref" href="#_ZN2cv8fastFreeEPv" title='cv::fastFree' data-ref="_ZN2cv8fastFreeEPv">fastFree</a>( <a class="local col8 ref" href="#8ptr" title='ptr' data-ref="8ptr">ptr</a> );</td></tr>
+<tr><th id="710">710</th><td>}</td></tr>
+<tr><th id="711">711</th><td></td></tr>
+<tr><th id="712">712</th><td></td></tr>
+<tr><th id="713">713</th><td><i>/* End of file. */</i></td></tr>
+<tr><th id="714">714</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project opencv revision <em>2.4.13.2-27-g91a6940</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

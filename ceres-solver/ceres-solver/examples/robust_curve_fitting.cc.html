@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>robust_curve_fitting.cc source code [ceres-solver/examples/robust_curve_fitting.cc] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="ExponentialResidual,main "/>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'ceres-solver/examples/robust_curve_fitting.cc'; var root_path = '../..'; var data_path = '../../../data';</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>ceres-solver</a>/<a href='./'>examples</a>/<a href='robust_curve_fitting.cc.html'>robust_curve_fitting.cc</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Ceres Solver - A fast non-linear least squares minimizer</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2015 Google Inc. All rights reserved.</i></td></tr>
+<tr><th id="3">3</th><td><i>// <a href="http://ceres-solver.org/">http://ceres-solver.org/</a></i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Redistribution and use in source and binary forms, with or without</i></td></tr>
+<tr><th id="6">6</th><td><i>// modification, are permitted provided that the following conditions are met:</i></td></tr>
+<tr><th id="7">7</th><td><i>//</i></td></tr>
+<tr><th id="8">8</th><td><i>// * Redistributions of source code must retain the above copyright notice,</i></td></tr>
+<tr><th id="9">9</th><td><i>//   this list of conditions and the following disclaimer.</i></td></tr>
+<tr><th id="10">10</th><td><i>// * Redistributions in binary form must reproduce the above copyright notice,</i></td></tr>
+<tr><th id="11">11</th><td><i>//   this list of conditions and the following disclaimer in the documentation</i></td></tr>
+<tr><th id="12">12</th><td><i>//   and/or other materials provided with the distribution.</i></td></tr>
+<tr><th id="13">13</th><td><i>// * Neither the name of Google Inc. nor the names of its contributors may be</i></td></tr>
+<tr><th id="14">14</th><td><i>//   used to endorse or promote products derived from this software without</i></td></tr>
+<tr><th id="15">15</th><td><i>//   specific prior written permission.</i></td></tr>
+<tr><th id="16">16</th><td><i>//</i></td></tr>
+<tr><th id="17">17</th><td><i>// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"</i></td></tr>
+<tr><th id="18">18</th><td><i>// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</i></td></tr>
+<tr><th id="19">19</th><td><i>// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE</i></td></tr>
+<tr><th id="20">20</th><td><i>// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE</i></td></tr>
+<tr><th id="21">21</th><td><i>// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</i></td></tr>
+<tr><th id="22">22</th><td><i>// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</i></td></tr>
+<tr><th id="23">23</th><td><i>// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</i></td></tr>
+<tr><th id="24">24</th><td><i>// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</i></td></tr>
+<tr><th id="25">25</th><td><i>// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</i></td></tr>
+<tr><th id="26">26</th><td><i>// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</i></td></tr>
+<tr><th id="27">27</th><td><i>// POSSIBILITY OF SUCH DAMAGE.</i></td></tr>
+<tr><th id="28">28</th><td><i>//</i></td></tr>
+<tr><th id="29">29</th><td><i>// Author: sameeragarwal@google.com (Sameer Agarwal)</i></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../include/ceres/ceres.h.html">"ceres/ceres.h"</a></u></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../../include/glog/logging.h.html">"glog/logging.h"</a></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><i  data-doc="kNumObservations">// Data generated using the following octave code.</i></td></tr>
+<tr><th id="35">35</th><td><i  data-doc="kNumObservations">//   randn('seed', 23497);</i></td></tr>
+<tr><th id="36">36</th><td><i  data-doc="kNumObservations">//   m = 0.3;</i></td></tr>
+<tr><th id="37">37</th><td><i  data-doc="kNumObservations">//   c = 0.1;</i></td></tr>
+<tr><th id="38">38</th><td><i  data-doc="kNumObservations">//   x=[0:0.075:5];</i></td></tr>
+<tr><th id="39">39</th><td><i  data-doc="kNumObservations">//   y = exp(m * x + c);</i></td></tr>
+<tr><th id="40">40</th><td><i  data-doc="kNumObservations">//   noise = randn(size(x)) * 0.2;</i></td></tr>
+<tr><th id="41">41</th><td><i  data-doc="kNumObservations">//   outlier_noise = rand(size(x)) &lt; 0.05;</i></td></tr>
+<tr><th id="42">42</th><td><i  data-doc="kNumObservations">//   y_observed = y + noise + outlier_noise;</i></td></tr>
+<tr><th id="43">43</th><td><i  data-doc="kNumObservations">//   data = [x', y_observed'];</i></td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><em>const</em> <em>int</em> <dfn class="tu decl def" id="kNumObservations" title='kNumObservations' data-type='const int' data-ref="kNumObservations">kNumObservations</dfn> = <var>67</var>;</td></tr>
+<tr><th id="46">46</th><td><em>const</em> <em>double</em> <dfn class="tu decl def" id="data" title='data' data-type='const double [134]' data-ref="data">data</dfn>[] = {</td></tr>
+<tr><th id="47">47</th><td><var>0.000000e+00</var>, <var>1.133898e+00</var>,</td></tr>
+<tr><th id="48">48</th><td><var>7.500000e-02</var>, <var>1.334902e+00</var>,</td></tr>
+<tr><th id="49">49</th><td><var>1.500000e-01</var>, <var>1.213546e+00</var>,</td></tr>
+<tr><th id="50">50</th><td><var>2.250000e-01</var>, <var>1.252016e+00</var>,</td></tr>
+<tr><th id="51">51</th><td><var>3.000000e-01</var>, <var>1.392265e+00</var>,</td></tr>
+<tr><th id="52">52</th><td><var>3.750000e-01</var>, <var>1.314458e+00</var>,</td></tr>
+<tr><th id="53">53</th><td><var>4.500000e-01</var>, <var>1.472541e+00</var>,</td></tr>
+<tr><th id="54">54</th><td><var>5.250000e-01</var>, <var>1.536218e+00</var>,</td></tr>
+<tr><th id="55">55</th><td><var>6.000000e-01</var>, <var>1.355679e+00</var>,</td></tr>
+<tr><th id="56">56</th><td><var>6.750000e-01</var>, <var>1.463566e+00</var>,</td></tr>
+<tr><th id="57">57</th><td><var>7.500000e-01</var>, <var>1.490201e+00</var>,</td></tr>
+<tr><th id="58">58</th><td><var>8.250000e-01</var>, <var>1.658699e+00</var>,</td></tr>
+<tr><th id="59">59</th><td><var>9.000000e-01</var>, <var>1.067574e+00</var>,</td></tr>
+<tr><th id="60">60</th><td><var>9.750000e-01</var>, <var>1.464629e+00</var>,</td></tr>
+<tr><th id="61">61</th><td><var>1.050000e+00</var>, <var>1.402653e+00</var>,</td></tr>
+<tr><th id="62">62</th><td><var>1.125000e+00</var>, <var>1.713141e+00</var>,</td></tr>
+<tr><th id="63">63</th><td><var>1.200000e+00</var>, <var>1.527021e+00</var>,</td></tr>
+<tr><th id="64">64</th><td><var>1.275000e+00</var>, <var>1.702632e+00</var>,</td></tr>
+<tr><th id="65">65</th><td><var>1.350000e+00</var>, <var>1.423899e+00</var>,</td></tr>
+<tr><th id="66">66</th><td><var>1.425000e+00</var>, <var>5.543078e+00</var>, <i>// Outlier point</i></td></tr>
+<tr><th id="67">67</th><td><var>1.500000e+00</var>, <var>5.664015e+00</var>, <i>// Outlier point</i></td></tr>
+<tr><th id="68">68</th><td><var>1.575000e+00</var>, <var>1.732484e+00</var>,</td></tr>
+<tr><th id="69">69</th><td><var>1.650000e+00</var>, <var>1.543296e+00</var>,</td></tr>
+<tr><th id="70">70</th><td><var>1.725000e+00</var>, <var>1.959523e+00</var>,</td></tr>
+<tr><th id="71">71</th><td><var>1.800000e+00</var>, <var>1.685132e+00</var>,</td></tr>
+<tr><th id="72">72</th><td><var>1.875000e+00</var>, <var>1.951791e+00</var>,</td></tr>
+<tr><th id="73">73</th><td><var>1.950000e+00</var>, <var>2.095346e+00</var>,</td></tr>
+<tr><th id="74">74</th><td><var>2.025000e+00</var>, <var>2.361460e+00</var>,</td></tr>
+<tr><th id="75">75</th><td><var>2.100000e+00</var>, <var>2.169119e+00</var>,</td></tr>
+<tr><th id="76">76</th><td><var>2.175000e+00</var>, <var>2.061745e+00</var>,</td></tr>
+<tr><th id="77">77</th><td><var>2.250000e+00</var>, <var>2.178641e+00</var>,</td></tr>
+<tr><th id="78">78</th><td><var>2.325000e+00</var>, <var>2.104346e+00</var>,</td></tr>
+<tr><th id="79">79</th><td><var>2.400000e+00</var>, <var>2.584470e+00</var>,</td></tr>
+<tr><th id="80">80</th><td><var>2.475000e+00</var>, <var>1.914158e+00</var>,</td></tr>
+<tr><th id="81">81</th><td><var>2.550000e+00</var>, <var>2.368375e+00</var>,</td></tr>
+<tr><th id="82">82</th><td><var>2.625000e+00</var>, <var>2.686125e+00</var>,</td></tr>
+<tr><th id="83">83</th><td><var>2.700000e+00</var>, <var>2.712395e+00</var>,</td></tr>
+<tr><th id="84">84</th><td><var>2.775000e+00</var>, <var>2.499511e+00</var>,</td></tr>
+<tr><th id="85">85</th><td><var>2.850000e+00</var>, <var>2.558897e+00</var>,</td></tr>
+<tr><th id="86">86</th><td><var>2.925000e+00</var>, <var>2.309154e+00</var>,</td></tr>
+<tr><th id="87">87</th><td><var>3.000000e+00</var>, <var>2.869503e+00</var>,</td></tr>
+<tr><th id="88">88</th><td><var>3.075000e+00</var>, <var>3.116645e+00</var>,</td></tr>
+<tr><th id="89">89</th><td><var>3.150000e+00</var>, <var>3.094907e+00</var>,</td></tr>
+<tr><th id="90">90</th><td><var>3.225000e+00</var>, <var>2.471759e+00</var>,</td></tr>
+<tr><th id="91">91</th><td><var>3.300000e+00</var>, <var>3.017131e+00</var>,</td></tr>
+<tr><th id="92">92</th><td><var>3.375000e+00</var>, <var>3.232381e+00</var>,</td></tr>
+<tr><th id="93">93</th><td><var>3.450000e+00</var>, <var>2.944596e+00</var>,</td></tr>
+<tr><th id="94">94</th><td><var>3.525000e+00</var>, <var>3.385343e+00</var>,</td></tr>
+<tr><th id="95">95</th><td><var>3.600000e+00</var>, <var>3.199826e+00</var>,</td></tr>
+<tr><th id="96">96</th><td><var>3.675000e+00</var>, <var>3.423039e+00</var>,</td></tr>
+<tr><th id="97">97</th><td><var>3.750000e+00</var>, <var>3.621552e+00</var>,</td></tr>
+<tr><th id="98">98</th><td><var>3.825000e+00</var>, <var>3.559255e+00</var>,</td></tr>
+<tr><th id="99">99</th><td><var>3.900000e+00</var>, <var>3.530713e+00</var>,</td></tr>
+<tr><th id="100">100</th><td><var>3.975000e+00</var>, <var>3.561766e+00</var>,</td></tr>
+<tr><th id="101">101</th><td><var>4.050000e+00</var>, <var>3.544574e+00</var>,</td></tr>
+<tr><th id="102">102</th><td><var>4.125000e+00</var>, <var>3.867945e+00</var>,</td></tr>
+<tr><th id="103">103</th><td><var>4.200000e+00</var>, <var>4.049776e+00</var>,</td></tr>
+<tr><th id="104">104</th><td><var>4.275000e+00</var>, <var>3.885601e+00</var>,</td></tr>
+<tr><th id="105">105</th><td><var>4.350000e+00</var>, <var>4.110505e+00</var>,</td></tr>
+<tr><th id="106">106</th><td><var>4.425000e+00</var>, <var>4.345320e+00</var>,</td></tr>
+<tr><th id="107">107</th><td><var>4.500000e+00</var>, <var>4.161241e+00</var>,</td></tr>
+<tr><th id="108">108</th><td><var>4.575000e+00</var>, <var>4.363407e+00</var>,</td></tr>
+<tr><th id="109">109</th><td><var>4.650000e+00</var>, <var>4.161576e+00</var>,</td></tr>
+<tr><th id="110">110</th><td><var>4.725000e+00</var>, <var>4.619728e+00</var>,</td></tr>
+<tr><th id="111">111</th><td><var>4.800000e+00</var>, <var>4.737410e+00</var>,</td></tr>
+<tr><th id="112">112</th><td><var>4.875000e+00</var>, <var>4.727863e+00</var>,</td></tr>
+<tr><th id="113">113</th><td><var>4.950000e+00</var>, <var>4.669206e+00</var></td></tr>
+<tr><th id="114">114</th><td>};</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><b>using</b> <span class="namespace">ceres::</span>AutoDiffCostFunction;</td></tr>
+<tr><th id="117">117</th><td><b>using</b> <span class="namespace">ceres::</span>CostFunction;</td></tr>
+<tr><th id="118">118</th><td><b>using</b> <span class="namespace">ceres::</span>CauchyLoss;</td></tr>
+<tr><th id="119">119</th><td><b>using</b> <span class="namespace">ceres::</span>Problem;</td></tr>
+<tr><th id="120">120</th><td><b>using</b> <span class="namespace">ceres::</span>Solve;</td></tr>
+<tr><th id="121">121</th><td><b>using</b> <span class="namespace">ceres::</span>Solver;</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td><b>struct</b> <dfn class="type def" id="ExponentialResidual" title='ExponentialResidual' data-ref="ExponentialResidual">ExponentialResidual</dfn> {</td></tr>
+<tr><th id="124">124</th><td>  <dfn class="tu decl def" id="_ZN19ExponentialResidualC1Edd" title='ExponentialResidual::ExponentialResidual' data-type='void ExponentialResidual::ExponentialResidual(double x, double y)' data-ref="_ZN19ExponentialResidualC1Edd">ExponentialResidual</dfn>(<em>double</em> <dfn class="local col1 decl" id="1x" title='x' data-type='double' data-ref="1x">x</dfn>, <em>double</em> <dfn class="local col2 decl" id="2y" title='y' data-type='double' data-ref="2y">y</dfn>)</td></tr>
+<tr><th id="125">125</th><td>      : <a class="tu member" href="#ExponentialResidual::x_" title='ExponentialResidual::x_' data-use='w' data-ref="ExponentialResidual::x_">x_</a>(<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>), <a class="tu member" href="#ExponentialResidual::y_" title='ExponentialResidual::y_' data-use='w' data-ref="ExponentialResidual::y_">y_</a>(<a class="local col2 ref" href="#2y" title='y' data-ref="2y">y</a>) {}</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>  <b>template</b> &lt;<b>typename</b> T&gt; <em>bool</em> <dfn class="tu decl def" id="_ZNK19ExponentialResidualclEPKT_S2_PS0_" title='ExponentialResidual::operator()' data-type='bool ExponentialResidual::operator()(const T *const m, const T *const c, T * residual) const' data-ref="_ZNK19ExponentialResidualclEPKT_S2_PS0_"><b>operator</b>()</dfn>(<em>const</em> T* <em>const</em> <dfn class="local col3 decl" id="3m" title='m' data-type='const T *const' data-ref="3m">m</dfn>,</td></tr>
+<tr><th id="128">128</th><td>                                        <em>const</em> T* <em>const</em> <dfn class="local col4 decl" id="4c" title='c' data-type='const T *const' data-ref="4c">c</dfn>,</td></tr>
+<tr><th id="129">129</th><td>                                        T* <dfn class="local col5 decl" id="5residual" title='residual' data-type='T *' data-ref="5residual">residual</dfn>) <em>const</em> {</td></tr>
+<tr><th id="130">130</th><td>    <a class="local col5 ref" href="#5residual" title='residual' data-ref="5residual">residual</a>[<var>0</var>] = <a class="tu member" href="#ExponentialResidual::y_" title='ExponentialResidual::y_' data-use='r' data-ref="ExponentialResidual::y_">y_</a> - exp(<a class="local col3 ref" href="#3m" title='m' data-ref="3m">m</a>[<var>0</var>] * <a class="tu member" href="#ExponentialResidual::x_" title='ExponentialResidual::x_' data-use='r' data-ref="ExponentialResidual::x_">x_</a> + <a class="local col4 ref" href="#4c" title='c' data-ref="4c">c</a>[<var>0</var>]);</td></tr>
+<tr><th id="131">131</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="132">132</th><td>  }</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td> <b>private</b>:</td></tr>
+<tr><th id="135">135</th><td>  <em>const</em> <em>double</em> <dfn class="tu decl" id="ExponentialResidual::x_" title='ExponentialResidual::x_' data-type='const double' data-ref="ExponentialResidual::x_">x_</dfn>;</td></tr>
+<tr><th id="136">136</th><td>  <em>const</em> <em>double</em> <dfn class="tu decl" id="ExponentialResidual::y_" title='ExponentialResidual::y_' data-type='const double' data-ref="ExponentialResidual::y_">y_</dfn>;</td></tr>
+<tr><th id="137">137</th><td>};</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td><em>int</em> <dfn class="decl def" id="main" title='main' data-ref="main">main</dfn>(<em>int</em> <dfn class="local col6 decl" id="6argc" title='argc' data-type='int' data-ref="6argc">argc</dfn>, <em>char</em>** <dfn class="local col7 decl" id="7argv" title='argv' data-type='char **' data-ref="7argv">argv</dfn>) {</td></tr>
+<tr><th id="140">140</th><td>  <span class="namespace">google::</span><a class="ref" href="../../include/glog/logging.h.html#_ZN6google17InitGoogleLoggingEPKc" title='google::InitGoogleLogging' data-ref="_ZN6google17InitGoogleLoggingEPKc">InitGoogleLogging</a>(<a class="local col7 ref" href="#7argv" title='argv' data-ref="7argv">argv</a>[<var>0</var>]);</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>  <em>double</em> <dfn class="local col8 decl" id="8m" title='m' data-type='double' data-ref="8m">m</dfn> = <var>0.0</var>;</td></tr>
+<tr><th id="143">143</th><td>  <em>double</em> <dfn class="local col9 decl" id="9c" title='c' data-type='double' data-ref="9c">c</dfn> = <var>0.0</var>;</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>  <a class="type" href="../include/ceres/problem.h.html#ceres::Problem" title='ceres::Problem' data-ref="ceres::Problem">Problem</a> <a class="ref fake" href="../include/ceres/problem.h.html#_ZN5ceres7ProblemC1Ev" title='ceres::Problem::Problem' data-ref="_ZN5ceres7ProblemC1Ev"></a><dfn class="local col0 decl" id="10problem" title='problem' data-type='ceres::Problem' data-ref="10problem">problem</dfn>;</td></tr>
+<tr><th id="146">146</th><td>  <b>for</b> (<em>int</em> <dfn class="local col1 decl" id="11i" title='i' data-type='int' data-ref="11i">i</dfn> = <var>0</var>; <a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a> &lt; <a class="tu ref" href="#kNumObservations" title='kNumObservations' data-use='r' data-ref="kNumObservations">kNumObservations</a>; ++<a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>) {</td></tr>
+<tr><th id="147">147</th><td>    <a class="type" href="../include/ceres/cost_function.h.html#ceres::CostFunction" title='ceres::CostFunction' data-ref="ceres::CostFunction">CostFunction</a>* <dfn class="local col2 decl" id="12cost_function" title='cost_function' data-type='ceres::CostFunction *' data-ref="12cost_function">cost_function</dfn> =</td></tr>
+<tr><th id="148">148</th><td>        <b>new</b> <a class="type" href="../include/ceres/autodiff_cost_function.h.html#ceres::AutoDiffCostFunction" title='ceres::AutoDiffCostFunction' data-ref="ceres::AutoDiffCostFunction">AutoDiffCostFunction</a>&lt;<a class="type" href="#ExponentialResidual" title='ExponentialResidual' data-ref="ExponentialResidual">ExponentialResidual</a>, <var>1</var>, <var>1</var>, <var>1</var>&gt;<a class="ref" href="../include/ceres/autodiff_cost_function.h.html#_ZN5ceres20AutoDiffCostFunctionC1EPT_" title='ceres::AutoDiffCostFunction::AutoDiffCostFunction&lt;CostFunctor, kNumResiduals, N0, N1, N2, N3, N4, N5, N6, N7, N8, N9&gt;' data-ref="_ZN5ceres20AutoDiffCostFunctionC1EPT_">(</a></td></tr>
+<tr><th id="149">149</th><td>            <b>new</b> <a class="type" href="#ExponentialResidual" title='ExponentialResidual' data-ref="ExponentialResidual">ExponentialResidual</a><a class="tu ref" href="#_ZN19ExponentialResidualC1Edd" title='ExponentialResidual::ExponentialResidual' data-use='c' data-ref="_ZN19ExponentialResidualC1Edd">(</a><a class="tu ref" href="#data" title='data' data-use='r' data-ref="data">data</a>[<var>2</var> * <a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a>], <a class="tu ref" href="#data" title='data' data-use='r' data-ref="data">data</a>[<var>2</var> * <a class="local col1 ref" href="#11i" title='i' data-ref="11i">i</a> + <var>1</var>]));</td></tr>
+<tr><th id="150">150</th><td>    <a class="local col0 ref" href="#10problem" title='problem' data-ref="10problem">problem</a>.<a class="ref" href="../include/ceres/problem.h.html#_ZN5ceres7Problem16AddResidualBlockEPNS_12CostFunctionEPNS_12LossFunctionEPdS5_" title='ceres::Problem::AddResidualBlock' data-ref="_ZN5ceres7Problem16AddResidualBlockEPNS_12CostFunctionEPNS_12LossFunctionEPdS5_">AddResidualBlock</a>(<a class="local col2 ref" href="#12cost_function" title='cost_function' data-ref="12cost_function">cost_function</a>,</td></tr>
+<tr><th id="151">151</th><td>                             <b>new</b> <a class="type" href="../include/ceres/loss_function.h.html#ceres::CauchyLoss" title='ceres::CauchyLoss' data-ref="ceres::CauchyLoss">CauchyLoss</a><a class="ref" href="../include/ceres/loss_function.h.html#_ZN5ceres10CauchyLossC1Ed" title='ceres::CauchyLoss::CauchyLoss' data-ref="_ZN5ceres10CauchyLossC1Ed">(</a><var>0.5</var>),</td></tr>
+<tr><th id="152">152</th><td>                             &amp;<a class="local col8 ref" href="#8m" title='m' data-ref="8m">m</a>, &amp;<a class="local col9 ref" href="#9c" title='c' data-ref="9c">c</a>);</td></tr>
+<tr><th id="153">153</th><td>  }</td></tr>
+<tr><th id="154">154</th><td></td></tr>
+<tr><th id="155">155</th><td>  <a class="type" href="../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../include/ceres/solver.h.html#ceres::Solver::Options" title='ceres::Solver::Options' data-ref="ceres::Solver::Options">Options</a> <a class="ref fake" href="../include/ceres/solver.h.html#_ZN5ceres6Solver7OptionsC1Ev" title='ceres::Solver::Options::Options' data-ref="_ZN5ceres6Solver7OptionsC1Ev"></a><dfn class="local col3 decl" id="13options" title='options' data-type='Solver::Options' data-ref="13options">options</dfn>;</td></tr>
+<tr><th id="156">156</th><td>  <a class="local col3 ref" href="#13options" title='options' data-ref="13options">options</a>.<a class="ref" href="../include/ceres/solver.h.html#ceres::Solver::Options::linear_solver_type" title='ceres::Solver::Options::linear_solver_type' data-ref="ceres::Solver::Options::linear_solver_type">linear_solver_type</a> = <span class="namespace">ceres::</span><a class="enum" href="../include/ceres/types.h.html#ceres::LinearSolverType::DENSE_QR" title='ceres::LinearSolverType::DENSE_QR' data-ref="ceres::LinearSolverType::DENSE_QR">DENSE_QR</a>;</td></tr>
+<tr><th id="157">157</th><td>  <a class="local col3 ref" href="#13options" title='options' data-ref="13options">options</a>.<a class="ref" href="../include/ceres/solver.h.html#ceres::Solver::Options::minimizer_progress_to_stdout" title='ceres::Solver::Options::minimizer_progress_to_stdout' data-ref="ceres::Solver::Options::minimizer_progress_to_stdout">minimizer_progress_to_stdout</a> = <b>true</b>;</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td>  <a class="type" href="../include/ceres/solver.h.html#ceres::Solver" title='ceres::Solver' data-ref="ceres::Solver">Solver</a>::<a class="type" href="../include/ceres/solver.h.html#ceres::Solver::Summary" title='ceres::Solver::Summary' data-ref="ceres::Solver::Summary">Summary</a> <a class="ref fake" href="../include/ceres/solver.h.html#_ZN5ceres6Solver7SummaryC1Ev" title='ceres::Solver::Summary::Summary' data-ref="_ZN5ceres6Solver7SummaryC1Ev"></a><dfn class="local col4 decl" id="14summary" title='summary' data-type='Solver::Summary' data-ref="14summary">summary</dfn>;</td></tr>
+<tr><th id="160">160</th><td>  <a class="ref" href="../include/ceres/solver.h.html#_ZN5ceres5SolveERKNS_6Solver7OptionsEPNS_7ProblemEPNS0_7SummaryE" title='ceres::Solve' data-ref="_ZN5ceres5SolveERKNS_6Solver7OptionsEPNS_7ProblemEPNS0_7SummaryE">Solve</a>(<a class="local col3 ref" href="#13options" title='options' data-ref="13options">options</a>, &amp;<a class="local col0 ref" href="#10problem" title='problem' data-ref="10problem">problem</a>, &amp;<a class="local col4 ref" href="#14summary" title='summary' data-ref="14summary">summary</a>);</td></tr>
+<tr><th id="161">161</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKSbIS0_S1_T1_E" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKSbIS0_S1_T1_E">&lt;&lt;</a> <a class="local col4 ref" href="#14summary" title='summary' data-ref="14summary">summary</a>.<a class="ref" href="../include/ceres/solver.h.html#_ZNK5ceres6Solver7Summary11BriefReportEv" title='ceres::Solver::Summary::BriefReport' data-ref="_ZNK5ceres6Solver7Summary11BriefReportEv">BriefReport</a>() <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="162">162</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Initial m: "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <var>0.0</var> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" c: "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <var>0.0</var> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="163">163</th><td>  <span class="namespace">std::</span><a class="ref" href="../../include/c++/4.8/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Final   m: "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col8 ref" href="#8m" title='m' data-ref="8m">m</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" c: "</q> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col9 ref" href="#9c" title='c' data-ref="9c">c</a> <a class="ref" href="../../include/c++/4.8/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="164">164</th><td>  <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="165">165</th><td>}</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2017-May-11</em> from project ceres-solver revision <em>1.12.0-69-g39388bd</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.0.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>
