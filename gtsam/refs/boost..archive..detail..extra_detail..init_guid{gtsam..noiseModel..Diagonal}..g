@@ -1,0 +1,10 @@
+<dec f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='40' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Diagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='40' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Diagonal&gt; &amp;'/>
+<dec f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='36' macro='1' type='const guid_initializer&lt;noiseModel::Diagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='36' macro='1' type='const guid_initializer&lt;noiseModel::Diagonal&gt; &amp;'/>
+<dec f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='37' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Diagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='37' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Diagonal&gt; &amp;'/>
+<dec f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='39' macro='1' type='const guid_initializer&lt;noiseModel::Diagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='39' macro='1' type='const guid_initializer&lt;noiseModel::Diagonal&gt; &amp;'/>
+<dec f='codebrowser/tests/testSerializationSlam.cpp' l='127' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Diagonal&gt; &amp;'/>
+<def f='codebrowser/tests/testSerializationSlam.cpp' l='127' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Diagonal&gt; &amp;'/>

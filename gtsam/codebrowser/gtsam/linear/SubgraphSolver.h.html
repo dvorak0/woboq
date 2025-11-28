@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SubgraphSolver.h source code [codebrowser/gtsam/linear/SubgraphSolver.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::SubgraphSolver,gtsam::SubgraphSolverParameters "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/linear/SubgraphSolver.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>linear</a>/<a href='SubgraphSolver.h.html'>SubgraphSolver.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">  SubgraphSolver.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>  Subgraph Solver from IROS 2010</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@date</span>   2010</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span> Yong Dian Jian</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#pragma once</u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="ConjugateGradientSolver.h.html">&lt;gtsam/linear/ConjugateGradientSolver.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="SubgraphBuilder.h.html">&lt;gtsam/linear/SubgraphBuilder.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../../../include/c++/13/map.html">&lt;map&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../../../include/c++/13/utility.html">&lt;utility&gt;</a>  // pair</u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><i>// Forward declarations</i></td></tr>
+<tr><th id="31">31</th><td><b>class</b> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph" id="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>;</td></tr>
+<tr><th id="32">32</th><td><b>class</b> <a class="type" href="HessianFactor.h.html#gtsam::GaussianBayesNet" title='gtsam::GaussianBayesNet' data-ref="gtsam::GaussianBayesNet" id="gtsam::GaussianBayesNet">GaussianBayesNet</a>;</td></tr>
+<tr><th id="33">33</th><td><b>class</b> <dfn class="type" id="gtsam::SubgraphPreconditioner" title='gtsam::SubgraphPreconditioner' data-ref="gtsam::SubgraphPreconditioner">SubgraphPreconditioner</dfn>;</td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><b>struct</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::SubgraphSolverParameters" title='gtsam::SubgraphSolverParameters' data-ref="gtsam::SubgraphSolverParameters">SubgraphSolverParameters</dfn></td></tr>
+<tr><th id="36">36</th><td>    : <b>public</b> <a class="type" href="ConjugateGradientSolver.h.html#gtsam::ConjugateGradientParameters" title='gtsam::ConjugateGradientParameters' data-ref="gtsam::ConjugateGradientParameters">ConjugateGradientParameters</a> {</td></tr>
+<tr><th id="37">37</th><td>  <a class="type" href="SubgraphBuilder.h.html#gtsam::SubgraphBuilderParameters" title='gtsam::SubgraphBuilderParameters' data-ref="gtsam::SubgraphBuilderParameters">SubgraphBuilderParameters</a> <dfn class="decl field" id="gtsam::SubgraphSolverParameters::builderParams" title='gtsam::SubgraphSolverParameters::builderParams' data-ref="gtsam::SubgraphSolverParameters::builderParams">builderParams</dfn>;</td></tr>
+<tr><th id="38">38</th><td>  <b>explicit</b> <dfn class="decl def fn" id="_ZN5gtsam24SubgraphSolverParametersC1ERKNS_25SubgraphBuilderParametersE" title='gtsam::SubgraphSolverParameters::SubgraphSolverParameters' data-ref="_ZN5gtsam24SubgraphSolverParametersC1ERKNS_25SubgraphBuilderParametersE">SubgraphSolverParameters</dfn>(<em>const</em> <a class="type" href="SubgraphBuilder.h.html#gtsam::SubgraphBuilderParameters" title='gtsam::SubgraphBuilderParameters' data-ref="gtsam::SubgraphBuilderParameters">SubgraphBuilderParameters</a> &amp;<dfn class="local col2 decl" id="382p" title='p' data-type='const SubgraphBuilderParameters &amp;' data-ref="382p">p</dfn> = <a class="type" href="SubgraphBuilder.h.html#gtsam::SubgraphBuilderParameters" title='gtsam::SubgraphBuilderParameters' data-ref="gtsam::SubgraphBuilderParameters">SubgraphBuilderParameters</a><a class="ref fn" href="SubgraphBuilder.h.html#_ZN5gtsam25SubgraphBuilderParametersC1Ev" title='gtsam::SubgraphBuilderParameters::SubgraphBuilderParameters' data-ref="_ZN5gtsam25SubgraphBuilderParametersC1Ev">(</a>))</td></tr>
+<tr><th id="39">39</th><td>    : <a class="member field" href="#gtsam::SubgraphSolverParameters::builderParams" title='gtsam::SubgraphSolverParameters::builderParams' data-ref="gtsam::SubgraphSolverParameters::builderParams">builderParams</a><a class="ref fn" href="SubgraphBuilder.h.html#102" title='gtsam::SubgraphBuilderParameters::SubgraphBuilderParameters' data-ref="_ZN5gtsam25SubgraphBuilderParametersC1ERKS0_">(</a><a class="local col2 ref" href="#382p" title='p' data-ref="382p">p</a>) {}</td></tr>
+<tr><th id="40">40</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam24SubgraphSolverParameters5printEv" title='gtsam::SubgraphSolverParameters::print' data-ref="_ZNK5gtsam24SubgraphSolverParameters5printEv">print</dfn>() <em>const</em> { <a class="typedef" href="ConjugateGradientSolver.h.html#gtsam::ConjugateGradientParameters::Base" title='gtsam::ConjugateGradientParameters::Base' data-type='IterativeOptimizationParameters' data-ref="gtsam::ConjugateGradientParameters::Base">Base</a>::<a class="member fn" href="IterativeSolver.h.html#_ZNK5gtsam31IterativeOptimizationParameters5printEv" title='gtsam::IterativeOptimizationParameters::print' data-ref="_ZNK5gtsam31IterativeOptimizationParameters5printEv">print</a>(); }</td></tr>
+<tr><th id="41">41</th><td>  <em>void</em> <dfn class="virtual decl def fn" id="_ZNK5gtsam24SubgraphSolverParameters5printERSo" title='gtsam::SubgraphSolverParameters::print' data-ref="_ZNK5gtsam24SubgraphSolverParameters5printERSo">print</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a> &amp;<dfn class="local col3 decl" id="383os" title='os' data-type='std::ostream &amp;' data-ref="383os">os</dfn>) <em>const</em> override {</td></tr>
+<tr><th id="42">42</th><td>    <a class="typedef" href="ConjugateGradientSolver.h.html#gtsam::ConjugateGradientParameters::Base" title='gtsam::ConjugateGradientParameters::Base' data-type='IterativeOptimizationParameters' data-ref="gtsam::ConjugateGradientParameters::Base">Base</a>::<a class="virtual member fn" href="IterativeSolver.h.html#_ZNK5gtsam31IterativeOptimizationParameters5printERSo" title='gtsam::IterativeOptimizationParameters::print' data-ref="_ZNK5gtsam31IterativeOptimizationParameters5printERSo">print</a>(<span class='refarg'><a class="local col3 ref" href="#383os" title='os' data-ref="383os">os</a></span>);</td></tr>
+<tr><th id="43">43</th><td>  }</td></tr>
+<tr><th id="44">44</th><td>};</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * This class implements the linear SPCG solver presented in Dellaert et al in</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * IROS'10.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> * Given a linear least-squares problem <span class="command">\f$</span><span class="verb"> f(x) = |A x - b|^2 \</span>f$. We split the</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc"> * problem into <span class="command">\f$</span><span class="verb"> f(x) = |A_t - b_t|^2 + |A_c - b_c|^2 \</span>f$ where <span class="command">\f$</span><span class="verb"> A_t \</span>f$</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> * denotes the "tree" part, and <span class="command">\f$</span><span class="verb"> A_c \</span>f$ denotes the "constraint" part.</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> * <span class="command">\f$</span><span class="verb">A_t \</span>f$ is factorized into <span class="command">\f$</span><span class="verb"> Q_t R_t \</span>f$, and we compute</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * <span class="command">\f$</span><span class="verb"> c_t = Q_t^{-1} b_t \</span>f$, and <span class="command">\f$</span><span class="verb"> x_t = R_t^{-1} c_t \</span>f$ accordingly.</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> * Then we solve a reparametrized problem</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> * <span class="command">\f$</span><span class="verb"> f(y) = |y|^2 + |A_c R_t^{-1} y -\bar{b_y}|^2 \</span>f$,</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> * where <span class="command">\f$</span><span class="verb"> y = R_t(x - x_t) \</span>f$, and <span class="command">\f$</span><span class="verb"> \bar{b_y} = (b_c - A_c x_t) \</span>f$</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> * In the matrix form, it is equivalent to solving</i></td></tr>
+<tr><th id="62">62</th><td><i class="doc"> * <span class="command">\f$</span><span class="verb"> [A_c R_t^{-1} ; I ] y = [\bar{b_y} ; 0] \</span>f$.</i></td></tr>
+<tr><th id="63">63</th><td><i class="doc"> * We can solve it with the least-squares variation of the conjugate gradient</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc"> * method.</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc"> * To use it in nonlinear optimization, please see the following example</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc"> *  LevenbergMarquardtParams parameters;</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc"> *  parameters.linearSolverType = NonlinearOptimizerParams::CONJUGATE_GRADIENT;</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc"> *  parameters.iterativeParams = std::make_shared&lt;SubgraphSolverParameters&gt;();</i></td></tr>
+<tr><th id="71">71</th><td><i class="doc"> *  LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, parameters);</i></td></tr>
+<tr><th id="72">72</th><td><i class="doc"> *  Values result = optimizer.optimize();</i></td></tr>
+<tr><th id="73">73</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc"> *<span class="command"> \nosubgrouping</span></i></td></tr>
+<tr><th id="75">75</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="76">76</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::SubgraphSolver" title='gtsam::SubgraphSolver' data-ref="gtsam::SubgraphSolver">SubgraphSolver</dfn> : <b>public</b> <a class="type" href="IterativeSolver.h.html#gtsam::IterativeSolver" title='gtsam::IterativeSolver' data-ref="gtsam::IterativeSolver">IterativeSolver</a> {</td></tr>
+<tr><th id="77">77</th><td> <b>public</b>:</td></tr>
+<tr><th id="78">78</th><td>  <b>typedef</b> <a class="type" href="#gtsam::SubgraphSolverParameters" title='gtsam::SubgraphSolverParameters' data-ref="gtsam::SubgraphSolverParameters">SubgraphSolverParameters</a> <dfn class="typedef" id="gtsam::SubgraphSolver::Parameters" title='gtsam::SubgraphSolver::Parameters' data-type='SubgraphSolverParameters' data-ref="gtsam::SubgraphSolver::Parameters">Parameters</dfn>;</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td> <b>protected</b>:</td></tr>
+<tr><th id="81">81</th><td>  <a class="typedef" href="#gtsam::SubgraphSolver::Parameters" title='gtsam::SubgraphSolver::Parameters' data-type='SubgraphSolverParameters' data-ref="gtsam::SubgraphSolver::Parameters">Parameters</a> <dfn class="decl field" id="gtsam::SubgraphSolver::parameters_" title='gtsam::SubgraphSolver::parameters_' data-ref="gtsam::SubgraphSolver::parameters_">parameters_</dfn>;</td></tr>
+<tr><th id="82">82</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::SubgraphPreconditioner" title='gtsam::SubgraphPreconditioner' data-ref="gtsam::SubgraphPreconditioner">SubgraphPreconditioner</a>&gt; <dfn class="decl field" id="gtsam::SubgraphSolver::pc_" title='gtsam::SubgraphSolver::pc_' data-ref="gtsam::SubgraphSolver::pc_">pc_</dfn>;  <i class="doc">///&lt; preconditioner object</i></td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td> <b>public</b>:</td></tr>
+<tr><th id="85">85</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Constructors</span></i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="87">87</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   * Given a gaussian factor graph, split it into a spanning tree (A1) + others</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">   * (A2) for SPCG Will throw exception if there are ternary factors or higher</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">   * arity, as we use Kruskal's algorithm to split the graph, treating binary</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   * factors as edges.</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="93">93</th><td>  <dfn class="decl fn" id="_ZN5gtsam14SubgraphSolverC1ERKNS_19GaussianFactorGraphERKNS_24SubgraphSolverParametersERKNS_8OrderingE" title='gtsam::SubgraphSolver::SubgraphSolver' data-ref="_ZN5gtsam14SubgraphSolverC1ERKNS_19GaussianFactorGraphERKNS_24SubgraphSolverParametersERKNS_8OrderingE">SubgraphSolver</dfn>(<em>const</em> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> &amp;<dfn class="local col4 decl" id="384A" title='A' data-type='const GaussianFactorGraph &amp;' data-ref="384A">A</dfn>, <em>const</em> <a class="typedef" href="#gtsam::SubgraphSolver::Parameters" title='gtsam::SubgraphSolver::Parameters' data-type='SubgraphSolverParameters' data-ref="gtsam::SubgraphSolver::Parameters">Parameters</a> &amp;<dfn class="local col5 decl" id="385parameters" title='parameters' data-type='const Parameters &amp;' data-ref="385parameters">parameters</dfn>,</td></tr>
+<tr><th id="94">94</th><td>                 <em>const</em> <a class="type" href="../inference/Ordering.h.html#gtsam::Ordering" title='gtsam::Ordering' data-ref="gtsam::Ordering">Ordering</a> &amp;<dfn class="local col6 decl" id="386ordering" title='ordering' data-type='const Ordering &amp;' data-ref="386ordering">ordering</dfn>);</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">   * The user specifies the subgraph part and the constraints part.</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   * May throw exception if A1 is underdetermined. An ordering is required to</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">   * eliminate Ab1. We take Ab1 as a const reference, as it will be transformed</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">   * into Rc1, but take Ab2 as a shared pointer as we need to keep it around.</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="102">102</th><td>  <dfn class="decl fn" id="_ZN5gtsam14SubgraphSolverC1ERKNS_19GaussianFactorGraphES3_RKNS_24SubgraphSolverParametersERKNS_8OrderingE" title='gtsam::SubgraphSolver::SubgraphSolver' data-ref="_ZN5gtsam14SubgraphSolverC1ERKNS_19GaussianFactorGraphES3_RKNS_24SubgraphSolverParametersERKNS_8OrderingE">SubgraphSolver</dfn>(<em>const</em> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> &amp;<dfn class="local col7 decl" id="387Ab1" title='Ab1' data-type='const GaussianFactorGraph &amp;' data-ref="387Ab1">Ab1</dfn>, <em>const</em> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> &amp;<dfn class="local col8 decl" id="388Ab2" title='Ab2' data-type='const GaussianFactorGraph &amp;' data-ref="388Ab2">Ab2</dfn>,</td></tr>
+<tr><th id="103">103</th><td>                 <em>const</em> <a class="typedef" href="#gtsam::SubgraphSolver::Parameters" title='gtsam::SubgraphSolver::Parameters' data-type='SubgraphSolverParameters' data-ref="gtsam::SubgraphSolver::Parameters">Parameters</a> &amp;<dfn class="local col9 decl" id="389parameters" title='parameters' data-type='const Parameters &amp;' data-ref="389parameters">parameters</dfn>, <em>const</em> <a class="type" href="../inference/Ordering.h.html#gtsam::Ordering" title='gtsam::Ordering' data-ref="gtsam::Ordering">Ordering</a> &amp;<dfn class="local col0 decl" id="390ordering" title='ordering' data-type='const Ordering &amp;' data-ref="390ordering">ordering</dfn>);</td></tr>
+<tr><th id="104">104</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">   * The same as above, but we assume A1 was solved by caller.</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">   * We take two shared pointers as we keep both around.</i></td></tr>
+<tr><th id="107">107</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="108">108</th><td>  <dfn class="decl fn" id="_ZN5gtsam14SubgraphSolverC1ERKNS_16GaussianBayesNetERKNS_19GaussianFactorGraphERKNS_24SubgraphSolverParametersE" title='gtsam::SubgraphSolver::SubgraphSolver' data-ref="_ZN5gtsam14SubgraphSolverC1ERKNS_16GaussianBayesNetERKNS_19GaussianFactorGraphERKNS_24SubgraphSolverParametersE">SubgraphSolver</dfn>(<em>const</em> <a class="type" href="HessianFactor.h.html#gtsam::GaussianBayesNet" title='gtsam::GaussianBayesNet' data-ref="gtsam::GaussianBayesNet">GaussianBayesNet</a> &amp;<dfn class="local col1 decl" id="391Rc1" title='Rc1' data-type='const GaussianBayesNet &amp;' data-ref="391Rc1">Rc1</dfn>, <em>const</em> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> &amp;<dfn class="local col2 decl" id="392Ab2" title='Ab2' data-type='const GaussianFactorGraph &amp;' data-ref="392Ab2">Ab2</dfn>,</td></tr>
+<tr><th id="109">109</th><td>                 <em>const</em> <a class="typedef" href="#gtsam::SubgraphSolver::Parameters" title='gtsam::SubgraphSolver::Parameters' data-type='SubgraphSolverParameters' data-ref="gtsam::SubgraphSolver::Parameters">Parameters</a> &amp;<dfn class="local col3 decl" id="393parameters" title='parameters' data-type='const Parameters &amp;' data-ref="393parameters">parameters</dfn>);</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>  <i class="doc">/// Destructor</i></td></tr>
+<tr><th id="112">112</th><td>  <dfn class="virtual decl def fn" id="_ZN5gtsam14SubgraphSolverD1Ev" title='gtsam::SubgraphSolver::~SubgraphSolver' data-ref="_ZN5gtsam14SubgraphSolverD1Ev">~SubgraphSolver</dfn>() override {}</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Implement interface</span></i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc"></i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">  /// Optimize from zero</i></td></tr>
+<tr><th id="119">119</th><td>  <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZNK5gtsam14SubgraphSolver8optimizeEv" title='gtsam::SubgraphSolver::optimize' data-ref="_ZNK5gtsam14SubgraphSolver8optimizeEv">optimize</dfn>() <em>const</em>;</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td>  <i class="doc">/// Interface that IterativeSolver subclasses have to implement</i></td></tr>
+<tr><th id="122">122</th><td>  <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="virtual decl fn" id="_ZN5gtsam14SubgraphSolver8optimizeERKNS_19GaussianFactorGraphERKNS_7KeyInfoERKSt3mapImN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEESt4lessImESaISt4pairIKmS6327484" title='gtsam::SubgraphSolver::optimize' data-ref="_ZN5gtsam14SubgraphSolver8optimizeERKNS_19GaussianFactorGraphERKNS_7KeyInfoERKSt3mapImN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEESt4lessImESaISt4pairIKmS6327484">optimize</dfn>(<em>const</em> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> &amp;<dfn class="local col4 decl" id="394gfg" title='gfg' data-type='const GaussianFactorGraph &amp;' data-ref="394gfg">gfg</dfn>,</td></tr>
+<tr><th id="123">123</th><td>                        <em>const</em> <a class="type" href="IterativeSolver.h.html#gtsam::KeyInfo" title='gtsam::KeyInfo' data-ref="gtsam::KeyInfo">KeyInfo</a> &amp;<dfn class="local col5 decl" id="395keyInfo" title='keyInfo' data-type='const KeyInfo &amp;' data-ref="395keyInfo">keyInfo</dfn>,</td></tr>
+<tr><th id="124">124</th><td>                        <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>&gt; &amp;<dfn class="local col6 decl" id="396lambda" title='lambda' data-type='const std::map&lt;Key, Vector&gt; &amp;' data-ref="396lambda">lambda</dfn>,</td></tr>
+<tr><th id="125">125</th><td>                        <em>const</em> <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> &amp;<dfn class="local col7 decl" id="397initial" title='initial' data-type='const VectorValues &amp;' data-ref="397initial">initial</dfn>) override;</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Implement interface</span></i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc"></i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">  /// Split graph using Kruskal algorithm, treating binary factors as edges.</i></td></tr>
+<tr><th id="132">132</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_iterator.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>, <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>&gt; <dfn class="decl fn" id="_ZN5gtsam14SubgraphSolver10splitGraphERKNS_19GaussianFactorGraphE" title='gtsam::SubgraphSolver::splitGraph' data-ref="_ZN5gtsam14SubgraphSolver10splitGraphERKNS_19GaussianFactorGraphE">splitGraph</dfn>(</td></tr>
+<tr><th id="133">133</th><td>      <em>const</em> <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> &amp;<dfn class="local col8 decl" id="398gfg" title='gfg' data-type='const GaussianFactorGraph &amp;' data-ref="398gfg">gfg</dfn>);</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="136">136</th><td>};</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="139">139</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/CameraResectioning.cpp.html'>codebrowser/examples/CameraResectioning.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

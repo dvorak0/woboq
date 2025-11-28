@@ -1,0 +1,394 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>airy.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/airy.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/airy.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='airy.c.html'>airy.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     airy.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Airy function</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, ai, aip, bi, bip;</i></td></tr>
+<tr><th id="10">10</th><td><i> * int airy();</i></td></tr>
+<tr><th id="11">11</th><td><i> *</i></td></tr>
+<tr><th id="12">12</th><td><i> * airy( x, _&amp;ai, _&amp;aip, _&amp;bi, _&amp;bip );</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="17">17</th><td><i> *</i></td></tr>
+<tr><th id="18">18</th><td><i> * Solution of the differential equation</i></td></tr>
+<tr><th id="19">19</th><td><i> *</i></td></tr>
+<tr><th id="20">20</th><td><i> *     y"(x) = xy.</i></td></tr>
+<tr><th id="21">21</th><td><i> *</i></td></tr>
+<tr><th id="22">22</th><td><i> * The function returns the two independent solutions Ai, Bi</i></td></tr>
+<tr><th id="23">23</th><td><i> * and their first derivatives Ai'(x), Bi'(x).</i></td></tr>
+<tr><th id="24">24</th><td><i> *</i></td></tr>
+<tr><th id="25">25</th><td><i> * Evaluation is by power series summation for small x,</i></td></tr>
+<tr><th id="26">26</th><td><i> * by rational minimax approximations for large x.</i></td></tr>
+<tr><th id="27">27</th><td><i> *</i></td></tr>
+<tr><th id="28">28</th><td><i> *</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="31">31</th><td><i> * Error criterion is absolute when function &lt;= 1, relative</i></td></tr>
+<tr><th id="32">32</th><td><i> * when function &gt; 1, except * denotes relative error criterion.</i></td></tr>
+<tr><th id="33">33</th><td><i> * For large negative x, the absolute error increases as x^1.5.</i></td></tr>
+<tr><th id="34">34</th><td><i> * For large positive x, the relative error increases as x^1.5.</i></td></tr>
+<tr><th id="35">35</th><td><i> *</i></td></tr>
+<tr><th id="36">36</th><td><i> * Arithmetic  domain   function  # trials      peak         rms</i></td></tr>
+<tr><th id="37">37</th><td><i> * IEEE        -10, 0     Ai        10000       1.6e-15     2.7e-16</i></td></tr>
+<tr><th id="38">38</th><td><i> * IEEE          0, 10    Ai        10000       2.3e-14*    1.8e-15*</i></td></tr>
+<tr><th id="39">39</th><td><i> * IEEE        -10, 0     Ai'       10000       4.6e-15     7.6e-16</i></td></tr>
+<tr><th id="40">40</th><td><i> * IEEE          0, 10    Ai'       10000       1.8e-14*    1.5e-15*</i></td></tr>
+<tr><th id="41">41</th><td><i> * IEEE        -10, 10    Bi        30000       4.2e-15     5.3e-16</i></td></tr>
+<tr><th id="42">42</th><td><i> * IEEE        -10, 10    Bi'       30000       4.9e-15     7.3e-16</i></td></tr>
+<tr><th id="43">43</th><td><i> *</i></td></tr>
+<tr><th id="44">44</th><td><i> */</i></td></tr>
+<tr><th id="45">45</th><td><i>/*							airy.c */</i></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><i>/*</i></td></tr>
+<tr><th id="48">48</th><td><i> * Cephes Math Library Release 2.8:  June, 2000</i></td></tr>
+<tr><th id="49">49</th><td><i> * Copyright 1984, 1987, 1989, 2000 by Stephen L. Moshier</i></td></tr>
+<tr><th id="50">50</th><td><i> */</i></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="c1" title='c1' data-type='double' data-ref="c1">c1</dfn> = <var>0.35502805388781723926</var>;</td></tr>
+<tr><th id="55">55</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="c2" title='c2' data-type='double' data-ref="c2">c2</dfn> = <var>0.258819403792806798405</var>;</td></tr>
+<tr><th id="56">56</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="sqrt3" title='sqrt3' data-type='double' data-ref="sqrt3">sqrt3</dfn> = <var>1.732050807568877293527</var>;</td></tr>
+<tr><th id="57">57</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="sqpii" title='sqpii' data-type='double' data-ref="sqpii">sqpii</dfn> = <var>5.64189583547756286948E-1</var>;</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>;</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td><u>#<span data-ppcond="61">ifdef</span> <a class="macro" href="mconf.h.html#80" data-ref="_M/UNK">UNK</a></u></td></tr>
+<tr><th id="62">62</th><td><u>#define <dfn class="macro" id="_M/MAXAIRY" data-ref="_M/MAXAIRY">MAXAIRY</dfn> 25.77</u></td></tr>
+<tr><th id="63">63</th><td><u>#<span data-ppcond="61">endif</span></u></td></tr>
+<tr><th id="64">64</th><td><u>#<span data-ppcond="64">ifdef</span> <span class="macro" data-ref="_M/IBMPC">IBMPC</span></u></td></tr>
+<tr><th id="65">65</th><td><u>#define MAXAIRY 103.892</u></td></tr>
+<tr><th id="66">66</th><td><u>#<span data-ppcond="64">endif</span></u></td></tr>
+<tr><th id="67">67</th><td><u>#<span data-ppcond="67">ifdef</span> <span class="macro" data-ref="_M/MIEEE">MIEEE</span></u></td></tr>
+<tr><th id="68">68</th><td><u>#define MAXAIRY 103.892</u></td></tr>
+<tr><th id="69">69</th><td><u>#<span data-ppcond="67">endif</span></u></td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AN" title='AN' data-type='double[8]' data-ref="AN">AN</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="73">73</th><td>    <var>3.46538101525629032477E-1</var>,</td></tr>
+<tr><th id="74">74</th><td>    <var>1.20075952739645805542E1</var>,</td></tr>
+<tr><th id="75">75</th><td>    <var>7.62796053615234516538E1</var>,</td></tr>
+<tr><th id="76">76</th><td>    <var>1.68089224934630576269E2</var>,</td></tr>
+<tr><th id="77">77</th><td>    <var>1.59756391350164413639E2</var>,</td></tr>
+<tr><th id="78">78</th><td>    <var>7.05360906840444183113E1</var>,</td></tr>
+<tr><th id="79">79</th><td>    <var>1.40264691163389668864E1</var>,</td></tr>
+<tr><th id="80">80</th><td>    <var>9.99999999999999995305E-1</var>,</td></tr>
+<tr><th id="81">81</th><td>};</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AD" title='AD' data-type='double[8]' data-ref="AD">AD</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="84">84</th><td>    <var>5.67594532638770212846E-1</var>,</td></tr>
+<tr><th id="85">85</th><td>    <var>1.47562562584847203173E1</var>,</td></tr>
+<tr><th id="86">86</th><td>    <var>8.45138970141474626562E1</var>,</td></tr>
+<tr><th id="87">87</th><td>    <var>1.77318088145400459522E2</var>,</td></tr>
+<tr><th id="88">88</th><td>    <var>1.64234692871529701831E2</var>,</td></tr>
+<tr><th id="89">89</th><td>    <var>7.14778400825575695274E1</var>,</td></tr>
+<tr><th id="90">90</th><td>    <var>1.40959135607834029598E1</var>,</td></tr>
+<tr><th id="91">91</th><td>    <var>1.00000000000000000470E0</var>,</td></tr>
+<tr><th id="92">92</th><td>};</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="APN" title='APN' data-type='double[8]' data-ref="APN">APN</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="95">95</th><td>    <var>6.13759184814035759225E-1</var>,</td></tr>
+<tr><th id="96">96</th><td>    <var>1.47454670787755323881E1</var>,</td></tr>
+<tr><th id="97">97</th><td>    <var>8.20584123476060982430E1</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>1.71184781360976385540E2</var>,</td></tr>
+<tr><th id="99">99</th><td>    <var>1.59317847137141783523E2</var>,</td></tr>
+<tr><th id="100">100</th><td>    <var>6.99778599330103016170E1</var>,</td></tr>
+<tr><th id="101">101</th><td>    <var>1.39470856980481566958E1</var>,</td></tr>
+<tr><th id="102">102</th><td>    <var>1.00000000000000000550E0</var>,</td></tr>
+<tr><th id="103">103</th><td>};</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="APD" title='APD' data-type='double[8]' data-ref="APD">APD</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="106">106</th><td>    <var>3.34203677749736953049E-1</var>,</td></tr>
+<tr><th id="107">107</th><td>    <var>1.11810297306158156705E1</var>,</td></tr>
+<tr><th id="108">108</th><td>    <var>7.11727352147859965283E1</var>,</td></tr>
+<tr><th id="109">109</th><td>    <var>1.58778084372838313640E2</var>,</td></tr>
+<tr><th id="110">110</th><td>    <var>1.53206427475809220834E2</var>,</td></tr>
+<tr><th id="111">111</th><td>    <var>6.86752304592780337944E1</var>,</td></tr>
+<tr><th id="112">112</th><td>    <var>1.38498634758259442477E1</var>,</td></tr>
+<tr><th id="113">113</th><td>    <var>9.99999999999999994502E-1</var>,</td></tr>
+<tr><th id="114">114</th><td>};</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="BN16" title='BN16' data-type='double[5]' data-ref="BN16">BN16</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="117">117</th><td>    -<var>2.53240795869364152689E-1</var>,</td></tr>
+<tr><th id="118">118</th><td>    <var>5.75285167332467384228E-1</var>,</td></tr>
+<tr><th id="119">119</th><td>    -<var>3.29907036873225371650E-1</var>,</td></tr>
+<tr><th id="120">120</th><td>    <var>6.44404068948199951727E-2</var>,</td></tr>
+<tr><th id="121">121</th><td>    -<var>3.82519546641336734394E-3</var>,</td></tr>
+<tr><th id="122">122</th><td>};</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="BD16" title='BD16' data-type='double[5]' data-ref="BD16">BD16</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="125">125</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="126">126</th><td>    -<var>7.15685095054035237902E0</var>,</td></tr>
+<tr><th id="127">127</th><td>    <var>1.06039580715664694291E1</var>,</td></tr>
+<tr><th id="128">128</th><td>    -<var>5.23246636471251500874E0</var>,</td></tr>
+<tr><th id="129">129</th><td>    <var>9.57395864378383833152E-1</var>,</td></tr>
+<tr><th id="130">130</th><td>    -<var>5.50828147163549611107E-2</var>,</td></tr>
+<tr><th id="131">131</th><td>};</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="BPPN" title='BPPN' data-type='double[5]' data-ref="BPPN">BPPN</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="134">134</th><td>    <var>4.65461162774651610328E-1</var>,</td></tr>
+<tr><th id="135">135</th><td>    -<var>1.08992173800493920734E0</var>,</td></tr>
+<tr><th id="136">136</th><td>    <var>6.38800117371827987759E-1</var>,</td></tr>
+<tr><th id="137">137</th><td>    -<var>1.26844349553102907034E-1</var>,</td></tr>
+<tr><th id="138">138</th><td>    <var>7.62487844342109852105E-3</var>,</td></tr>
+<tr><th id="139">139</th><td>};</td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="BPPD" title='BPPD' data-type='double[5]' data-ref="BPPD">BPPD</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="142">142</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="143">143</th><td>    -<var>8.70622787633159124240E0</var>,</td></tr>
+<tr><th id="144">144</th><td>    <var>1.38993162704553213172E1</var>,</td></tr>
+<tr><th id="145">145</th><td>    -<var>7.14116144616431159572E0</var>,</td></tr>
+<tr><th id="146">146</th><td>    <var>1.34008595960680518666E0</var>,</td></tr>
+<tr><th id="147">147</th><td>    -<var>7.84273211323341930448E-2</var>,</td></tr>
+<tr><th id="148">148</th><td>};</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AFN" title='AFN' data-type='double[9]' data-ref="AFN">AFN</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="151">151</th><td>    -<var>1.31696323418331795333E-1</var>,</td></tr>
+<tr><th id="152">152</th><td>    -<var>6.26456544431912369773E-1</var>,</td></tr>
+<tr><th id="153">153</th><td>    -<var>6.93158036036933542233E-1</var>,</td></tr>
+<tr><th id="154">154</th><td>    -<var>2.79779981545119124951E-1</var>,</td></tr>
+<tr><th id="155">155</th><td>    -<var>4.91900132609500318020E-2</var>,</td></tr>
+<tr><th id="156">156</th><td>    -<var>4.06265923594885404393E-3</var>,</td></tr>
+<tr><th id="157">157</th><td>    -<var>1.59276496239262096340E-4</var>,</td></tr>
+<tr><th id="158">158</th><td>    -<var>2.77649108155232920844E-6</var>,</td></tr>
+<tr><th id="159">159</th><td>    -<var>1.67787698489114633780E-8</var>,</td></tr>
+<tr><th id="160">160</th><td>};</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AFD" title='AFD' data-type='double[9]' data-ref="AFD">AFD</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="163">163</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="164">164</th><td>    <var>1.33560420706553243746E1</var>,</td></tr>
+<tr><th id="165">165</th><td>    <var>3.26825032795224613948E1</var>,</td></tr>
+<tr><th id="166">166</th><td>    <var>2.67367040941499554804E1</var>,</td></tr>
+<tr><th id="167">167</th><td>    <var>9.18707402907259625840E0</var>,</td></tr>
+<tr><th id="168">168</th><td>    <var>1.47529146771666414581E0</var>,</td></tr>
+<tr><th id="169">169</th><td>    <var>1.15687173795188044134E-1</var>,</td></tr>
+<tr><th id="170">170</th><td>    <var>4.40291641615211203805E-3</var>,</td></tr>
+<tr><th id="171">171</th><td>    <var>7.54720348287414296618E-5</var>,</td></tr>
+<tr><th id="172">172</th><td>    <var>4.51850092970580378464E-7</var>,</td></tr>
+<tr><th id="173">173</th><td>};</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AGN" title='AGN' data-type='double[11]' data-ref="AGN">AGN</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="176">176</th><td>    <var>1.97339932091685679179E-2</var>,</td></tr>
+<tr><th id="177">177</th><td>    <var>3.91103029615688277255E-1</var>,</td></tr>
+<tr><th id="178">178</th><td>    <var>1.06579897599595591108E0</var>,</td></tr>
+<tr><th id="179">179</th><td>    <var>9.39169229816650230044E-1</var>,</td></tr>
+<tr><th id="180">180</th><td>    <var>3.51465656105547619242E-1</var>,</td></tr>
+<tr><th id="181">181</th><td>    <var>6.33888919628925490927E-2</var>,</td></tr>
+<tr><th id="182">182</th><td>    <var>5.85804113048388458567E-3</var>,</td></tr>
+<tr><th id="183">183</th><td>    <var>2.82851600836737019778E-4</var>,</td></tr>
+<tr><th id="184">184</th><td>    <var>6.98793669997260967291E-6</var>,</td></tr>
+<tr><th id="185">185</th><td>    <var>8.11789239554389293311E-8</var>,</td></tr>
+<tr><th id="186">186</th><td>    <var>3.41551784765923618484E-10</var>,</td></tr>
+<tr><th id="187">187</th><td>};</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AGD" title='AGD' data-type='double[10]' data-ref="AGD">AGD</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="190">190</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="191">191</th><td>    <var>9.30892908077441974853E0</var>,</td></tr>
+<tr><th id="192">192</th><td>    <var>1.98352928718312140417E1</var>,</td></tr>
+<tr><th id="193">193</th><td>    <var>1.55646628932864612953E1</var>,</td></tr>
+<tr><th id="194">194</th><td>    <var>5.47686069422975497931E0</var>,</td></tr>
+<tr><th id="195">195</th><td>    <var>9.54293611618961883998E-1</var>,</td></tr>
+<tr><th id="196">196</th><td>    <var>8.64580826352392193095E-2</var>,</td></tr>
+<tr><th id="197">197</th><td>    <var>4.12656523824222607191E-3</var>,</td></tr>
+<tr><th id="198">198</th><td>    <var>1.01259085116509135510E-4</var>,</td></tr>
+<tr><th id="199">199</th><td>    <var>1.17166733214413521882E-6</var>,</td></tr>
+<tr><th id="200">200</th><td>    <var>4.91834570062930015649E-9</var>,</td></tr>
+<tr><th id="201">201</th><td>};</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="APFN" title='APFN' data-type='double[9]' data-ref="APFN">APFN</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="204">204</th><td>    <var>1.85365624022535566142E-1</var>,</td></tr>
+<tr><th id="205">205</th><td>    <var>8.86712188052584095637E-1</var>,</td></tr>
+<tr><th id="206">206</th><td>    <var>9.87391981747398547272E-1</var>,</td></tr>
+<tr><th id="207">207</th><td>    <var>4.01241082318003734092E-1</var>,</td></tr>
+<tr><th id="208">208</th><td>    <var>7.10304926289631174579E-2</var>,</td></tr>
+<tr><th id="209">209</th><td>    <var>5.90618657995661810071E-3</var>,</td></tr>
+<tr><th id="210">210</th><td>    <var>2.33051409401776799569E-4</var>,</td></tr>
+<tr><th id="211">211</th><td>    <var>4.08718778289035454598E-6</var>,</td></tr>
+<tr><th id="212">212</th><td>    <var>2.48379932900442457853E-8</var>,</td></tr>
+<tr><th id="213">213</th><td>};</td></tr>
+<tr><th id="214">214</th><td></td></tr>
+<tr><th id="215">215</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="APFD" title='APFD' data-type='double[9]' data-ref="APFD">APFD</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="216">216</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="217">217</th><td>    <var>1.47345854687502542552E1</var>,</td></tr>
+<tr><th id="218">218</th><td>    <var>3.75423933435489594466E1</var>,</td></tr>
+<tr><th id="219">219</th><td>    <var>3.14657751203046424330E1</var>,</td></tr>
+<tr><th id="220">220</th><td>    <var>1.09969125207298778536E1</var>,</td></tr>
+<tr><th id="221">221</th><td>    <var>1.78885054766999417817E0</var>,</td></tr>
+<tr><th id="222">222</th><td>    <var>1.41733275753662636873E-1</var>,</td></tr>
+<tr><th id="223">223</th><td>    <var>5.44066067017226003627E-3</var>,</td></tr>
+<tr><th id="224">224</th><td>    <var>9.39421290654511171663E-5</var>,</td></tr>
+<tr><th id="225">225</th><td>    <var>5.65978713036027009243E-7</var>,</td></tr>
+<tr><th id="226">226</th><td>};</td></tr>
+<tr><th id="227">227</th><td></td></tr>
+<tr><th id="228">228</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="APGN" title='APGN' data-type='double[11]' data-ref="APGN">APGN</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="229">229</th><td>    -<var>3.55615429033082288335E-2</var>,</td></tr>
+<tr><th id="230">230</th><td>    -<var>6.37311518129435504426E-1</var>,</td></tr>
+<tr><th id="231">231</th><td>    -<var>1.70856738884312371053E0</var>,</td></tr>
+<tr><th id="232">232</th><td>    -<var>1.50221872117316635393E0</var>,</td></tr>
+<tr><th id="233">233</th><td>    -<var>5.63606665822102676611E-1</var>,</td></tr>
+<tr><th id="234">234</th><td>    -<var>1.02101031120216891789E-1</var>,</td></tr>
+<tr><th id="235">235</th><td>    -<var>9.48396695961445269093E-3</var>,</td></tr>
+<tr><th id="236">236</th><td>    -<var>4.60325307486780994357E-4</var>,</td></tr>
+<tr><th id="237">237</th><td>    -<var>1.14300836484517375919E-5</var>,</td></tr>
+<tr><th id="238">238</th><td>    -<var>1.33415518685547420648E-7</var>,</td></tr>
+<tr><th id="239">239</th><td>    -<var>5.63803833958893494476E-10</var>,</td></tr>
+<tr><th id="240">240</th><td>};</td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="APGD" title='APGD' data-type='double[11]' data-ref="APGD">APGD</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="243">243</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="244">244</th><td>    <var>9.85865801696130355144E0</var>,</td></tr>
+<tr><th id="245">245</th><td>    <var>2.16401867356585941885E1</var>,</td></tr>
+<tr><th id="246">246</th><td>    <var>1.73130776389749389525E1</var>,</td></tr>
+<tr><th id="247">247</th><td>    <var>6.17872175280828766327E0</var>,</td></tr>
+<tr><th id="248">248</th><td>    <var>1.08848694396321495475E0</var>,</td></tr>
+<tr><th id="249">249</th><td>    <var>9.95005543440888479402E-2</var>,</td></tr>
+<tr><th id="250">250</th><td>    <var>4.78468199683886610842E-3</var>,</td></tr>
+<tr><th id="251">251</th><td>    <var>1.18159633322838625562E-4</var>,</td></tr>
+<tr><th id="252">252</th><td>    <var>1.37480673554219441465E-6</var>,</td></tr>
+<tr><th id="253">253</th><td>    <var>5.79912514929147598821E-9</var>,</td></tr>
+<tr><th id="254">254</th><td>};</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td><em>int</em> <dfn class="decl def fn" id="airy" title='airy' data-ref="airy">airy</dfn>(<em>double</em> <dfn class="local col2 decl" id="32x" title='x' data-type='double' data-ref="32x">x</dfn>, <em>double</em> *<dfn class="local col3 decl" id="33ai" title='ai' data-type='double *' data-ref="33ai">ai</dfn>, <em>double</em> *<dfn class="local col4 decl" id="34aip" title='aip' data-type='double *' data-ref="34aip">aip</dfn>, <em>double</em> *<dfn class="local col5 decl" id="35bi" title='bi' data-type='double *' data-ref="35bi">bi</dfn>, <em>double</em> *<dfn class="local col6 decl" id="36bip" title='bip' data-type='double *' data-ref="36bip">bip</dfn>)</td></tr>
+<tr><th id="257">257</th><td>{</td></tr>
+<tr><th id="258">258</th><td>    <em>double</em> <dfn class="local col7 decl" id="37z" title='z' data-type='double' data-ref="37z">z</dfn>, <dfn class="local col8 decl" id="38zz" title='zz' data-type='double' data-ref="38zz">zz</dfn>, <dfn class="local col9 decl" id="39t" title='t' data-type='double' data-ref="39t">t</dfn>, <dfn class="local col0 decl" id="40f" title='f' data-type='double' data-ref="40f">f</dfn>, <dfn class="local col1 decl" id="41g" title='g' data-type='double' data-ref="41g">g</dfn>, <dfn class="local col2 decl" id="42uf" title='uf' data-type='double' data-ref="42uf">uf</dfn>, <dfn class="local col3 decl" id="43ug" title='ug' data-type='double' data-ref="43ug">ug</dfn>, <dfn class="local col4 decl" id="44k" title='k' data-type='double' data-ref="44k">k</dfn>, <dfn class="local col5 decl" id="45zeta" title='zeta' data-type='double' data-ref="45zeta">zeta</dfn>, <dfn class="local col6 decl" id="46theta" title='theta' data-type='double' data-ref="46theta">theta</dfn>;</td></tr>
+<tr><th id="259">259</th><td>    <em>int</em> <dfn class="local col7 decl" id="47domflg" title='domflg' data-type='int' data-ref="47domflg">domflg</dfn>;</td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td>    <a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> = <var>0</var>;</td></tr>
+<tr><th id="262">262</th><td>    <b>if</b> (<a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> &gt; <a class="macro" href="#62" title="25.77" data-ref="_M/MAXAIRY">MAXAIRY</a>) {</td></tr>
+<tr><th id="263">263</th><td>	*<a class="local col3 ref" href="#33ai" title='ai' data-ref="33ai">ai</a> = <var>0</var>;</td></tr>
+<tr><th id="264">264</th><td>	*<a class="local col4 ref" href="#34aip" title='aip' data-ref="34aip">aip</a> = <var>0</var>;</td></tr>
+<tr><th id="265">265</th><td>	*<a class="local col5 ref" href="#35bi" title='bi' data-ref="35bi">bi</a> = <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="266">266</th><td>	*<a class="local col6 ref" href="#36bip" title='bip' data-ref="36bip">bip</a> = <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="267">267</th><td>	<b>return</b> (-<var>1</var>);</td></tr>
+<tr><th id="268">268</th><td>    }</td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td>    <b>if</b> (<a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> &lt; -<var>2.09</var>) {</td></tr>
+<tr><th id="271">271</th><td>	<a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> = <var>15</var>;</td></tr>
+<tr><th id="272">272</th><td>	<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span>-<a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a>);</td></tr>
+<tr><th id="273">273</th><td>	<a class="local col5 ref" href="#45zeta" title='zeta' data-ref="45zeta">zeta</a> = -<var>2.0</var> * <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> * <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> / <var>3.0</var>;</td></tr>
+<tr><th id="274">274</th><td>	<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a>);</td></tr>
+<tr><th id="275">275</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = <a class="tu ref" href="#sqpii" title='sqpii' data-use='r' data-ref="sqpii">sqpii</a> / <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a>;</td></tr>
+<tr><th id="276">276</th><td>	<a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> = <var>1.0</var> / <a class="local col5 ref" href="#45zeta" title='zeta' data-ref="45zeta">zeta</a>;</td></tr>
+<tr><th id="277">277</th><td>	<a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a> = <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> * <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>;</td></tr>
+<tr><th id="278">278</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> = <var>1.0</var> + <a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AFN" title='AFN' data-use='r' data-ref="AFN">AFN</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AFD" title='AFD' data-use='r' data-ref="AFD">AFD</a>, <span class='inlayHint'>N:&nbsp;</span><var>9</var>);</td></tr>
+<tr><th id="279">279</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> = <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AGN" title='AGN' data-use='r' data-ref="AGN">AGN</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AGD" title='AGD' data-use='r' data-ref="AGD">AGD</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>);</td></tr>
+<tr><th id="280">280</th><td>	<a class="local col6 ref" href="#46theta" title='theta' data-ref="46theta">theta</a> = <a class="local col5 ref" href="#45zeta" title='zeta' data-ref="45zeta">zeta</a> + <var>0.25</var> * <a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a>;</td></tr>
+<tr><th id="281">281</th><td>	<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#64" title='sin' data-ref="sin">sin</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col6 ref" href="#46theta" title='theta' data-ref="46theta">theta</a>);</td></tr>
+<tr><th id="282">282</th><td>	<a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#62" title='cos' data-ref="cos">cos</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col6 ref" href="#46theta" title='theta' data-ref="46theta">theta</a>);</td></tr>
+<tr><th id="283">283</th><td>	*<a class="local col3 ref" href="#33ai" title='ai' data-ref="33ai">ai</a> = <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> * (<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> * <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> - <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> * <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>);</td></tr>
+<tr><th id="284">284</th><td>	*<a class="local col5 ref" href="#35bi" title='bi' data-ref="35bi">bi</a> = <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> * (<a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> * <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> + <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> * <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>);</td></tr>
+<tr><th id="285">285</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> = <var>1.0</var> + <a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#APFN" title='APFN' data-use='r' data-ref="APFN">APFN</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#APFD" title='APFD' data-use='r' data-ref="APFD">APFD</a>, <span class='inlayHint'>N:&nbsp;</span><var>9</var>);</td></tr>
+<tr><th id="286">286</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> = <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#APGN" title='APGN' data-use='r' data-ref="APGN">APGN</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#38zz" title='zz' data-ref="38zz">zz</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#APGD" title='APGD' data-use='r' data-ref="APGD">APGD</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>);</td></tr>
+<tr><th id="287">287</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = <a class="tu ref" href="#sqpii" title='sqpii' data-use='r' data-ref="sqpii">sqpii</a> * <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a>;</td></tr>
+<tr><th id="288">288</th><td>	*<a class="local col4 ref" href="#34aip" title='aip' data-ref="34aip">aip</a> = -<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> * (<a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> * <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> + <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> * <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>);</td></tr>
+<tr><th id="289">289</th><td>	*<a class="local col6 ref" href="#36bip" title='bip' data-ref="36bip">bip</a> = <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> * (<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> * <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> - <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> * <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>);</td></tr>
+<tr><th id="290">290</th><td>	<b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="291">291</th><td>    }</td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td>    <b>if</b> (<a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> &gt;= <var>2.09</var>) {		<i>/* cbrt(9) */</i></td></tr>
+<tr><th id="294">294</th><td>	<a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> = <var>5</var>;</td></tr>
+<tr><th id="295">295</th><td>	<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a>);</td></tr>
+<tr><th id="296">296</th><td>	<a class="local col5 ref" href="#45zeta" title='zeta' data-ref="45zeta">zeta</a> = <var>2.0</var> * <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> * <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> / <var>3.0</var>;</td></tr>
+<tr><th id="297">297</th><td>	<a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#95" title='exp' data-ref="exp">exp</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col5 ref" href="#45zeta" title='zeta' data-ref="45zeta">zeta</a>);</td></tr>
+<tr><th id="298">298</th><td>	<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a>);</td></tr>
+<tr><th id="299">299</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = <var>2.0</var> * <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> * <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a>;</td></tr>
+<tr><th id="300">300</th><td>	<a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> = <var>1.0</var> / <a class="local col5 ref" href="#45zeta" title='zeta' data-ref="45zeta">zeta</a>;</td></tr>
+<tr><th id="301">301</th><td>	<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AN" title='AN' data-use='r' data-ref="AN">AN</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>) / <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AD" title='AD' data-use='r' data-ref="AD">AD</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>);</td></tr>
+<tr><th id="302">302</th><td>	*<a class="local col3 ref" href="#33ai" title='ai' data-ref="33ai">ai</a> = <a class="tu ref" href="#sqpii" title='sqpii' data-use='r' data-ref="sqpii">sqpii</a> * <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> / <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="303">303</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = -<var>0.5</var> * <a class="tu ref" href="#sqpii" title='sqpii' data-use='r' data-ref="sqpii">sqpii</a> * <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> / <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a>;</td></tr>
+<tr><th id="304">304</th><td>	<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#APN" title='APN' data-use='r' data-ref="APN">APN</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>) / <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#APD" title='APD' data-use='r' data-ref="APD">APD</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>);</td></tr>
+<tr><th id="305">305</th><td>	*<a class="local col4 ref" href="#34aip" title='aip' data-ref="34aip">aip</a> = <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> * <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td>	<b>if</b> (<a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> &gt; <var>8.3203353</var>) {	<i>/* zeta &gt; 16 */</i></td></tr>
+<tr><th id="308">308</th><td>	    <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#BN16" title='BN16' data-use='r' data-ref="BN16">BN16</a>, <span class='inlayHint'>N:&nbsp;</span><var>4</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#BD16" title='BD16' data-use='r' data-ref="BD16">BD16</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>);</td></tr>
+<tr><th id="309">309</th><td>	    <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = <a class="tu ref" href="#sqpii" title='sqpii' data-use='r' data-ref="sqpii">sqpii</a> * <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a>;</td></tr>
+<tr><th id="310">310</th><td>	    *<a class="local col5 ref" href="#35bi" title='bi' data-ref="35bi">bi</a> = <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> * (<var>1.0</var> + <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a>) / <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a>;</td></tr>
+<tr><th id="311">311</th><td>	    <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#BPPN" title='BPPN' data-use='r' data-ref="BPPN">BPPN</a>, <span class='inlayHint'>N:&nbsp;</span><var>4</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#BPPD" title='BPPD' data-use='r' data-ref="BPPD">BPPD</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>);</td></tr>
+<tr><th id="312">312</th><td>	    *<a class="local col6 ref" href="#36bip" title='bip' data-ref="36bip">bip</a> = <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> * <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> * (<var>1.0</var> + <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a>);</td></tr>
+<tr><th id="313">313</th><td>	    <b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="314">314</th><td>	}</td></tr>
+<tr><th id="315">315</th><td>    }</td></tr>
+<tr><th id="316">316</th><td></td></tr>
+<tr><th id="317">317</th><td>    <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <var>1.0</var>;</td></tr>
+<tr><th id="318">318</th><td>    <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> = <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a>;</td></tr>
+<tr><th id="319">319</th><td>    <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <var>1.0</var>;</td></tr>
+<tr><th id="320">320</th><td>    <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> = <var>1.0</var>;</td></tr>
+<tr><th id="321">321</th><td>    <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> = <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a>;</td></tr>
+<tr><th id="322">322</th><td>    <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = <var>1.0</var>;</td></tr>
+<tr><th id="323">323</th><td>    <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> = <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> * <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> * <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a>;</td></tr>
+<tr><th id="324">324</th><td>    <b>while</b> (<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>) {</td></tr>
+<tr><th id="325">325</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> *= <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>;</td></tr>
+<tr><th id="326">326</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="327">327</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="328">328</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> *= <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>;</td></tr>
+<tr><th id="329">329</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="330">330</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="331">331</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="332">332</th><td>	<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> += <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a>;</td></tr>
+<tr><th id="333">333</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="334">334</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="335">335</th><td>	<a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> += <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>;</td></tr>
+<tr><th id="336">336</th><td>	<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> / <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a>);</td></tr>
+<tr><th id="337">337</th><td>    }</td></tr>
+<tr><th id="338">338</th><td>    <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> = <a class="tu ref" href="#c1" title='c1' data-use='r' data-ref="c1">c1</a> * <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a>;</td></tr>
+<tr><th id="339">339</th><td>    <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> = <a class="tu ref" href="#c2" title='c2' data-use='r' data-ref="c2">c2</a> * <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a>;</td></tr>
+<tr><th id="340">340</th><td>    <b>if</b> ((<a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> &amp; <var>1</var>) == <var>0</var>)</td></tr>
+<tr><th id="341">341</th><td>	*<a class="local col3 ref" href="#33ai" title='ai' data-ref="33ai">ai</a> = <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> - <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>;</td></tr>
+<tr><th id="342">342</th><td>    <b>if</b> ((<a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> &amp; <var>2</var>) == <var>0</var>)</td></tr>
+<tr><th id="343">343</th><td>	*<a class="local col5 ref" href="#35bi" title='bi' data-ref="35bi">bi</a> = <a class="tu ref" href="#sqrt3" title='sqrt3' data-use='r' data-ref="sqrt3">sqrt3</a> * (<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> + <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>);</td></tr>
+<tr><th id="344">344</th><td></td></tr>
+<tr><th id="345">345</th><td>    <i>/* the deriviative of ai */</i></td></tr>
+<tr><th id="346">346</th><td>    <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> = <var>4.0</var>;</td></tr>
+<tr><th id="347">347</th><td>    <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> = <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> * <a class="local col2 ref" href="#32x" title='x' data-ref="32x">x</a> / <var>2.0</var>;</td></tr>
+<tr><th id="348">348</th><td>    <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> = <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a> / <var>3.0</var>;</td></tr>
+<tr><th id="349">349</th><td>    <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> = <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a>;</td></tr>
+<tr><th id="350">350</th><td>    <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> = <var>1.0</var> + <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>;</td></tr>
+<tr><th id="351">351</th><td>    <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> /= <var>3.0</var>;</td></tr>
+<tr><th id="352">352</th><td>    <a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <var>1.0</var>;</td></tr>
+<tr><th id="353">353</th><td></td></tr>
+<tr><th id="354">354</th><td>    <b>while</b> (<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>) {</td></tr>
+<tr><th id="355">355</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> *= <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>;</td></tr>
+<tr><th id="356">356</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="357">357</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="358">358</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> *= <a class="local col7 ref" href="#37z" title='z' data-ref="37z">z</a>;</td></tr>
+<tr><th id="359">359</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="360">360</th><td>	<a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a> += <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a>;</td></tr>
+<tr><th id="361">361</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="362">362</th><td>	<a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="363">363</th><td>	<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> /= <a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a>;</td></tr>
+<tr><th id="364">364</th><td>	<a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a> += <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>;</td></tr>
+<tr><th id="365">365</th><td>	<a class="local col4 ref" href="#44k" title='k' data-ref="44k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="366">366</th><td>	<a class="local col9 ref" href="#39t" title='t' data-ref="39t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> / <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a>);</td></tr>
+<tr><th id="367">367</th><td>    }</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td>    <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> = <a class="tu ref" href="#c1" title='c1' data-use='r' data-ref="c1">c1</a> * <a class="local col0 ref" href="#40f" title='f' data-ref="40f">f</a>;</td></tr>
+<tr><th id="370">370</th><td>    <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a> = <a class="tu ref" href="#c2" title='c2' data-use='r' data-ref="c2">c2</a> * <a class="local col1 ref" href="#41g" title='g' data-ref="41g">g</a>;</td></tr>
+<tr><th id="371">371</th><td>    <b>if</b> ((<a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> &amp; <var>4</var>) == <var>0</var>)</td></tr>
+<tr><th id="372">372</th><td>	*<a class="local col4 ref" href="#34aip" title='aip' data-ref="34aip">aip</a> = <a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> - <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>;</td></tr>
+<tr><th id="373">373</th><td>    <b>if</b> ((<a class="local col7 ref" href="#47domflg" title='domflg' data-ref="47domflg">domflg</a> &amp; <var>8</var>) == <var>0</var>)</td></tr>
+<tr><th id="374">374</th><td>	*<a class="local col6 ref" href="#36bip" title='bip' data-ref="36bip">bip</a> = <a class="tu ref" href="#sqrt3" title='sqrt3' data-use='r' data-ref="sqrt3">sqrt3</a> * (<a class="local col2 ref" href="#42uf" title='uf' data-ref="42uf">uf</a> + <a class="local col3 ref" href="#43ug" title='ug' data-ref="43ug">ug</a>);</td></tr>
+<tr><th id="375">375</th><td>    <b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="376">376</th><td>}</td></tr>
+<tr><th id="377">377</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

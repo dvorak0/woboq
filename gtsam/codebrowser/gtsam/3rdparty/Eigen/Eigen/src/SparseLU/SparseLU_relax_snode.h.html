@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SparseLU_relax_snode.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseLU/SparseLU_relax_snode.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseLU/SparseLU_relax_snode.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>SparseLU</a>/<a href='SparseLU_relax_snode.h.html'>SparseLU_relax_snode.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2012 Désiré Nuentsa-Wakam &lt;desire.nuentsa_wakam@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>//</i></td></tr>
+<tr><th id="6">6</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="7">7</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="8">8</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><i>/* This file is a modified version of heap_relax_snode.c file in SuperLU</i></td></tr>
+<tr><th id="11">11</th><td><i> * -- SuperLU routine (version 3.0) --</i></td></tr>
+<tr><th id="12">12</th><td><i> * Univ. of California Berkeley, Xerox Palo Alto Research Center,</i></td></tr>
+<tr><th id="13">13</th><td><i> * and Lawrence Berkeley National Lab.</i></td></tr>
+<tr><th id="14">14</th><td><i> * October 15, 2003</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> * Copyright (c) 1994 by Xerox Corporation.  All rights reserved.</i></td></tr>
+<tr><th id="17">17</th><td><i> *</i></td></tr>
+<tr><th id="18">18</th><td><i> * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY</i></td></tr>
+<tr><th id="19">19</th><td><i> * EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.</i></td></tr>
+<tr><th id="20">20</th><td><i> *</i></td></tr>
+<tr><th id="21">21</th><td><i> * Permission is hereby granted to use or copy this program for any</i></td></tr>
+<tr><th id="22">22</th><td><i> * purpose, provided the above notices are retained on all copies.</i></td></tr>
+<tr><th id="23">23</th><td><i> * Permission to modify the code and to distribute modified code is</i></td></tr>
+<tr><th id="24">24</th><td><i> * granted, provided the above notices are retained, and a notice that</i></td></tr>
+<tr><th id="25">25</th><td><i> * the code was modified is included with the above copyright notice.</i></td></tr>
+<tr><th id="26">26</th><td><i> */</i></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><u>#<span data-ppcond="28">ifndef</span> <span class="macro" data-ref="_M/SPARSELU_RELAX_SNODE_H">SPARSELU_RELAX_SNODE_H</span></u></td></tr>
+<tr><th id="29">29</th><td><u>#define <dfn class="macro" id="_M/SPARSELU_RELAX_SNODE_H" data-ref="_M/SPARSELU_RELAX_SNODE_H">SPARSELU_RELAX_SNODE_H</dfn></u></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="34">34</th><td> </td></tr>
+<tr><th id="35">35</th><td><i class="doc">/** </i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * <span class="command">\brief</span> Identify the initial relaxed supernodes</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * This routine is applied to a column elimination tree. </i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * It assumes that the matrix has been reordered according to the postorder of the etree</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">n</span>  the number of columns</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">et</span> elimination tree </i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">relax_columns</span> Maximum number of columns allowed in a relaxed snode </i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">descendants</span> Number of descendants of each node in the etree</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">relax_end</span> last column in a supernode</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="46">46</th><td><b>template</b> &lt;<b>typename</b> Scalar, <b>typename</b> StorageIndex&gt;</td></tr>
+<tr><th id="47">47</th><td><em>void</em> <a class="type" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl" title='Eigen::internal::SparseLUImpl' data-ref="Eigen::internal::SparseLUImpl">SparseLUImpl</a>&lt;Scalar,StorageIndex&gt;::<dfn class="decl def fn" id="_ZN5Eigen8internal12SparseLUImpl11relax_snodeElRNS_6MatrixIT0_Lin1ELi1ELi0ELin1ELi1EEElS5_S5_" title='Eigen::internal::SparseLUImpl::relax_snode' data-ref="_ZN5Eigen8internal12SparseLUImpl11relax_snodeElRNS_6MatrixIT0_Lin1ELi1ELi0ELin1ELi1EEElS5_S5_">relax_snode</dfn> (<em>const</em> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col6 decl" id="25636n" title='n' data-type='const Index' data-ref="25636n">n</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col7 decl" id="25637et" title='et' data-type='IndexVector &amp;' data-ref="25637et">et</dfn>, <em>const</em> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col8 decl" id="25638relax_columns" title='relax_columns' data-type='const Index' data-ref="25638relax_columns">relax_columns</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col9 decl" id="25639descendants" title='descendants' data-type='IndexVector &amp;' data-ref="25639descendants">descendants</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col0 decl" id="25640relax_end" title='relax_end' data-type='IndexVector &amp;' data-ref="25640relax_end">relax_end</dfn>)</td></tr>
+<tr><th id="48">48</th><td>{</td></tr>
+<tr><th id="49">49</th><td>  </td></tr>
+<tr><th id="50">50</th><td>  <i>// compute the number of descendants of each node in the etree</i></td></tr>
+<tr><th id="51">51</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col1 decl" id="25641parent" title='parent' data-type='Index' data-ref="25641parent">parent</dfn>; </td></tr>
+<tr><th id="52">52</th><td>  <a class="local col0 ref" href="#25640relax_end" title='relax_end' data-ref="25640relax_end">relax_end</a>.setConstant(<a class="enum" href="SparseLU_Memory.h.html#Eigen::internal::emptyIdxLU" title='Eigen::internal::emptyIdxLU' data-ref="Eigen::internal::emptyIdxLU">emptyIdxLU</a>);</td></tr>
+<tr><th id="53">53</th><td>  <a class="local col9 ref" href="#25639descendants" title='descendants' data-ref="25639descendants">descendants</a>.setZero();</td></tr>
+<tr><th id="54">54</th><td>  <b>for</b> (<a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col2 decl" id="25642j" title='j' data-type='Index' data-ref="25642j">j</dfn> = <var>0</var>; <a class="local col2 ref" href="#25642j" title='j' data-ref="25642j">j</a> &lt; <a class="local col6 ref" href="#25636n" title='n' data-ref="25636n">n</a>; <a class="local col2 ref" href="#25642j" title='j' data-ref="25642j">j</a>++) </td></tr>
+<tr><th id="55">55</th><td>  {</td></tr>
+<tr><th id="56">56</th><td>    <a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a> = <a class="local col7 ref" href="#25637et" title='et' data-ref="25637et">et</a>(<a class="local col2 ref" href="#25642j" title='j' data-ref="25642j">j</a>);</td></tr>
+<tr><th id="57">57</th><td>    <b>if</b> (<a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a> != <a class="local col6 ref" href="#25636n" title='n' data-ref="25636n">n</a>) <i>// not the dummy root</i></td></tr>
+<tr><th id="58">58</th><td>      <a class="local col9 ref" href="#25639descendants" title='descendants' data-ref="25639descendants">descendants</a>(<a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a>) += <a class="local col9 ref" href="#25639descendants" title='descendants' data-ref="25639descendants">descendants</a>(<a class="local col2 ref" href="#25642j" title='j' data-ref="25642j">j</a>) + <var>1</var>;</td></tr>
+<tr><th id="59">59</th><td>  }</td></tr>
+<tr><th id="60">60</th><td>  <i>// Identify the relaxed supernodes by postorder traversal of the etree</i></td></tr>
+<tr><th id="61">61</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col3 decl" id="25643snode_start" title='snode_start' data-type='Index' data-ref="25643snode_start">snode_start</dfn>; <i>// beginning of a snode </i></td></tr>
+<tr><th id="62">62</th><td>  <b>for</b> (<a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col4 decl" id="25644j" title='j' data-type='Index' data-ref="25644j">j</dfn> = <var>0</var>; <a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a> &lt; <a class="local col6 ref" href="#25636n" title='n' data-ref="25636n">n</a>; )</td></tr>
+<tr><th id="63">63</th><td>  {</td></tr>
+<tr><th id="64">64</th><td>    <a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a> = <a class="local col7 ref" href="#25637et" title='et' data-ref="25637et">et</a>(<a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>);</td></tr>
+<tr><th id="65">65</th><td>    <a class="local col3 ref" href="#25643snode_start" title='snode_start' data-ref="25643snode_start">snode_start</a> = <a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>; </td></tr>
+<tr><th id="66">66</th><td>    <b>while</b> ( <a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a> != <a class="local col6 ref" href="#25636n" title='n' data-ref="25636n">n</a> &amp;&amp; <a class="local col9 ref" href="#25639descendants" title='descendants' data-ref="25639descendants">descendants</a>(<a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a>) &lt; <a class="local col8 ref" href="#25638relax_columns" title='relax_columns' data-ref="25638relax_columns">relax_columns</a> ) </td></tr>
+<tr><th id="67">67</th><td>    {</td></tr>
+<tr><th id="68">68</th><td>      <a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a> = <a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a>; </td></tr>
+<tr><th id="69">69</th><td>      <a class="local col1 ref" href="#25641parent" title='parent' data-ref="25641parent">parent</a> = <a class="local col7 ref" href="#25637et" title='et' data-ref="25637et">et</a>(<a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>);</td></tr>
+<tr><th id="70">70</th><td>    }</td></tr>
+<tr><th id="71">71</th><td>    <i>// Found a supernode in postordered etree, j is the last column </i></td></tr>
+<tr><th id="72">72</th><td>    <a class="local col0 ref" href="#25640relax_end" title='relax_end' data-ref="25640relax_end">relax_end</a>(<a class="local col3 ref" href="#25643snode_start" title='snode_start' data-ref="25643snode_start">snode_start</a>) = StorageIndex(<a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>); <i>// Record last column</i></td></tr>
+<tr><th id="73">73</th><td>    <a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>++;</td></tr>
+<tr><th id="74">74</th><td>    <i>// Search for a new leaf</i></td></tr>
+<tr><th id="75">75</th><td>    <b>while</b> (<a class="local col9 ref" href="#25639descendants" title='descendants' data-ref="25639descendants">descendants</a>(<a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>) != <var>0</var> &amp;&amp; <a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a> &lt; <a class="local col6 ref" href="#25636n" title='n' data-ref="25636n">n</a>) <a class="local col4 ref" href="#25644j" title='j' data-ref="25644j">j</a>++;</td></tr>
+<tr><th id="76">76</th><td>  } <i>// End postorder traversal of the etree</i></td></tr>
+<tr><th id="77">77</th><td>  </td></tr>
+<tr><th id="78">78</th><td>}</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="83">83</th><td><u>#<span data-ppcond="28">endif</span></u></td></tr>
+<tr><th id="84">84</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,455 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FactorGraph.h source code [codebrowser/gtsam/inference/FactorGraph.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::FactorGraph "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/inference/FactorGraph.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>inference</a>/<a href='FactorGraph.h.html'>FactorGraph.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   FactorGraph.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Factor Graph Base Class</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Carlos Nieto</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span>  Christian Potthast</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span>  Michael Kaess</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> * <span class="command">@author</span>  Richard Roberts</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"></i></td></tr>
+<tr><th id="21">21</th><td><i class="doc">//<span class="command"> \callgraph</span></i></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><u>#pragma once</u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="DotWriter.h.html">&lt;gtsam/inference/DotWriter.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="Key.h.html">&lt;gtsam/inference/Key.h&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../base/FastVector.h.html">&lt;gtsam/base/FastVector.h&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../base/Testable.h.html">&lt;gtsam/base/Testable.h&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../3rdparty/Eigen/Eigen/Core.html">&lt;Eigen/Core&gt;</a>  // for Eigen::aligned_allocator</u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="32">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/boost/serialization/nvp.hpp.html">&lt;boost/serialization/nvp.hpp&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/boost/serialization/vector.hpp.html">&lt;boost/serialization/vector.hpp&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#<span data-ppcond="32">endif</span></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../../../include/c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../../../include/c++/13/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../../../include/c++/13/iosfwd.html">&lt;iosfwd&gt;</a></u></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="43">43</th><td><i class="doc">/// Define collection type:</i></td></tr>
+<tr><th id="44">44</th><td><b>typedef</b> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::FactorIndex" title='gtsam::FactorIndex' data-type='std::uint64_t' data-ref="gtsam::FactorIndex">FactorIndex</a>&gt; <a class="typedef" href="Factor.h.html#gtsam::FactorIndices" title='gtsam::FactorIndices' data-type='FastVector&lt;FactorIndex&gt;' data-ref="gtsam::FactorIndices" id="gtsam::FactorIndices">FactorIndices</a>;</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td><i>// Forward declarations</i></td></tr>
+<tr><th id="47">47</th><td><b>template</b> &lt;<b>class</b> CLIQUE&gt;</td></tr>
+<tr><th id="48">48</th><td><b>class</b> <dfn class="type" id="gtsam::BayesTree" title='gtsam::BayesTree' data-ref="gtsam::BayesTree">BayesTree</dfn>;</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><b>class</b> <a class="type" href="../hybrid/HybridValues.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues" id="gtsam::HybridValues">HybridValues</a>;</td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> * A factor graph is a bipartite graph with factor nodes connected to variable</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> * nodes. In this class, however, only factor nodes are kept around.</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> *<span class="command"> \nosubgrouping</span></i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="57">57</th><td><b>template</b> &lt;<b>class</b> FACTOR&gt;</td></tr>
+<tr><th id="58">58</th><td><b>class</b> <dfn class="type def" id="gtsam::FactorGraph" title='gtsam::FactorGraph' data-ref="gtsam::FactorGraph">FactorGraph</dfn> {</td></tr>
+<tr><th id="59">59</th><td> <b>public</b>:</td></tr>
+<tr><th id="60">60</th><td>  <b>typedef</b> FACTOR <dfn class="typedef" id="gtsam::FactorGraph::FactorType" title='gtsam::FactorGraph::FactorType' data-type='FACTOR' data-ref="gtsam::FactorGraph::FactorType">FactorType</dfn>;  <i class="doc">///&lt; factor type</i></td></tr>
+<tr><th id="61">61</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;FACTOR&gt;</td></tr>
+<tr><th id="62">62</th><td>      <dfn class="typedef" id="gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</dfn>;  <i class="doc">///&lt; Shared pointer to a factor</i></td></tr>
+<tr><th id="63">63</th><td>  <b>typedef</b> <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a> <dfn class="typedef" id="gtsam::FactorGraph::value_type" title='gtsam::FactorGraph::value_type' data-type='sharedFactor' data-ref="gtsam::FactorGraph::value_type">value_type</dfn>;</td></tr>
+<tr><th id="64">64</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a>&gt;::iterator <dfn class="typedef" id="gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</dfn>;</td></tr>
+<tr><th id="65">65</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a>&gt;::const_iterator <dfn class="typedef" id="gtsam::FactorGraph::const_iterator" title='gtsam::FactorGraph::const_iterator' data-type='typename FastVector&lt;sharedFactor&gt;::const_iterator' data-ref="gtsam::FactorGraph::const_iterator">const_iterator</dfn>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td> <b>private</b>:</td></tr>
+<tr><th id="68">68</th><td>  <b>typedef</b> <a class="type" href="#gtsam::FactorGraph" title='gtsam::FactorGraph' data-ref="gtsam::FactorGraph">FactorGraph</a>&lt;FACTOR&gt; <dfn class="typedef" id="gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</dfn>;  <i class="doc">///&lt; Typedef for this class</i></td></tr>
+<tr><th id="69">69</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</a>&gt;</td></tr>
+<tr><th id="70">70</th><td>      <dfn class="typedef" id="gtsam::FactorGraph::shared_ptr" title='gtsam::FactorGraph::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::FactorGraph::shared_ptr">shared_ptr</dfn>;  <i class="doc">///&lt; Shared pointer for this class</i></td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i class="doc">/// Check if a DERIVEDFACTOR is in fact derived from FactorType.</i></td></tr>
+<tr><th id="73">73</th><td>  <b>template</b> &lt;<b>typename</b> DERIVEDFACTOR&gt;</td></tr>
+<tr><th id="74">74</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::FactorGraph::IsDerived" title='gtsam::FactorGraph::IsDerived' data-type='typename std::enable_if&lt;std::is_base_of&lt;FactorType, DERIVEDFACTOR&gt;::value&gt;::type' data-ref="gtsam::FactorGraph::IsDerived">IsDerived</dfn> = <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;</td></tr>
+<tr><th id="75">75</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_base_of" title='std::is_base_of' data-ref="std::is_base_of">is_base_of</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::FactorType" title='gtsam::FactorGraph::FactorType' data-type='FACTOR' data-ref="gtsam::FactorGraph::FactorType">FactorType</a>, DERIVEDFACTOR&gt;::value&gt;::type;</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>  <i class="doc">/// Check if T has a value_type derived from FactorType.</i></td></tr>
+<tr><th id="78">78</th><td>  <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="79">79</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::FactorGraph::HasDerivedValueType" title='gtsam::FactorGraph::HasDerivedValueType' data-type='typename std::enable_if&lt;std::is_base_of&lt;FactorType, typename T::value_type&gt;::value&gt;::type' data-ref="gtsam::FactorGraph::HasDerivedValueType">HasDerivedValueType</dfn> = <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;</td></tr>
+<tr><th id="80">80</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_base_of" title='std::is_base_of' data-ref="std::is_base_of">is_base_of</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::FactorType" title='gtsam::FactorGraph::FactorType' data-type='FACTOR' data-ref="gtsam::FactorGraph::FactorType">FactorType</a>, <b>typename</b> T::value_type&gt;::value&gt;::type;</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <i class="doc">/// Check if T has a pointer type derived from FactorType.</i></td></tr>
+<tr><th id="83">83</th><td>  <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="84">84</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::FactorGraph::HasDerivedElementType" title='gtsam::FactorGraph::HasDerivedElementType' data-type='typename std::enable_if&lt;std::is_base_of&lt;FactorType, typename T::value_type::element_type&gt;::value&gt;::type' data-ref="gtsam::FactorGraph::HasDerivedElementType">HasDerivedElementType</dfn> = <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_base_of" title='std::is_base_of' data-ref="std::is_base_of">is_base_of</a>&lt;</td></tr>
+<tr><th id="85">85</th><td>      <a class="typedef" href="#gtsam::FactorGraph::FactorType" title='gtsam::FactorGraph::FactorType' data-type='FACTOR' data-ref="gtsam::FactorGraph::FactorType">FactorType</a>, <b>typename</b> T::value_type::element_type&gt;::value&gt;::type;</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td> <b>protected</b>:</td></tr>
+<tr><th id="88">88</th><td>  <i class="doc">/** concept check, makes sure FACTOR defines print and equals */</i></td></tr>
+<tr><th id="89">89</th><td>  <a class="macro" href="../base/Testable.h.html#177" title="using _gtsam_Testable_FACTOR = gtsam::IsTestable&lt;FACTOR&gt;;" data-ref="_M/GTSAM_CONCEPT_TESTABLE_TYPE">GTSAM_CONCEPT_TESTABLE_TYPE</a>(FACTOR)</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>  <i class="doc">/** Collection of factors */</i></td></tr>
+<tr><th id="92">92</th><td>  <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a>&gt; <dfn class="decl field" id="gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</dfn>;</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>  <i class="doc">/// Check exact equality of the factor pointers. Useful for derived ==.</i></td></tr>
+<tr><th id="95">95</th><td>  <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph7isEqualERKNS_11FactorGraphIT_EE" title='gtsam::FactorGraph::isEqual' data-ref="_ZNK5gtsam11FactorGraph7isEqualERKNS_11FactorGraphIT_EE">isEqual</dfn>(<em>const</em> FactorGraph&amp; <dfn class="local col5 decl" id="22765other" title='other' data-type='const FactorGraph&lt;FACTOR&gt; &amp;' data-ref="22765other">other</dfn>) <em>const</em> {</td></tr>
+<tr><th id="96">96</th><td>    <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a> == <a class="local col5 ref" href="#22765other" title='other' data-ref="22765other">other</a>.factors_;</td></tr>
+<tr><th id="97">97</th><td>  }</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>  <i class="doc">/** Default constructor */</i></td></tr>
+<tr><th id="103">103</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphC1Ev" title='gtsam::FactorGraph::FactorGraph&lt;FACTOR&gt;' data-ref="_ZN5gtsam11FactorGraphC1Ev">FactorGraph</dfn>() {}</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>  <i class="doc">/** Constructor from iterator over factors (shared_ptr or plain objects) */</i></td></tr>
+<tr><th id="106">106</th><td>  <b>template</b> &lt;<b>typename</b> ITERATOR&gt;</td></tr>
+<tr><th id="107">107</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphC1ETL0__S1_" title='gtsam::FactorGraph::FactorGraph&lt;FACTOR&gt;' data-ref="_ZN5gtsam11FactorGraphC1ETL0__S1_">FactorGraph</dfn>(ITERATOR <dfn class="local col6 decl" id="22766firstFactor" title='firstFactor' data-type='ITERATOR' data-ref="22766firstFactor">firstFactor</dfn>, ITERATOR <dfn class="local col7 decl" id="22767lastFactor" title='lastFactor' data-type='ITERATOR' data-ref="22767lastFactor">lastFactor</dfn>) {</td></tr>
+<tr><th id="108">108</th><td>    push_back(<a class="local col6 ref" href="#22766firstFactor" title='firstFactor' data-ref="22766firstFactor">firstFactor</a>, <a class="local col7 ref" href="#22767lastFactor" title='lastFactor' data-ref="22767lastFactor">lastFactor</a>);</td></tr>
+<tr><th id="109">109</th><td>  }</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>  <i class="doc">/** Construct from container of factors (shared_ptr or plain objects) */</i></td></tr>
+<tr><th id="112">112</th><td>  <b>template</b> &lt;<b>class</b> CONTAINER&gt;</td></tr>
+<tr><th id="113">113</th><td>  <b>explicit</b> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphC1ERKTL0__" title='gtsam::FactorGraph::FactorGraph&lt;FACTOR&gt;' data-ref="_ZN5gtsam11FactorGraphC1ERKTL0__">FactorGraph</dfn>(<em>const</em> CONTAINER&amp; <dfn class="local col8 decl" id="22768factors" title='factors' data-type='const CONTAINER &amp;' data-ref="22768factors">factors</dfn>) {</td></tr>
+<tr><th id="114">114</th><td>    push_back(<a class="local col8 ref" href="#22768factors" title='factors' data-ref="22768factors">factors</a>);</td></tr>
+<tr><th id="115">115</th><td>  }</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td> <b>public</b>:</td></tr>
+<tr><th id="120">120</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Constructors</span></i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc"></i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">  /// Default destructor</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">  /// Public and virtual so boost serialization can call it.</i></td></tr>
+<tr><th id="125">125</th><td>  <b>virtual</b> <dfn class="virtual decl def fn" id="_ZN5gtsam11FactorGraphD1Ev" title='gtsam::FactorGraph::~FactorGraph&lt;FACTOR&gt;' data-ref="_ZN5gtsam11FactorGraphD1Ev">~FactorGraph</dfn>() = <b>default</b>;</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">   * Constructor that takes an initializer list of shared pointers.</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">   *  FactorGraph fg = {make_shared&lt;MyFactor&gt;(), ...};</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="131">131</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR, <b>typename</b> = <a class="type" href="#gtsam::FactorGraph::IsDerived" title='gtsam::FactorGraph::IsDerived' data-ref="gtsam::FactorGraph::IsDerived">IsDerived</a>&lt;DERIVEDFACTOR&gt;&gt;</td></tr>
+<tr><th id="132">132</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphC1ESt16initializer_listISt10shared_ptrITL0__EE" title='gtsam::FactorGraph::FactorGraph&lt;FACTOR&gt;' data-ref="_ZN5gtsam11FactorGraphC1ESt16initializer_listISt10shared_ptrITL0__EE">FactorGraph</dfn>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/initializer_list.html#std::initializer_list" title='std::initializer_list' data-ref="std::initializer_list">initializer_list</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;DERIVEDFACTOR&gt;&gt; <dfn class="local col9 decl" id="22769sharedFactors" title='sharedFactors' data-type='std::initializer_list&lt;std::shared_ptr&lt;DERIVEDFACTOR&gt;&gt;' data-ref="22769sharedFactors">sharedFactors</dfn>)</td></tr>
+<tr><th id="133">133</th><td>      : <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>(<a class="local col9 ref" href="#22769sharedFactors" title='sharedFactors' data-ref="22769sharedFactors">sharedFactors</a>) {}</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Adding Single Factors</span></i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">   * Reserve space for the specified number of factors if you know in</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">   * advance how many there will be (works like FastVector::reserve).</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="143">143</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph7reserveEm" title='gtsam::FactorGraph::reserve' data-ref="_ZN5gtsam11FactorGraph7reserveEm">reserve</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col0 decl" id="22770size" title='size' data-type='size_t' data-ref="22770size">size</dfn>) { <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.reserve(<a class="local col0 ref" href="#22770size" title='size' data-ref="22770size">size</a>); }</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>  <i class="doc">/// Add a factor directly using a shared_ptr.</i></td></tr>
+<tr><th id="146">146</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR&gt;</td></tr>
+<tr><th id="147">147</th><td>  <a class="type" href="#gtsam::FactorGraph::IsDerived" title='gtsam::FactorGraph::IsDerived' data-ref="gtsam::FactorGraph::IsDerived">IsDerived</a>&lt;DERIVEDFACTOR&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backESt10shared_ptrITL0__E" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backESt10shared_ptrITL0__E">push_back</dfn>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;DERIVEDFACTOR&gt; <dfn class="local col1 decl" id="22771factor" title='factor' data-type='std::shared_ptr&lt;DERIVEDFACTOR&gt;' data-ref="22771factor">factor</dfn>) {</td></tr>
+<tr><th id="148">148</th><td>    <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.push_back(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;FACTOR&gt;(<a class="local col1 ref" href="#22771factor" title='factor' data-ref="22771factor">factor</a>));</td></tr>
+<tr><th id="149">149</th><td>  }</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>  <i class="doc">/// Emplace a shared pointer to factor of given type.</i></td></tr>
+<tr><th id="152">152</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR, <b>class</b>... Args&gt;</td></tr>
+<tr><th id="153">153</th><td>  <a class="type" href="#gtsam::FactorGraph::IsDerived" title='gtsam::FactorGraph::IsDerived' data-ref="gtsam::FactorGraph::IsDerived">IsDerived</a>&lt;DERIVEDFACTOR&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph14emplace_sharedEDpOTL0_0_" title='gtsam::FactorGraph::emplace_shared' data-ref="_ZN5gtsam11FactorGraph14emplace_sharedEDpOTL0_0_">emplace_shared</dfn>(Args&amp;&amp;... <dfn class="local col2 decl" id="22772args" title='args' data-type='Args &amp;&amp;...' data-ref="22772args">args</dfn>) {</td></tr>
+<tr><th id="154">154</th><td>    <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.push_back(<span class="namespace">std::</span>allocate_shared&lt;DERIVEDFACTOR&gt;(</td></tr>
+<tr><th id="155">155</th><td>        <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/Memory.h.html#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;DERIVEDFACTOR&gt;(),</td></tr>
+<tr><th id="156">156</th><td>        <span class="namespace">std::</span>forward&lt;Args&gt;(<a class="local col2 ref" href="#22772args" title='args' data-ref="22772args">args</a>)...));</td></tr>
+<tr><th id="157">157</th><td>  }</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">   * Add a factor by value, will be copy-constructed (use push_back with a</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   * shared_ptr to avoid the copy).</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="163">163</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR&gt;</td></tr>
+<tr><th id="164">164</th><td>  <a class="type" href="#gtsam::FactorGraph::IsDerived" title='gtsam::FactorGraph::IsDerived' data-ref="gtsam::FactorGraph::IsDerived">IsDerived</a>&lt;DERIVEDFACTOR&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backERKTL0__" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backERKTL0__">push_back</dfn>(<em>const</em> DERIVEDFACTOR&amp; <dfn class="local col3 decl" id="22773factor" title='factor' data-type='const DERIVEDFACTOR &amp;' data-ref="22773factor">factor</dfn>) {</td></tr>
+<tr><th id="165">165</th><td>    <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.push_back(<span class="namespace">std::</span>allocate_shared&lt;DERIVEDFACTOR&gt;(</td></tr>
+<tr><th id="166">166</th><td>        <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/Memory.h.html#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;DERIVEDFACTOR&gt;(), <a class="local col3 ref" href="#22773factor" title='factor' data-ref="22773factor">factor</a>));</td></tr>
+<tr><th id="167">167</th><td>  }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>  <i class="doc">/// `add` is a synonym for push_back.</i></td></tr>
+<tr><th id="170">170</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR&gt;</td></tr>
+<tr><th id="171">171</th><td>  <a class="type" href="#gtsam::FactorGraph::IsDerived" title='gtsam::FactorGraph::IsDerived' data-ref="gtsam::FactorGraph::IsDerived">IsDerived</a>&lt;DERIVEDFACTOR&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph3addESt10shared_ptrITL0__E" title='gtsam::FactorGraph::add' data-ref="_ZN5gtsam11FactorGraph3addESt10shared_ptrITL0__E">add</dfn>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;DERIVEDFACTOR&gt; <dfn class="local col4 decl" id="22774factor" title='factor' data-type='std::shared_ptr&lt;DERIVEDFACTOR&gt;' data-ref="22774factor">factor</dfn>) {</td></tr>
+<tr><th id="172">172</th><td>    push_back(<a class="local col4 ref" href="#22774factor" title='factor' data-ref="22774factor">factor</a>);</td></tr>
+<tr><th id="173">173</th><td>  }</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>  <i class="doc">/// Append factor to factor graph</i></td></tr>
+<tr><th id="176">176</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR&gt;</td></tr>
+<tr><th id="177">177</th><td>  <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_base_of" title='std::is_base_of' data-ref="std::is_base_of">is_base_of</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::FactorType" title='gtsam::FactorGraph::FactorType' data-type='FACTOR' data-ref="gtsam::FactorGraph::FactorType">FactorType</a>, DERIVEDFACTOR&gt;::value,</td></tr>
+<tr><th id="178">178</th><td>                          <a class="typedef" href="#gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</a>&gt;::type&amp;</td></tr>
+<tr><th id="179">179</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphpLESt10shared_ptrITL0__E" title='gtsam::FactorGraph::operator+=' data-ref="_ZN5gtsam11FactorGraphpLESt10shared_ptrITL0__E"><b>operator</b>+=</dfn>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;DERIVEDFACTOR&gt; <dfn class="local col5 decl" id="22775factor" title='factor' data-type='std::shared_ptr&lt;DERIVEDFACTOR&gt;' data-ref="22775factor">factor</dfn>) {</td></tr>
+<tr><th id="180">180</th><td>    push_back(<a class="local col5 ref" href="#22775factor" title='factor' data-ref="22775factor">factor</a>);</td></tr>
+<tr><th id="181">181</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="182">182</th><td>  }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="185">185</th><td><i class="doc">   * <span class="command">@brief</span> Overload comma operator to allow for append chaining.</i></td></tr>
+<tr><th id="186">186</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="187">187</th><td><i class="doc">   * E.g. fg += factor1, factor2, ...</i></td></tr>
+<tr><th id="188">188</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="189">189</th><td>  <b>template</b> &lt;<b>class</b> DERIVEDFACTOR&gt;</td></tr>
+<tr><th id="190">190</th><td>  <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_base_of" title='std::is_base_of' data-ref="std::is_base_of">is_base_of</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::FactorType" title='gtsam::FactorGraph::FactorType' data-type='FACTOR' data-ref="gtsam::FactorGraph::FactorType">FactorType</a>, DERIVEDFACTOR&gt;::value, <a class="typedef" href="#gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</a>&gt;::type&amp; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphcmESt10shared_ptrITL0__E" title='gtsam::FactorGraph::operator,' data-ref="_ZN5gtsam11FactorGraphcmESt10shared_ptrITL0__E"><b>operator</b>,</dfn>(</td></tr>
+<tr><th id="191">191</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;DERIVEDFACTOR&gt; <dfn class="local col6 decl" id="22776factor" title='factor' data-type='std::shared_ptr&lt;DERIVEDFACTOR&gt;' data-ref="22776factor">factor</dfn>) {</td></tr>
+<tr><th id="192">192</th><td>    push_back(<a class="local col6 ref" href="#22776factor" title='factor' data-ref="22776factor">factor</a>);</td></tr>
+<tr><th id="193">193</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="194">194</th><td>  }</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="197">197</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Adding via iterators</span></i></td></tr>
+<tr><th id="198">198</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="201">201</th><td><i class="doc">   * Push back many factors with an iterator over shared_ptr (factors are not</i></td></tr>
+<tr><th id="202">202</th><td><i class="doc">   * copied)</i></td></tr>
+<tr><th id="203">203</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="204">204</th><td>  <b>template</b> &lt;<b>typename</b> ITERATOR&gt;</td></tr>
+<tr><th id="205">205</th><td>  <a class="type" href="#gtsam::FactorGraph::HasDerivedElementType" title='gtsam::FactorGraph::HasDerivedElementType' data-ref="gtsam::FactorGraph::HasDerivedElementType">HasDerivedElementType</a>&lt;ITERATOR&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backETL0__S1_" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backETL0__S1_">push_back</dfn>(ITERATOR <dfn class="local col7 decl" id="22777firstFactor" title='firstFactor' data-type='ITERATOR' data-ref="22777firstFactor">firstFactor</dfn>,</td></tr>
+<tr><th id="206">206</th><td>                                            ITERATOR <dfn class="local col8 decl" id="22778lastFactor" title='lastFactor' data-type='ITERATOR' data-ref="22778lastFactor">lastFactor</dfn>) {</td></tr>
+<tr><th id="207">207</th><td>    <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.insert(end(), <a class="local col7 ref" href="#22777firstFactor" title='firstFactor' data-ref="22777firstFactor">firstFactor</a>, <a class="local col8 ref" href="#22778lastFactor" title='lastFactor' data-ref="22778lastFactor">lastFactor</a>);</td></tr>
+<tr><th id="208">208</th><td>  }</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>  <i class="doc">/// Push back many factors with an iterator (factors are copied)</i></td></tr>
+<tr><th id="211">211</th><td>  <b>template</b> &lt;<b>typename</b> ITERATOR&gt;</td></tr>
+<tr><th id="212">212</th><td>  <a class="type" href="#gtsam::FactorGraph::HasDerivedValueType" title='gtsam::FactorGraph::HasDerivedValueType' data-ref="gtsam::FactorGraph::HasDerivedValueType">HasDerivedValueType</a>&lt;ITERATOR&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backETL0__S1_" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backETL0__S1_">push_back</dfn>(ITERATOR <dfn class="local col9 decl" id="22779firstFactor" title='firstFactor' data-type='ITERATOR' data-ref="22779firstFactor">firstFactor</dfn>,</td></tr>
+<tr><th id="213">213</th><td>                                          ITERATOR <dfn class="local col0 decl" id="22780lastFactor" title='lastFactor' data-type='ITERATOR' data-ref="22780lastFactor">lastFactor</dfn>) {</td></tr>
+<tr><th id="214">214</th><td>    <b>for</b> (ITERATOR <dfn class="local col1 decl" id="22781f" title='f' data-type='ITERATOR' data-ref="22781f">f</dfn> = <a class="local col9 ref" href="#22779firstFactor" title='firstFactor' data-ref="22779firstFactor">firstFactor</a>; <a class="local col1 ref" href="#22781f" title='f' data-ref="22781f">f</a> != <a class="local col0 ref" href="#22780lastFactor" title='lastFactor' data-ref="22780lastFactor">lastFactor</a>; ++<a class="local col1 ref" href="#22781f" title='f' data-ref="22781f">f</a>) push_back(*<a class="local col1 ref" href="#22781f" title='f' data-ref="22781f">f</a>);</td></tr>
+<tr><th id="215">215</th><td>  }</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="218">218</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Adding via container</span></i></td></tr>
+<tr><th id="219">219</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="222">222</th><td><i class="doc">   * Push back many factors as shared_ptr's in a container (factors are not</i></td></tr>
+<tr><th id="223">223</th><td><i class="doc">   * copied)</i></td></tr>
+<tr><th id="224">224</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="225">225</th><td>  <b>template</b> &lt;<b>typename</b> CONTAINER&gt;</td></tr>
+<tr><th id="226">226</th><td>  <a class="type" href="#gtsam::FactorGraph::HasDerivedElementType" title='gtsam::FactorGraph::HasDerivedElementType' data-ref="gtsam::FactorGraph::HasDerivedElementType">HasDerivedElementType</a>&lt;CONTAINER&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backERKTL0__" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backERKTL0__">push_back</dfn>(<em>const</em> CONTAINER&amp; <dfn class="local col2 decl" id="22782container" title='container' data-type='const CONTAINER &amp;' data-ref="22782container">container</dfn>) {</td></tr>
+<tr><th id="227">227</th><td>    push_back(<a class="local col2 ref" href="#22782container" title='container' data-ref="22782container">container</a>.begin(), <a class="local col2 ref" href="#22782container" title='container' data-ref="22782container">container</a>.end());</td></tr>
+<tr><th id="228">228</th><td>  }</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>  <i class="doc">/// Push back non-pointer objects in a container (factors are copied).</i></td></tr>
+<tr><th id="231">231</th><td>  <b>template</b> &lt;<b>typename</b> CONTAINER&gt;</td></tr>
+<tr><th id="232">232</th><td>  <a class="type" href="#gtsam::FactorGraph::HasDerivedValueType" title='gtsam::FactorGraph::HasDerivedValueType' data-ref="gtsam::FactorGraph::HasDerivedValueType">HasDerivedValueType</a>&lt;CONTAINER&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backERKTL0__" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backERKTL0__">push_back</dfn>(<em>const</em> CONTAINER&amp; <dfn class="local col3 decl" id="22783container" title='container' data-type='const CONTAINER &amp;' data-ref="22783container">container</dfn>) {</td></tr>
+<tr><th id="233">233</th><td>    push_back(<a class="local col3 ref" href="#22783container" title='container' data-ref="22783container">container</a>.begin(), <a class="local col3 ref" href="#22783container" title='container' data-ref="22783container">container</a>.end());</td></tr>
+<tr><th id="234">234</th><td>  }</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="237">237</th><td><i class="doc">   * Add a factor or container of factors, including STL collections,</i></td></tr>
+<tr><th id="238">238</th><td><i class="doc">   * BayesTrees, etc.</i></td></tr>
+<tr><th id="239">239</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="240">240</th><td>  <b>template</b> &lt;<b>class</b> FACTOR_OR_CONTAINER&gt;</td></tr>
+<tr><th id="241">241</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph3addERKTL0__" title='gtsam::FactorGraph::add' data-ref="_ZN5gtsam11FactorGraph3addERKTL0__">add</dfn>(<em>const</em> FACTOR_OR_CONTAINER&amp; <dfn class="local col4 decl" id="22784factorOrContainer" title='factorOrContainer' data-type='const FACTOR_OR_CONTAINER &amp;' data-ref="22784factorOrContainer">factorOrContainer</dfn>) {</td></tr>
+<tr><th id="242">242</th><td>    push_back(<a class="local col4 ref" href="#22784factorOrContainer" title='factorOrContainer' data-ref="22784factorOrContainer">factorOrContainer</a>);</td></tr>
+<tr><th id="243">243</th><td>  }</td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="246">246</th><td><i class="doc">   * Add a factor or container of factors, including STL collections,</i></td></tr>
+<tr><th id="247">247</th><td><i class="doc">   * BayesTrees, etc.</i></td></tr>
+<tr><th id="248">248</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="249">249</th><td>  <b>template</b> &lt;<b>class</b> FACTOR_OR_CONTAINER&gt;</td></tr>
+<tr><th id="250">250</th><td>  <a class="typedef" href="#gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</a>&amp; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphpLERKTL0__" title='gtsam::FactorGraph::operator+=' data-ref="_ZN5gtsam11FactorGraphpLERKTL0__"><b>operator</b>+=</dfn>(<em>const</em> FACTOR_OR_CONTAINER&amp; <dfn class="local col5 decl" id="22785factorOrContainer" title='factorOrContainer' data-type='const FACTOR_OR_CONTAINER &amp;' data-ref="22785factorOrContainer">factorOrContainer</dfn>) {</td></tr>
+<tr><th id="251">251</th><td>    push_back(<a class="local col5 ref" href="#22785factorOrContainer" title='factorOrContainer' data-ref="22785factorOrContainer">factorOrContainer</a>);</td></tr>
+<tr><th id="252">252</th><td>    <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="253">253</th><td>  }</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="256">256</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Specialized versions</span></i></td></tr>
+<tr><th id="257">257</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="258">258</th><td></td></tr>
+<tr><th id="259">259</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="260">260</th><td><i class="doc">   * Push back a BayesTree as a collection of factors.</i></td></tr>
+<tr><th id="261">261</th><td><i class="doc">   * NOTE: This should be hidden in derived classes in favor of a</i></td></tr>
+<tr><th id="262">262</th><td><i class="doc">   * type-specialized version that calls this templated function.</i></td></tr>
+<tr><th id="263">263</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="264">264</th><td>  <b>template</b> &lt;<b>class</b> CLIQUE&gt;</td></tr>
+<tr><th id="265">265</th><td>  <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;</td></tr>
+<tr><th id="266">266</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_base_of" title='std::is_base_of' data-ref="std::is_base_of">is_base_of</a>&lt;<a class="typedef" href="#gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</a>, <b>typename</b> CLIQUE::FactorGraphType&gt;::value&gt;::type</td></tr>
+<tr><th id="267">267</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9push_backERKNS_9BayesTreeITL0__EE" title='gtsam::FactorGraph::push_back' data-ref="_ZN5gtsam11FactorGraph9push_backERKNS_9BayesTreeITL0__EE">push_back</dfn>(<em>const</em> <a class="type" href="#gtsam::BayesTree" title='gtsam::BayesTree' data-ref="gtsam::BayesTree">BayesTree</a>&lt;CLIQUE&gt;&amp; <dfn class="local col6 decl" id="22786bayesTree" title='bayesTree' data-type='const BayesTree&lt;CLIQUE&gt; &amp;' data-ref="22786bayesTree">bayesTree</dfn>) {</td></tr>
+<tr><th id="268">268</th><td>    <a class="local col6 ref" href="#22786bayesTree" title='bayesTree' data-ref="22786bayesTree">bayesTree</a>.addFactorsToGraph(<b>this</b>);</td></tr>
+<tr><th id="269">269</th><td>  }</td></tr>
+<tr><th id="270">270</th><td></td></tr>
+<tr><th id="271">271</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="272">272</th><td><i class="doc">   * Add new factors to a factor graph and returns a list of new factor indices,</i></td></tr>
+<tr><th id="273">273</th><td><i class="doc">   * optionally finding and reusing empty factor slots.</i></td></tr>
+<tr><th id="274">274</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="275">275</th><td>  <b>template</b> &lt;<b>typename</b> CONTAINER, <b>typename</b> = <a class="type" href="#gtsam::FactorGraph::HasDerivedElementType" title='gtsam::FactorGraph::HasDerivedElementType' data-ref="gtsam::FactorGraph::HasDerivedElementType">HasDerivedElementType</a>&lt;CONTAINER&gt;&gt;</td></tr>
+<tr><th id="276">276</th><td>  <a class="typedef" href="Factor.h.html#gtsam::FactorIndices" title='gtsam::FactorIndices' data-type='FastVector&lt;FactorIndex&gt;' data-ref="gtsam::FactorIndices">FactorIndices</a> <a class="decl fn" href="FactorGraph-inst.h.html#_ZN5gtsam11FactorGraph11add_factorsERKTL0__b" title='gtsam::FactorGraph::add_factors' data-ref="_ZN5gtsam11FactorGraph11add_factorsERKTL0__b" id="_ZN5gtsam11FactorGraph11add_factorsERKTL0__b">add_factors</a>(<em>const</em> CONTAINER&amp; <dfn class="local col7 decl" id="22787factors" title='factors' data-type='const CONTAINER &amp;' data-ref="22787factors">factors</dfn>,</td></tr>
+<tr><th id="277">277</th><td>                            <em>bool</em> <dfn class="local col8 decl" id="22788useEmptySlots" title='useEmptySlots' data-type='bool' data-ref="22788useEmptySlots">useEmptySlots</dfn> = <b>false</b>);</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="280">280</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="281">281</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="282">282</th><td><i class="doc"></i></td></tr>
+<tr><th id="283">283</th><td><i class="doc">  /// Print out graph to std::cout, with optional key formatter.</i></td></tr>
+<tr><th id="284">284</th><td>  <b>virtual</b> <em>void</em> <a class="virtual decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::FactorGraph::print' data-ref="_ZNK5gtsam11FactorGraph5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" id="_ZNK5gtsam11FactorGraph5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col9 decl" id="22789s" title='s' data-type='const std::string &amp;' data-ref="22789s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"FactorGraph"</q>,</td></tr>
+<tr><th id="285">285</th><td>                     <em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col0 decl" id="22790formatter" title='formatter' data-type='const KeyFormatter &amp;' data-ref="22790formatter">formatter</dfn> = <a class="ref" href="Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em>;</td></tr>
+<tr><th id="286">286</th><td></td></tr>
+<tr><th id="287">287</th><td>  <i class="doc">/// Check equality up to tolerance.</i></td></tr>
+<tr><th id="288">288</th><td>  <em>bool</em> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph6equalsERKNS_11FactorGraphIT_EEd" title='gtsam::FactorGraph::equals' data-ref="_ZNK5gtsam11FactorGraph6equalsERKNS_11FactorGraphIT_EEd" id="_ZNK5gtsam11FactorGraph6equalsERKNS_11FactorGraphIT_EEd">equals</a>(<em>const</em> <a class="typedef" href="#gtsam::FactorGraph::This" title='gtsam::FactorGraph::This' data-type='FactorGraph&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::This">This</a>&amp; <dfn class="local col1 decl" id="22791fg" title='fg' data-type='const This &amp;' data-ref="22791fg">fg</dfn>, <em>double</em> <dfn class="local col2 decl" id="22792tol" title='tol' data-type='double' data-ref="22792tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="289">289</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td> <b>public</b>:</td></tr>
+<tr><th id="292">292</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Interface</span></i></td></tr>
+<tr><th id="293">293</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="294">294</th><td></td></tr>
+<tr><th id="295">295</th><td>  <i class="doc">/** return the number of factors (including any null factors set by remove()</i></td></tr>
+<tr><th id="296">296</th><td><i class="doc">   * ). */</i></td></tr>
+<tr><th id="297">297</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph4sizeEv" title='gtsam::FactorGraph::size' data-ref="_ZNK5gtsam11FactorGraph4sizeEv">size</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.size(); }</td></tr>
+<tr><th id="298">298</th><td></td></tr>
+<tr><th id="299">299</th><td>  <i class="doc">/** Check if the graph is empty (null factors set by remove() will cause</i></td></tr>
+<tr><th id="300">300</th><td><i class="doc">   * this to return false). */</i></td></tr>
+<tr><th id="301">301</th><td>  <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph5emptyEv" title='gtsam::FactorGraph::empty' data-ref="_ZNK5gtsam11FactorGraph5emptyEv">empty</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.empty(); }</td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td>  <i class="doc">/** Get a specific factor by index (this checks array bounds and may throw</i></td></tr>
+<tr><th id="304">304</th><td><i class="doc">   * an exception, as opposed to operator[] which does not).</i></td></tr>
+<tr><th id="305">305</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="306">306</th><td>  <em>const</em> <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph2atEm" title='gtsam::FactorGraph::at' data-ref="_ZNK5gtsam11FactorGraph2atEm">at</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col3 decl" id="22793i" title='i' data-type='size_t' data-ref="22793i">i</dfn>) <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.at(<a class="local col3 ref" href="#22793i" title='i' data-ref="22793i">i</a>); }</td></tr>
+<tr><th id="307">307</th><td></td></tr>
+<tr><th id="308">308</th><td>  <i class="doc">/** Get a specific factor by index (this checks array bounds and may throw</i></td></tr>
+<tr><th id="309">309</th><td><i class="doc">   * an exception, as opposed to operator[] which does not).</i></td></tr>
+<tr><th id="310">310</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="311">311</th><td>  <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a>&amp; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph2atEm" title='gtsam::FactorGraph::at' data-ref="_ZN5gtsam11FactorGraph2atEm">at</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="22794i" title='i' data-type='size_t' data-ref="22794i">i</dfn>) { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.at(<a class="local col4 ref" href="#22794i" title='i' data-ref="22794i">i</a>); }</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td>  <i class="doc">/** Get a specific factor by index and typecast to factor type F</i></td></tr>
+<tr><th id="314">314</th><td><i class="doc">   * (this checks array bounds and may throw</i></td></tr>
+<tr><th id="315">315</th><td><i class="doc">   * an exception, as opposed to operator[] which does not).</i></td></tr>
+<tr><th id="316">316</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="317">317</th><td>  <b>template</b> &lt;<b>typename</b> F&gt;</td></tr>
+<tr><th id="318">318</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;F&gt; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph2atEm" title='gtsam::FactorGraph::at' data-ref="_ZN5gtsam11FactorGraph2atEm">at</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="22795i" title='i' data-type='size_t' data-ref="22795i">i</dfn>) {</td></tr>
+<tr><th id="319">319</th><td>    <b>return</b> <span class="namespace">std::</span>dynamic_pointer_cast&lt;F&gt;(<a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.at(<a class="local col5 ref" href="#22795i" title='i' data-ref="22795i">i</a>));</td></tr>
+<tr><th id="320">320</th><td>  }</td></tr>
+<tr><th id="321">321</th><td></td></tr>
+<tr><th id="322">322</th><td>  <i class="doc">/// Const version of templated `at` method.</i></td></tr>
+<tr><th id="323">323</th><td>  <b>template</b> &lt;<b>typename</b> F&gt;</td></tr>
+<tr><th id="324">324</th><td>  <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;F&gt; <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph2atEm" title='gtsam::FactorGraph::at' data-ref="_ZNK5gtsam11FactorGraph2atEm">at</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col6 decl" id="22796i" title='i' data-type='size_t' data-ref="22796i">i</dfn>) <em>const</em> {</td></tr>
+<tr><th id="325">325</th><td>    <b>return</b> <span class="namespace">std::</span>dynamic_pointer_cast&lt;F&gt;(<a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.at(<a class="local col6 ref" href="#22796i" title='i' data-ref="22796i">i</a>));</td></tr>
+<tr><th id="326">326</th><td>  }</td></tr>
+<tr><th id="327">327</th><td></td></tr>
+<tr><th id="328">328</th><td>  <i class="doc">/** Get a specific factor by index (this does not check array bounds, as</i></td></tr>
+<tr><th id="329">329</th><td><i class="doc">   * opposed to at() which does).</i></td></tr>
+<tr><th id="330">330</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="331">331</th><td>  <em>const</em> <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraphixEm" title='gtsam::FactorGraph::operator[]' data-ref="_ZNK5gtsam11FactorGraphixEm"><b>operator</b>[]</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col7 decl" id="22797i" title='i' data-type='size_t' data-ref="22797i">i</dfn>) <em>const</em> { <b>return</b> at(<a class="local col7 ref" href="#22797i" title='i' data-ref="22797i">i</a>); }</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td>  <i class="doc">/** Get a specific factor by index (this does not check array bounds, as</i></td></tr>
+<tr><th id="334">334</th><td><i class="doc">   * opposed to at() which does).</i></td></tr>
+<tr><th id="335">335</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="336">336</th><td>  <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a>&amp; <dfn class="decl def fn" id="_ZN5gtsam11FactorGraphixEm" title='gtsam::FactorGraph::operator[]' data-ref="_ZN5gtsam11FactorGraphixEm"><b>operator</b>[]</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col8 decl" id="22798i" title='i' data-type='size_t' data-ref="22798i">i</dfn>) { <b>return</b> at(<a class="local col8 ref" href="#22798i" title='i' data-ref="22798i">i</a>); }</td></tr>
+<tr><th id="337">337</th><td></td></tr>
+<tr><th id="338">338</th><td>  <i class="doc">/** Iterator to beginning of factors. */</i></td></tr>
+<tr><th id="339">339</th><td>  <a class="typedef" href="#gtsam::FactorGraph::const_iterator" title='gtsam::FactorGraph::const_iterator' data-type='typename FastVector&lt;sharedFactor&gt;::const_iterator' data-ref="gtsam::FactorGraph::const_iterator">const_iterator</a> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph5beginEv" title='gtsam::FactorGraph::begin' data-ref="_ZNK5gtsam11FactorGraph5beginEv">begin</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.begin(); }</td></tr>
+<tr><th id="340">340</th><td></td></tr>
+<tr><th id="341">341</th><td>  <i class="doc">/** Iterator to end of factors. */</i></td></tr>
+<tr><th id="342">342</th><td>  <a class="typedef" href="#gtsam::FactorGraph::const_iterator" title='gtsam::FactorGraph::const_iterator' data-type='typename FastVector&lt;sharedFactor&gt;::const_iterator' data-ref="gtsam::FactorGraph::const_iterator">const_iterator</a> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph3endEv" title='gtsam::FactorGraph::end' data-ref="_ZNK5gtsam11FactorGraph3endEv">end</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.end(); }</td></tr>
+<tr><th id="343">343</th><td></td></tr>
+<tr><th id="344">344</th><td>  <i class="doc">/** Get the first factor */</i></td></tr>
+<tr><th id="345">345</th><td>  <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph5frontEv" title='gtsam::FactorGraph::front' data-ref="_ZNK5gtsam11FactorGraph5frontEv">front</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.front(); }</td></tr>
+<tr><th id="346">346</th><td></td></tr>
+<tr><th id="347">347</th><td>  <i class="doc">/** Get the last factor */</i></td></tr>
+<tr><th id="348">348</th><td>  <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph4backEv" title='gtsam::FactorGraph::back' data-ref="_ZNK5gtsam11FactorGraph4backEv">back</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.back(); }</td></tr>
+<tr><th id="349">349</th><td></td></tr>
+<tr><th id="350">350</th><td>  <i class="doc">/** Add error for all factors. */</i></td></tr>
+<tr><th id="351">351</th><td>  <em>double</em> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph5errorERKNS_12HybridValuesE" title='gtsam::FactorGraph::error' data-ref="_ZNK5gtsam11FactorGraph5errorERKNS_12HybridValuesE" id="_ZNK5gtsam11FactorGraph5errorERKNS_12HybridValuesE">error</a>(<em>const</em> <a class="type" href="../hybrid/HybridValues.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a> &amp;<dfn class="local col9 decl" id="22799values" title='values' data-type='const HybridValues &amp;' data-ref="22799values">values</dfn>) <em>const</em>;</td></tr>
+<tr><th id="352">352</th><td></td></tr>
+<tr><th id="353">353</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="354">354</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Modifying Factor Graphs (imperative, discouraged)</span></i></td></tr>
+<tr><th id="355">355</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="356">356</th><td></td></tr>
+<tr><th id="357">357</th><td>  <i class="doc">/** non-const STL-style begin() */</i></td></tr>
+<tr><th id="358">358</th><td>  <a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph5beginEv" title='gtsam::FactorGraph::begin' data-ref="_ZN5gtsam11FactorGraph5beginEv">begin</dfn>() { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.begin(); }</td></tr>
+<tr><th id="359">359</th><td></td></tr>
+<tr><th id="360">360</th><td>  <i class="doc">/** non-const STL-style end() */</i></td></tr>
+<tr><th id="361">361</th><td>  <a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph3endEv" title='gtsam::FactorGraph::end' data-ref="_ZN5gtsam11FactorGraph3endEv">end</dfn>() { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.end(); }</td></tr>
+<tr><th id="362">362</th><td></td></tr>
+<tr><th id="363">363</th><td>  <i class="doc">/** Directly resize the number of factors in the graph. If the new size is</i></td></tr>
+<tr><th id="364">364</th><td><i class="doc">   * less than the original, factors at the end will be removed.  If the new</i></td></tr>
+<tr><th id="365">365</th><td><i class="doc">   * size is larger than the original, null factors will be appended.</i></td></tr>
+<tr><th id="366">366</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="367">367</th><td>  <b>virtual</b> <em>void</em> <dfn class="virtual decl def fn" id="_ZN5gtsam11FactorGraph6resizeEm" title='gtsam::FactorGraph::resize' data-ref="_ZN5gtsam11FactorGraph6resizeEm">resize</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col0 decl" id="22800size" title='size' data-type='size_t' data-ref="22800size">size</dfn>) { <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.resize(<a class="local col0 ref" href="#22800size" title='size' data-ref="22800size">size</a>); }</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td>  <i class="doc">/** delete factor without re-arranging indexes by inserting a nullptr pointer</i></td></tr>
+<tr><th id="370">370</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="371">371</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph6removeEm" title='gtsam::FactorGraph::remove' data-ref="_ZN5gtsam11FactorGraph6removeEm">remove</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="22801i" title='i' data-type='size_t' data-ref="22801i">i</dfn>) { <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.at(<a class="local col1 ref" href="#22801i" title='i' data-ref="22801i">i</a>).reset(); }</td></tr>
+<tr><th id="372">372</th><td></td></tr>
+<tr><th id="373">373</th><td>  <i class="doc">/** replace a factor by index */</i></td></tr>
+<tr><th id="374">374</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph7replaceEmSt10shared_ptrIT_E" title='gtsam::FactorGraph::replace' data-ref="_ZN5gtsam11FactorGraph7replaceEmSt10shared_ptrIT_E">replace</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col2 decl" id="22802index" title='index' data-type='size_t' data-ref="22802index">index</dfn>, <a class="typedef" href="#gtsam::FactorGraph::sharedFactor" title='gtsam::FactorGraph::sharedFactor' data-type='std::shared_ptr&lt;FACTOR&gt;' data-ref="gtsam::FactorGraph::sharedFactor">sharedFactor</a> <dfn class="local col3 decl" id="22803factor" title='factor' data-type='sharedFactor' data-ref="22803factor">factor</dfn>) { at(<a class="local col2 ref" href="#22802index" title='index' data-ref="22802index">index</a>) = <a class="local col3 ref" href="#22803factor" title='factor' data-ref="22803factor">factor</a>; }</td></tr>
+<tr><th id="375">375</th><td></td></tr>
+<tr><th id="376">376</th><td>  <i class="doc">/** Erase factor and rearrange other factors to take up the empty space */</i></td></tr>
+<tr><th id="377">377</th><td>  <a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph5eraseENSt6vectorISt10shared_ptrIT_ENS_8internal26FastDefaultVectorAllocatorIS4_E4typeEE8iteratorE" title='gtsam::FactorGraph::erase' data-ref="_ZN5gtsam11FactorGraph5eraseENSt6vectorISt10shared_ptrIT_ENS_8internal26FastDefaultVectorAllocatorIS4_E4typeEE8iteratorE">erase</dfn>(<a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="local col4 decl" id="22804item" title='item' data-type='iterator' data-ref="22804item">item</dfn>) { <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.erase(<a class="local col4 ref" href="#22804item" title='item' data-ref="22804item">item</a>); }</td></tr>
+<tr><th id="378">378</th><td></td></tr>
+<tr><th id="379">379</th><td>  <i class="doc">/** Erase factors and rearrange other factors to take up the empty space */</i></td></tr>
+<tr><th id="380">380</th><td>  <a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph5eraseENSt6vectorISt10shared_ptrIT_ENS_8internal26FastDefaultVectorAllocatorIS4_E4typeEE8iteratorESA_" title='gtsam::FactorGraph::erase' data-ref="_ZN5gtsam11FactorGraph5eraseENSt6vectorISt10shared_ptrIT_ENS_8internal26FastDefaultVectorAllocatorIS4_E4typeEE8iteratorESA_">erase</dfn>(<a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="local col5 decl" id="22805first" title='first' data-type='iterator' data-ref="22805first">first</dfn>, <a class="typedef" href="#gtsam::FactorGraph::iterator" title='gtsam::FactorGraph::iterator' data-type='typename FastVector&lt;sharedFactor&gt;::iterator' data-ref="gtsam::FactorGraph::iterator">iterator</a> <dfn class="local col6 decl" id="22806last" title='last' data-type='iterator' data-ref="22806last">last</dfn>) {</td></tr>
+<tr><th id="381">381</th><td>    <b>return</b> <a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>.erase(<a class="local col5 ref" href="#22805first" title='first' data-ref="22805first">first</a>, <a class="local col6 ref" href="#22806last" title='last' data-ref="22806last">last</a>);</td></tr>
+<tr><th id="382">382</th><td>  }</td></tr>
+<tr><th id="383">383</th><td></td></tr>
+<tr><th id="384">384</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="385">385</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Graph Display</span></i></td></tr>
+<tr><th id="386">386</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="387">387</th><td><i class="doc"></i></td></tr>
+<tr><th id="388">388</th><td><i class="doc">  /// Output to graphviz format, stream version.</i></td></tr>
+<tr><th id="389">389</th><td>  <em>void</em> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph3dotERSoRKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKNS_9DotWriterE" title='gtsam::FactorGraph::dot' data-ref="_ZNK5gtsam11FactorGraph3dotERSoRKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKNS_9DotWriterE" id="_ZNK5gtsam11FactorGraph3dotERSoRKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKNS_9DotWriterE">dot</a>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="local col7 decl" id="22807os" title='os' data-type='std::ostream &amp;' data-ref="22807os">os</dfn>,</td></tr>
+<tr><th id="390">390</th><td>           <em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col8 decl" id="22808keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="22808keyFormatter">keyFormatter</dfn> = <a class="ref" href="Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>,</td></tr>
+<tr><th id="391">391</th><td>           <em>const</em> <a class="type" href="DotWriter.h.html#gtsam::DotWriter" title='gtsam::DotWriter' data-ref="gtsam::DotWriter">DotWriter</a>&amp; <dfn class="local col9 decl" id="22809writer" title='writer' data-type='const DotWriter &amp;' data-ref="22809writer">writer</dfn> = <a class="type" href="DotWriter.h.html#gtsam::DotWriter" title='gtsam::DotWriter' data-ref="gtsam::DotWriter">DotWriter</a><a class="ref fn" href="DotWriter.h.html#_ZN5gtsam9DotWriterC1Eddbbb" title='gtsam::DotWriter::DotWriter' data-ref="_ZN5gtsam9DotWriterC1Eddbbb">(</a>)) <em>const</em>;</td></tr>
+<tr><th id="392">392</th><td></td></tr>
+<tr><th id="393">393</th><td>  <i class="doc">/// Output to graphviz format string.</i></td></tr>
+<tr><th id="394">394</th><td>  <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph3dotERKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKNS_9DotWriterE" title='gtsam::FactorGraph::dot' data-ref="_ZNK5gtsam11FactorGraph3dotERKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKNS_9DotWriterE" id="_ZNK5gtsam11FactorGraph3dotERKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKNS_9DotWriterE">dot</a>(<em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col0 decl" id="22810keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="22810keyFormatter">keyFormatter</dfn> = <a class="ref" href="Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>,</td></tr>
+<tr><th id="395">395</th><td>                  <em>const</em> <a class="type" href="DotWriter.h.html#gtsam::DotWriter" title='gtsam::DotWriter' data-ref="gtsam::DotWriter">DotWriter</a>&amp; <dfn class="local col1 decl" id="22811writer" title='writer' data-type='const DotWriter &amp;' data-ref="22811writer">writer</dfn> = <a class="type" href="DotWriter.h.html#gtsam::DotWriter" title='gtsam::DotWriter' data-ref="gtsam::DotWriter">DotWriter</a><a class="ref fn" href="DotWriter.h.html#_ZN5gtsam9DotWriterC1Eddbbb" title='gtsam::DotWriter::DotWriter' data-ref="_ZN5gtsam9DotWriterC1Eddbbb">(</a>)) <em>const</em>;</td></tr>
+<tr><th id="396">396</th><td></td></tr>
+<tr><th id="397">397</th><td>  <i class="doc">/// output to file with graphviz format.</i></td></tr>
+<tr><th id="398">398</th><td>  <em>void</em> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph9saveGraphERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEERKNS_9DotWriterE" title='gtsam::FactorGraph::saveGraph' data-ref="_ZNK5gtsam11FactorGraph9saveGraphERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEERKNS_9DotWriterE" id="_ZNK5gtsam11FactorGraph9saveGraphERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEERKNS_9DotWriterE">saveGraph</a>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col2 decl" id="22812filename" title='filename' data-type='const std::string &amp;' data-ref="22812filename">filename</dfn>,</td></tr>
+<tr><th id="399">399</th><td>                 <em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col3 decl" id="22813keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="22813keyFormatter">keyFormatter</dfn> = <a class="ref" href="Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>,</td></tr>
+<tr><th id="400">400</th><td>                 <em>const</em> <a class="type" href="DotWriter.h.html#gtsam::DotWriter" title='gtsam::DotWriter' data-ref="gtsam::DotWriter">DotWriter</a>&amp; <dfn class="local col4 decl" id="22814writer" title='writer' data-type='const DotWriter &amp;' data-ref="22814writer">writer</dfn> = <a class="type" href="DotWriter.h.html#gtsam::DotWriter" title='gtsam::DotWriter' data-ref="gtsam::DotWriter">DotWriter</a><a class="ref fn" href="DotWriter.h.html#_ZN5gtsam9DotWriterC1Eddbbb" title='gtsam::DotWriter::DotWriter' data-ref="_ZN5gtsam9DotWriterC1Eddbbb">(</a>)) <em>const</em>;</td></tr>
+<tr><th id="401">401</th><td></td></tr>
+<tr><th id="402">402</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="403">403</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Advanced Interface</span></i></td></tr>
+<tr><th id="404">404</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="405">405</th><td></td></tr>
+<tr><th id="406">406</th><td>  <i class="doc">/** return the number of non-null factors */</i></td></tr>
+<tr><th id="407">407</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph9nrFactorsEv" title='gtsam::FactorGraph::nrFactors' data-ref="_ZNK5gtsam11FactorGraph9nrFactorsEv" id="_ZNK5gtsam11FactorGraph9nrFactorsEv">nrFactors</a>() <em>const</em>;</td></tr>
+<tr><th id="408">408</th><td></td></tr>
+<tr><th id="409">409</th><td>  <i class="doc">/** Potentially slow function to return all keys involved, sorted, as a set</i></td></tr>
+<tr><th id="410">410</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="411">411</th><td>  <a class="typedef" href="Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph4keysEv" title='gtsam::FactorGraph::keys' data-ref="_ZNK5gtsam11FactorGraph4keysEv" id="_ZNK5gtsam11FactorGraph4keysEv">keys</a>() <em>const</em>;</td></tr>
+<tr><th id="412">412</th><td></td></tr>
+<tr><th id="413">413</th><td>  <i class="doc">/** Potentially slow function to return all keys involved, sorted, as a</i></td></tr>
+<tr><th id="414">414</th><td><i class="doc">   * vector</i></td></tr>
+<tr><th id="415">415</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="416">416</th><td>  <a class="typedef" href="Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a> <a class="decl fn" href="FactorGraph-inst.h.html#_ZNK5gtsam11FactorGraph9keyVectorEv" title='gtsam::FactorGraph::keyVector' data-ref="_ZNK5gtsam11FactorGraph9keyVectorEv" id="_ZNK5gtsam11FactorGraph9keyVectorEv">keyVector</a>() <em>const</em>;</td></tr>
+<tr><th id="417">417</th><td></td></tr>
+<tr><th id="418">418</th><td>  <i class="doc">/** MATLAB interface utility: Checks whether a factor index idx exists in</i></td></tr>
+<tr><th id="419">419</th><td><i class="doc">   * the graph and is a live pointer */</i></td></tr>
+<tr><th id="420">420</th><td>  <b>inline</b> <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam11FactorGraph6existsEm" title='gtsam::FactorGraph::exists' data-ref="_ZNK5gtsam11FactorGraph6existsEm">exists</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="22815idx" title='idx' data-type='size_t' data-ref="22815idx">idx</dfn>) <em>const</em> { <b>return</b> <a class="local col5 ref" href="#22815idx" title='idx' data-ref="22815idx">idx</a> &lt; <a class="member fn" href="#_ZNK5gtsam11FactorGraph4sizeEv" title='gtsam::FactorGraph::size' data-ref="_ZNK5gtsam11FactorGraph4sizeEv">size</a>() &amp;&amp; at(<a class="local col5 ref" href="#22815idx" title='idx' data-ref="22815idx">idx</a>); }</td></tr>
+<tr><th id="421">421</th><td></td></tr>
+<tr><th id="422">422</th><td> <b>private</b>:</td></tr>
+<tr><th id="423">423</th><td><u>#<span data-ppcond="423">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="424">424</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="425">425</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="426">426</th><td>  <b>template</b> &lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="427">427</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11FactorGraph9serializeERTL0__j" title='gtsam::FactorGraph::serialize' data-ref="_ZN5gtsam11FactorGraph9serializeERTL0__j">serialize</dfn>(ARCHIVE&amp; <dfn class="local col6 decl" id="22816ar" title='ar' data-type='ARCHIVE &amp;' data-ref="22816ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="428">428</th><td>    <a class="local col6 ref" href="#22816ar" title='ar' data-ref="22816ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;factors_&quot;, factors_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="member field" href="#gtsam::FactorGraph::factors_" title='gtsam::FactorGraph::factors_' data-ref="gtsam::FactorGraph::factors_">factors_</a>);</td></tr>
+<tr><th id="429">429</th><td>  }</td></tr>
+<tr><th id="430">430</th><td><u>#<span data-ppcond="423">endif</span></u></td></tr>
+<tr><th id="431">431</th><td></td></tr>
+<tr><th id="432">432</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="433">433</th><td>};  <i>// FactorGraph</i></td></tr>
+<tr><th id="434">434</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="435">435</th><td></td></tr>
+<tr><th id="436">436</th><td><u>#include <a href="FactorGraph-inst.h.html">&lt;gtsam/inference/FactorGraph-inst.h&gt;</a></u></td></tr>
+<tr><th id="437">437</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

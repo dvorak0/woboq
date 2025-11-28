@@ -1,0 +1,602 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>lambda_traits.hpp source code [include/boost/lambda/detail/lambda_traits.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::lambda::bound_argument_conversion,boost::lambda::const_copy_argument,boost::lambda::detail::IF,boost::lambda::detail::IF_type,boost::lambda::detail::IF_type_,boost::lambda::detail::IF_value,boost::lambda::detail::IF_value_,boost::lambda::detail::array_to_pointer,boost::lambda::detail::bind_traits,boost::lambda::detail::bind_tuple_mapper,boost::lambda::detail::bind_type_generator,boost::lambda::detail::identity_mapping,boost::lambda::detail::is_lambda_functor_,boost::lambda::detail::parameter_traits_,boost::lambda::detail::remove_const_reference,boost::lambda::detail::remove_reference_and_cv,boost::lambda::detail::remove_reference_if_valid,boost::lambda::detail::tuple_element_as_reference,boost::lambda::detail::tuple_element_stripped,boost::lambda::is_lambda_functor,boost::lambda::reference_argument "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/lambda/detail/lambda_traits.hpp'; var root_path = '../../../..'; var data_path = '../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>include</a>/<a href='../..'>boost</a>/<a href='..'>lambda</a>/<a href='./'>detail</a>/<a href='lambda_traits.hpp.html'>lambda_traits.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// - lambda_traits.hpp --- Boost Lambda Library ----------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>// Copyright (C) 1999, 2000 Jaakko Jarvi (jaakko.jarvi@cs.utu.fi)</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Distributed under the Boost Software License, Version 1.0. (See</i></td></tr>
+<tr><th id="6">6</th><td><i>// accompanying file LICENSE_1_0.txt or copy at</i></td></tr>
+<tr><th id="7">7</th><td><i>// <a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>// For more information, see www.boost.org</i></td></tr>
+<tr><th id="10">10</th><td><i>// -------------------------------------------------------------------------</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><u>#<span data-ppcond="12">ifndef</span> <span class="macro" data-ref="_M/BOOST_LAMBDA_LAMBDA_TRAITS_HPP">BOOST_LAMBDA_LAMBDA_TRAITS_HPP</span></u></td></tr>
+<tr><th id="13">13</th><td><u>#define <dfn class="macro" id="_M/BOOST_LAMBDA_LAMBDA_TRAITS_HPP" data-ref="_M/BOOST_LAMBDA_LAMBDA_TRAITS_HPP">BOOST_LAMBDA_LAMBDA_TRAITS_HPP</dfn></u></td></tr>
+<tr><th id="14">14</th><td></td></tr>
+<tr><th id="15">15</th><td><u>#include <a href="../../type_traits/transform_traits.hpp.html">"boost/type_traits/transform_traits.hpp"</a></u></td></tr>
+<tr><th id="16">16</th><td><u>#include <a href="../../type_traits/cv_traits.hpp.html">"boost/type_traits/cv_traits.hpp"</a></u></td></tr>
+<tr><th id="17">17</th><td><u>#include <a href="../../type_traits/function_traits.hpp.html">"boost/type_traits/function_traits.hpp"</a></u></td></tr>
+<tr><th id="18">18</th><td><u>#include <a href="../../type_traits/object_traits.hpp.html">"boost/type_traits/object_traits.hpp"</a></u></td></tr>
+<tr><th id="19">19</th><td><u>#include <a href="../../tuple/tuple.hpp.html">"boost/tuple/tuple.hpp"</a></u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><b>namespace</b> <span class="namespace">boost</span> {</td></tr>
+<tr><th id="22">22</th><td><b>namespace</b> <span class="namespace">lambda</span> {</td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><i>// -- if construct ------------------------------------------------</i></td></tr>
+<tr><th id="25">25</th><td><i>// Proposed by Krzysztof Czarnecki and Ulrich Eisenecker</i></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><b>template</b> &lt;<em>bool</em> If, <b>class</b> Then, <b>class</b> Else&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::IF" title='boost::lambda::detail::IF' data-ref="boost::lambda::detail::IF">IF</dfn> { <b>typedef</b> Then <dfn class="typedef" id="boost::lambda::detail::IF::RET" title='boost::lambda::detail::IF::RET' data-type='Then' data-ref="boost::lambda::detail::IF::RET">RET</dfn>; };</td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><b>template</b> &lt;<b>class</b> Then, <b>class</b> Else&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::IF" title='boost::lambda::detail::IF' data-ref="boost::lambda::detail::IF">IF</dfn>&lt;<b>false</b>, Then, Else&gt; {</td></tr>
+<tr><th id="32">32</th><td>  <b>typedef</b> Else <dfn class="typedef" id="boost::lambda::detail::IF{false,type-parameter-0-0,type-parameter-0-1}::RET" title='boost::lambda::detail::IF&lt;false, type-parameter-0-0, type-parameter-0-1&gt;::RET' data-type='Else' data-ref="boost::lambda::detail::IF{false,type-parameter-0-0,type-parameter-0-1}::RET">RET</dfn>;</td></tr>
+<tr><th id="33">33</th><td>};</td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><i>// An if construct that doesn't instantiate the non-matching template:</i></td></tr>
+<tr><th id="37">37</th><td><i></i></td></tr>
+<tr><th id="38">38</th><td><i>// Called as: </i></td></tr>
+<tr><th id="39">39</th><td><i>//  IF_type&lt;condition, A, B&gt;::type </i></td></tr>
+<tr><th id="40">40</th><td><i>// The matching template must define the typeded 'type'</i></td></tr>
+<tr><th id="41">41</th><td><i>// I.e. A::type if condition is true, B::type if condition is false</i></td></tr>
+<tr><th id="42">42</th><td><i>// Idea from Vesa Karvonen (from C&amp;E as well I guess)</i></td></tr>
+<tr><th id="43">43</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="44">44</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::IF_type_" title='boost::lambda::detail::IF_type_' data-ref="boost::lambda::detail::IF_type_">IF_type_</dfn></td></tr>
+<tr><th id="45">45</th><td>{</td></tr>
+<tr><th id="46">46</th><td>  <b>typedef</b> <b>typename</b> T::type <dfn class="typedef" id="boost::lambda::detail::IF_type_::type" title='boost::lambda::detail::IF_type_::type' data-type='typename T::type' data-ref="boost::lambda::detail::IF_type_::type">type</dfn>;</td></tr>
+<tr><th id="47">47</th><td>};</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><b>template</b>&lt;<em>bool</em> C, <b>class</b> T, <b>class</b> E&gt;</td></tr>
+<tr><th id="51">51</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::IF_type" title='boost::lambda::detail::IF_type' data-ref="boost::lambda::detail::IF_type">IF_type</dfn></td></tr>
+<tr><th id="52">52</th><td>{</td></tr>
+<tr><th id="53">53</th><td>  <b>typedef</b> <b>typename</b></td></tr>
+<tr><th id="54">54</th><td>    <a class="type" href="#boost::lambda::detail::IF_type_" title='boost::lambda::detail::IF_type_' data-ref="boost::lambda::detail::IF_type_">IF_type_</a>&lt;<b>typename</b> <a class="type" href="#boost::lambda::detail::IF" title='boost::lambda::detail::IF' data-ref="boost::lambda::detail::IF">IF</a>&lt;<a class="tu ref" href="#boost::lambda::detail::IF_type::C" title='boost::lambda::detail::IF_type::C' data-ref="boost::lambda::detail::IF_type::C">C</a>, T, E&gt;::RET &gt;::type <dfn class="typedef" id="boost::lambda::detail::IF_type::type" title='boost::lambda::detail::IF_type::type' data-type='typename IF_type_&lt;typename IF&lt;C, T, E&gt;::RET&gt;::type' data-ref="boost::lambda::detail::IF_type::type">type</dfn>;</td></tr>
+<tr><th id="55">55</th><td>};</td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td><i>// helper that can be used to give typedef T to some type</i></td></tr>
+<tr><th id="58">58</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::identity_mapping" title='boost::lambda::detail::identity_mapping' data-ref="boost::lambda::detail::identity_mapping">identity_mapping</dfn> { <b>typedef</b> T <dfn class="typedef" id="boost::lambda::detail::identity_mapping::type" title='boost::lambda::detail::identity_mapping::type' data-type='T' data-ref="boost::lambda::detail::identity_mapping::type">type</dfn>; };</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><i>// An if construct for finding an integral constant 'value'</i></td></tr>
+<tr><th id="61">61</th><td><i>// Does not instantiate the non-matching branch</i></td></tr>
+<tr><th id="62">62</th><td><i>// Called as IF_value&lt;condition, A, B&gt;::value</i></td></tr>
+<tr><th id="63">63</th><td><i>// If condition is true A::value must be defined, otherwise B::value</i></td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="66">66</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::IF_value_" title='boost::lambda::detail::IF_value_' data-ref="boost::lambda::detail::IF_value_">IF_value_</dfn></td></tr>
+<tr><th id="67">67</th><td>{</td></tr>
+<tr><th id="68">68</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = T::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::IF_value_::value" title='boost::lambda::detail::IF_value_::value' data-ref="boost::lambda::detail::IF_value_::value">value</dfn> = T::value);</td></tr>
+<tr><th id="69">69</th><td>};</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><b>template</b>&lt;<em>bool</em> C, <b>class</b> T, <b>class</b> E&gt;</td></tr>
+<tr><th id="73">73</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::IF_value" title='boost::lambda::detail::IF_value' data-ref="boost::lambda::detail::IF_value">IF_value</dfn></td></tr>
+<tr><th id="74">74</th><td>{</td></tr>
+<tr><th id="75">75</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = (IF_value_&lt;typename IF&lt;C, T, E&gt;::RET&gt;::value)" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::IF_value::value" title='boost::lambda::detail::IF_value::value' data-ref="boost::lambda::detail::IF_value::value">value</dfn> = (<a class="type" href="#boost::lambda::detail::IF_value_" title='boost::lambda::detail::IF_value_' data-ref="boost::lambda::detail::IF_value_">IF_value_</a>&lt;<b>typename</b> <a class="type" href="#boost::lambda::detail::IF" title='boost::lambda::detail::IF' data-ref="boost::lambda::detail::IF">IF</a>&lt;<a class="tu ref" href="#boost::lambda::detail::IF_value::C" title='boost::lambda::detail::IF_value::C' data-ref="boost::lambda::detail::IF_value::C">C</a>, T, E&gt;::RET&gt;::value));</td></tr>
+<tr><th id="76">76</th><td>};</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td><i>// --------------------------------------------------------------</i></td></tr>
+<tr><th id="80">80</th><td><i></i></td></tr>
+<tr><th id="81">81</th><td><i>// removes reference from other than function types:</i></td></tr>
+<tr><th id="82">82</th><td><b>template</b>&lt;<b>class</b> T&gt; <b>class</b> <dfn class="type def" id="boost::lambda::detail::remove_reference_if_valid" title='boost::lambda::detail::remove_reference_if_valid' data-ref="boost::lambda::detail::remove_reference_if_valid">remove_reference_if_valid</dfn></td></tr>
+<tr><th id="83">83</th><td>{</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>  <b>typedef</b> <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../../type_traits/remove_reference.hpp.html#boost::remove_reference" title='boost::remove_reference' data-ref="boost::remove_reference">remove_reference</a>&lt;T&gt;::type <dfn class="typedef" id="boost::lambda::detail::remove_reference_if_valid::plainT" title='boost::lambda::detail::remove_reference_if_valid::plainT' data-type='typename boost::remove_reference&lt;T&gt;::type' data-ref="boost::lambda::detail::remove_reference_if_valid::plainT">plainT</dfn>;</td></tr>
+<tr><th id="86">86</th><td><b>public</b>:</td></tr>
+<tr><th id="87">87</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="#boost::lambda::detail::IF" title='boost::lambda::detail::IF' data-ref="boost::lambda::detail::IF">IF</a>&lt;</td></tr>
+<tr><th id="88">88</th><td>    <span class="namespace">boost::</span><a class="type" href="../../type_traits/detail/is_function_cxx_11.hpp.html#boost::is_function" title='boost::is_function' data-ref="boost::is_function">is_function</a>&lt;<a class="typedef" href="#boost::lambda::detail::remove_reference_if_valid::plainT" title='boost::lambda::detail::remove_reference_if_valid::plainT' data-type='typename boost::remove_reference&lt;T&gt;::type' data-ref="boost::lambda::detail::remove_reference_if_valid::plainT">plainT</a>&gt;::value,</td></tr>
+<tr><th id="89">89</th><td>    T,</td></tr>
+<tr><th id="90">90</th><td>    <a class="typedef" href="#boost::lambda::detail::remove_reference_if_valid::plainT" title='boost::lambda::detail::remove_reference_if_valid::plainT' data-type='typename boost::remove_reference&lt;T&gt;::type' data-ref="boost::lambda::detail::remove_reference_if_valid::plainT">plainT</a></td></tr>
+<tr><th id="91">91</th><td>  &gt;::RET <dfn class="typedef" id="boost::lambda::detail::remove_reference_if_valid::type" title='boost::lambda::detail::remove_reference_if_valid::type' data-type='typename IF&lt;boost::is_function&lt;plainT&gt;::value, T, plainT&gt;::RET' data-ref="boost::lambda::detail::remove_reference_if_valid::type">type</dfn>;</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>};</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td><b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::remove_reference_and_cv" title='boost::lambda::detail::remove_reference_and_cv' data-ref="boost::lambda::detail::remove_reference_and_cv">remove_reference_and_cv</dfn> {</td></tr>
+<tr><th id="97">97</th><td>   <b>typedef</b> <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../../type_traits/remove_cv.hpp.html#boost::remove_cv" title='boost::remove_cv' data-ref="boost::remove_cv">remove_cv</a>&lt;</td></tr>
+<tr><th id="98">98</th><td>     <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../../type_traits/remove_reference.hpp.html#boost::remove_reference" title='boost::remove_reference' data-ref="boost::remove_reference">remove_reference</a>&lt;T&gt;::type</td></tr>
+<tr><th id="99">99</th><td>   &gt;::type <dfn class="typedef" id="boost::lambda::detail::remove_reference_and_cv::type" title='boost::lambda::detail::remove_reference_and_cv::type' data-type='typename boost::remove_cv&lt;typename boost::remove_reference&lt;T&gt;::type&gt;::type' data-ref="boost::lambda::detail::remove_reference_and_cv::type">type</dfn>;</td></tr>
+<tr><th id="100">100</th><td>};</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>   </td></tr>
+<tr><th id="104">104</th><td><i>// returns a reference to the element of tuple T</i></td></tr>
+<tr><th id="105">105</th><td><b>template</b>&lt;<em>int</em> N, <b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::tuple_element_as_reference" title='boost::lambda::detail::tuple_element_as_reference' data-ref="boost::lambda::detail::tuple_element_as_reference">tuple_element_as_reference</dfn> {   </td></tr>
+<tr><th id="106">106</th><td>  <b>typedef</b> <b>typename</b></td></tr>
+<tr><th id="107">107</th><td>     <span class="namespace">boost::tuples::</span><a class="type" href="../../tuple/detail/tuple_basic.hpp.html#boost::tuples::access_traits" title='boost::tuples::access_traits' data-ref="boost::tuples::access_traits">access_traits</a>&lt;</td></tr>
+<tr><th id="108">108</th><td>       <b>typename</b> <span class="namespace">boost::tuples::</span><a class="type" href="../../tuple/detail/tuple_basic.hpp.html#boost::tuples::element" title='boost::tuples::element' data-ref="boost::tuples::element">element</a>&lt;<a class="tu ref" href="#boost::lambda::detail::tuple_element_as_reference::N" title='boost::lambda::detail::tuple_element_as_reference::N' data-ref="boost::lambda::detail::tuple_element_as_reference::N">N</a>, T&gt;::type</td></tr>
+<tr><th id="109">109</th><td>     &gt;::non_const_type <dfn class="typedef" id="boost::lambda::detail::tuple_element_as_reference::type" title='boost::lambda::detail::tuple_element_as_reference::type' data-type='typename boost::tuples::access_traits&lt;typename boost::tuples::element&lt;N, T&gt;::type&gt;::non_const_type' data-ref="boost::lambda::detail::tuple_element_as_reference::type">type</dfn>;</td></tr>
+<tr><th id="110">110</th><td>};</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td><i>// returns the cv and reverence stripped type of a tuple element</i></td></tr>
+<tr><th id="113">113</th><td><b>template</b>&lt;<em>int</em> N, <b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::tuple_element_stripped" title='boost::lambda::detail::tuple_element_stripped' data-ref="boost::lambda::detail::tuple_element_stripped">tuple_element_stripped</dfn> {   </td></tr>
+<tr><th id="114">114</th><td>  <b>typedef</b> <b>typename</b></td></tr>
+<tr><th id="115">115</th><td>     <a class="type" href="#boost::lambda::detail::remove_reference_and_cv" title='boost::lambda::detail::remove_reference_and_cv' data-ref="boost::lambda::detail::remove_reference_and_cv">remove_reference_and_cv</a>&lt;</td></tr>
+<tr><th id="116">116</th><td>       <b>typename</b> <span class="namespace">boost::tuples::</span><a class="type" href="../../tuple/detail/tuple_basic.hpp.html#boost::tuples::element" title='boost::tuples::element' data-ref="boost::tuples::element">element</a>&lt;<a class="tu ref" href="#boost::lambda::detail::tuple_element_stripped::N" title='boost::lambda::detail::tuple_element_stripped::N' data-ref="boost::lambda::detail::tuple_element_stripped::N">N</a>, T&gt;::type</td></tr>
+<tr><th id="117">117</th><td>     &gt;::type <dfn class="typedef" id="boost::lambda::detail::tuple_element_stripped::type" title='boost::lambda::detail::tuple_element_stripped::type' data-type='typename remove_reference_and_cv&lt;typename boost::tuples::element&lt;N, T&gt;::type&gt;::type' data-ref="boost::lambda::detail::tuple_element_stripped::type">type</dfn>;</td></tr>
+<tr><th id="118">118</th><td>};</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td><i>// is_lambda_functor -------------------------------------------------   </i></td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::is_lambda_functor_" title='boost::lambda::detail::is_lambda_functor_' data-ref="boost::lambda::detail::is_lambda_functor_">is_lambda_functor_</dfn> {</td></tr>
+<tr><th id="123">123</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const bool value = false" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>bool</em>, <dfn class="decl" id="boost::lambda::detail::is_lambda_functor_::value" title='boost::lambda::detail::is_lambda_functor_::value' data-ref="boost::lambda::detail::is_lambda_functor_::value">value</dfn> = <b>false</b>);</td></tr>
+<tr><th id="124">124</th><td>};</td></tr>
+<tr><th id="125">125</th><td>   </td></tr>
+<tr><th id="126">126</th><td><b>template</b> &lt;<b>class</b> Arg&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::is_lambda_functor_" title='boost::lambda::detail::is_lambda_functor_' data-ref="boost::lambda::detail::is_lambda_functor_">is_lambda_functor_</dfn>&lt;<a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; &gt; {</td></tr>
+<tr><th id="127">127</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const bool value = true" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>bool</em>, <dfn class="decl" id="boost::lambda::detail::is_lambda_functor_{lambda_functor{type-parameter-0-0}}::value" title='boost::lambda::detail::is_lambda_functor_&lt;lambda_functor&lt;type-parameter-0-0&gt;&gt;::value' data-ref="boost::lambda::detail::is_lambda_functor_{lambda_functor{type-parameter-0-0}}::value">value</dfn> = <b>true</b>);</td></tr>
+<tr><th id="128">128</th><td>};</td></tr>
+<tr><th id="129">129</th><td>   </td></tr>
+<tr><th id="130">130</th><td>} <i>// end detail</i></td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>   </td></tr>
+<tr><th id="133">133</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::is_lambda_functor" title='boost::lambda::is_lambda_functor' data-ref="boost::lambda::is_lambda_functor">is_lambda_functor</dfn> {</td></tr>
+<tr><th id="134">134</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const bool value = detail::is_lambda_functor_&lt; typename detail::remove_reference_and_cv&lt;T&gt;::type &gt;::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>bool</em>, </td></tr>
+<tr><th id="135">135</th><td>     <dfn class="decl" id="boost::lambda::is_lambda_functor::value" title='boost::lambda::is_lambda_functor::value' data-ref="boost::lambda::is_lambda_functor::value">value</dfn> = </td></tr>
+<tr><th id="136">136</th><td>       detail::<a class="type" href="#boost::lambda::detail::is_lambda_functor_" title='boost::lambda::detail::is_lambda_functor_' data-ref="boost::lambda::detail::is_lambda_functor_">is_lambda_functor_</a>&lt;</td></tr>
+<tr><th id="137">137</th><td>         <b>typename</b> detail::<a class="type" href="#boost::lambda::detail::remove_reference_and_cv" title='boost::lambda::detail::remove_reference_and_cv' data-ref="boost::lambda::detail::remove_reference_and_cv">remove_reference_and_cv</a>&lt;T&gt;::type</td></tr>
+<tr><th id="138">138</th><td>       &gt;::value);</td></tr>
+<tr><th id="139">139</th><td>};</td></tr>
+<tr><th id="140">140</th><td>   </td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><i>// -- parameter_traits_ ---------------------------------------------</i></td></tr>
+<tr><th id="145">145</th><td><i></i></td></tr>
+<tr><th id="146">146</th><td><i>// An internal parameter type traits class that respects</i></td></tr>
+<tr><th id="147">147</th><td><i>// the reference_wrapper class.</i></td></tr>
+<tr><th id="148">148</th><td><i></i></td></tr>
+<tr><th id="149">149</th><td><i>// The conversions performed are:</i></td></tr>
+<tr><th id="150">150</th><td><i>// references -&gt; compile_time_error</i></td></tr>
+<tr><th id="151">151</th><td><i>// T1 -&gt; T2, </i></td></tr>
+<tr><th id="152">152</th><td><i>// reference_wrapper&lt;T&gt; -&gt; T&amp;</i></td></tr>
+<tr><th id="153">153</th><td><i>// const array -&gt; ref to const array</i></td></tr>
+<tr><th id="154">154</th><td><i>// array -&gt; ref to array</i></td></tr>
+<tr><th id="155">155</th><td><i>// function -&gt; ref to function</i></td></tr>
+<tr><th id="156">156</th><td><i></i></td></tr>
+<tr><th id="157">157</th><td><i>// ------------------------------------------------------------------------</i></td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td><b>template</b>&lt;<b>class</b> T1, <b>class</b> T2&gt; </td></tr>
+<tr><th id="160">160</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn> {</td></tr>
+<tr><th id="161">161</th><td>  <b>typedef</b> T2 <dfn class="typedef" id="boost::lambda::detail::parameter_traits_::type" title='boost::lambda::detail::parameter_traits_::type' data-type='T2' data-ref="boost::lambda::detail::parameter_traits_::type">type</dfn>;</td></tr>
+<tr><th id="162">162</th><td>};</td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td><i>// Do not instantiate with reference types</i></td></tr>
+<tr><th id="165">165</th><td><b>template</b>&lt;<b>class</b> T, <b>class</b> Any&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;T&amp;, Any&gt; {</td></tr>
+<tr><th id="166">166</th><td>  <b>typedef</b> <b>typename</b> </td></tr>
+<tr><th id="167">167</th><td>    <a class="type" href="lambda_fwd.hpp.html#boost::lambda::detail::generate_error" title='boost::lambda::detail::generate_error' data-ref="boost::lambda::detail::generate_error">generate_error</a>&lt;T&amp;&gt;::</td></tr>
+<tr><th id="168">168</th><td>      parameter_traits_class_instantiated_with_reference_type <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{type-parameter-0-0&amp;,type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;type-parameter-0-0 &amp;, type-parameter-0-1&gt;::type' data-type='typename generate_error&lt;T &amp;&gt;::parameter_traits_class_instantiated_with_reference_type' data-ref="boost::lambda::detail::parameter_traits_{type-parameter-0-0&amp;,type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="169">169</th><td>};</td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td><i>// Arrays can't be stored as plain types; convert them to references</i></td></tr>
+<tr><th id="172">172</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n, <b>class</b> Any&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;T[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{type-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{type-parameter-0-0[N],type-parameter-0-2}::n">n</a>], Any&gt; {</td></tr>
+<tr><th id="173">173</th><td>  <b>typedef</b> T (&amp;<dfn class="typedef" id="boost::lambda::detail::parameter_traits_{type-parameter-0-0[N],type-parameter-0-2}::type" title='boost::lambda::detail::parameter_traits_&lt;type-parameter-0-0[N], type-parameter-0-2&gt;::type' data-type='T (&amp;)[n]' data-ref="boost::lambda::detail::parameter_traits_{type-parameter-0-0[N],type-parameter-0-2}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{type-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{type-parameter-0-0[N],type-parameter-0-2}::n">n</a>];</td></tr>
+<tr><th id="174">174</th><td>};</td></tr>
+<tr><th id="175">175</th><td>   </td></tr>
+<tr><th id="176">176</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n, <b>class</b> Any&gt; </td></tr>
+<tr><th id="177">177</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>const</em> T[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{consttype-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;const type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{consttype-parameter-0-0[N],type-parameter-0-2}::n">n</a>], Any&gt; {</td></tr>
+<tr><th id="178">178</th><td>  <b>typedef</b> <em>const</em> T (&amp;<dfn class="typedef" id="boost::lambda::detail::parameter_traits_{consttype-parameter-0-0[N],type-parameter-0-2}::type" title='boost::lambda::detail::parameter_traits_&lt;const type-parameter-0-0[N], type-parameter-0-2&gt;::type' data-type='const T (&amp;)[n]' data-ref="boost::lambda::detail::parameter_traits_{consttype-parameter-0-0[N],type-parameter-0-2}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{consttype-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;const type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{consttype-parameter-0-0[N],type-parameter-0-2}::n">n</a>];</td></tr>
+<tr><th id="179">179</th><td>};</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n, <b>class</b> Any&gt; </td></tr>
+<tr><th id="182">182</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>volatile</em> T[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{volatiletype-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;volatile type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{volatiletype-parameter-0-0[N],type-parameter-0-2}::n">n</a>], Any&gt; {</td></tr>
+<tr><th id="183">183</th><td>  <b>typedef</b> <em>volatile</em>  T (&amp;<dfn class="typedef" id="boost::lambda::detail::parameter_traits_{volatiletype-parameter-0-0[N],type-parameter-0-2}::type" title='boost::lambda::detail::parameter_traits_&lt;volatile type-parameter-0-0[N], type-parameter-0-2&gt;::type' data-type='volatile T (&amp;)[n]' data-ref="boost::lambda::detail::parameter_traits_{volatiletype-parameter-0-0[N],type-parameter-0-2}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{volatiletype-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;volatile type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{volatiletype-parameter-0-0[N],type-parameter-0-2}::n">n</a>];</td></tr>
+<tr><th id="184">184</th><td>};</td></tr>
+<tr><th id="185">185</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n, <b>class</b> Any&gt; </td></tr>
+<tr><th id="186">186</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>const</em> <em>volatile</em> T[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{constvolatiletype-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;const volatile type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{constvolatiletype-parameter-0-0[N],type-parameter-0-2}::n">n</a>], Any&gt; {</td></tr>
+<tr><th id="187">187</th><td>  <b>typedef</b> <em>const</em> <em>volatile</em> T (&amp;<dfn class="typedef" id="boost::lambda::detail::parameter_traits_{constvolatiletype-parameter-0-0[N],type-parameter-0-2}::type" title='boost::lambda::detail::parameter_traits_&lt;const volatile type-parameter-0-0[N], type-parameter-0-2&gt;::type' data-type='const volatile T (&amp;)[n]' data-ref="boost::lambda::detail::parameter_traits_{constvolatiletype-parameter-0-0[N],type-parameter-0-2}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::parameter_traits_{constvolatiletype-parameter-0-0[N],type-parameter-0-2}::n" title='boost::lambda::detail::parameter_traits_&lt;const volatile type-parameter-0-0[N], type-parameter-0-2&gt;::n' data-ref="boost::lambda::detail::parameter_traits_{constvolatiletype-parameter-0-0[N],type-parameter-0-2}::n">n</a>];</td></tr>
+<tr><th id="188">188</th><td>};</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td></td></tr>
+<tr><th id="191">191</th><td><b>template</b>&lt;<b>class</b> T, <b>class</b> Any&gt; </td></tr>
+<tr><th id="192">192</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<span class="namespace">boost::</span><a class="type" href="../../core/ref.hpp.html#boost::reference_wrapper" title='boost::reference_wrapper' data-ref="boost::reference_wrapper">reference_wrapper</a>&lt;T&gt;, Any &gt;{</td></tr>
+<tr><th id="193">193</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{reference_wrapper{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;reference_wrapper&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::parameter_traits_{reference_wrapper{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="194">194</th><td>};</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td><b>template</b>&lt;<b>class</b> T, <b>class</b> Any&gt; </td></tr>
+<tr><th id="197">197</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>const</em> <span class="namespace">boost::</span><a class="type" href="../../core/ref.hpp.html#boost::reference_wrapper" title='boost::reference_wrapper' data-ref="boost::reference_wrapper">reference_wrapper</a>&lt;T&gt;, Any &gt;{</td></tr>
+<tr><th id="198">198</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{constreference_wrapper{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;const reference_wrapper&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::parameter_traits_{constreference_wrapper{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="199">199</th><td>};</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td><b>template</b>&lt;<b>class</b> T, <b>class</b> Any&gt; </td></tr>
+<tr><th id="202">202</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>volatile</em> <span class="namespace">boost::</span><a class="type" href="../../core/ref.hpp.html#boost::reference_wrapper" title='boost::reference_wrapper' data-ref="boost::reference_wrapper">reference_wrapper</a>&lt;T&gt;, Any &gt;{</td></tr>
+<tr><th id="203">203</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{volatilereference_wrapper{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;volatile reference_wrapper&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::parameter_traits_{volatilereference_wrapper{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="204">204</th><td>};</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td><b>template</b>&lt;<b>class</b> T, <b>class</b> Any&gt; </td></tr>
+<tr><th id="207">207</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>const</em> <em>volatile</em> <span class="namespace">boost::</span><a class="type" href="../../core/ref.hpp.html#boost::reference_wrapper" title='boost::reference_wrapper' data-ref="boost::reference_wrapper">reference_wrapper</a>&lt;T&gt;, Any &gt;{</td></tr>
+<tr><th id="208">208</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{constvolatilereference_wrapper{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;const volatile reference_wrapper&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::parameter_traits_{constvolatilereference_wrapper{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="209">209</th><td>};</td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td><b>template</b>&lt;<b>class</b> Any&gt;</td></tr>
+<tr><th id="212">212</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>void</em>, Any&gt; {</td></tr>
+<tr><th id="213">213</th><td>  <b>typedef</b> <em>void</em> <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{void,type-parameter-0-0}::type" title='boost::lambda::detail::parameter_traits_&lt;void, type-parameter-0-0&gt;::type' data-type='void' data-ref="boost::lambda::detail::parameter_traits_{void,type-parameter-0-0}::type">type</dfn>;</td></tr>
+<tr><th id="214">214</th><td>};</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td><b>template</b>&lt;<b>class</b> Arg, <b>class</b> Any&gt;</td></tr>
+<tr><th id="217">217</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt;, Any &gt; {</td></tr>
+<tr><th id="218">218</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{lambda_functor{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;lambda_functor&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::detail::parameter_traits_{lambda_functor{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="219">219</th><td>};</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td><b>template</b>&lt;<b>class</b> Arg, <b>class</b> Any&gt;</td></tr>
+<tr><th id="222">222</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>const</em> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt;, Any &gt; {</td></tr>
+<tr><th id="223">223</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{constlambda_functor{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;const lambda_functor&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::detail::parameter_traits_{constlambda_functor{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="224">224</th><td>};</td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td><i>// Are the volatile versions needed?</i></td></tr>
+<tr><th id="227">227</th><td><b>template</b>&lt;<b>class</b> Arg, <b>class</b> Any&gt;</td></tr>
+<tr><th id="228">228</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>volatile</em> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt;, Any &gt; {</td></tr>
+<tr><th id="229">229</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{volatilelambda_functor{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;volatile lambda_functor&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::detail::parameter_traits_{volatilelambda_functor{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="230">230</th><td>};</td></tr>
+<tr><th id="231">231</th><td></td></tr>
+<tr><th id="232">232</th><td><b>template</b>&lt;<b>class</b> Arg, <b>class</b> Any&gt;</td></tr>
+<tr><th id="233">233</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</dfn>&lt;<em>const</em> <em>volatile</em> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt;, Any &gt; {</td></tr>
+<tr><th id="234">234</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::detail::parameter_traits_{constvolatilelambda_functor{type-parameter-0-0},type-parameter-0-1}::type" title='boost::lambda::detail::parameter_traits_&lt;const volatile lambda_functor&lt;type-parameter-0-0&gt;, type-parameter-0-1&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::detail::parameter_traits_{constvolatilelambda_functor{type-parameter-0-0},type-parameter-0-1}::type">type</dfn>;</td></tr>
+<tr><th id="235">235</th><td>};</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+<tr><th id="237">237</th><td>} <i>// end namespace detail</i></td></tr>
+<tr><th id="238">238</th><td></td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td><i>// ------------------------------------------------------------------------</i></td></tr>
+<tr><th id="241">241</th><td><i>// traits classes for lambda expressions (bind functions, operators ...)   </i></td></tr>
+<tr><th id="242">242</th><td><i></i></td></tr>
+<tr><th id="243">243</th><td><i>// must be instantiated with non-reference types</i></td></tr>
+<tr><th id="244">244</th><td><i></i></td></tr>
+<tr><th id="245">245</th><td><i>// The default is const plain type -------------------------</i></td></tr>
+<tr><th id="246">246</th><td><i>// const T -&gt; const T, </i></td></tr>
+<tr><th id="247">247</th><td><i>// T -&gt; const T, </i></td></tr>
+<tr><th id="248">248</th><td><i>// references -&gt; compile_time_error</i></td></tr>
+<tr><th id="249">249</th><td><i>// reference_wrapper&lt;T&gt; -&gt; T&amp;</i></td></tr>
+<tr><th id="250">250</th><td><i>// array -&gt; const ref array</i></td></tr>
+<tr><th id="251">251</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="252">252</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</dfn> {</td></tr>
+<tr><th id="253">253</th><td>  <b>typedef</b> <b>typename</b> </td></tr>
+<tr><th id="254">254</th><td>    <span class="namespace">detail::</span><a class="type" href="#boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</a>&lt;</td></tr>
+<tr><th id="255">255</th><td>      T,</td></tr>
+<tr><th id="256">256</th><td>      <b>typename</b> <span class="namespace">detail::</span><a class="type" href="#boost::lambda::detail::IF" title='boost::lambda::detail::IF' data-ref="boost::lambda::detail::IF">IF</a>&lt;<span class="namespace">boost::</span><a class="type" href="../../type_traits/detail/is_function_cxx_11.hpp.html#boost::is_function" title='boost::is_function' data-ref="boost::is_function">is_function</a>&lt;T&gt;::value, T&amp;, <em>const</em> T&gt;::RET</td></tr>
+<tr><th id="257">257</th><td>    &gt;::type <dfn class="typedef" id="boost::lambda::const_copy_argument::type" title='boost::lambda::const_copy_argument::type' data-type='typename detail::parameter_traits_&lt;T, typename detail::IF&lt;boost::is_function&lt;T&gt;::value, T &amp;, const T&gt;::RET&gt;::type' data-ref="boost::lambda::const_copy_argument::type">type</dfn>;</td></tr>
+<tr><th id="258">258</th><td>};</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td><i>// T may be a function type. Without the IF test, const would be added </i></td></tr>
+<tr><th id="261">261</th><td><i>// to a function type, which is illegal.</i></td></tr>
+<tr><th id="262">262</th><td><i></i></td></tr>
+<tr><th id="263">263</th><td><i>// all arrays are converted to const.</i></td></tr>
+<tr><th id="264">264</th><td><i>// This traits template is used for 'const T&amp;' parameter passing </i></td></tr>
+<tr><th id="265">265</th><td><i>// and thus the knowledge of the potential </i></td></tr>
+<tr><th id="266">266</th><td><i>// non-constness of an actual argument is lost.   </i></td></tr>
+<tr><th id="267">267</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n&gt;  <b>struct</b> <dfn class="type def" id="boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</dfn> &lt;T[<a class="tu ref" href="#boost::lambda::const_copy_argument{type-parameter-0-0[N]}::n" title='boost::lambda::const_copy_argument&lt;type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::const_copy_argument{type-parameter-0-0[N]}::n">n</a>]&gt; {</td></tr>
+<tr><th id="268">268</th><td>  <b>typedef</b> <em>const</em> T (&amp;<dfn class="typedef" id="boost::lambda::const_copy_argument{type-parameter-0-0[N]}::type" title='boost::lambda::const_copy_argument&lt;type-parameter-0-0[N]&gt;::type' data-type='const T (&amp;)[n]' data-ref="boost::lambda::const_copy_argument{type-parameter-0-0[N]}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::const_copy_argument{type-parameter-0-0[N]}::n" title='boost::lambda::const_copy_argument&lt;type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::const_copy_argument{type-parameter-0-0[N]}::n">n</a>];</td></tr>
+<tr><th id="269">269</th><td>};</td></tr>
+<tr><th id="270">270</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n&gt;  <b>struct</b> <dfn class="type def" id="boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</dfn> &lt;<em>volatile</em> T[<a class="tu ref" href="#boost::lambda::const_copy_argument{volatiletype-parameter-0-0[N]}::n" title='boost::lambda::const_copy_argument&lt;volatile type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::const_copy_argument{volatiletype-parameter-0-0[N]}::n">n</a>]&gt; {</td></tr>
+<tr><th id="271">271</th><td>     <b>typedef</b> <em>const</em> <em>volatile</em> T (&amp;<dfn class="typedef" id="boost::lambda::const_copy_argument{volatiletype-parameter-0-0[N]}::type" title='boost::lambda::const_copy_argument&lt;volatile type-parameter-0-0[N]&gt;::type' data-type='const volatile T (&amp;)[n]' data-ref="boost::lambda::const_copy_argument{volatiletype-parameter-0-0[N]}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::const_copy_argument{volatiletype-parameter-0-0[N]}::n" title='boost::lambda::const_copy_argument&lt;volatile type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::const_copy_argument{volatiletype-parameter-0-0[N]}::n">n</a>];</td></tr>
+<tr><th id="272">272</th><td>};</td></tr>
+<tr><th id="273">273</th><td>   </td></tr>
+<tr><th id="274">274</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="275">275</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</dfn>&lt;T&amp;&gt; {};</td></tr>
+<tr><th id="276">276</th><td><i>// do not instantiate with references</i></td></tr>
+<tr><th id="277">277</th><td><i>  //  typedef typename detail::generate_error&lt;T&amp;&gt;::references_not_allowed type;</i></td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td></td></tr>
+<tr><th id="280">280</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="281">281</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument"><a class="type" href="#boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</a></dfn>&lt;<em>void</em>&gt; {</td></tr>
+<tr><th id="282">282</th><td>  <b>typedef</b> <em>void</em> <dfn class="typedef" id="boost::lambda::const_copy_argument{void}::type" title='boost::lambda::const_copy_argument&lt;void&gt;::type' data-type='void' data-ref="boost::lambda::const_copy_argument{void}::type">type</dfn>;</td></tr>
+<tr><th id="283">283</th><td>};</td></tr>
+<tr><th id="284">284</th><td></td></tr>
+<tr><th id="285">285</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="286">286</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument"><a class="type" href="#boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</a></dfn>&lt;<em>void</em> <em>const</em>&gt; {</td></tr>
+<tr><th id="287">287</th><td>  <b>typedef</b> <em>void</em> <dfn class="typedef" id="boost::lambda::const_copy_argument{constvoid}::type" title='boost::lambda::const_copy_argument&lt;const void&gt;::type' data-type='void' data-ref="boost::lambda::const_copy_argument{constvoid}::type">type</dfn>;</td></tr>
+<tr><th id="288">288</th><td>};</td></tr>
+<tr><th id="289">289</th><td></td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td><i>// Does the same as const_copy_argument, but passes references through as such</i></td></tr>
+<tr><th id="292">292</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="293">293</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::bound_argument_conversion" title='boost::lambda::bound_argument_conversion' data-ref="boost::lambda::bound_argument_conversion">bound_argument_conversion</dfn> {</td></tr>
+<tr><th id="294">294</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="#boost::lambda::const_copy_argument" title='boost::lambda::const_copy_argument' data-ref="boost::lambda::const_copy_argument">const_copy_argument</a>&lt;T&gt;::type <dfn class="typedef" id="boost::lambda::bound_argument_conversion::type" title='boost::lambda::bound_argument_conversion::type' data-type='typename const_copy_argument&lt;T&gt;::type' data-ref="boost::lambda::bound_argument_conversion::type">type</dfn>; </td></tr>
+<tr><th id="295">295</th><td>};</td></tr>
+<tr><th id="296">296</th><td></td></tr>
+<tr><th id="297">297</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="298">298</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::bound_argument_conversion" title='boost::lambda::bound_argument_conversion' data-ref="boost::lambda::bound_argument_conversion">bound_argument_conversion</dfn>&lt;T&amp;&gt; {</td></tr>
+<tr><th id="299">299</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::bound_argument_conversion{type-parameter-0-0&amp;}::type" title='boost::lambda::bound_argument_conversion&lt;type-parameter-0-0 &amp;&gt;::type' data-type='T &amp;' data-ref="boost::lambda::bound_argument_conversion{type-parameter-0-0&amp;}::type">type</dfn>; </td></tr>
+<tr><th id="300">300</th><td>};</td></tr>
+<tr><th id="301">301</th><td>   </td></tr>
+<tr><th id="302">302</th><td><i>// The default is non-const reference -------------------------</i></td></tr>
+<tr><th id="303">303</th><td><i>// const T -&gt; const T&amp;, </i></td></tr>
+<tr><th id="304">304</th><td><i>// T -&gt; T&amp;, </i></td></tr>
+<tr><th id="305">305</th><td><i>// references -&gt; compile_time_error</i></td></tr>
+<tr><th id="306">306</th><td><i>// reference_wrapper&lt;T&gt; -&gt; T&amp;</i></td></tr>
+<tr><th id="307">307</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="308">308</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</dfn> {</td></tr>
+<tr><th id="309">309</th><td>  <b>typedef</b> <b>typename</b> <span class="namespace">detail::</span><a class="type" href="#boost::lambda::detail::parameter_traits_" title='boost::lambda::detail::parameter_traits_' data-ref="boost::lambda::detail::parameter_traits_">parameter_traits_</a>&lt;T, T&amp;&gt;::type <dfn class="typedef" id="boost::lambda::reference_argument::type" title='boost::lambda::reference_argument::type' data-type='typename detail::parameter_traits_&lt;T, T &amp;&gt;::type' data-ref="boost::lambda::reference_argument::type">type</dfn>; </td></tr>
+<tr><th id="310">310</th><td>};</td></tr>
+<tr><th id="311">311</th><td></td></tr>
+<tr><th id="312">312</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="313">313</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</dfn>&lt;T&amp;&gt; {</td></tr>
+<tr><th id="314">314</th><td>  <b>typedef</b> <b>typename</b> <span class="namespace">detail::</span><a class="type" href="lambda_fwd.hpp.html#boost::lambda::detail::generate_error" title='boost::lambda::detail::generate_error' data-ref="boost::lambda::detail::generate_error">generate_error</a>&lt;T&amp;&gt;::references_not_allowed <dfn class="typedef" id="boost::lambda::reference_argument{type-parameter-0-0&amp;}::type" title='boost::lambda::reference_argument&lt;type-parameter-0-0 &amp;&gt;::type' data-type='typename detail::generate_error&lt;T &amp;&gt;::references_not_allowed' data-ref="boost::lambda::reference_argument{type-parameter-0-0&amp;}::type">type</dfn>; </td></tr>
+<tr><th id="315">315</th><td>};</td></tr>
+<tr><th id="316">316</th><td></td></tr>
+<tr><th id="317">317</th><td><b>template</b>&lt;<b>class</b> Arg&gt;</td></tr>
+<tr><th id="318">318</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</dfn>&lt;<a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; &gt; {</td></tr>
+<tr><th id="319">319</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::reference_argument{lambda_functor{type-parameter-0-0}}::type" title='boost::lambda::reference_argument&lt;lambda_functor&lt;type-parameter-0-0&gt;&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::reference_argument{lambda_functor{type-parameter-0-0}}::type">type</dfn>;</td></tr>
+<tr><th id="320">320</th><td>};</td></tr>
+<tr><th id="321">321</th><td></td></tr>
+<tr><th id="322">322</th><td><b>template</b>&lt;<b>class</b> Arg&gt;</td></tr>
+<tr><th id="323">323</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</dfn>&lt;<em>const</em> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; &gt; {</td></tr>
+<tr><th id="324">324</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::reference_argument{constlambda_functor{type-parameter-0-0}}::type" title='boost::lambda::reference_argument&lt;const lambda_functor&lt;type-parameter-0-0&gt;&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::reference_argument{constlambda_functor{type-parameter-0-0}}::type">type</dfn>;</td></tr>
+<tr><th id="325">325</th><td>};</td></tr>
+<tr><th id="326">326</th><td></td></tr>
+<tr><th id="327">327</th><td><i>// Are the volatile versions needed?</i></td></tr>
+<tr><th id="328">328</th><td><b>template</b>&lt;<b>class</b> Arg&gt;</td></tr>
+<tr><th id="329">329</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</dfn>&lt;<em>volatile</em> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; &gt; {</td></tr>
+<tr><th id="330">330</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::reference_argument{volatilelambda_functor{type-parameter-0-0}}::type" title='boost::lambda::reference_argument&lt;volatile lambda_functor&lt;type-parameter-0-0&gt;&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::reference_argument{volatilelambda_functor{type-parameter-0-0}}::type">type</dfn>;</td></tr>
+<tr><th id="331">331</th><td>};</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td><b>template</b>&lt;<b>class</b> Arg&gt;</td></tr>
+<tr><th id="334">334</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</dfn>&lt;<em>const</em> <em>volatile</em> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; &gt; {</td></tr>
+<tr><th id="335">335</th><td>  <b>typedef</b> <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;Arg&gt; <dfn class="typedef" id="boost::lambda::reference_argument{constvolatilelambda_functor{type-parameter-0-0}}::type" title='boost::lambda::reference_argument&lt;const volatile lambda_functor&lt;type-parameter-0-0&gt;&gt;::type' data-type='lambda_functor&lt;Arg&gt;' data-ref="boost::lambda::reference_argument{constvolatilelambda_functor{type-parameter-0-0}}::type">type</dfn>;</td></tr>
+<tr><th id="336">336</th><td>};</td></tr>
+<tr><th id="337">337</th><td></td></tr>
+<tr><th id="338">338</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="339">339</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument"><a class="type" href="#boost::lambda::reference_argument" title='boost::lambda::reference_argument' data-ref="boost::lambda::reference_argument">reference_argument</a></dfn>&lt;<em>void</em>&gt; {</td></tr>
+<tr><th id="340">340</th><td>  <b>typedef</b> <em>void</em> <dfn class="typedef" id="boost::lambda::reference_argument{void}::type" title='boost::lambda::reference_argument&lt;void&gt;::type' data-type='void' data-ref="boost::lambda::reference_argument{void}::type">type</dfn>;</td></tr>
+<tr><th id="341">341</th><td>};</td></tr>
+<tr><th id="342">342</th><td></td></tr>
+<tr><th id="343">343</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="344">344</th><td>   </td></tr>
+<tr><th id="345">345</th><td><i>// Array to pointer conversion</i></td></tr>
+<tr><th id="346">346</th><td><b>template</b> &lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="347">347</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::array_to_pointer" title='boost::lambda::detail::array_to_pointer' data-ref="boost::lambda::detail::array_to_pointer">array_to_pointer</dfn> { </td></tr>
+<tr><th id="348">348</th><td>  <b>typedef</b> T <dfn class="typedef" id="boost::lambda::detail::array_to_pointer::type" title='boost::lambda::detail::array_to_pointer::type' data-type='T' data-ref="boost::lambda::detail::array_to_pointer::type">type</dfn>;</td></tr>
+<tr><th id="349">349</th><td>};</td></tr>
+<tr><th id="350">350</th><td></td></tr>
+<tr><th id="351">351</th><td><b>template</b> &lt;<b>class</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="352">352</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::array_to_pointer" title='boost::lambda::detail::array_to_pointer' data-ref="boost::lambda::detail::array_to_pointer">array_to_pointer</dfn> &lt;<em>const</em> T[<a class="tu ref" href="#boost::lambda::detail::array_to_pointer{consttype-parameter-0-0[N]}::N" title='boost::lambda::detail::array_to_pointer&lt;const type-parameter-0-0[N]&gt;::N' data-ref="boost::lambda::detail::array_to_pointer{consttype-parameter-0-0[N]}::N">N</a>]&gt; { </td></tr>
+<tr><th id="353">353</th><td>  <b>typedef</b> <em>const</em> T* <dfn class="typedef" id="boost::lambda::detail::array_to_pointer{consttype-parameter-0-0[N]}::type" title='boost::lambda::detail::array_to_pointer&lt;const type-parameter-0-0[N]&gt;::type' data-type='const T *' data-ref="boost::lambda::detail::array_to_pointer{consttype-parameter-0-0[N]}::type">type</dfn>;</td></tr>
+<tr><th id="354">354</th><td>};</td></tr>
+<tr><th id="355">355</th><td><b>template</b> &lt;<b>class</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="356">356</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::array_to_pointer" title='boost::lambda::detail::array_to_pointer' data-ref="boost::lambda::detail::array_to_pointer">array_to_pointer</dfn> &lt;T[<a class="tu ref" href="#boost::lambda::detail::array_to_pointer{type-parameter-0-0[N]}::N" title='boost::lambda::detail::array_to_pointer&lt;type-parameter-0-0[N]&gt;::N' data-ref="boost::lambda::detail::array_to_pointer{type-parameter-0-0[N]}::N">N</a>]&gt; { </td></tr>
+<tr><th id="357">357</th><td>  <b>typedef</b> T* <dfn class="typedef" id="boost::lambda::detail::array_to_pointer{type-parameter-0-0[N]}::type" title='boost::lambda::detail::array_to_pointer&lt;type-parameter-0-0[N]&gt;::type' data-type='T *' data-ref="boost::lambda::detail::array_to_pointer{type-parameter-0-0[N]}::type">type</dfn>;</td></tr>
+<tr><th id="358">358</th><td>};</td></tr>
+<tr><th id="359">359</th><td></td></tr>
+<tr><th id="360">360</th><td><b>template</b> &lt;<b>class</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="361">361</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::array_to_pointer" title='boost::lambda::detail::array_to_pointer' data-ref="boost::lambda::detail::array_to_pointer">array_to_pointer</dfn> &lt;<em>const</em> T (&amp;) [<a class="tu ref" href="#boost::lambda::detail::array_to_pointer{consttype-parameter-0-0(&amp;)[N]}::N" title='boost::lambda::detail::array_to_pointer&lt;const type-parameter-0-0 (&amp;)[N]&gt;::N' data-ref="boost::lambda::detail::array_to_pointer{consttype-parameter-0-0(&amp;)[N]}::N">N</a>]&gt; { </td></tr>
+<tr><th id="362">362</th><td>  <b>typedef</b> <em>const</em> T* <dfn class="typedef" id="boost::lambda::detail::array_to_pointer{consttype-parameter-0-0(&amp;)[N]}::type" title='boost::lambda::detail::array_to_pointer&lt;const type-parameter-0-0 (&amp;)[N]&gt;::type' data-type='const T *' data-ref="boost::lambda::detail::array_to_pointer{consttype-parameter-0-0(&amp;)[N]}::type">type</dfn>;</td></tr>
+<tr><th id="363">363</th><td>};</td></tr>
+<tr><th id="364">364</th><td><b>template</b> &lt;<b>class</b> T, <em>int</em> N&gt;</td></tr>
+<tr><th id="365">365</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::array_to_pointer" title='boost::lambda::detail::array_to_pointer' data-ref="boost::lambda::detail::array_to_pointer">array_to_pointer</dfn> &lt;T (&amp;) [<a class="tu ref" href="#boost::lambda::detail::array_to_pointer{type-parameter-0-0(&amp;)[N]}::N" title='boost::lambda::detail::array_to_pointer&lt;type-parameter-0-0 (&amp;)[N]&gt;::N' data-ref="boost::lambda::detail::array_to_pointer{type-parameter-0-0(&amp;)[N]}::N">N</a>]&gt; { </td></tr>
+<tr><th id="366">366</th><td>  <b>typedef</b> T* <dfn class="typedef" id="boost::lambda::detail::array_to_pointer{type-parameter-0-0(&amp;)[N]}::type" title='boost::lambda::detail::array_to_pointer&lt;type-parameter-0-0 (&amp;)[N]&gt;::type' data-type='T *' data-ref="boost::lambda::detail::array_to_pointer{type-parameter-0-0(&amp;)[N]}::type">type</dfn>;</td></tr>
+<tr><th id="367">367</th><td>};</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td></td></tr>
+<tr><th id="370">370</th><td><i>// ---------------------------------------------------------------------------</i></td></tr>
+<tr><th id="371">371</th><td><i>// The call_traits for bind</i></td></tr>
+<tr><th id="372">372</th><td><i>// Respects the reference_wrapper class.</i></td></tr>
+<tr><th id="373">373</th><td><i></i></td></tr>
+<tr><th id="374">374</th><td><i>// These templates are used outside of bind functions as well.</i></td></tr>
+<tr><th id="375">375</th><td><i>// the bind_tuple_mapper provides a shorter notation for default</i></td></tr>
+<tr><th id="376">376</th><td><i>// bound argument storing semantics, if all arguments are treated</i></td></tr>
+<tr><th id="377">377</th><td><i>// uniformly.</i></td></tr>
+<tr><th id="378">378</th><td><i></i></td></tr>
+<tr><th id="379">379</th><td><i>// from template&lt;class T&gt; foo(const T&amp; t) : bind_traits&lt;const T&gt;::type</i></td></tr>
+<tr><th id="380">380</th><td><i>// from template&lt;class T&gt; foo(T&amp; t) : bind_traits&lt;T&gt;::type</i></td></tr>
+<tr><th id="381">381</th><td><i></i></td></tr>
+<tr><th id="382">382</th><td><i>// Conversions:</i></td></tr>
+<tr><th id="383">383</th><td><i>// T -&gt; const T,</i></td></tr>
+<tr><th id="384">384</th><td><i>// cv T -&gt; cv T, </i></td></tr>
+<tr><th id="385">385</th><td><i>// T&amp; -&gt; T&amp; </i></td></tr>
+<tr><th id="386">386</th><td><i>// reference_wrapper&lt;T&gt; -&gt; T&amp;</i></td></tr>
+<tr><th id="387">387</th><td><i>// const reference_wrapper&lt;T&gt; -&gt; T&amp;</i></td></tr>
+<tr><th id="388">388</th><td><i>// array -&gt; const ref array</i></td></tr>
+<tr><th id="389">389</th><td><i></i></td></tr>
+<tr><th id="390">390</th><td><i>// make bound arguments const, this is a deliberate design choice, the</i></td></tr>
+<tr><th id="391">391</th><td><i>// purpose is to prevent side effects to bound arguments that are stored</i></td></tr>
+<tr><th id="392">392</th><td><i>// as copies</i></td></tr>
+<tr><th id="393">393</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="394">394</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn> {</td></tr>
+<tr><th id="395">395</th><td>  <b>typedef</b> <em>const</em> T <dfn class="typedef" id="boost::lambda::detail::bind_traits::type" title='boost::lambda::detail::bind_traits::type' data-type='const T' data-ref="boost::lambda::detail::bind_traits::type">type</dfn>; </td></tr>
+<tr><th id="396">396</th><td>};</td></tr>
+<tr><th id="397">397</th><td></td></tr>
+<tr><th id="398">398</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="399">399</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;T&amp;&gt; {</td></tr>
+<tr><th id="400">400</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0&amp;}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 &amp;&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0&amp;}::type">type</dfn>; </td></tr>
+<tr><th id="401">401</th><td>};</td></tr>
+<tr><th id="402">402</th><td></td></tr>
+<tr><th id="403">403</th><td><i>// null_types are an exception, we always want to store them as non const</i></td></tr>
+<tr><th id="404">404</th><td><i>// so that other templates can assume that null_type is always without const</i></td></tr>
+<tr><th id="405">405</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="406">406</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits"><a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a></dfn>&lt;null_type&gt; {</td></tr>
+<tr><th id="407">407</th><td>  <b>typedef</b> null_type <dfn class="typedef" id="boost::lambda::detail::bind_traits{boost::tuples::null_type}::type" title='boost::lambda::detail::bind_traits&lt;boost::tuples::null_type&gt;::type' data-type='null_type' data-ref="boost::lambda::detail::bind_traits{boost::tuples::null_type}::type">type</dfn>;</td></tr>
+<tr><th id="408">408</th><td>};</td></tr>
+<tr><th id="409">409</th><td></td></tr>
+<tr><th id="410">410</th><td><i>// the bind_tuple_mapper, bind_type_generators may </i></td></tr>
+<tr><th id="411">411</th><td><i>// introduce const to null_type</i></td></tr>
+<tr><th id="412">412</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="413">413</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits"><a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a></dfn>&lt;<em>const</em> null_type&gt; {</td></tr>
+<tr><th id="414">414</th><td>  <b>typedef</b> null_type <dfn class="typedef" id="boost::lambda::detail::bind_traits{constboost::tuples::null_type}::type" title='boost::lambda::detail::bind_traits&lt;const boost::tuples::null_type&gt;::type' data-type='null_type' data-ref="boost::lambda::detail::bind_traits{constboost::tuples::null_type}::type">type</dfn>;</td></tr>
+<tr><th id="415">415</th><td>};</td></tr>
+<tr><th id="416">416</th><td></td></tr>
+<tr><th id="417">417</th><td><i>// Arrays can't be stored as plain types; convert them to references.</i></td></tr>
+<tr><th id="418">418</th><td><i>// All arrays are converted to const. This is because bind takes its</i></td></tr>
+<tr><th id="419">419</th><td><i>// parameters as const T&amp; and thus the knowledge of the potential </i></td></tr>
+<tr><th id="420">420</th><td><i>// non-constness of actual argument is lost.</i></td></tr>
+<tr><th id="421">421</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n&gt;  <b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn> &lt;T[<a class="tu ref" href="#boost::lambda::detail::bind_traits{type-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0[N]}::n">n</a>]&gt; {</td></tr>
+<tr><th id="422">422</th><td>  <b>typedef</b> <em>const</em> T (&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0[N]}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0[N]&gt;::type' data-type='const T (&amp;)[n]' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0[N]}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::bind_traits{type-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0[N]}::n">n</a>];</td></tr>
+<tr><th id="423">423</th><td>};</td></tr>
+<tr><th id="424">424</th><td></td></tr>
+<tr><th id="425">425</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n&gt; </td></tr>
+<tr><th id="426">426</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;<em>const</em> T[<a class="tu ref" href="#boost::lambda::detail::bind_traits{consttype-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;const type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{consttype-parameter-0-0[N]}::n">n</a>]&gt; {</td></tr>
+<tr><th id="427">427</th><td>  <b>typedef</b> <em>const</em> T (&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{consttype-parameter-0-0[N]}::type" title='boost::lambda::detail::bind_traits&lt;const type-parameter-0-0[N]&gt;::type' data-type='const T (&amp;)[n]' data-ref="boost::lambda::detail::bind_traits{consttype-parameter-0-0[N]}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::bind_traits{consttype-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;const type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{consttype-parameter-0-0[N]}::n">n</a>];</td></tr>
+<tr><th id="428">428</th><td>};</td></tr>
+<tr><th id="429">429</th><td></td></tr>
+<tr><th id="430">430</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n&gt;  <b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;<em>volatile</em> T[<a class="tu ref" href="#boost::lambda::detail::bind_traits{volatiletype-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;volatile type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{volatiletype-parameter-0-0[N]}::n">n</a>]&gt; {</td></tr>
+<tr><th id="431">431</th><td>  <b>typedef</b> <em>const</em> <em>volatile</em> T (&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{volatiletype-parameter-0-0[N]}::type" title='boost::lambda::detail::bind_traits&lt;volatile type-parameter-0-0[N]&gt;::type' data-type='const volatile T (&amp;)[n]' data-ref="boost::lambda::detail::bind_traits{volatiletype-parameter-0-0[N]}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::bind_traits{volatiletype-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;volatile type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{volatiletype-parameter-0-0[N]}::n">n</a>];</td></tr>
+<tr><th id="432">432</th><td>};</td></tr>
+<tr><th id="433">433</th><td></td></tr>
+<tr><th id="434">434</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> n&gt; </td></tr>
+<tr><th id="435">435</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;<em>const</em> <em>volatile</em> T[<a class="tu ref" href="#boost::lambda::detail::bind_traits{constvolatiletype-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;const volatile type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{constvolatiletype-parameter-0-0[N]}::n">n</a>]&gt; {</td></tr>
+<tr><th id="436">436</th><td>  <b>typedef</b> <em>const</em> <em>volatile</em> T (&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{constvolatiletype-parameter-0-0[N]}::type" title='boost::lambda::detail::bind_traits&lt;const volatile type-parameter-0-0[N]&gt;::type' data-type='const volatile T (&amp;)[n]' data-ref="boost::lambda::detail::bind_traits{constvolatiletype-parameter-0-0[N]}::type">type</dfn>)[<a class="tu ref" href="#boost::lambda::detail::bind_traits{constvolatiletype-parameter-0-0[N]}::n" title='boost::lambda::detail::bind_traits&lt;const volatile type-parameter-0-0[N]&gt;::n' data-ref="boost::lambda::detail::bind_traits{constvolatiletype-parameter-0-0[N]}::n">n</a>];</td></tr>
+<tr><th id="437">437</th><td>};</td></tr>
+<tr><th id="438">438</th><td></td></tr>
+<tr><th id="439">439</th><td><b>template</b>&lt;<b>class</b> R&gt;</td></tr>
+<tr><th id="440">440</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R()&gt; {</td></tr>
+<tr><th id="441">441</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0()}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 ()&gt;::type' data-type='R (&amp;)()' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0()}::type">type</dfn>)();</td></tr>
+<tr><th id="442">442</th><td>};</td></tr>
+<tr><th id="443">443</th><td></td></tr>
+<tr><th id="444">444</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1&gt;</td></tr>
+<tr><th id="445">445</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1)&gt; {</td></tr>
+<tr><th id="446">446</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1)}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1)&gt;::type' data-type='R (&amp;)(Arg1)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1)}::type">type</dfn>)(Arg1);</td></tr>
+<tr><th id="447">447</th><td>};</td></tr>
+<tr><th id="448">448</th><td></td></tr>
+<tr><th id="449">449</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2&gt;</td></tr>
+<tr><th id="450">450</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2)&gt; {</td></tr>
+<tr><th id="451">451</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2)}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2)&gt;::type' data-type='R (&amp;)(Arg1, Arg2)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2)}::type">type</dfn>)(Arg1, Arg2);</td></tr>
+<tr><th id="452">452</th><td>};</td></tr>
+<tr><th id="453">453</th><td></td></tr>
+<tr><th id="454">454</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3&gt;</td></tr>
+<tr><th id="455">455</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3)&gt; {</td></tr>
+<tr><th id="456">456</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3)}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3)}::type">type</dfn>)(Arg1, Arg2, Arg3);</td></tr>
+<tr><th id="457">457</th><td>};</td></tr>
+<tr><th id="458">458</th><td></td></tr>
+<tr><th id="459">459</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3, <b>class</b> Arg4&gt;</td></tr>
+<tr><th id="460">460</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3, Arg4)&gt; {</td></tr>
+<tr><th id="461">461</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4)}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3, Arg4)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4)}::type">type</dfn>)(Arg1, Arg2, Arg3, Arg4);</td></tr>
+<tr><th id="462">462</th><td>};</td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3, <b>class</b> Arg4, <b>class</b> Arg5&gt;</td></tr>
+<tr><th id="465">465</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3, Arg4, Arg5)&gt; {</td></tr>
+<tr><th id="466">466</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5)}::type" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3, Arg4, Arg5)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5)}::type">type</dfn>)(Arg1, Arg2, Arg3, Arg4, Arg5);</td></tr>
+<tr><th id="467">467</th><td>};</td></tr>
+<tr><th id="468">468</th><td></td></tr>
+<tr><th id="469">469</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3, <b>class</b> Arg4, <b>class</b> Arg5, <b>class</b> Arg6&gt;</td></tr>
+<tr><th id="470">470</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6)&gt; {</td></tr>
+<tr><th id="471">471</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t8275157" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t8275157">type</dfn>)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6);</td></tr>
+<tr><th id="472">472</th><td>};</td></tr>
+<tr><th id="473">473</th><td></td></tr>
+<tr><th id="474">474</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3, <b>class</b> Arg4, <b>class</b> Arg5, <b>class</b> Arg6, <b>class</b> Arg7&gt;</td></tr>
+<tr><th id="475">475</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7)&gt; {</td></tr>
+<tr><th id="476">476</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t11352001" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6, type-parameter-0-7)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t11352001">type</dfn>)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7);</td></tr>
+<tr><th id="477">477</th><td>};</td></tr>
+<tr><th id="478">478</th><td></td></tr>
+<tr><th id="479">479</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3, <b>class</b> Arg4, <b>class</b> Arg5, <b>class</b> Arg6, <b>class</b> Arg7, <b>class</b> Arg8&gt;</td></tr>
+<tr><th id="480">480</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8)&gt; {</td></tr>
+<tr><th id="481">481</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t15359673" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6, type-parameter-0-7, type-parameter-0-8)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t15359673">type</dfn>)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8);</td></tr>
+<tr><th id="482">482</th><td>};</td></tr>
+<tr><th id="483">483</th><td></td></tr>
+<tr><th id="484">484</th><td><b>template</b>&lt;<b>class</b> R, <b>class</b> Arg1, <b>class</b> Arg2, <b>class</b> Arg3, <b>class</b> Arg4, <b>class</b> Arg5, <b>class</b> Arg6, <b>class</b> Arg7, <b>class</b> Arg8, <b>class</b> Arg9&gt;</td></tr>
+<tr><th id="485">485</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;R(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9)&gt; {</td></tr>
+<tr><th id="486">486</th><td>    <b>typedef</b> R(&amp;<dfn class="typedef" id="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t9173513" title='boost::lambda::detail::bind_traits&lt;type-parameter-0-0 (type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6, type-parameter-0-7, type-parameter-0-8, type-parameter-0-9)&gt;::type' data-type='R (&amp;)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9)' data-ref="boost::lambda::detail::bind_traits{type-parameter-0-0(type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0-5,t9173513">type</dfn>)(Arg1, Arg2, Arg3, Arg4, Arg5, Arg6, Arg7, Arg8, Arg9);</td></tr>
+<tr><th id="487">487</th><td>};</td></tr>
+<tr><th id="488">488</th><td></td></tr>
+<tr><th id="489">489</th><td><b>template</b>&lt;<b>class</b> T&gt; </td></tr>
+<tr><th id="490">490</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;<a class="type" href="../../core/ref.hpp.html#boost::reference_wrapper" title='boost::reference_wrapper' data-ref="boost::reference_wrapper">reference_wrapper</a>&lt;T&gt; &gt;{</td></tr>
+<tr><th id="491">491</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::bind_traits{reference_wrapper{type-parameter-0-0}}::type" title='boost::lambda::detail::bind_traits&lt;reference_wrapper&lt;type-parameter-0-0&gt;&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::bind_traits{reference_wrapper{type-parameter-0-0}}::type">type</dfn>;</td></tr>
+<tr><th id="492">492</th><td>};</td></tr>
+<tr><th id="493">493</th><td></td></tr>
+<tr><th id="494">494</th><td><b>template</b>&lt;<b>class</b> T&gt; </td></tr>
+<tr><th id="495">495</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</dfn>&lt;<em>const</em> <a class="type" href="../../core/ref.hpp.html#boost::reference_wrapper" title='boost::reference_wrapper' data-ref="boost::reference_wrapper">reference_wrapper</a>&lt;T&gt; &gt;{</td></tr>
+<tr><th id="496">496</th><td>  <b>typedef</b> T&amp; <dfn class="typedef" id="boost::lambda::detail::bind_traits{constreference_wrapper{type-parameter-0-0}}::type" title='boost::lambda::detail::bind_traits&lt;const reference_wrapper&lt;type-parameter-0-0&gt;&gt;::type' data-type='T &amp;' data-ref="boost::lambda::detail::bind_traits{constreference_wrapper{type-parameter-0-0}}::type">type</dfn>;</td></tr>
+<tr><th id="497">497</th><td>};</td></tr>
+<tr><th id="498">498</th><td></td></tr>
+<tr><th id="499">499</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="500">500</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits"><a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a></dfn>&lt;<em>void</em>&gt; {</td></tr>
+<tr><th id="501">501</th><td>  <b>typedef</b> <em>void</em> <dfn class="typedef" id="boost::lambda::detail::bind_traits{void}::type" title='boost::lambda::detail::bind_traits&lt;void&gt;::type' data-type='void' data-ref="boost::lambda::detail::bind_traits{void}::type">type</dfn>;</td></tr>
+<tr><th id="502">502</th><td>};</td></tr>
+<tr><th id="503">503</th><td></td></tr>
+<tr><th id="504">504</th><td></td></tr>
+<tr><th id="505">505</th><td></td></tr>
+<tr><th id="506">506</th><td><b>template</b> &lt;</td></tr>
+<tr><th id="507">507</th><td>  <b>class</b> T0 = null_type, <b>class</b> T1 = null_type, <b>class</b> T2 = null_type, </td></tr>
+<tr><th id="508">508</th><td>  <b>class</b> T3 = null_type, <b>class</b> T4 = null_type, <b>class</b> T5 = null_type, </td></tr>
+<tr><th id="509">509</th><td>  <b>class</b> T6 = null_type, <b>class</b> T7 = null_type, <b>class</b> T8 = null_type, </td></tr>
+<tr><th id="510">510</th><td>  <b>class</b> T9 = null_type</td></tr>
+<tr><th id="511">511</th><td>&gt;</td></tr>
+<tr><th id="512">512</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::bind_tuple_mapper" title='boost::lambda::detail::bind_tuple_mapper' data-ref="boost::lambda::detail::bind_tuple_mapper">bind_tuple_mapper</dfn> {</td></tr>
+<tr><th id="513">513</th><td>  <b>typedef</b></td></tr>
+<tr><th id="514">514</th><td>    <a class="type" href="../../fusion/support/tag_of.hpp.html#boost::tuples::tuple" title='boost::tuples::tuple' data-ref="boost::tuples::tuple">tuple</a>&lt;<b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T0&gt;::type, </td></tr>
+<tr><th id="515">515</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T1&gt;::type, </td></tr>
+<tr><th id="516">516</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T2&gt;::type, </td></tr>
+<tr><th id="517">517</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T3&gt;::type, </td></tr>
+<tr><th id="518">518</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T4&gt;::type, </td></tr>
+<tr><th id="519">519</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T5&gt;::type, </td></tr>
+<tr><th id="520">520</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T6&gt;::type, </td></tr>
+<tr><th id="521">521</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T7&gt;::type,</td></tr>
+<tr><th id="522">522</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T8&gt;::type,</td></tr>
+<tr><th id="523">523</th><td>          <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T9&gt;::type&gt; <dfn class="typedef" id="boost::lambda::detail::bind_tuple_mapper::type" title='boost::lambda::detail::bind_tuple_mapper::type' data-type='tuple&lt;typename bind_traits&lt;T0&gt;::type, typename bind_traits&lt;T1&gt;::type, typename bind_traits&lt;T2&gt;::type, typename bind_traits&lt;T3&gt;::type, typename bind_traits&lt;T4&gt;::type, typename bind_traits&lt;T5&gt;::type, typename bind_traits&lt;T6&gt;::type, typename bind_traits&lt;T7&gt;::type, typename bind_traits&lt;T8&gt;::type, typename bind_traits&lt;T9&gt;::type&gt;' data-ref="boost::lambda::detail::bind_tuple_mapper::type">type</dfn>;</td></tr>
+<tr><th id="524">524</th><td>};</td></tr>
+<tr><th id="525">525</th><td></td></tr>
+<tr><th id="526">526</th><td><i>// bind_traits, except map const T&amp; -&gt; const T</i></td></tr>
+<tr><th id="527">527</th><td><i>  // this is needed e.g. in currying. Const reference arguments can</i></td></tr>
+<tr><th id="528">528</th><td><i>  // refer to temporaries, so it is not safe to store them as references.</i></td></tr>
+<tr><th id="529">529</th><td>  <b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::remove_const_reference" title='boost::lambda::detail::remove_const_reference' data-ref="boost::lambda::detail::remove_const_reference">remove_const_reference</dfn> {</td></tr>
+<tr><th id="530">530</th><td>    <b>typedef</b> <b>typename</b> <a class="type" href="#boost::lambda::detail::bind_traits" title='boost::lambda::detail::bind_traits' data-ref="boost::lambda::detail::bind_traits">bind_traits</a>&lt;T&gt;::type <dfn class="typedef" id="boost::lambda::detail::remove_const_reference::type" title='boost::lambda::detail::remove_const_reference::type' data-type='typename bind_traits&lt;T&gt;::type' data-ref="boost::lambda::detail::remove_const_reference::type">type</dfn>;</td></tr>
+<tr><th id="531">531</th><td>  };</td></tr>
+<tr><th id="532">532</th><td></td></tr>
+<tr><th id="533">533</th><td>  <b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::detail::remove_const_reference" title='boost::lambda::detail::remove_const_reference' data-ref="boost::lambda::detail::remove_const_reference">remove_const_reference</dfn>&lt;<em>const</em> T&amp;&gt; {</td></tr>
+<tr><th id="534">534</th><td>    <b>typedef</b> <em>const</em> T <dfn class="typedef" id="boost::lambda::detail::remove_const_reference{consttype-parameter-0-0&amp;}::type" title='boost::lambda::detail::remove_const_reference&lt;const type-parameter-0-0 &amp;&gt;::type' data-type='const T' data-ref="boost::lambda::detail::remove_const_reference{consttype-parameter-0-0&amp;}::type">type</dfn>;</td></tr>
+<tr><th id="535">535</th><td>  };</td></tr>
+<tr><th id="536">536</th><td></td></tr>
+<tr><th id="537">537</th><td></td></tr>
+<tr><th id="538">538</th><td><i>// maps the bind argument types to the resulting lambda functor type</i></td></tr>
+<tr><th id="539">539</th><td><b>template</b> &lt;</td></tr>
+<tr><th id="540">540</th><td>  <b>class</b> T0 = null_type, <b>class</b> T1 = null_type, <b>class</b> T2 = null_type, </td></tr>
+<tr><th id="541">541</th><td>  <b>class</b> T3 = null_type, <b>class</b> T4 = null_type, <b>class</b> T5 = null_type, </td></tr>
+<tr><th id="542">542</th><td>  <b>class</b> T6 = null_type, <b>class</b> T7 = null_type, <b>class</b> T8 = null_type, </td></tr>
+<tr><th id="543">543</th><td>  <b>class</b> T9 = null_type</td></tr>
+<tr><th id="544">544</th><td>&gt;</td></tr>
+<tr><th id="545">545</th><td><b>class</b> <dfn class="type def" id="boost::lambda::detail::bind_type_generator" title='boost::lambda::detail::bind_type_generator' data-ref="boost::lambda::detail::bind_type_generator">bind_type_generator</dfn> {</td></tr>
+<tr><th id="546">546</th><td></td></tr>
+<tr><th id="547">547</th><td>  <b>typedef</b> <b>typename</b></td></tr>
+<tr><th id="548">548</th><td>  <span class="namespace">detail::</span><a class="type" href="#boost::lambda::detail::bind_tuple_mapper" title='boost::lambda::detail::bind_tuple_mapper' data-ref="boost::lambda::detail::bind_tuple_mapper">bind_tuple_mapper</a>&lt;</td></tr>
+<tr><th id="549">549</th><td>    T0, T1, T2, T3, T4, T5, T6, T7, T8, T9</td></tr>
+<tr><th id="550">550</th><td>  &gt;::type <dfn class="typedef" id="boost::lambda::detail::bind_type_generator::args_t" title='boost::lambda::detail::bind_type_generator::args_t' data-type='typename detail::bind_tuple_mapper&lt;T0, T1, T2, T3, T4, T5, T6, T7, T8, T9&gt;::type' data-ref="boost::lambda::detail::bind_type_generator::args_t">args_t</dfn>;</td></tr>
+<tr><th id="551">551</th><td></td></tr>
+<tr><th id="552">552</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int nof_elems = boost::tuples::length&lt;args_t&gt;::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::bind_type_generator::nof_elems" title='boost::lambda::detail::bind_type_generator::nof_elems' data-ref="boost::lambda::detail::bind_type_generator::nof_elems">nof_elems</dfn> = boost::tuples::<a class="type" href="../../tuple/detail/tuple_basic.hpp.html#boost::tuples::length" title='boost::tuples::length' data-ref="boost::tuples::length">length</a>&lt;<a class="typedef" href="#boost::lambda::detail::bind_type_generator::args_t" title='boost::lambda::detail::bind_type_generator::args_t' data-type='typename detail::bind_tuple_mapper&lt;T0, T1, T2, T3, T4, T5, T6, T7, T8, T9&gt;::type' data-ref="boost::lambda::detail::bind_type_generator::args_t">args_t</a>&gt;::value);</td></tr>
+<tr><th id="553">553</th><td></td></tr>
+<tr><th id="554">554</th><td>  <b>typedef</b> </td></tr>
+<tr><th id="555">555</th><td>    <a class="type" href="lambda_fwd.hpp.html#boost::lambda::action" title='boost::lambda::action' data-ref="boost::lambda::action">action</a>&lt;</td></tr>
+<tr><th id="556">556</th><td>      <a class="ref" href="#552" title='boost::lambda::detail::bind_type_generator::nof_elems' data-ref="boost::lambda::detail::bind_type_generator::nof_elems">nof_elems</a>, </td></tr>
+<tr><th id="557">557</th><td>      <a class="type" href="actions.hpp.html#boost::lambda::function_action" title='boost::lambda::function_action' data-ref="boost::lambda::function_action">function_action</a>&lt;<a class="ref" href="#552" title='boost::lambda::detail::bind_type_generator::nof_elems' data-ref="boost::lambda::detail::bind_type_generator::nof_elems">nof_elems</a>&gt;</td></tr>
+<tr><th id="558">558</th><td>    &gt; <dfn class="typedef" id="boost::lambda::detail::bind_type_generator::action_type" title='boost::lambda::detail::bind_type_generator::action_type' data-type='action&lt;nof_elems, function_action&lt;nof_elems&gt;&gt;' data-ref="boost::lambda::detail::bind_type_generator::action_type">action_type</dfn>;</td></tr>
+<tr><th id="559">559</th><td></td></tr>
+<tr><th id="560">560</th><td><b>public</b>:</td></tr>
+<tr><th id="561">561</th><td>  <b>typedef</b></td></tr>
+<tr><th id="562">562</th><td>    <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;</td></tr>
+<tr><th id="563">563</th><td>      <a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor_base" title='boost::lambda::lambda_functor_base' data-ref="boost::lambda::lambda_functor_base">lambda_functor_base</a>&lt;</td></tr>
+<tr><th id="564">564</th><td>        <a class="typedef" href="#boost::lambda::detail::bind_type_generator::action_type" title='boost::lambda::detail::bind_type_generator::action_type' data-type='action&lt;nof_elems, function_action&lt;nof_elems&gt;&gt;' data-ref="boost::lambda::detail::bind_type_generator::action_type">action_type</a>, </td></tr>
+<tr><th id="565">565</th><td>        <a class="typedef" href="#boost::lambda::detail::bind_type_generator::args_t" title='boost::lambda::detail::bind_type_generator::args_t' data-type='typename detail::bind_tuple_mapper&lt;T0, T1, T2, T3, T4, T5, T6, T7, T8, T9&gt;::type' data-ref="boost::lambda::detail::bind_type_generator::args_t">args_t</a></td></tr>
+<tr><th id="566">566</th><td>      &gt;</td></tr>
+<tr><th id="567">567</th><td>    &gt; <dfn class="typedef" id="boost::lambda::detail::bind_type_generator::type" title='boost::lambda::detail::bind_type_generator::type' data-type='lambda_functor&lt;lambda_functor_base&lt;action_type, args_t&gt;&gt;' data-ref="boost::lambda::detail::bind_type_generator::type">type</dfn>; </td></tr>
+<tr><th id="568">568</th><td>    </td></tr>
+<tr><th id="569">569</th><td>};</td></tr>
+<tr><th id="570">570</th><td></td></tr>
+<tr><th id="571">571</th><td></td></tr>
+<tr><th id="572">572</th><td>   </td></tr>
+<tr><th id="573">573</th><td>} <i>// detail</i></td></tr>
+<tr><th id="574">574</th><td>   </td></tr>
+<tr><th id="575">575</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>inline</b> <em>const</em> T&amp;  <dfn class="decl def fn" id="_ZN5boost6lambda10make_constERKT_" title='boost::lambda::make_const' data-ref="_ZN5boost6lambda10make_constERKT_">make_const</dfn>(<em>const</em> T&amp; <dfn class="local col9 decl" id="919t" title='t' data-type='const T &amp;' data-ref="919t">t</dfn>) { <b>return</b> <a class="local col9 ref" href="#919t" title='t' data-ref="919t">t</a>; }</td></tr>
+<tr><th id="576">576</th><td></td></tr>
+<tr><th id="577">577</th><td></td></tr>
+<tr><th id="578">578</th><td>} <i>// end of namespace lambda</i></td></tr>
+<tr><th id="579">579</th><td>} <i>// end of namespace boost</i></td></tr>
+<tr><th id="580">580</th><td></td></tr>
+<tr><th id="581">581</th><td></td></tr>
+<tr><th id="582">582</th><td>   </td></tr>
+<tr><th id="583">583</th><td><u>#<span data-ppcond="12">endif</span> // BOOST_LAMBDA_TRAITS_HPP</u></td></tr>
+<tr><th id="584">584</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../codebrowser/gtsam_unstable/linear/QPSParser.cpp.html'>codebrowser/gtsam_unstable/linear/QPSParser.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

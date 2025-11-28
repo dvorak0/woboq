@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>InitializePose.h source code [codebrowser/gtsam/slam/InitializePose.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/slam/InitializePose.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>slam</a>/<a href='InitializePose.h.html'>InitializePose.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> *  <span class="command">@file</span> <span class="verb"> InitializePose.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> *  <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *  <span class="command">@date</span>   August, 2020</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> *  <span class="command">@brief</span> common code between lago.* (2D) and InitializePose3.* (3D)</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../inference/Symbol.h.html">&lt;gtsam/inference/Symbol.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="../nonlinear/GaussNewtonOptimizer.h.html">&lt;gtsam/nonlinear/GaussNewtonOptimizer.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../nonlinear/NonlinearFactorGraph.h.html">&lt;gtsam/nonlinear/NonlinearFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../nonlinear/PriorFactor.h.html">&lt;gtsam/nonlinear/PriorFactor.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="BetweenFactor.h.html">&lt;gtsam/slam/BetweenFactor.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="28">28</th><td><b>namespace</b> <span class="namespace">initialize</span> {</td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><em>static</em> <b>constexpr</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def" id="gtsam::initialize::kAnchorKey" title='gtsam::initialize::kAnchorKey' data-ref="gtsam::initialize::kAnchorKey">kAnchorKey</dfn> = <var>99999999</var>;</td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> * Select the subgraph of betweenFactors and transforms priors into between</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc"> * wrt a fictitious node</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="36">36</th><td><b>template</b> &lt;<b>class</b> Pose&gt;</td></tr>
+<tr><th id="37">37</th><td><em>static</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <dfn class="decl def fn" id="_ZN5gtsam10initializeL14buildPoseGraphERKNS_20NonlinearFactorGraphE" title='gtsam::initialize::buildPoseGraph' data-ref="_ZN5gtsam10initializeL14buildPoseGraphERKNS_20NonlinearFactorGraphE">buildPoseGraph</dfn>(<em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col7 decl" id="137graph" title='graph' data-type='const NonlinearFactorGraph &amp;' data-ref="137graph">graph</dfn>) {</td></tr>
+<tr><th id="38">38</th><td>  <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <a class="ref fn fake" href="../nonlinear/NonlinearFactorGraph.h.html#_ZN5gtsam20NonlinearFactorGraphC1Ev" title='gtsam::NonlinearFactorGraph::NonlinearFactorGraph' data-ref="_ZN5gtsam20NonlinearFactorGraphC1Ev"></a><dfn class="local col8 decl" id="138poseGraph" title='poseGraph' data-type='NonlinearFactorGraph' data-ref="138poseGraph">poseGraph</dfn>;</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td>  <b>for</b> (<em>const</em> <em>auto</em>&amp; <dfn class="local col9 decl" id="139factor" title='factor' data-type='std::shared_ptr&lt;gtsam::NonlinearFactor&gt; const &amp;' data-ref="139factor">factor</dfn> : <a class="local col7 ref" href="#137graph" title='graph' data-ref="137graph">graph</a>) {</td></tr>
+<tr><th id="41">41</th><td>    <i>// recast to a between on Pose</i></td></tr>
+<tr><th id="42">42</th><td>    <b>if</b> (<em>auto</em> <dfn class="local col0 decl" id="140between" title='between' data-type='auto' data-ref="140between"><a class="local col0 ref" href="#140between" title='between' data-ref="140between">between</a></dfn> =</td></tr>
+<tr><th id="43">43</th><td>            <span class="namespace">std::</span>dynamic_pointer_cast&lt;<a class="type" href="BetweenFactor.h.html#gtsam::BetweenFactor" title='gtsam::BetweenFactor' data-ref="gtsam::BetweenFactor">BetweenFactor</a>&lt;Pose&gt; &gt;(<a class="local col9 ref" href="#139factor" title='factor' data-ref="139factor">factor</a>))</td></tr>
+<tr><th id="44">44</th><td>      <a class="local col8 ref" href="#138poseGraph" title='poseGraph' data-ref="138poseGraph">poseGraph</a>.add(<a class="local col0 ref" href="#140between" title='between' data-ref="140between">between</a>);</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td>    <i>// recast PriorFactor&lt;Pose&gt; to BetweenFactor&lt;Pose&gt;</i></td></tr>
+<tr><th id="47">47</th><td>    <b>if</b> (<em>auto</em> <dfn class="local col1 decl" id="141prior" title='prior' data-type='auto' data-ref="141prior"><a class="local col1 ref" href="#141prior" title='prior' data-ref="141prior">prior</a></dfn> = <span class="namespace">std::</span>dynamic_pointer_cast&lt;<a class="type" href="../nonlinear/PriorFactor.h.html#gtsam::PriorFactor" title='gtsam::PriorFactor' data-ref="gtsam::PriorFactor">PriorFactor</a>&lt;Pose&gt; &gt;(<a class="local col9 ref" href="#139factor" title='factor' data-ref="139factor">factor</a>))</td></tr>
+<tr><th id="48">48</th><td>      <a class="local col8 ref" href="#138poseGraph" title='poseGraph' data-ref="138poseGraph">poseGraph</a>.emplace_shared&lt;<a class="type" href="BetweenFactor.h.html#gtsam::BetweenFactor" title='gtsam::BetweenFactor' data-ref="gtsam::BetweenFactor">BetweenFactor</a>&lt;Pose&gt; &gt;(</td></tr>
+<tr><th id="49">49</th><td>          <a class="ref" href="#gtsam::initialize::kAnchorKey" title='gtsam::initialize::kAnchorKey' data-ref="gtsam::initialize::kAnchorKey">kAnchorKey</a>, <a class="local col1 ref" href="#141prior" title='prior' data-ref="141prior">prior</a>-&gt;keys()[<var>0</var>], <a class="local col1 ref" href="#141prior" title='prior' data-ref="141prior">prior</a>-&gt;prior(), <a class="local col1 ref" href="#141prior" title='prior' data-ref="141prior">prior</a>-&gt;noiseModel());</td></tr>
+<tr><th id="50">50</th><td>  }</td></tr>
+<tr><th id="51">51</th><td>  <b>return</b> <a class="ref fn fake" href="../nonlinear/NonlinearFactorGraph.h.html#55" title='gtsam::NonlinearFactorGraph::NonlinearFactorGraph' data-ref="_ZN5gtsam20NonlinearFactorGraphC1EOS0_"></a><a class="local col8 ref" href="#138poseGraph" title='poseGraph' data-ref="138poseGraph">poseGraph</a>;</td></tr>
+<tr><th id="52">52</th><td>}</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * Use Gauss-Newton optimizer to optimize for poses given rotation estimates</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="57">57</th><td><b>template</b> &lt;<b>class</b> Pose&gt;</td></tr>
+<tr><th id="58">58</th><td><em>static</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="decl def fn" id="_ZN5gtsam10initializeL12computePosesERKNS_6ValuesEPNS_20NonlinearFactorGraphEb" title='gtsam::initialize::computePoses' data-ref="_ZN5gtsam10initializeL12computePosesERKNS_6ValuesEPNS_20NonlinearFactorGraphEb">computePoses</dfn>(<em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col2 decl" id="142initialRot" title='initialRot' data-type='const Values &amp;' data-ref="142initialRot">initialRot</dfn>,</td></tr>
+<tr><th id="59">59</th><td>                           <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>* <dfn class="local col3 decl" id="143posegraph" title='posegraph' data-type='NonlinearFactorGraph *' data-ref="143posegraph">posegraph</dfn>,</td></tr>
+<tr><th id="60">60</th><td>                           <em>bool</em> <dfn class="local col4 decl" id="144singleIter" title='singleIter' data-type='bool' data-ref="144singleIter">singleIter</dfn> = <b>true</b>) {</td></tr>
+<tr><th id="61">61</th><td>  <em>const</em> <em>auto</em> <dfn class="local col5 decl" id="145origin" title='origin' data-type='const auto' data-ref="145origin">origin</dfn> = Pose().translation();</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>  <i>// Upgrade rotations to full poses</i></td></tr>
+<tr><th id="64">64</th><td>  <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="ref fn fake" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev"></a><dfn class="local col6 decl" id="146initialPose" title='initialPose' data-type='Values' data-ref="146initialPose">initialPose</dfn>;</td></tr>
+<tr><th id="65">65</th><td>  <b>for</b> (<em>const</em> <em>auto</em>&amp; <dfn class="local col7 decl" id="147key_rot" title='key_rot' data-type='const auto &amp;' data-ref="147key_rot">key_rot</dfn> : <a class="local col2 ref" href="#142initialRot" title='initialRot' data-ref="142initialRot">initialRot</a>.extract&lt;<b>typename</b> Pose::Rotation&gt;()) {</td></tr>
+<tr><th id="66">66</th><td>    <em>const</em> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&amp; <dfn class="local col8 decl" id="148key" title='key' data-type='const Key &amp;' data-ref="148key">key</dfn> = <a class="local col7 ref" href="#147key_rot" title='key_rot' data-ref="147key_rot">key_rot</a>.first;</td></tr>
+<tr><th id="67">67</th><td>    <em>const</em> <em>auto</em>&amp; <dfn class="local col9 decl" id="149rot" title='rot' data-type='const auto &amp;' data-ref="149rot">rot</dfn> = <a class="local col7 ref" href="#147key_rot" title='key_rot' data-ref="147key_rot">key_rot</a>.second;</td></tr>
+<tr><th id="68">68</th><td>    <em>const</em> Pose <dfn class="local col0 decl" id="150initializedPose" title='initializedPose' data-type='const Pose' data-ref="150initializedPose">initializedPose</dfn>(<a class="local col9 ref" href="#149rot" title='rot' data-ref="149rot">rot</a>, <a class="local col5 ref" href="#145origin" title='origin' data-ref="145origin">origin</a>);</td></tr>
+<tr><th id="69">69</th><td>    <a class="local col6 ref" href="#146initialPose" title='initialPose' data-ref="146initialPose">initialPose</a>.insert(<a class="local col8 ref" href="#148key" title='key' data-ref="148key">key</a>, <a class="local col0 ref" href="#150initializedPose" title='initializedPose' data-ref="150initializedPose">initializedPose</a>);</td></tr>
+<tr><th id="70">70</th><td>  }</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i>// add prior on dummy node</i></td></tr>
+<tr><th id="73">73</th><td>  <em>auto</em> <dfn class="local col1 decl" id="151priorModel" title='priorModel' data-type='auto' data-ref="151priorModel">priorModel</dfn> = <span class="namespace">noiseModel::</span><a class="type" href="../linear/NoiseModel.h.html#gtsam::noiseModel::Unit" title='gtsam::noiseModel::Unit' data-ref="gtsam::noiseModel::Unit">Unit</a>::<a class="ref fn" href="../linear/NoiseModel.h.html#_ZN5gtsam10noiseModel4Unit6CreateEm" title='gtsam::noiseModel::Unit::Create' data-ref="_ZN5gtsam10noiseModel4Unit6CreateEm">Create</a>(<span class='inlayHint'>dim:&nbsp;</span>Pose::dimension);</td></tr>
+<tr><th id="74">74</th><td>  <a class="local col6 ref" href="#146initialPose" title='initialPose' data-ref="146initialPose">initialPose</a>.insert(<a class="ref" href="#gtsam::initialize::kAnchorKey" title='gtsam::initialize::kAnchorKey' data-ref="gtsam::initialize::kAnchorKey">kAnchorKey</a>, Pose());</td></tr>
+<tr><th id="75">75</th><td>  <a class="local col3 ref" href="#143posegraph" title='posegraph' data-ref="143posegraph">posegraph</a>-&gt;emplace_shared&lt;<a class="type" href="../nonlinear/PriorFactor.h.html#gtsam::PriorFactor" title='gtsam::PriorFactor' data-ref="gtsam::PriorFactor">PriorFactor</a>&lt;Pose&gt; &gt;(<a class="ref" href="#gtsam::initialize::kAnchorKey" title='gtsam::initialize::kAnchorKey' data-ref="gtsam::initialize::kAnchorKey">kAnchorKey</a>, Pose(), <a class="local col1 ref" href="#151priorModel" title='priorModel' data-ref="151priorModel">priorModel</a>);</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>  <i>// Create optimizer</i></td></tr>
+<tr><th id="78">78</th><td>  <a class="type" href="../nonlinear/GaussNewtonOptimizer.h.html#gtsam::GaussNewtonParams" title='gtsam::GaussNewtonParams' data-ref="gtsam::GaussNewtonParams">GaussNewtonParams</a> <a class="ref fn fake" href="../nonlinear/GaussNewtonOptimizer.h.html#30" title='gtsam::GaussNewtonParams::GaussNewtonParams' data-ref="_ZN5gtsam17GaussNewtonParamsC1Ev"></a><dfn class="local col2 decl" id="152params" title='params' data-type='GaussNewtonParams' data-ref="152params">params</dfn>;</td></tr>
+<tr><th id="79">79</th><td>  <b>if</b> (<a class="local col4 ref" href="#144singleIter" title='singleIter' data-ref="144singleIter">singleIter</a>) {</td></tr>
+<tr><th id="80">80</th><td>    <a class="local col2 ref" href="#152params" title='params' data-ref="152params">params</a>.<a class="ref field" href="../nonlinear/NonlinearOptimizerParams.h.html#gtsam::NonlinearOptimizerParams::maxIterations" title='gtsam::NonlinearOptimizerParams::maxIterations' data-ref="gtsam::NonlinearOptimizerParams::maxIterations">maxIterations</a> = <var>1</var>;</td></tr>
+<tr><th id="81">81</th><td>  } <b>else</b> {</td></tr>
+<tr><th id="82">82</th><td>    <a class="local col2 ref" href="#152params" title='params' data-ref="152params">params</a>.<a class="ref fn" href="../nonlinear/NonlinearOptimizerParams.h.html#_ZN5gtsam24NonlinearOptimizerParams12setVerbosityERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::NonlinearOptimizerParams::setVerbosity' data-ref="_ZN5gtsam24NonlinearOptimizerParams12setVerbosityERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">setVerbosity</a>(<a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"TERMINATION"</q>);</td></tr>
+<tr><th id="83">83</th><td>  }</td></tr>
+<tr><th id="84">84</th><td>  <a class="type" href="../nonlinear/GaussNewtonOptimizer.h.html#gtsam::GaussNewtonOptimizer" title='gtsam::GaussNewtonOptimizer' data-ref="gtsam::GaussNewtonOptimizer">GaussNewtonOptimizer</a> <dfn class="local col3 decl" id="153optimizer" title='optimizer' data-type='GaussNewtonOptimizer' data-ref="153optimizer">optimizer</dfn><a class="ref fn" href="../nonlinear/GaussNewtonOptimizer.h.html#_ZN5gtsam20GaussNewtonOptimizerC1ERKNS_20NonlinearFactorGraphERKNS_6ValuesERKNS_17GaussNewtonParamsE" title='gtsam::GaussNewtonOptimizer::GaussNewtonOptimizer' data-ref="_ZN5gtsam20GaussNewtonOptimizerC1ERKNS_20NonlinearFactorGraphERKNS_6ValuesERKNS_17GaussNewtonParamsE">(</a>*<a class="local col3 ref" href="#143posegraph" title='posegraph' data-ref="143posegraph">posegraph</a>, <a class="local col6 ref" href="#146initialPose" title='initialPose' data-ref="146initialPose">initialPose</a>, <a class="local col2 ref" href="#152params" title='params' data-ref="152params">params</a>);</td></tr>
+<tr><th id="85">85</th><td>  <em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="local col4 decl" id="154GNresult" title='GNresult' data-type='const Values' data-ref="154GNresult">GNresult</dfn> = <a class="ref fn fake" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1ERKS0_" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1ERKS0_"></a><a class="local col3 ref" href="#153optimizer" title='optimizer' data-ref="153optimizer">optimizer</a>.<a class="virtual ref fn" href="../nonlinear/NonlinearOptimizer.h.html#_ZN5gtsam18NonlinearOptimizer8optimizeEv" title='gtsam::NonlinearOptimizer::optimize' data-ref="_ZN5gtsam18NonlinearOptimizer8optimizeEv">optimize</a>();</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>  <i>// put into Values structure</i></td></tr>
+<tr><th id="88">88</th><td>  <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="ref fn fake" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev"></a><dfn class="local col5 decl" id="155estimate" title='estimate' data-type='Values' data-ref="155estimate">estimate</dfn>;</td></tr>
+<tr><th id="89">89</th><td>  <b>for</b> (<em>const</em> <em>auto</em>&amp; <dfn class="local col6 decl" id="156key_pose" title='key_pose' data-type='const auto &amp;' data-ref="156key_pose">key_pose</dfn> : <a class="local col4 ref" href="#154GNresult" title='GNresult' data-ref="154GNresult">GNresult</a>.extract&lt;Pose&gt;()) {</td></tr>
+<tr><th id="90">90</th><td>    <em>const</em> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&amp; <dfn class="local col7 decl" id="157key" title='key' data-type='const Key &amp;' data-ref="157key">key</dfn> = <a class="local col6 ref" href="#156key_pose" title='key_pose' data-ref="156key_pose">key_pose</a>.first;</td></tr>
+<tr><th id="91">91</th><td>    <b>if</b> (<a class="local col7 ref" href="#157key" title='key' data-ref="157key">key</a> != <a class="ref" href="#gtsam::initialize::kAnchorKey" title='gtsam::initialize::kAnchorKey' data-ref="gtsam::initialize::kAnchorKey">kAnchorKey</a>) {</td></tr>
+<tr><th id="92">92</th><td>      <em>const</em> Pose&amp; <dfn class="local col8 decl" id="158pose" title='pose' data-type='const Pose &amp;' data-ref="158pose">pose</dfn> = <a class="local col6 ref" href="#156key_pose" title='key_pose' data-ref="156key_pose">key_pose</a>.second;</td></tr>
+<tr><th id="93">93</th><td>      <a class="local col5 ref" href="#155estimate" title='estimate' data-ref="155estimate">estimate</a>.insert(<a class="local col7 ref" href="#157key" title='key' data-ref="157key">key</a>, <a class="local col8 ref" href="#158pose" title='pose' data-ref="158pose">pose</a>);</td></tr>
+<tr><th id="94">94</th><td>    }</td></tr>
+<tr><th id="95">95</th><td>  }</td></tr>
+<tr><th id="96">96</th><td>  <b>return</b> <a class="ref fn fake" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1EOS0_" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1EOS0_"></a><a class="local col5 ref" href="#155estimate" title='estimate' data-ref="155estimate">estimate</a>;</td></tr>
+<tr><th id="97">97</th><td>}</td></tr>
+<tr><th id="98">98</th><td>}  <i>// namespace initialize</i></td></tr>
+<tr><th id="99">99</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ShonanAveragingCLI.cpp.html'>codebrowser/examples/ShonanAveragingCLI.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SmartStereoProjectionPoseFactor.h source code [codebrowser/gtsam_unstable/slam/SmartStereoProjectionPoseFactor.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::SmartStereoProjectionPoseFactor,gtsam::traits "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam_unstable/slam/SmartStereoProjectionPoseFactor.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam_unstable</a>/<a href='./'>slam</a>/<a href='SmartStereoProjectionPoseFactor.h.html'>SmartStereoProjectionPoseFactor.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">  SmartStereoProjectionPoseFactor.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>  Smart stereo factor on poses, assuming camera calibration is fixed</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Luca Carlone</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span> Antoni Rosinol</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span> Chris Beall</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> * <span class="command">@author</span> Zsolt Kira</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#pragma once</u></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="SmartStereoProjectionFactor.h.html">&lt;gtsam_unstable/slam/SmartStereoProjectionFactor.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="27">27</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">slam</span></i></td></tr>
+<tr><th id="30">30</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> * If you are using the factor, please cite:</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc"> * L. Carlone, Z. Kira, C. Beall, V. Indelman, F. Dellaert,</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> * Eliminating conditionally independent sets in factor graphs:</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc"> * a unifying perspective based on smart factors,</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * Int. Conf. on Robotics and Automation (ICRA), 2014.</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * This factor assumes that camera calibration is fixed, but each camera</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * has its own calibration.</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * The factor only constrains poses (variable dimension is 6).</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * This factor requires that values contains the involved poses (Pose3).</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">slam</span></i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="46">46</th><td><b>class</b> <a class="macro" href="../../build/gtsam_unstable/dllexport.h.html#54" title="" data-ref="_M/GTSAM_UNSTABLE_EXPORT">GTSAM_UNSTABLE_EXPORT</a> <dfn class="type def" id="gtsam::SmartStereoProjectionPoseFactor" title='gtsam::SmartStereoProjectionPoseFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor">SmartStereoProjectionPoseFactor</dfn></td></tr>
+<tr><th id="47">47</th><td>    : <b>public</b> <a class="type" href="SmartStereoProjectionFactor.h.html#gtsam::SmartStereoProjectionFactor" title='gtsam::SmartStereoProjectionFactor' data-ref="gtsam::SmartStereoProjectionFactor">SmartStereoProjectionFactor</a> {</td></tr>
+<tr><th id="48">48</th><td> <b>protected</b>:</td></tr>
+<tr><th id="49">49</th><td>  <i class="doc">/// shared pointer to calibration object (one for each camera)</i></td></tr>
+<tr><th id="50">50</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../../gtsam/geometry/Cal3_S2Stereo.h.html#gtsam::Cal3_S2Stereo" title='gtsam::Cal3_S2Stereo' data-ref="gtsam::Cal3_S2Stereo">Cal3_S2Stereo</a>&gt;&gt; <dfn class="decl field" id="gtsam::SmartStereoProjectionPoseFactor::K_all_" title='gtsam::SmartStereoProjectionPoseFactor::K_all_' data-ref="gtsam::SmartStereoProjectionPoseFactor::K_all_">K_all_</dfn>;</td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td> <b>public</b>:</td></tr>
+<tr><th id="53">53</th><td>  <a class="macro" href="../../gtsam/3rdparty/Eigen/Eigen/src/Core/util/Memory.h.html#789" title="" data-ref="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW">EIGEN_MAKE_ALIGNED_OPERATOR_NEW</a></td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td>  <i class="doc">/// shorthand for base class type</i></td></tr>
+<tr><th id="56">56</th><td>  <b>typedef</b> <a class="type" href="SmartStereoProjectionFactor.h.html#gtsam::SmartStereoProjectionFactor" title='gtsam::SmartStereoProjectionFactor' data-ref="gtsam::SmartStereoProjectionFactor">SmartStereoProjectionFactor</a> <dfn class="typedef" id="gtsam::SmartStereoProjectionPoseFactor::Base" title='gtsam::SmartStereoProjectionPoseFactor::Base' data-type='SmartStereoProjectionFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor::Base">Base</dfn>;</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>  <i class="doc">/// shorthand for this class</i></td></tr>
+<tr><th id="59">59</th><td>  <b>typedef</b> <a class="type" href="#gtsam::SmartStereoProjectionPoseFactor" title='gtsam::SmartStereoProjectionPoseFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor">SmartStereoProjectionPoseFactor</a> <dfn class="typedef" id="gtsam::SmartStereoProjectionPoseFactor::This" title='gtsam::SmartStereoProjectionPoseFactor::This' data-type='SmartStereoProjectionPoseFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor::This">This</dfn>;</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td>  <i class="doc">/// shorthand for a smart pointer to a factor</i></td></tr>
+<tr><th id="62">62</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::SmartStereoProjectionPoseFactor::This" title='gtsam::SmartStereoProjectionPoseFactor::This' data-type='SmartStereoProjectionPoseFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor::This">This</a>&gt; <dfn class="typedef" id="gtsam::SmartStereoProjectionPoseFactor::shared_ptr" title='gtsam::SmartStereoProjectionPoseFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::SmartStereoProjectionPoseFactor::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc">   * Constructor</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">Isotropic</span> measurement noise</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">params</span> internal parameters of the smart factors</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="69">69</th><td>  <dfn class="decl fn" id="_ZN5gtsam31SmartStereoProjectionPoseFactorC1ERKSt10shared_ptrINS_10noiseModel4BaseEERKNS_21SmartProjectionParamsERKSt8optionalINS_5Pose3EE" title='gtsam::SmartStereoProjectionPoseFactor::SmartStereoProjectionPoseFactor' data-ref="_ZN5gtsam31SmartStereoProjectionPoseFactorC1ERKSt10shared_ptrINS_10noiseModel4BaseEERKNS_21SmartProjectionParamsERKSt8optionalINS_5Pose3EE">SmartStereoProjectionPoseFactor</dfn>(</td></tr>
+<tr><th id="70">70</th><td>      <em>const</em> <a class="typedef" href="../../gtsam/linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col9 decl" id="89sharedNoiseModel" title='sharedNoiseModel' data-type='const SharedNoiseModel &amp;' data-ref="89sharedNoiseModel">sharedNoiseModel</dfn>,</td></tr>
+<tr><th id="71">71</th><td>      <em>const</em> <a class="typedef" href="SmartStereoProjectionFactor.h.html#gtsam::SmartStereoProjectionParams" title='gtsam::SmartStereoProjectionParams' data-type='SmartProjectionParams' data-ref="gtsam::SmartStereoProjectionParams">SmartStereoProjectionParams</a>&amp; <dfn class="local col0 decl" id="90params" title='params' data-type='const SmartStereoProjectionParams &amp;' data-ref="90params">params</dfn> = <a class="typedef" href="SmartStereoProjectionFactor.h.html#gtsam::SmartStereoProjectionParams" title='gtsam::SmartStereoProjectionParams' data-type='SmartProjectionParams' data-ref="gtsam::SmartStereoProjectionParams">SmartStereoProjectionParams</a><a class="ref fn" href="../../gtsam/slam/SmartFactorParams.h.html#_ZN5gtsam21SmartProjectionParamsC1ENS_17LinearizationModeENS_14DegeneracyModeEbbd" title='gtsam::SmartProjectionParams::SmartProjectionParams' data-ref="_ZN5gtsam21SmartProjectionParamsC1ENS_17LinearizationModeENS_14DegeneracyModeEbbd">(</a>),</td></tr>
+<tr><th id="72">72</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<a class="type" href="../../gtsam/geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>&gt;&amp; <dfn class="local col1 decl" id="91body_P_sensor" title='body_P_sensor' data-type='const std::optional&lt;Pose3&gt; &amp;' data-ref="91body_P_sensor">body_P_sensor</dfn> = <a class="ref fn" href="../../../include/c++/13/optional.html#_ZNSt8optionalC1Ev" title='std::optional::optional&lt;_Tp&gt;' data-ref="_ZNSt8optionalC1Ev">{</a>});</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc">   * add a new measurement and pose key</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">measured</span> is the 2m dimensional location of the projection of a</i></td></tr>
+<tr><th id="77">77</th><td><i class="doc">   * single landmark in the m view (the measurement)</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">poseKey</span> is key corresponding to the camera observing the same</i></td></tr>
+<tr><th id="79">79</th><td><i class="doc">   * landmark</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">K</span> is the (fixed) camera calibration</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="82">82</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam31SmartStereoProjectionPoseFactor3addERKNS_12StereoPoint2ERKmRKSt10shared_ptrINS_13Cal3_S2StereoEE" title='gtsam::SmartStereoProjectionPoseFactor::add' data-ref="_ZN5gtsam31SmartStereoProjectionPoseFactor3addERKNS_12StereoPoint2ERKmRKSt10shared_ptrINS_13Cal3_S2StereoEE">add</dfn>(<em>const</em> <a class="type" href="../../gtsam/geometry/StereoPoint2.h.html#gtsam::StereoPoint2" title='gtsam::StereoPoint2' data-ref="gtsam::StereoPoint2">StereoPoint2</a>&amp; <dfn class="local col2 decl" id="92measured" title='measured' data-type='const StereoPoint2 &amp;' data-ref="92measured">measured</dfn>, <em>const</em> <a class="typedef" href="../../gtsam/base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&amp; <dfn class="local col3 decl" id="93poseKey" title='poseKey' data-type='const Key &amp;' data-ref="93poseKey">poseKey</dfn>,</td></tr>
+<tr><th id="83">83</th><td>           <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../../gtsam/geometry/Cal3_S2Stereo.h.html#gtsam::Cal3_S2Stereo" title='gtsam::Cal3_S2Stereo' data-ref="gtsam::Cal3_S2Stereo">Cal3_S2Stereo</a>&gt;&amp; <dfn class="local col4 decl" id="94K" title='K' data-type='const std::shared_ptr&lt;Cal3_S2Stereo&gt; &amp;' data-ref="94K">K</dfn>);</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   *  Variant of the previous one in which we include a set of measurements</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">measurements</span> vector of the 2m dimensional location of the projection</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   * of a single landmark in the m view (the measurement)</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">poseKeys</span> vector of keys corresponding to the camera observing</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">   * the same landmark</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">Ks</span> vector of calibration objects</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="93">93</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam31SmartStereoProjectionPoseFactor3addERKSt6vectorINS_12StereoPoint2ESaIS2_EERKS1_ImSaImEERKS1_ISt10shared_ptrINS_13Cal3_S2StereoEESaISD_EE" title='gtsam::SmartStereoProjectionPoseFactor::add' data-ref="_ZN5gtsam31SmartStereoProjectionPoseFactor3addERKSt6vectorINS_12StereoPoint2ESaIS2_EERKS1_ImSaImEERKS1_ISt10shared_ptrINS_13Cal3_S2StereoEESaISD_EE">add</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="../../gtsam/geometry/StereoPoint2.h.html#gtsam::StereoPoint2" title='gtsam::StereoPoint2' data-ref="gtsam::StereoPoint2">StereoPoint2</a>&gt;&amp; <dfn class="local col5 decl" id="95measurements" title='measurements' data-type='const std::vector&lt;StereoPoint2&gt; &amp;' data-ref="95measurements">measurements</dfn>,</td></tr>
+<tr><th id="94">94</th><td>           <em>const</em> <a class="typedef" href="../../gtsam/inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col6 decl" id="96poseKeys" title='poseKeys' data-type='const KeyVector &amp;' data-ref="96poseKeys">poseKeys</dfn>,</td></tr>
+<tr><th id="95">95</th><td>           <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../../gtsam/geometry/Cal3_S2Stereo.h.html#gtsam::Cal3_S2Stereo" title='gtsam::Cal3_S2Stereo' data-ref="gtsam::Cal3_S2Stereo">Cal3_S2Stereo</a>&gt;&gt;&amp; <dfn class="local col7 decl" id="97Ks" title='Ks' data-type='const std::vector&lt;std::shared_ptr&lt;Cal3_S2Stereo&gt;&gt; &amp;' data-ref="97Ks">Ks</dfn>);</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   * Variant of the previous one in which we include a set of measurements with</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">   * the same noise and calibration</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">measurements</span> vector of the 2m dimensional location of the projection</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">   * of a single landmark in the m view (the measurement)</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">poseKeys</span> vector of keys corresponding to the camera observing the</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc">   * same landmark</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">K</span> the (known) camera calibration (same for all measurements)</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="106">106</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam31SmartStereoProjectionPoseFactor3addERKSt6vectorINS_12StereoPoint2ESaIS2_EERKS1_ImSaImEERKSt10shared_ptrINS_13Cal3_S2StereoEE" title='gtsam::SmartStereoProjectionPoseFactor::add' data-ref="_ZN5gtsam31SmartStereoProjectionPoseFactor3addERKSt6vectorINS_12StereoPoint2ESaIS2_EERKS1_ImSaImEERKSt10shared_ptrINS_13Cal3_S2StereoEE">add</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="../../gtsam/geometry/StereoPoint2.h.html#gtsam::StereoPoint2" title='gtsam::StereoPoint2' data-ref="gtsam::StereoPoint2">StereoPoint2</a>&gt;&amp; <dfn class="local col8 decl" id="98measurements" title='measurements' data-type='const std::vector&lt;StereoPoint2&gt; &amp;' data-ref="98measurements">measurements</dfn>,</td></tr>
+<tr><th id="107">107</th><td>           <em>const</em> <a class="typedef" href="../../gtsam/inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col9 decl" id="99poseKeys" title='poseKeys' data-type='const KeyVector &amp;' data-ref="99poseKeys">poseKeys</dfn>,</td></tr>
+<tr><th id="108">108</th><td>           <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../../gtsam/geometry/Cal3_S2Stereo.h.html#gtsam::Cal3_S2Stereo" title='gtsam::Cal3_S2Stereo' data-ref="gtsam::Cal3_S2Stereo">Cal3_S2Stereo</a>&gt;&amp; <dfn class="local col0 decl" id="100K" title='K' data-type='const std::shared_ptr&lt;Cal3_S2Stereo&gt; &amp;' data-ref="100K">K</dfn>);</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">   * print</i></td></tr>
+<tr><th id="112">112</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">s</span> optional string naming the factor</i></td></tr>
+<tr><th id="113">113</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">keyFormatter</span> optional formatter useful for printing Symbols</i></td></tr>
+<tr><th id="114">114</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="115">115</th><td>  <em>void</em> <dfn class="virtual decl fn" id="_ZNK5gtsam31SmartStereoProjectionPoseFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::SmartStereoProjectionPoseFactor::print' data-ref="_ZNK5gtsam31SmartStereoProjectionPoseFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col1 decl" id="101s" title='s' data-type='const std::string &amp;' data-ref="101s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>, <em>const</em> <a class="typedef" href="../../gtsam/inference/Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col2 decl" id="102keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="102keyFormatter">keyFormatter</dfn> =</td></tr>
+<tr><th id="116">116</th><td>                                            <a class="ref" href="../../gtsam/inference/Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em> override;</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>  <i class="doc">/// equals</i></td></tr>
+<tr><th id="119">119</th><td>  <em>bool</em> <dfn class="virtual decl fn" id="_ZNK5gtsam31SmartStereoProjectionPoseFactor6equalsERKNS_15NonlinearFactorEd" title='gtsam::SmartStereoProjectionPoseFactor::equals' data-ref="_ZNK5gtsam31SmartStereoProjectionPoseFactor6equalsERKNS_15NonlinearFactorEd">equals</dfn>(<em>const</em> <a class="type" href="../../gtsam/nonlinear/NonlinearFactor.h.html#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>&amp; <dfn class="local col3 decl" id="103p" title='p' data-type='const NonlinearFactor &amp;' data-ref="103p">p</dfn>, <em>double</em> <dfn class="local col4 decl" id="104tol" title='tol' data-type='double' data-ref="104tol">tol</dfn> = <var>1e-9</var>) <em>const</em> override;</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">   * error calculates the error of the factor.</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="124">124</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam31SmartStereoProjectionPoseFactor5errorERKNS_6ValuesE" title='gtsam::SmartStereoProjectionPoseFactor::error' data-ref="_ZNK5gtsam31SmartStereoProjectionPoseFactor5errorERKNS_6ValuesE">error</dfn>(<em>const</em> <a class="type" href="../../gtsam/nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col5 decl" id="105values" title='values' data-type='const Values &amp;' data-ref="105values">values</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>  <i class="doc">/** return the calibration object */</i></td></tr>
+<tr><th id="127">127</th><td>  <b>inline</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../../gtsam/geometry/Cal3_S2Stereo.h.html#gtsam::Cal3_S2Stereo" title='gtsam::Cal3_S2Stereo' data-ref="gtsam::Cal3_S2Stereo">Cal3_S2Stereo</a>&gt;&gt; <dfn class="decl def fn" id="_ZNK5gtsam31SmartStereoProjectionPoseFactor11calibrationEv" title='gtsam::SmartStereoProjectionPoseFactor::calibration' data-ref="_ZNK5gtsam31SmartStereoProjectionPoseFactor11calibrationEv">calibration</dfn>() <em>const</em> {</td></tr>
+<tr><th id="128">128</th><td>    <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/stl_vector.h.html#_ZNSt6vectorC1ERKSt6vectorIT_T0_E" title='std::vector::vector&lt;_Tp, _Alloc&gt;' data-ref="_ZNSt6vectorC1ERKSt6vectorIT_T0_E"></a><a class="member field" href="#gtsam::SmartStereoProjectionPoseFactor::K_all_" title='gtsam::SmartStereoProjectionPoseFactor::K_all_' data-ref="gtsam::SmartStereoProjectionPoseFactor::K_all_">K_all_</a>;</td></tr>
+<tr><th id="129">129</th><td>  }</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">   * Collect all cameras involved in this factor</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">values</span> Values structure which must contain camera poses</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">   * corresponding</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">   * to keys involved in this factor</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">   * <span class="command">@return</span> vector of Values</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="138">138</th><td>  <a class="typedef" href="#gtsam::SmartStereoProjectionPoseFactor::Base" title='gtsam::SmartStereoProjectionPoseFactor::Base' data-type='SmartStereoProjectionFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor::Base">Base</a>::<a class="typedef" href="SmartStereoProjectionFactor.h.html#gtsam::SmartStereoProjectionFactor::Cameras" title='gtsam::SmartStereoProjectionFactor::Cameras' data-type='CameraSet&lt;StereoCamera&gt;' data-ref="gtsam::SmartStereoProjectionFactor::Cameras">Cameras</a> <dfn class="virtual decl fn" id="_ZNK5gtsam31SmartStereoProjectionPoseFactor7camerasERKNS_6ValuesE" title='gtsam::SmartStereoProjectionPoseFactor::cameras' data-ref="_ZNK5gtsam31SmartStereoProjectionPoseFactor7camerasERKNS_6ValuesE">cameras</dfn>(<em>const</em> <a class="type" href="../../gtsam/nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col6 decl" id="106values" title='values' data-type='const Values &amp;' data-ref="106values">values</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td> <b>private</b>:</td></tr>
+<tr><th id="141">141</th><td><u>#<span data-ppcond="141">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a>  ///</u></td></tr>
+<tr><th id="142">142</th><td>  <i class="doc">/// Serialization function</i></td></tr>
+<tr><th id="143">143</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="144">144</th><td>  <b>template</b> &lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="145">145</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam31SmartStereoProjectionPoseFactor9serializeERT_j" title='gtsam::SmartStereoProjectionPoseFactor::serialize' data-ref="_ZN5gtsam31SmartStereoProjectionPoseFactor9serializeERT_j">serialize</dfn>(ARCHIVE&amp; <dfn class="local col7 decl" id="107ar" title='ar' data-type='ARCHIVE &amp;' data-ref="107ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="146">146</th><td>    <a class="local col7 ref" href="#107ar" title='ar' data-ref="107ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#26" title="boost::serialization::make_nvp( &quot;Base&quot;, boost::serialization::base_object&lt;Base &gt;(*this) )" data-ref="_M/BOOST_SERIALIZATION_BASE_OBJECT_NVP">BOOST_SERIALIZATION_BASE_OBJECT_NVP</a>(<a class="typedef" href="#gtsam::SmartStereoProjectionPoseFactor::Base" title='gtsam::SmartStereoProjectionPoseFactor::Base' data-type='SmartStereoProjectionFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor::Base">Base</a>);</td></tr>
+<tr><th id="147">147</th><td>    <a class="local col7 ref" href="#107ar" title='ar' data-ref="107ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;K_all_&quot;, K_all_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::SmartStereoProjectionPoseFactor::K_all_" title='gtsam::SmartStereoProjectionPoseFactor::K_all_' data-ref="gtsam::SmartStereoProjectionPoseFactor::K_all_">K_all_</a></span>);</td></tr>
+<tr><th id="148">148</th><td>  }</td></tr>
+<tr><th id="149">149</th><td><u>#<span data-ppcond="141">endif</span></u></td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>};  <i>// end of class declaration</i></td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td><i class="doc">/// traits</i></td></tr>
+<tr><th id="154">154</th><td><b>template</b> &lt;&gt;</td></tr>
+<tr><th id="155">155</th><td><b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits"><a class="type" href="../../gtsam/base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a></dfn>&lt;<a class="type" href="#gtsam::SmartStereoProjectionPoseFactor" title='gtsam::SmartStereoProjectionPoseFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor">SmartStereoProjectionPoseFactor</a>&gt;</td></tr>
+<tr><th id="156">156</th><td>    : <b>public</b> <a class="type" href="../../gtsam/base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::SmartStereoProjectionPoseFactor" title='gtsam::SmartStereoProjectionPoseFactor' data-ref="gtsam::SmartStereoProjectionPoseFactor">SmartStereoProjectionPoseFactor</a>&gt; {};</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="159">159</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../examples/ISAM2_SmartFactorStereo_IMU.cpp.html'>codebrowser/gtsam_unstable/examples/ISAM2_SmartFactorStereo_IMU.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

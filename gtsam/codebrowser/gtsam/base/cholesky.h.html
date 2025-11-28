@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>cholesky.h source code [codebrowser/gtsam/base/cholesky.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/base/cholesky.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>base</a>/<a href='cholesky.h.html'>cholesky.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   cholesky.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Efficient incomplete Cholesky on rank-deficient matrices, todo: constrained Cholesky</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Richard Roberts</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@date</span>    Nov 5, 2010</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td><u>#pragma once</u></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="Matrix.h.html">&lt;gtsam/base/Matrix.h&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="25">25</th><td><i class="doc"> * "Careful" Cholesky computes the positive square-root of a positive symmetric</i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"> * semi-definite matrix (i.e. that may be rank-deficient).  Unlike standard</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"> * Cholesky, the square-root factor may have all-zero rows for free variables.</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc"> * Additionally, this function returns the index of the row after the last</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc"> * non-zero row in the computed factor, so that it may be truncated to an</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> * upper-trapazoidal matrix.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> * The second element of the return value is<span class="command"> \c</span> <span class="arg">true</span> if the matrix was factored</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc"> * successfully, or<span class="command"> \c</span> <span class="arg">false</span> if it was non-positive-semidefinite (i.e.</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * indefinite or negative-(semi-)definite.</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * Note that this returned index is the rank of the matrix if and only if all</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * of the zero-rows of the factor occur after any non-zero rows.  This is</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * (always?) the case during elimination of a fully-constrained least-squares</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * problem.</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * The optional order argument specifies the size of the square upper-left</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * submatrix to operate on, ignoring the rest of the matrix.</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="47">47</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>,<em>bool</em>&gt; <dfn class="decl fn" id="_ZN5gtsam15choleskyCarefulERN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEi" title='gtsam::choleskyCareful' data-ref="_ZN5gtsam15choleskyCarefulERN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEi">choleskyCareful</dfn>(<a class="typedef" href="Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&amp; <dfn class="local col1 decl" id="1ATA" title='ATA' data-type='Matrix &amp;' data-ref="1ATA">ATA</dfn>, <em>int</em> <dfn class="local col2 decl" id="2order" title='order' data-type='int' data-ref="2order">order</dfn> = -<var>1</var>);</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> * Partial Cholesky computes a factor [R S  such that [R' 0  [R S  = [A  B</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc"> *                                     0 L]            S' I]  0 L]    B' C].</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> * The input to this function is the matrix ABC = [A  B], and the parameter</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> *                                                [B' C]</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> * nFrontal determines the split between A, B, and C, with A being of size</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * nFrontal x nFrontal.</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> * if non-zero, factorization proceeds in bottom-right corner starting at topleft</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> * <span class="command">@return</span><span class="command"> \c</span> <span class="arg">true</span> if the decomposition is successful,<span class="command"> \c</span> <span class="arg">false</span> if<span class="command"> \c</span> <span class="arg">A</span> was</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"> * not positive-definite.</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="62">62</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>bool</em> <dfn class="decl fn" id="_ZN5gtsam15choleskyPartialERN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEmm" title='gtsam::choleskyPartial' data-ref="_ZN5gtsam15choleskyPartialERN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEmm">choleskyPartial</dfn>(<a class="typedef" href="Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&amp; <dfn class="local col3 decl" id="3ABC" title='ABC' data-type='Matrix &amp;' data-ref="3ABC">ABC</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="4nFrontal" title='nFrontal' data-type='size_t' data-ref="4nFrontal">nFrontal</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="5topleft" title='topleft' data-type='size_t' data-ref="5topleft">topleft</dfn>=<var>0</var>);</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>}</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='SymmetricBlockMatrix.cpp.html'>codebrowser/gtsam/base/SymmetricBlockMatrix.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

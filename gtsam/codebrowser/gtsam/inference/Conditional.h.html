@@ -1,0 +1,270 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Conditional.h source code [codebrowser/gtsam/inference/Conditional.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::Conditional "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/inference/Conditional.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>inference</a>/<a href='Conditional.h.html'>Conditional.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   Conditional.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Base class for conditional densities</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"></i></td></tr>
+<tr><th id="18">18</th><td><i class="doc">//<span class="command"> \callgraph</span></i></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="Key.h.html">&lt;gtsam/inference/Key.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td>  <b>class</b> <a class="type" href="Factor.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues" id="gtsam::HybridValues">HybridValues</a>;  <i>// forward declaration.</i></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc">   * This is the base class for all conditional distributions/densities, </i></td></tr>
+<tr><th id="29">29</th><td><i class="doc">   * which are implemented as specialized factors.  This class does not store any</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc">   * data other than its keys.  Derived classes store data such as matrices and</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc">   * probability tables.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc">   * The `evaluate` method is used to evaluate the factor, and together with </i></td></tr>
+<tr><th id="34">34</th><td><i class="doc">   * `logProbability` is the main methods that need to be implemented in derived</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc">   * classes. These two methods relate to the `error` method in the factor by:</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc">   *   probability(x) = k exp(-error(x))</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc">   * where k is a normalization constant making</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc">   *<span class="command"> \int</span> probability(x) =<span class="command"> \int</span> k exp(-error(x)) == 1.0, and</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">   * logProbability(x) = -(K + error(x))</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">   * i.e., K = -log(k). The normalization constant k is assumed to *not* depend</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc">   * on any argument, only (possibly) on the conditional parameters.</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc">   * This class provides a default negative log normalization constant</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc">   * negLogConstant() == 0.0.</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc">   * </i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">   * There are four broad classes of conditionals that derive from Conditional:</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">   * -<span class="command"> \b</span> <span class="arg">Gaussian</span> conditionals, implemented in <span class="command">\class</span> <span class="verb">GaussianConditional, a </span></i></td></tr>
+<tr><th id="48">48</th><td><i class="doc">   *   Gaussian density over a set of continuous variables.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc">   * -<span class="command"> \b</span> <span class="arg">Discrete</span> conditionals, implemented in <span class="command">\class</span> <span class="verb">DiscreteConditional, which</span></i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">   *   represent a discrete conditional distribution over discrete variables.</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">   * -<span class="command"> \b</span> <span class="arg">Hybrid</span> conditional densities, such as <span class="command">\class</span> <span class="verb">HybridGaussianConditional, which is </span></i></td></tr>
+<tr><th id="52">52</th><td><i class="doc">   *   a density over continuous variables given discrete/continuous parents.</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc">   * -<span class="command"> \b</span> <span class="arg">Symbolic</span> factors, used to represent a graph structure, implemented in </i></td></tr>
+<tr><th id="54">54</th><td><i class="doc">   *   <span class="command">\class</span> <span class="verb">SymbolicConditional. Only used for symbolic elimination etc.</span></i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">   * Derived classes *must* redefine the Factor and shared_ptr typedefs to refer</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">   * to the associated factor type and shared_ptr type of the derived class.  See</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">   * SymbolicConditional and GaussianConditional for examples.</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc">   * </i></td></tr>
+<tr><th id="60">60</th><td><i class="doc">   *<span class="command"> \nosubgrouping</span></i></td></tr>
+<tr><th id="61">61</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="62">62</th><td>  <b>template</b>&lt;<b>class</b> FACTOR, <b>class</b> DERIVEDCONDITIONAL&gt;</td></tr>
+<tr><th id="63">63</th><td>  <b>class</b> <dfn class="type def" id="gtsam::Conditional" title='gtsam::Conditional' data-ref="gtsam::Conditional">Conditional</dfn></td></tr>
+<tr><th id="64">64</th><td>  {</td></tr>
+<tr><th id="65">65</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="66">66</th><td>    <i class="doc">/** The first nrFrontal variables are frontal and the rest are parents. */</i></td></tr>
+<tr><th id="67">67</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</dfn>;</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>  <b>private</b>:</td></tr>
+<tr><th id="70">70</th><td>    <i class="doc">/// Typedef to this class</i></td></tr>
+<tr><th id="71">71</th><td>    <b>typedef</b> <a class="type" href="#gtsam::Conditional" title='gtsam::Conditional' data-ref="gtsam::Conditional">Conditional</a>&lt;FACTOR,DERIVEDCONDITIONAL&gt; <dfn class="typedef" id="gtsam::Conditional::This" title='gtsam::Conditional::This' data-type='Conditional&lt;FACTOR, DERIVEDCONDITIONAL&gt;' data-ref="gtsam::Conditional::This">This</dfn>;</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>  <b>public</b>:</td></tr>
+<tr><th id="75">75</th><td>    <i class="doc">/** A mini implementation of an iterator range, to share const</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc">     * views of frontals and parents. */</i></td></tr>
+<tr><th id="77">77</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_iterator.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<b>typename</b> FACTOR::const_iterator, <b>typename</b> FACTOR::const_iterator&gt; <dfn class="typedef" id="gtsam::Conditional::ConstFactorRange" title='gtsam::Conditional::ConstFactorRange' data-type='std::pair&lt;typename FACTOR::const_iterator, typename FACTOR::const_iterator&gt;' data-ref="gtsam::Conditional::ConstFactorRange">ConstFactorRange</dfn>;</td></tr>
+<tr><th id="78">78</th><td>    <b>struct</b> <dfn class="type def" id="gtsam::Conditional::ConstFactorRangeIterator" title='gtsam::Conditional::ConstFactorRangeIterator' data-ref="gtsam::Conditional::ConstFactorRangeIterator">ConstFactorRangeIterator</dfn> {</td></tr>
+<tr><th id="79">79</th><td>      <a class="typedef" href="#gtsam::Conditional::ConstFactorRange" title='gtsam::Conditional::ConstFactorRange' data-type='std::pair&lt;typename FACTOR::const_iterator, typename FACTOR::const_iterator&gt;' data-ref="gtsam::Conditional::ConstFactorRange">ConstFactorRange</a> <dfn class="decl field" id="gtsam::Conditional::ConstFactorRangeIterator::range_" title='gtsam::Conditional::ConstFactorRangeIterator::range_' data-ref="gtsam::Conditional::ConstFactorRangeIterator::range_">range_</dfn>;</td></tr>
+<tr><th id="80">80</th><td>      <i>// Delete default constructor</i></td></tr>
+<tr><th id="81">81</th><td>      <dfn class="decl def fn" id="_ZN5gtsam11Conditional24ConstFactorRangeIteratorC1Ev" title='gtsam::Conditional::ConstFactorRangeIterator::ConstFactorRangeIterator' data-ref="_ZN5gtsam11Conditional24ConstFactorRangeIteratorC1Ev">ConstFactorRangeIterator</dfn>() = <b>delete</b>;</td></tr>
+<tr><th id="82">82</th><td>      <dfn class="decl def fn" id="_ZN5gtsam11Conditional24ConstFactorRangeIteratorC1ERKSt4pairINT_14const_iteratorES4_E" title='gtsam::Conditional::ConstFactorRangeIterator::ConstFactorRangeIterator' data-ref="_ZN5gtsam11Conditional24ConstFactorRangeIteratorC1ERKSt4pairINT_14const_iteratorES4_E">ConstFactorRangeIterator</dfn>(<a class="typedef" href="#gtsam::Conditional::ConstFactorRange" title='gtsam::Conditional::ConstFactorRange' data-type='std::pair&lt;typename FACTOR::const_iterator, typename FACTOR::const_iterator&gt;' data-ref="gtsam::Conditional::ConstFactorRange">ConstFactorRange</a> <em>const</em>&amp; <dfn class="local col2 decl" id="652x" title='x' data-type='const ConstFactorRange &amp;' data-ref="652x">x</dfn>) : <a class="member field" href="#gtsam::Conditional::ConstFactorRangeIterator::range_" title='gtsam::Conditional::ConstFactorRangeIterator::range_' data-ref="gtsam::Conditional::ConstFactorRangeIterator::range_">range_</a>(<a class="local col2 ref" href="#652x" title='x' data-ref="652x">x</a>) {}</td></tr>
+<tr><th id="83">83</th><td>      <i>// Implement begin and end for iteration</i></td></tr>
+<tr><th id="84">84</th><td>      <b>typename</b> FACTOR::const_iterator <dfn class="decl def fn" id="_ZNK5gtsam11Conditional24ConstFactorRangeIterator5beginEv" title='gtsam::Conditional::ConstFactorRangeIterator::begin' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator5beginEv">begin</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::Conditional::ConstFactorRangeIterator::range_" title='gtsam::Conditional::ConstFactorRangeIterator::range_' data-ref="gtsam::Conditional::ConstFactorRangeIterator::range_">range_</a>.first; }</td></tr>
+<tr><th id="85">85</th><td>      <b>typename</b> FACTOR::const_iterator <dfn class="decl def fn" id="_ZNK5gtsam11Conditional24ConstFactorRangeIterator3endEv" title='gtsam::Conditional::ConstFactorRangeIterator::end' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator3endEv">end</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::Conditional::ConstFactorRangeIterator::range_" title='gtsam::Conditional::ConstFactorRangeIterator::range_' data-ref="gtsam::Conditional::ConstFactorRangeIterator::range_">range_</a>.second; }</td></tr>
+<tr><th id="86">86</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional24ConstFactorRangeIterator4sizeEv" title='gtsam::Conditional::ConstFactorRangeIterator::size' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator4sizeEv">size</dfn>() <em>const</em> { <b>return</b> <span class="namespace">std::</span>distance(<a class="member field" href="#gtsam::Conditional::ConstFactorRangeIterator::range_" title='gtsam::Conditional::ConstFactorRangeIterator::range_' data-ref="gtsam::Conditional::ConstFactorRangeIterator::range_">range_</a>.first, <a class="member field" href="#gtsam::Conditional::ConstFactorRangeIterator::range_" title='gtsam::Conditional::ConstFactorRangeIterator::range_' data-ref="gtsam::Conditional::ConstFactorRangeIterator::range_">range_</a>.second); }</td></tr>
+<tr><th id="87">87</th><td>      <em>const</em> <em>auto</em>&amp; <dfn class="decl def fn" id="_ZNK5gtsam11Conditional24ConstFactorRangeIterator5frontEv" title='gtsam::Conditional::ConstFactorRangeIterator::front' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator5frontEv">front</dfn>() <em>const</em> { <b>return</b> *<a class="member fn" href="#_ZNK5gtsam11Conditional24ConstFactorRangeIterator5beginEv" title='gtsam::Conditional::ConstFactorRangeIterator::begin' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator5beginEv">begin</a>(); }</td></tr>
+<tr><th id="88">88</th><td>      <i>// == operator overload for comparison with another iterator</i></td></tr>
+<tr><th id="89">89</th><td>      <b>template</b> &lt;<b>class</b> OTHER&gt;</td></tr>
+<tr><th id="90">90</th><td>      <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional24ConstFactorRangeIteratoreqERKTL0__" title='gtsam::Conditional::ConstFactorRangeIterator::operator==' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIteratoreqERKTL0__"><b>operator</b>==</dfn>(<em>const</em> OTHER&amp; <dfn class="local col3 decl" id="653rhs" title='rhs' data-type='const OTHER &amp;' data-ref="653rhs">rhs</dfn>) <em>const</em> {</td></tr>
+<tr><th id="91">91</th><td>        <b>if</b> (<b>this</b>-&gt;size() != <a class="local col3 ref" href="#653rhs" title='rhs' data-ref="653rhs">rhs</a>.size()) <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="92">92</th><td>        <b>if</b> (<b>this</b>-&gt;size() == <var>0</var>) <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="93">93</th><td>        <b>return</b> <span class="namespace">std::</span>equal(<a class="member fn" href="#_ZNK5gtsam11Conditional24ConstFactorRangeIterator5beginEv" title='gtsam::Conditional::ConstFactorRangeIterator::begin' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator5beginEv">begin</a>(), <a class="member fn" href="#_ZNK5gtsam11Conditional24ConstFactorRangeIterator3endEv" title='gtsam::Conditional::ConstFactorRangeIterator::end' data-ref="_ZNK5gtsam11Conditional24ConstFactorRangeIterator3endEv">end</a>(), <a class="local col3 ref" href="#653rhs" title='rhs' data-ref="653rhs">rhs</a>.begin(), <a class="local col3 ref" href="#653rhs" title='rhs' data-ref="653rhs">rhs</a>.end());</td></tr>
+<tr><th id="94">94</th><td>      }</td></tr>
+<tr><th id="95">95</th><td>    };</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    <i class="doc">/** View of the frontal keys (call frontals()) */</i></td></tr>
+<tr><th id="98">98</th><td>    <b>typedef</b> <a class="type" href="#gtsam::Conditional::ConstFactorRangeIterator" title='gtsam::Conditional::ConstFactorRangeIterator' data-ref="gtsam::Conditional::ConstFactorRangeIterator">ConstFactorRangeIterator</a> <dfn class="typedef" id="gtsam::Conditional::Frontals" title='gtsam::Conditional::Frontals' data-type='ConstFactorRangeIterator' data-ref="gtsam::Conditional::Frontals">Frontals</dfn>;</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td>    <i class="doc">/** View of the separator keys (call parents()) */</i></td></tr>
+<tr><th id="101">101</th><td>    <b>typedef</b> <a class="type" href="#gtsam::Conditional::ConstFactorRangeIterator" title='gtsam::Conditional::ConstFactorRangeIterator' data-ref="gtsam::Conditional::ConstFactorRangeIterator">ConstFactorRangeIterator</a> <dfn class="typedef" id="gtsam::Conditional::Parents" title='gtsam::Conditional::Parents' data-type='ConstFactorRangeIterator' data-ref="gtsam::Conditional::Parents">Parents</dfn>;</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="104">104</th><td>    <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>    <i class="doc">/** Empty Constructor to make serialization possible */</i></td></tr>
+<tr><th id="108">108</th><td>    <dfn class="decl def fn" id="_ZN5gtsam11ConditionalC1Ev" title='gtsam::Conditional::Conditional&lt;FACTOR, DERIVEDCONDITIONAL&gt;' data-ref="_ZN5gtsam11ConditionalC1Ev">Conditional</dfn>() : <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>(<var>0</var>) {}</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>    <i class="doc">/** Constructor */</i></td></tr>
+<tr><th id="111">111</th><td>    <dfn class="decl def fn" id="_ZN5gtsam11ConditionalC1Em" title='gtsam::Conditional::Conditional&lt;FACTOR, DERIVEDCONDITIONAL&gt;' data-ref="_ZN5gtsam11ConditionalC1Em">Conditional</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="654nrFrontals" title='nrFrontals' data-type='size_t' data-ref="654nrFrontals">nrFrontals</dfn>) : <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>(<a class="local col4 ref" href="#654nrFrontals" title='nrFrontals' data-ref="654nrFrontals">nrFrontals</a>) {}</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>  <b>public</b>:</td></tr>
+<tr><th id="116">116</th><td>    <i class="doc">/// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>    <i class="doc">/** print with optional formatter */</i></td></tr>
+<tr><th id="120">120</th><td>    <em>void</em> <a class="decl fn" href="Conditional-inst.h.html#_ZNK5gtsam11Conditional5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::Conditional::print' data-ref="_ZNK5gtsam11Conditional5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" id="_ZNK5gtsam11Conditional5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col5 decl" id="655s" title='s' data-type='const std::string &amp;' data-ref="655s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"Conditional"</q>, <em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col6 decl" id="656formatter" title='formatter' data-type='const KeyFormatter &amp;' data-ref="656formatter">formatter</dfn> = <a class="ref" href="Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em>;</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    <i class="doc">/** check equality */</i></td></tr>
+<tr><th id="123">123</th><td>    <em>bool</em> <a class="decl fn" href="Conditional-inst.h.html#_ZNK5gtsam11Conditional6equalsERKNS_11ConditionalIT_T0_EEd" title='gtsam::Conditional::equals' data-ref="_ZNK5gtsam11Conditional6equalsERKNS_11ConditionalIT_T0_EEd" id="_ZNK5gtsam11Conditional6equalsERKNS_11ConditionalIT_T0_EEd">equals</a>(<em>const</em> <a class="typedef" href="#gtsam::Conditional::This" title='gtsam::Conditional::This' data-type='Conditional&lt;FACTOR, DERIVEDCONDITIONAL&gt;' data-ref="gtsam::Conditional::This">This</a>&amp; <dfn class="local col7 decl" id="657c" title='c' data-type='const This &amp;' data-ref="657c">c</dfn>, <em>double</em> <dfn class="local col8 decl" id="658tol" title='tol' data-type='double' data-ref="658tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc"></i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">    /// <span class="command">@name</span> <span class="verb">Standard Interface</span></i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>    <b>virtual</b> <dfn class="virtual decl def fn" id="_ZN5gtsam11ConditionalD1Ev" title='gtsam::Conditional::~Conditional&lt;FACTOR, DERIVEDCONDITIONAL&gt;' data-ref="_ZN5gtsam11ConditionalD1Ev">~Conditional</dfn>() {}</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>    <i class="doc">/** return the number of frontals */</i></td></tr>
+<tr><th id="133">133</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional10nrFrontalsEv" title='gtsam::Conditional::nrFrontals' data-ref="_ZNK5gtsam11Conditional10nrFrontalsEv">nrFrontals</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>; }</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>    <i class="doc">/** return the number of parents */</i></td></tr>
+<tr><th id="136">136</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional9nrParentsEv" title='gtsam::Conditional::nrParents' data-ref="_ZNK5gtsam11Conditional9nrParentsEv">nrParents</dfn>() <em>const</em> { <b>return</b> asFactor().size() - <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>; }</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>    <i class="doc">/** Convenience function to get the first frontal key */</i></td></tr>
+<tr><th id="139">139</th><td>    <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional15firstFrontalKeyEv" title='gtsam::Conditional::firstFrontalKey' data-ref="_ZNK5gtsam11Conditional15firstFrontalKeyEv">firstFrontalKey</dfn>() <em>const</em> {</td></tr>
+<tr><th id="140">140</th><td>      <b>if</b>(<a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a> &gt; <var>0</var>)</td></tr>
+<tr><th id="141">141</th><td>        <b>return</b> asFactor().front();</td></tr>
+<tr><th id="142">142</th><td>      <b>else</b></td></tr>
+<tr><th id="143">143</th><td>        <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a><q>"Requested Conditional::firstFrontalKey from a conditional with zero frontal keys"</q>);</td></tr>
+<tr><th id="144">144</th><td>    }</td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>    <i class="doc">/** return a view of the frontal keys */</i></td></tr>
+<tr><th id="147">147</th><td>    <a class="typedef" href="#gtsam::Conditional::Frontals" title='gtsam::Conditional::Frontals' data-type='ConstFactorRangeIterator' data-ref="gtsam::Conditional::Frontals">Frontals</a> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional8frontalsEv" title='gtsam::Conditional::frontals' data-ref="_ZNK5gtsam11Conditional8frontalsEv">frontals</dfn>() <em>const</em> { <b>return</b> <a class="type" href="#gtsam::Conditional::ConstFactorRangeIterator" title='gtsam::Conditional::ConstFactorRangeIterator' data-ref="gtsam::Conditional::ConstFactorRangeIterator">ConstFactorRangeIterator</a>({beginFrontals(), endFrontals()});}</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td>    <i class="doc">/** return a view of the parent keys */</i></td></tr>
+<tr><th id="150">150</th><td>    <a class="typedef" href="#gtsam::Conditional::Parents" title='gtsam::Conditional::Parents' data-type='ConstFactorRangeIterator' data-ref="gtsam::Conditional::Parents">Parents</a> <dfn class="decl def fn" id="_ZNK5gtsam11Conditional7parentsEv" title='gtsam::Conditional::parents' data-ref="_ZNK5gtsam11Conditional7parentsEv">parents</dfn>() <em>const</em> { <b>return</b> <a class="type" href="#gtsam::Conditional::ConstFactorRangeIterator" title='gtsam::Conditional::ConstFactorRangeIterator' data-ref="gtsam::Conditional::ConstFactorRangeIterator">ConstFactorRangeIterator</a>({beginParents(), endParents()}); }</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">     * All conditional types need to implement a `logProbability` function, for which</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">     *   exp(logProbability(x)) = evaluate(x).</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="156">156</th><td>    <b>virtual</b> <em>double</em> <a class="virtual decl fn" href="Conditional-inst.h.html#_ZNK5gtsam11Conditional14logProbabilityERKNS_12HybridValuesE" title='gtsam::Conditional::logProbability' data-ref="_ZNK5gtsam11Conditional14logProbabilityERKNS_12HybridValuesE" id="_ZNK5gtsam11Conditional14logProbabilityERKNS_12HybridValuesE">logProbability</a>(<em>const</em> <a class="type" href="Factor.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col9 decl" id="659c" title='c' data-type='const HybridValues &amp;' data-ref="659c">c</dfn>) <em>const</em>;</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="159">159</th><td><i class="doc">     * All conditional types need to implement an `evaluate` function, that yields</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">     * a true probability. The default implementation just exponentiates logProbability.</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="162">162</th><td>    <b>virtual</b> <em>double</em> <a class="virtual decl fn" href="Conditional-inst.h.html#_ZNK5gtsam11Conditional8evaluateERKNS_12HybridValuesE" title='gtsam::Conditional::evaluate' data-ref="_ZNK5gtsam11Conditional8evaluateERKNS_12HybridValuesE" id="_ZNK5gtsam11Conditional8evaluateERKNS_12HybridValuesE">evaluate</a>(<em>const</em> <a class="type" href="Factor.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col0 decl" id="660c" title='c' data-type='const HybridValues &amp;' data-ref="660c">c</dfn>) <em>const</em>;</td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td>    <i class="doc">/// Evaluate probability density, sugar.</i></td></tr>
+<tr><th id="165">165</th><td>    <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam11ConditionalclERKNS_12HybridValuesE" title='gtsam::Conditional::operator()' data-ref="_ZNK5gtsam11ConditionalclERKNS_12HybridValuesE"><b>operator</b>()</dfn>(<em>const</em> <a class="type" href="Factor.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col1 decl" id="661x" title='x' data-type='const HybridValues &amp;' data-ref="661x">x</dfn>) <em>const</em> {</td></tr>
+<tr><th id="166">166</th><td>      <b>return</b> <a class="virtual member fn" href="Conditional-inst.h.html#_ZNK5gtsam11Conditional8evaluateERKNS_12HybridValuesE" title='gtsam::Conditional::evaluate' data-ref="_ZNK5gtsam11Conditional8evaluateERKNS_12HybridValuesE">evaluate</a>(<span class='inlayHint'>c:&nbsp;</span><a class="local col1 ref" href="#661x" title='x' data-ref="661x">x</a>);</td></tr>
+<tr><th id="167">167</th><td>    }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">     * <span class="command">@brief</span> All conditional types need to implement this as the negative log</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">     * of the normalization constant to make it such that error&gt;=0.</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">     * <span class="command">@return</span> double</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="175">175</th><td>    <b>virtual</b> <em>double</em> <a class="virtual decl fn" href="Conditional-inst.h.html#_ZNK5gtsam11Conditional14negLogConstantEv" title='gtsam::Conditional::negLogConstant' data-ref="_ZNK5gtsam11Conditional14negLogConstantEv" id="_ZNK5gtsam11Conditional14negLogConstantEv">negLogConstant</a>() <em>const</em>;</td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="178">178</th><td><i class="doc">    /// <span class="command">@name</span> <span class="verb">Advanced Interface</span></i></td></tr>
+<tr><th id="179">179</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>    <i class="doc">/** Iterator pointing to first frontal key. */</i></td></tr>
+<tr><th id="182">182</th><td>    <b>typename</b> FACTOR::const_iterator <dfn class="decl def fn" id="_ZNK5gtsam11Conditional13beginFrontalsEv" title='gtsam::Conditional::beginFrontals' data-ref="_ZNK5gtsam11Conditional13beginFrontalsEv">beginFrontals</dfn>() <em>const</em> { <b>return</b> asFactor().begin(); }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>    <i class="doc">/** Iterator pointing past the last frontal key. */</i></td></tr>
+<tr><th id="185">185</th><td>    <b>typename</b> FACTOR::const_iterator <dfn class="decl def fn" id="_ZNK5gtsam11Conditional11endFrontalsEv" title='gtsam::Conditional::endFrontals' data-ref="_ZNK5gtsam11Conditional11endFrontalsEv">endFrontals</dfn>() <em>const</em> { <b>return</b> asFactor().begin() + <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>; }</td></tr>
+<tr><th id="186">186</th><td></td></tr>
+<tr><th id="187">187</th><td>    <i class="doc">/** Iterator pointing to the first parent key. */</i></td></tr>
+<tr><th id="188">188</th><td>    <b>typename</b> FACTOR::const_iterator <dfn class="decl def fn" id="_ZNK5gtsam11Conditional12beginParentsEv" title='gtsam::Conditional::beginParents' data-ref="_ZNK5gtsam11Conditional12beginParentsEv">beginParents</dfn>() <em>const</em> { <b>return</b> endFrontals(); }</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>    <i class="doc">/** Iterator pointing past the last parent key. */</i></td></tr>
+<tr><th id="191">191</th><td>    <b>typename</b> FACTOR::const_iterator <dfn class="decl def fn" id="_ZNK5gtsam11Conditional10endParentsEv" title='gtsam::Conditional::endParents' data-ref="_ZNK5gtsam11Conditional10endParentsEv">endParents</dfn>() <em>const</em> { <b>return</b> asFactor().end(); }</td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td>    <i class="doc">/** Mutable version of nrFrontals */</i></td></tr>
+<tr><th id="194">194</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>&amp; <dfn class="decl def fn" id="_ZN5gtsam11Conditional10nrFrontalsEv" title='gtsam::Conditional::nrFrontals' data-ref="_ZN5gtsam11Conditional10nrFrontalsEv">nrFrontals</dfn>() { <b>return</b> <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>; }</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td>    <i class="doc">/** Mutable iterator pointing to first frontal key. */</i></td></tr>
+<tr><th id="197">197</th><td>    <b>typename</b> FACTOR::iterator <dfn class="decl def fn" id="_ZN5gtsam11Conditional13beginFrontalsEv" title='gtsam::Conditional::beginFrontals' data-ref="_ZN5gtsam11Conditional13beginFrontalsEv">beginFrontals</dfn>() { <b>return</b> asFactor().begin(); }</td></tr>
+<tr><th id="198">198</th><td></td></tr>
+<tr><th id="199">199</th><td>    <i class="doc">/** Mutable iterator pointing past the last frontal key. */</i></td></tr>
+<tr><th id="200">200</th><td>    <b>typename</b> FACTOR::iterator <dfn class="decl def fn" id="_ZN5gtsam11Conditional11endFrontalsEv" title='gtsam::Conditional::endFrontals' data-ref="_ZN5gtsam11Conditional11endFrontalsEv">endFrontals</dfn>() { <b>return</b> asFactor().begin() + <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>; }</td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>    <i class="doc">/** Mutable iterator pointing to the first parent key. */</i></td></tr>
+<tr><th id="203">203</th><td>    <b>typename</b> FACTOR::iterator <dfn class="decl def fn" id="_ZN5gtsam11Conditional12beginParentsEv" title='gtsam::Conditional::beginParents' data-ref="_ZN5gtsam11Conditional12beginParentsEv">beginParents</dfn>() { <b>return</b> asFactor().begin() + <a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a>; }</td></tr>
+<tr><th id="204">204</th><td></td></tr>
+<tr><th id="205">205</th><td>    <i class="doc">/** Mutable iterator pointing past the last parent key. */</i></td></tr>
+<tr><th id="206">206</th><td>    <b>typename</b> FACTOR::iterator <dfn class="decl def fn" id="_ZN5gtsam11Conditional10endParentsEv" title='gtsam::Conditional::endParents' data-ref="_ZN5gtsam11Conditional10endParentsEv">endParents</dfn>() { <b>return</b> asFactor().end(); }</td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="209">209</th><td><i class="doc">     * Check invariants of this conditional, given the values `x`.</i></td></tr>
+<tr><th id="210">210</th><td><i class="doc">     * It tests:</i></td></tr>
+<tr><th id="211">211</th><td><i class="doc">     *  - evaluate &gt;= 0.0</i></td></tr>
+<tr><th id="212">212</th><td><i class="doc">     *  - evaluate(x) == conditional(x)</i></td></tr>
+<tr><th id="213">213</th><td><i class="doc">     *  - exp(logProbability(x)) == evaluate(x)</i></td></tr>
+<tr><th id="214">214</th><td><i class="doc">     *  - negLogConstant() = -log(normalizationConstant())</i></td></tr>
+<tr><th id="215">215</th><td><i class="doc">     *  - error &gt;= 0.0</i></td></tr>
+<tr><th id="216">216</th><td><i class="doc">     *  - logProbability(x) == -(negLogConstant() + error(x))</i></td></tr>
+<tr><th id="217">217</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="218">218</th><td><i class="doc">     * <span class="command">@param</span> <span class="arg">conditional</span> The conditional to test, as a reference to the derived type.</i></td></tr>
+<tr><th id="219">219</th><td><i class="doc">     * <span class="command">@tparam</span> <span class="arg">VALUES</span> HybridValues, or a more narrow type like DiscreteValues.</i></td></tr>
+<tr><th id="220">220</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="221">221</th><td>    <b>template</b> &lt;<b>class</b> VALUES&gt;</td></tr>
+<tr><th id="222">222</th><td>    <em>static</em> <em>bool</em> <a class="decl fn" href="Conditional-inst.h.html#_ZN5gtsam11Conditional15CheckInvariantsERKT0_RKTL0__" title='gtsam::Conditional::CheckInvariants' data-ref="_ZN5gtsam11Conditional15CheckInvariantsERKT0_RKTL0__" id="_ZN5gtsam11Conditional15CheckInvariantsERKT0_RKTL0__">CheckInvariants</a>(<em>const</em> DERIVEDCONDITIONAL&amp; <dfn class="local col2 decl" id="662conditional" title='conditional' data-type='const DERIVEDCONDITIONAL &amp;' data-ref="662conditional">conditional</dfn>,</td></tr>
+<tr><th id="223">223</th><td>                                <em>const</em> VALUES&amp; <dfn class="local col3 decl" id="663x" title='x' data-type='const VALUES &amp;' data-ref="663x">x</dfn>);</td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>  <b>private</b>:</td></tr>
+<tr><th id="228">228</th><td></td></tr>
+<tr><th id="229">229</th><td>    <i class="doc">/// <span class="command">@name</span> <span class="verb">Serialization</span></i></td></tr>
+<tr><th id="230">230</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="231">231</th><td><i class="doc"></i></td></tr>
+<tr><th id="232">232</th><td><i class="doc">    // Cast to factor type (non-const) (casts down to derived conditional type, then up to factor type)</i></td></tr>
+<tr><th id="233">233</th><td>    FACTOR&amp; <dfn class="decl def fn" id="_ZN5gtsam11Conditional8asFactorEv" title='gtsam::Conditional::asFactor' data-ref="_ZN5gtsam11Conditional8asFactorEv">asFactor</dfn>() { <b>return</b> <b>static_cast</b>&lt;FACTOR&amp;&gt;(<b>static_cast</b>&lt;DERIVEDCONDITIONAL&amp;&gt;(*<b>this</b>)); }</td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td>    <i>// Cast to derived type (const) (casts down to derived conditional type, then up to factor type)</i></td></tr>
+<tr><th id="236">236</th><td>    <em>const</em> FACTOR&amp; <dfn class="decl def fn" id="_ZNK5gtsam11Conditional8asFactorEv" title='gtsam::Conditional::asFactor' data-ref="_ZNK5gtsam11Conditional8asFactorEv">asFactor</dfn>() <em>const</em> { <b>return</b> <b>static_cast</b>&lt;<em>const</em> FACTOR&amp;&gt;(<b>static_cast</b>&lt;<em>const</em> DERIVEDCONDITIONAL&amp;&gt;(*<b>this</b>)); }</td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td><u>#<span data-ppcond="238">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="239">239</th><td>    <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="240">240</th><td>    <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="241">241</th><td>    <b>template</b>&lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="242">242</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11Conditional9serializeERTL0__j" title='gtsam::Conditional::serialize' data-ref="_ZN5gtsam11Conditional9serializeERTL0__j">serialize</dfn>(ARCHIVE &amp; <dfn class="local col4 decl" id="664ar" title='ar' data-type='ARCHIVE &amp;' data-ref="664ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="243">243</th><td>      <a class="local col4 ref" href="#664ar" title='ar' data-ref="664ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;nrFrontals_&quot;, nrFrontals_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::Conditional::nrFrontals_" title='gtsam::Conditional::nrFrontals_' data-ref="gtsam::Conditional::nrFrontals_">nrFrontals_</a></span>);</td></tr>
+<tr><th id="244">244</th><td>    }</td></tr>
+<tr><th id="245">245</th><td><u>#<span data-ppcond="238">endif</span></u></td></tr>
+<tr><th id="246">246</th><td></td></tr>
+<tr><th id="247">247</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="248">248</th><td></td></tr>
+<tr><th id="249">249</th><td>  };</td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td>} <i>// gtsam</i></td></tr>
+<tr><th id="252">252</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/DiscreteBayesNetExample.cpp.html'>codebrowser/examples/DiscreteBayesNetExample.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

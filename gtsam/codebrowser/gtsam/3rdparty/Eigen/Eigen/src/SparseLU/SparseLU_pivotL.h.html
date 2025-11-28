@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SparseLU_pivotL.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseLU/SparseLU_pivotL.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseLU/SparseLU_pivotL.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>SparseLU</a>/<a href='SparseLU_pivotL.h.html'>SparseLU_pivotL.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2012 Désiré Nuentsa-Wakam &lt;desire.nuentsa_wakam@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>//</i></td></tr>
+<tr><th id="6">6</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="7">7</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="8">8</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><i>/* </i></td></tr>
+<tr><th id="11">11</th><td><i> </i></td></tr>
+<tr><th id="12">12</th><td><i> * NOTE: This file is the modified version of xpivotL.c file in SuperLU </i></td></tr>
+<tr><th id="13">13</th><td><i> </i></td></tr>
+<tr><th id="14">14</th><td><i> * -- SuperLU routine (version 3.0) --</i></td></tr>
+<tr><th id="15">15</th><td><i> * Univ. of California Berkeley, Xerox Palo Alto Research Center,</i></td></tr>
+<tr><th id="16">16</th><td><i> * and Lawrence Berkeley National Lab.</i></td></tr>
+<tr><th id="17">17</th><td><i> * October 15, 2003</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> * Copyright (c) 1994 by Xerox Corporation.  All rights reserved.</i></td></tr>
+<tr><th id="20">20</th><td><i> *</i></td></tr>
+<tr><th id="21">21</th><td><i> * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY</i></td></tr>
+<tr><th id="22">22</th><td><i> * EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.</i></td></tr>
+<tr><th id="23">23</th><td><i> *</i></td></tr>
+<tr><th id="24">24</th><td><i> * Permission is hereby granted to use or copy this program for any</i></td></tr>
+<tr><th id="25">25</th><td><i> * purpose, provided the above notices are retained on all copies.</i></td></tr>
+<tr><th id="26">26</th><td><i> * Permission to modify the code and to distribute modified code is</i></td></tr>
+<tr><th id="27">27</th><td><i> * granted, provided the above notices are retained, and a notice that</i></td></tr>
+<tr><th id="28">28</th><td><i> * the code was modified is included with the above copyright notice.</i></td></tr>
+<tr><th id="29">29</th><td><i> */</i></td></tr>
+<tr><th id="30">30</th><td><u>#<span data-ppcond="30">ifndef</span> <span class="macro" data-ref="_M/SPARSELU_PIVOTL_H">SPARSELU_PIVOTL_H</span></u></td></tr>
+<tr><th id="31">31</th><td><u>#define <dfn class="macro" id="_M/SPARSELU_PIVOTL_H" data-ref="_M/SPARSELU_PIVOTL_H">SPARSELU_PIVOTL_H</dfn></u></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="34">34</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="35">35</th><td>  </td></tr>
+<tr><th id="36">36</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * <span class="command">\brief</span> Performs the numerical pivotin on the current column of L, and the CDIV operation.</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * Pivot policy :</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * (1) Compute thresh = u * max_(i&gt;=j) abs(A_ij);</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * (2) IF user specifies pivot row k and abs(A_kj) &gt;= thresh THEN</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> *           pivot row = k;</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> *       ELSE IF abs(A_jj) &gt;= thresh THEN</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> *           pivot row = j;</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> *       ELSE</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> *           pivot row = m;</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> *   Note: If you absolutely want to use a given pivot order, then set u=0.0.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">jcol</span> The current column of L</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">diagpivotthresh</span> diagonal pivoting threshold</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> * <span class="command">\param</span>[in,out] <span class="arg">perm_r</span> Row permutation (threshold pivoting)</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> * <span class="command">\param</span>[in] <span class="arg">iperm_c</span> column permutation - used to finf diagonal of Pc*A*Pc'</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> * <span class="command">\param</span>[out] <span class="arg">pivrow</span>  The pivot row</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">glu</span> Global LU data</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> * <span class="command">\return</span> 0 if success, i &gt; 0 if U(i,i) is exactly zero </i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="59">59</th><td><b>template</b> &lt;<b>typename</b> Scalar, <b>typename</b> StorageIndex&gt;</td></tr>
+<tr><th id="60">60</th><td><a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <a class="type" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl" title='Eigen::internal::SparseLUImpl' data-ref="Eigen::internal::SparseLUImpl">SparseLUImpl</a>&lt;Scalar,StorageIndex&gt;::<dfn class="decl def fn" id="_ZN5Eigen8internal12SparseLUImpl6pivotLElRKNS_6MatrixIT_Lin1ELi1ELi0ELin1ELi1EE10RealScalarERNS2_IT0_Lin1ELi1ELi0ELin1ELi1EEESA_RlRNS0_13LU_GlobalLU_tIS9_S4_EE" title='Eigen::internal::SparseLUImpl::pivotL' data-ref="_ZN5Eigen8internal12SparseLUImpl6pivotLElRKNS_6MatrixIT_Lin1ELi1ELi0ELin1ELi1EE10RealScalarERNS2_IT0_Lin1ELi1ELi0ELin1ELi1EEESA_RlRNS0_13LU_GlobalLU_tIS9_S4_EE">pivotL</dfn>(<em>const</em> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col5 decl" id="25645jcol" title='jcol' data-type='const Index' data-ref="25645jcol">jcol</dfn>, <em>const</em> <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a>&amp; <dfn class="local col6 decl" id="25646diagpivotthresh" title='diagpivotthresh' data-type='const RealScalar &amp;' data-ref="25646diagpivotthresh">diagpivotthresh</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col7 decl" id="25647perm_r" title='perm_r' data-type='IndexVector &amp;' data-ref="25647perm_r">perm_r</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col8 decl" id="25648iperm_c" title='iperm_c' data-type='IndexVector &amp;' data-ref="25648iperm_c">iperm_c</dfn>, <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>&amp; <dfn class="local col9 decl" id="25649pivrow" title='pivrow' data-type='Index &amp;' data-ref="25649pivrow">pivrow</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::GlobalLU_t" title='Eigen::internal::SparseLUImpl::GlobalLU_t' data-type='LU_GlobalLU_t&lt;IndexVector, ScalarVector&gt;' data-ref="Eigen::internal::SparseLUImpl::GlobalLU_t">GlobalLU_t</a>&amp; <dfn class="local col0 decl" id="25650glu" title='glu' data-type='GlobalLU_t &amp;' data-ref="25650glu">glu</dfn>)</td></tr>
+<tr><th id="61">61</th><td>{</td></tr>
+<tr><th id="62">62</th><td>  </td></tr>
+<tr><th id="63">63</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col1 decl" id="25651fsupc" title='fsupc' data-type='Index' data-ref="25651fsupc">fsupc</dfn> = (<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xsup)((<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.supno)(<a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a>)); <i>// First column in the supernode containing the column jcol</i></td></tr>
+<tr><th id="64">64</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col2 decl" id="25652nsupc" title='nsupc' data-type='Index' data-ref="25652nsupc">nsupc</dfn> = <a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a> - <a class="local col1 ref" href="#25651fsupc" title='fsupc' data-ref="25651fsupc">fsupc</a>; <i>// Number of columns in the supernode portion, excluding jcol; nsupc &gt;=0</i></td></tr>
+<tr><th id="65">65</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col3 decl" id="25653lptr" title='lptr' data-type='Index' data-ref="25653lptr">lptr</dfn> = <a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xlsub(<a class="local col1 ref" href="#25651fsupc" title='fsupc' data-ref="25651fsupc">fsupc</a>); <i>// pointer to the starting location of the row subscripts for this supernode portion</i></td></tr>
+<tr><th id="66">66</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col4 decl" id="25654nsupr" title='nsupr' data-type='Index' data-ref="25654nsupr">nsupr</dfn> = <a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xlsub(<a class="local col1 ref" href="#25651fsupc" title='fsupc' data-ref="25651fsupc">fsupc</a>+<var>1</var>) - <a class="local col3 ref" href="#25653lptr" title='lptr' data-ref="25653lptr">lptr</a>; <i>// Number of rows in the supernode</i></td></tr>
+<tr><th id="67">67</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col5 decl" id="25655lda" title='lda' data-type='Index' data-ref="25655lda">lda</dfn> = <a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xlusup(<a class="local col1 ref" href="#25651fsupc" title='fsupc' data-ref="25651fsupc">fsupc</a>+<var>1</var>) - <a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xlusup(<a class="local col1 ref" href="#25651fsupc" title='fsupc' data-ref="25651fsupc">fsupc</a>); <i>// leading dimension</i></td></tr>
+<tr><th id="68">68</th><td>  Scalar* <dfn class="local col6 decl" id="25656lu_sup_ptr" title='lu_sup_ptr' data-type='Scalar *' data-ref="25656lu_sup_ptr">lu_sup_ptr</dfn> = &amp;(<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.lusup.data()[<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xlusup(<a class="local col1 ref" href="#25651fsupc" title='fsupc' data-ref="25651fsupc">fsupc</a>)]); <i>// Start of the current supernode</i></td></tr>
+<tr><th id="69">69</th><td>  Scalar* <dfn class="local col7 decl" id="25657lu_col_ptr" title='lu_col_ptr' data-type='Scalar *' data-ref="25657lu_col_ptr">lu_col_ptr</dfn> = &amp;(<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.lusup.data()[<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.xlusup(<a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a>)]); <i>// Start of jcol in the supernode</i></td></tr>
+<tr><th id="70">70</th><td>  StorageIndex* <dfn class="local col8 decl" id="25658lsub_ptr" title='lsub_ptr' data-type='StorageIndex *' data-ref="25658lsub_ptr">lsub_ptr</dfn> = &amp;(<a class="local col0 ref" href="#25650glu" title='glu' data-ref="25650glu">glu</a>.lsub.data()[<a class="local col3 ref" href="#25653lptr" title='lptr' data-ref="25653lptr">lptr</a>]); <i>// Start of row indices of the supernode</i></td></tr>
+<tr><th id="71">71</th><td>  </td></tr>
+<tr><th id="72">72</th><td>  <i>// Determine the largest abs numerical value for partial pivoting </i></td></tr>
+<tr><th id="73">73</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col9 decl" id="25659diagind" title='diagind' data-type='Index' data-ref="25659diagind">diagind</dfn> = <a class="local col8 ref" href="#25648iperm_c" title='iperm_c' data-ref="25648iperm_c">iperm_c</a>(<a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a>); <i>// diagonal index </i></td></tr>
+<tr><th id="74">74</th><td>  <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a> <dfn class="local col0 decl" id="25660pivmax" title='pivmax' data-type='RealScalar' data-ref="25660pivmax">pivmax</dfn>(-<var>1.0</var>);</td></tr>
+<tr><th id="75">75</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col1 decl" id="25661pivptr" title='pivptr' data-type='Index' data-ref="25661pivptr">pivptr</dfn> = <a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a>; </td></tr>
+<tr><th id="76">76</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col2 decl" id="25662diag" title='diag' data-type='Index' data-ref="25662diag">diag</dfn> = <a class="enum" href="SparseLU_Memory.h.html#Eigen::internal::emptyIdxLU" title='Eigen::internal::emptyIdxLU' data-ref="Eigen::internal::emptyIdxLU">emptyIdxLU</a>; </td></tr>
+<tr><th id="77">77</th><td>  <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a> <dfn class="local col3 decl" id="25663rtemp" title='rtemp' data-type='RealScalar' data-ref="25663rtemp">rtemp</dfn>;</td></tr>
+<tr><th id="78">78</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col4 decl" id="25664isub" title='isub' data-type='Index' data-ref="25664isub">isub</dfn>, <dfn class="local col5 decl" id="25665icol" title='icol' data-type='Index' data-ref="25665icol">icol</dfn>, <dfn class="local col6 decl" id="25666itemp" title='itemp' data-type='Index' data-ref="25666itemp">itemp</dfn>, <dfn class="local col7 decl" id="25667k" title='k' data-type='Index' data-ref="25667k">k</dfn>; </td></tr>
+<tr><th id="79">79</th><td>  <b>for</b> (<a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a> = <a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a>; <a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a> &lt; <a class="local col4 ref" href="#25654nsupr" title='nsupr' data-ref="25654nsupr">nsupr</a>; ++<a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a>) {</td></tr>
+<tr><th id="80">80</th><td>    <b>using</b> <span class="namespace">std::</span>abs;</td></tr>
+<tr><th id="81">81</th><td>    <a class="local col3 ref" href="#25663rtemp" title='rtemp' data-ref="25663rtemp">rtemp</a> = abs(<a class="local col7 ref" href="#25657lu_col_ptr" title='lu_col_ptr' data-ref="25657lu_col_ptr">lu_col_ptr</a>[<a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a>]);</td></tr>
+<tr><th id="82">82</th><td>    <b>if</b> (<a class="local col3 ref" href="#25663rtemp" title='rtemp' data-ref="25663rtemp">rtemp</a> &gt; <a class="local col0 ref" href="#25660pivmax" title='pivmax' data-ref="25660pivmax">pivmax</a>) {</td></tr>
+<tr><th id="83">83</th><td>      <a class="local col0 ref" href="#25660pivmax" title='pivmax' data-ref="25660pivmax">pivmax</a> = <a class="local col3 ref" href="#25663rtemp" title='rtemp' data-ref="25663rtemp">rtemp</a>; </td></tr>
+<tr><th id="84">84</th><td>      <a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a> = <a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a>;</td></tr>
+<tr><th id="85">85</th><td>    } </td></tr>
+<tr><th id="86">86</th><td>    <b>if</b> (<a class="local col8 ref" href="#25658lsub_ptr" title='lsub_ptr' data-ref="25658lsub_ptr">lsub_ptr</a>[<a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a>] == <a class="local col9 ref" href="#25659diagind" title='diagind' data-ref="25659diagind">diagind</a>) <a class="local col2 ref" href="#25662diag" title='diag' data-ref="25662diag">diag</a> = <a class="local col4 ref" href="#25664isub" title='isub' data-ref="25664isub">isub</a>;</td></tr>
+<tr><th id="87">87</th><td>  }</td></tr>
+<tr><th id="88">88</th><td>  </td></tr>
+<tr><th id="89">89</th><td>  <i>// Test for singularity</i></td></tr>
+<tr><th id="90">90</th><td>  <b>if</b> ( <a class="local col0 ref" href="#25660pivmax" title='pivmax' data-ref="25660pivmax">pivmax</a> &lt;= <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a>(<var>0.0</var>) ) {</td></tr>
+<tr><th id="91">91</th><td>    <i>// if pivmax == -1, the column is structurally empty, otherwise it is only numerically zero</i></td></tr>
+<tr><th id="92">92</th><td>    <a class="local col9 ref" href="#25649pivrow" title='pivrow' data-ref="25649pivrow">pivrow</a> = <a class="local col0 ref" href="#25660pivmax" title='pivmax' data-ref="25660pivmax">pivmax</a> &lt; <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a>(<var>0.0</var>) ? <a class="local col9 ref" href="#25659diagind" title='diagind' data-ref="25659diagind">diagind</a> : <a class="local col8 ref" href="#25658lsub_ptr" title='lsub_ptr' data-ref="25658lsub_ptr">lsub_ptr</a>[<a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a>];</td></tr>
+<tr><th id="93">93</th><td>    <a class="local col7 ref" href="#25647perm_r" title='perm_r' data-ref="25647perm_r">perm_r</a>(<a class="local col9 ref" href="#25649pivrow" title='pivrow' data-ref="25649pivrow">pivrow</a>) = StorageIndex(<a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a>);</td></tr>
+<tr><th id="94">94</th><td>    <b>return</b> (<a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a>+<var>1</var>);</td></tr>
+<tr><th id="95">95</th><td>  }</td></tr>
+<tr><th id="96">96</th><td>  </td></tr>
+<tr><th id="97">97</th><td>  <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a> <dfn class="local col8 decl" id="25668thresh" title='thresh' data-type='RealScalar' data-ref="25668thresh">thresh</dfn> = <a class="local col6 ref" href="#25646diagpivotthresh" title='diagpivotthresh' data-ref="25646diagpivotthresh">diagpivotthresh</a> * <a class="local col0 ref" href="#25660pivmax" title='pivmax' data-ref="25660pivmax">pivmax</a>; </td></tr>
+<tr><th id="98">98</th><td>  </td></tr>
+<tr><th id="99">99</th><td>  <i>// Choose appropriate pivotal element </i></td></tr>
+<tr><th id="100">100</th><td>  </td></tr>
+<tr><th id="101">101</th><td>  {</td></tr>
+<tr><th id="102">102</th><td>    <i>// Test if the diagonal element can be used as a pivot (given the threshold value)</i></td></tr>
+<tr><th id="103">103</th><td>    <b>if</b> (<a class="local col2 ref" href="#25662diag" title='diag' data-ref="25662diag">diag</a> &gt;= <var>0</var> ) </td></tr>
+<tr><th id="104">104</th><td>    {</td></tr>
+<tr><th id="105">105</th><td>      <i>// Diagonal element exists</i></td></tr>
+<tr><th id="106">106</th><td>      <b>using</b> <span class="namespace">std::</span>abs;</td></tr>
+<tr><th id="107">107</th><td>      <a class="local col3 ref" href="#25663rtemp" title='rtemp' data-ref="25663rtemp">rtemp</a> = abs(<a class="local col7 ref" href="#25657lu_col_ptr" title='lu_col_ptr' data-ref="25657lu_col_ptr">lu_col_ptr</a>[<a class="local col2 ref" href="#25662diag" title='diag' data-ref="25662diag">diag</a>]);</td></tr>
+<tr><th id="108">108</th><td>      <b>if</b> (<a class="local col3 ref" href="#25663rtemp" title='rtemp' data-ref="25663rtemp">rtemp</a> != <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::RealScalar" title='Eigen::internal::SparseLUImpl::RealScalar' data-type='typename ScalarVector::RealScalar' data-ref="Eigen::internal::SparseLUImpl::RealScalar">RealScalar</a>(<var>0.0</var>) &amp;&amp; <a class="local col3 ref" href="#25663rtemp" title='rtemp' data-ref="25663rtemp">rtemp</a> &gt;= <a class="local col8 ref" href="#25668thresh" title='thresh' data-ref="25668thresh">thresh</a>) <a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a> = <a class="local col2 ref" href="#25662diag" title='diag' data-ref="25662diag">diag</a>;</td></tr>
+<tr><th id="109">109</th><td>    }</td></tr>
+<tr><th id="110">110</th><td>    <a class="local col9 ref" href="#25649pivrow" title='pivrow' data-ref="25649pivrow">pivrow</a> = <a class="local col8 ref" href="#25658lsub_ptr" title='lsub_ptr' data-ref="25658lsub_ptr">lsub_ptr</a>[<a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a>];</td></tr>
+<tr><th id="111">111</th><td>  }</td></tr>
+<tr><th id="112">112</th><td>  </td></tr>
+<tr><th id="113">113</th><td>  <i>// Record pivot row</i></td></tr>
+<tr><th id="114">114</th><td>  <a class="local col7 ref" href="#25647perm_r" title='perm_r' data-ref="25647perm_r">perm_r</a>(<a class="local col9 ref" href="#25649pivrow" title='pivrow' data-ref="25649pivrow">pivrow</a>) = StorageIndex(<a class="local col5 ref" href="#25645jcol" title='jcol' data-ref="25645jcol">jcol</a>);</td></tr>
+<tr><th id="115">115</th><td>  <i>// Interchange row subscripts</i></td></tr>
+<tr><th id="116">116</th><td>  <b>if</b> (<a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a> != <a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a> )</td></tr>
+<tr><th id="117">117</th><td>  {</td></tr>
+<tr><th id="118">118</th><td>    <span class="namespace">std::</span>swap( <a class="local col8 ref" href="#25658lsub_ptr" title='lsub_ptr' data-ref="25658lsub_ptr">lsub_ptr</a>[<a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a>], <a class="local col8 ref" href="#25658lsub_ptr" title='lsub_ptr' data-ref="25658lsub_ptr">lsub_ptr</a>[<a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a>] );</td></tr>
+<tr><th id="119">119</th><td>    <i>// Interchange numerical values as well, for the two rows in the whole snode</i></td></tr>
+<tr><th id="120">120</th><td><i>    // such that L is indexed the same way as A</i></td></tr>
+<tr><th id="121">121</th><td>    <b>for</b> (<a class="local col5 ref" href="#25665icol" title='icol' data-ref="25665icol">icol</a> = <var>0</var>; <a class="local col5 ref" href="#25665icol" title='icol' data-ref="25665icol">icol</a> &lt;= <a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a>; <a class="local col5 ref" href="#25665icol" title='icol' data-ref="25665icol">icol</a>++)</td></tr>
+<tr><th id="122">122</th><td>    {</td></tr>
+<tr><th id="123">123</th><td>      <a class="local col6 ref" href="#25666itemp" title='itemp' data-ref="25666itemp">itemp</a> = <a class="local col1 ref" href="#25661pivptr" title='pivptr' data-ref="25661pivptr">pivptr</a> + <a class="local col5 ref" href="#25665icol" title='icol' data-ref="25665icol">icol</a> * <a class="local col5 ref" href="#25655lda" title='lda' data-ref="25655lda">lda</a>; </td></tr>
+<tr><th id="124">124</th><td>      <span class="namespace">std::</span>swap(<a class="local col6 ref" href="#25656lu_sup_ptr" title='lu_sup_ptr' data-ref="25656lu_sup_ptr">lu_sup_ptr</a>[<a class="local col6 ref" href="#25666itemp" title='itemp' data-ref="25666itemp">itemp</a>], <a class="local col6 ref" href="#25656lu_sup_ptr" title='lu_sup_ptr' data-ref="25656lu_sup_ptr">lu_sup_ptr</a>[<a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a> + <a class="local col5 ref" href="#25665icol" title='icol' data-ref="25665icol">icol</a> * <a class="local col5 ref" href="#25655lda" title='lda' data-ref="25655lda">lda</a>]);</td></tr>
+<tr><th id="125">125</th><td>    }</td></tr>
+<tr><th id="126">126</th><td>  }</td></tr>
+<tr><th id="127">127</th><td>  <i>// cdiv operations</i></td></tr>
+<tr><th id="128">128</th><td>  Scalar <dfn class="local col9 decl" id="25669temp" title='temp' data-type='Scalar' data-ref="25669temp">temp</dfn> = Scalar(<var>1.0</var>) / <a class="local col7 ref" href="#25657lu_col_ptr" title='lu_col_ptr' data-ref="25657lu_col_ptr">lu_col_ptr</a>[<a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a>];</td></tr>
+<tr><th id="129">129</th><td>  <b>for</b> (<a class="local col7 ref" href="#25667k" title='k' data-ref="25667k">k</a> = <a class="local col2 ref" href="#25652nsupc" title='nsupc' data-ref="25652nsupc">nsupc</a>+<var>1</var>; <a class="local col7 ref" href="#25667k" title='k' data-ref="25667k">k</a> &lt; <a class="local col4 ref" href="#25654nsupr" title='nsupr' data-ref="25654nsupr">nsupr</a>; <a class="local col7 ref" href="#25667k" title='k' data-ref="25667k">k</a>++)</td></tr>
+<tr><th id="130">130</th><td>    <a class="local col7 ref" href="#25657lu_col_ptr" title='lu_col_ptr' data-ref="25657lu_col_ptr">lu_col_ptr</a>[<a class="local col7 ref" href="#25667k" title='k' data-ref="25667k">k</a>] *= <a class="local col9 ref" href="#25669temp" title='temp' data-ref="25669temp">temp</a>; </td></tr>
+<tr><th id="131">131</th><td>  <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="132">132</th><td>}</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="135">135</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td><u>#<span data-ppcond="30">endif</span> // SPARSELU_PIVOTL_H</u></td></tr>
+<tr><th id="138">138</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

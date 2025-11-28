@@ -1,0 +1,831 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Meta.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/util/Meta.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::internal::add_const,Eigen::internal::add_const_on_value_type,Eigen::internal::aligned_storage,Eigen::internal::array_size,Eigen::internal::bool_constant,Eigen::internal::conditional,Eigen::internal::enable_if,Eigen::internal::false_type,Eigen::internal::has_ReturnType,Eigen::internal::has_binary_operator,Eigen::internal::has_nullary_operator,Eigen::internal::has_unary_operator,Eigen::internal::invoke_result,Eigen::internal::is_arithmetic,Eigen::internal::is_const,Eigen::internal::is_same,Eigen::internal::is_void,Eigen::internal::meta_least_common_multiple,Eigen::internal::meta_no,Eigen::internal::meta_sqrt,Eigen::internal::meta_yes,Eigen::internal::noncopyable,Eigen::internal::remove_all,Eigen::internal::remove_const,Eigen::internal::remove_pointer,Eigen::internal::remove_reference,Eigen::internal::result_of,Eigen::internal::scalar_product_traits,Eigen::internal::true_type "/>
+<link rel="stylesheet" href="../../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/util/Meta.h'; var root_path = '../../../../../../../..'; var data_path = '../../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../../..'>codebrowser</a>/<a href='../../../../../..'>gtsam</a>/<a href='../../../../..'>3rdparty</a>/<a href='../../../..'>Eigen</a>/<a href='../../..'>Eigen</a>/<a href='../..'>src</a>/<a href='..'>Core</a>/<a href='./'>util</a>/<a href='Meta.h.html'>Meta.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2008-2015 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2006-2008 Benoit Jacob &lt;jacob.benoit.1@gmail.com&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>//</i></td></tr>
+<tr><th id="7">7</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="8">8</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="9">9</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifndef</span> <span class="macro" data-ref="_M/EIGEN_META_H">EIGEN_META_H</span></u></td></tr>
+<tr><th id="12">12</th><td><u>#define <dfn class="macro" id="_M/EIGEN_META_H" data-ref="_M/EIGEN_META_H">EIGEN_META_H</dfn></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><u>#<span data-ppcond="14">if</span> defined(<span class="macro" data-ref="_M/EIGEN_GPU_COMPILE_PHASE">EIGEN_GPU_COMPILE_PHASE</span>)</u></td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td> <u>#include &lt;cfloat&gt;</u></td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td> <u>#if defined(EIGEN_CUDA_ARCH)</u></td></tr>
+<tr><th id="19">19</th><td>  <u>#include &lt;math_constants.h&gt;</u></td></tr>
+<tr><th id="20">20</th><td> <u>#endif</u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td> <u>#if defined(EIGEN_HIP_DEVICE_COMPILE)</u></td></tr>
+<tr><th id="23">23</th><td>  <u>#include "Eigen/src/Core/arch/HIP/hcc/math_constants.h"</u></td></tr>
+<tr><th id="24">24</th><td>  <u>#endif</u></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><u>#<span data-ppcond="14">endif</span></u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><i>// Recent versions of ICC require &lt;cstdint&gt; for pointer types below.</i></td></tr>
+<tr><th id="29">29</th><td><u>#define <dfn class="macro" id="_M/EIGEN_ICC_NEEDS_CSTDINT" data-ref="_M/EIGEN_ICC_NEEDS_CSTDINT">EIGEN_ICC_NEEDS_CSTDINT</dfn> (EIGEN_COMP_ICC&gt;=1600 &amp;&amp; EIGEN_COMP_CXXVER &gt;= 11)</u></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><i>// Define portable (u)int{32,64} types</i></td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="32">if</span> <a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a> || <a class="macro" href="#29" title="(0&gt;=1600 &amp;&amp; 17 &gt;= 11)" data-ref="_M/EIGEN_ICC_NEEDS_CSTDINT">EIGEN_ICC_NEEDS_CSTDINT</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../../../../../../include/c++/13/cstdint.html">&lt;cstdint&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="35">35</th><td><b>namespace</b> <span class="namespace">numext</span> {</td></tr>
+<tr><th id="36">36</th><td><b>typedef</b> <span class="namespace">std::</span>uint8_t  <dfn class="typedef" id="Eigen::numext::uint8_t" title='Eigen::numext::uint8_t' data-type='std::uint8_t' data-ref="Eigen::numext::uint8_t">uint8_t</dfn>;</td></tr>
+<tr><th id="37">37</th><td><b>typedef</b> <span class="namespace">std::</span>int8_t   <dfn class="typedef" id="Eigen::numext::int8_t" title='Eigen::numext::int8_t' data-type='std::int8_t' data-ref="Eigen::numext::int8_t">int8_t</dfn>;</td></tr>
+<tr><th id="38">38</th><td><b>typedef</b> <span class="namespace">std::</span>uint16_t <dfn class="typedef" id="Eigen::numext::uint16_t" title='Eigen::numext::uint16_t' data-type='std::uint16_t' data-ref="Eigen::numext::uint16_t">uint16_t</dfn>;</td></tr>
+<tr><th id="39">39</th><td><b>typedef</b> <span class="namespace">std::</span>int16_t  <dfn class="typedef" id="Eigen::numext::int16_t" title='Eigen::numext::int16_t' data-type='std::int16_t' data-ref="Eigen::numext::int16_t">int16_t</dfn>;</td></tr>
+<tr><th id="40">40</th><td><b>typedef</b> <span class="namespace">std::</span>uint32_t <dfn class="typedef" id="Eigen::numext::uint32_t" title='Eigen::numext::uint32_t' data-type='std::uint32_t' data-ref="Eigen::numext::uint32_t">uint32_t</dfn>;</td></tr>
+<tr><th id="41">41</th><td><b>typedef</b> <span class="namespace">std::</span>int32_t  <dfn class="typedef" id="Eigen::numext::int32_t" title='Eigen::numext::int32_t' data-type='std::int32_t' data-ref="Eigen::numext::int32_t">int32_t</dfn>;</td></tr>
+<tr><th id="42">42</th><td><b>typedef</b> <span class="namespace">std::</span>uint64_t <dfn class="typedef" id="Eigen::numext::uint64_t" title='Eigen::numext::uint64_t' data-type='std::uint64_t' data-ref="Eigen::numext::uint64_t">uint64_t</dfn>;</td></tr>
+<tr><th id="43">43</th><td><b>typedef</b> <span class="namespace">std::</span>int64_t  <dfn class="typedef" id="Eigen::numext::int64_t" title='Eigen::numext::int64_t' data-type='std::int64_t' data-ref="Eigen::numext::int64_t">int64_t</dfn>;</td></tr>
+<tr><th id="44">44</th><td>}</td></tr>
+<tr><th id="45">45</th><td>}</td></tr>
+<tr><th id="46">46</th><td><u>#<span data-ppcond="32">else</span></u></td></tr>
+<tr><th id="47">47</th><td><i>// Without c++11, all compilers able to compile Eigen also</i></td></tr>
+<tr><th id="48">48</th><td><i>// provide the C99 stdint.h header file.</i></td></tr>
+<tr><th id="49">49</th><td><u>#include &lt;stdint.h&gt;</u></td></tr>
+<tr><th id="50">50</th><td><b>namespace</b> Eigen {</td></tr>
+<tr><th id="51">51</th><td><b>namespace</b> numext {</td></tr>
+<tr><th id="52">52</th><td><b>typedef</b> ::uint8_t  uint8_t;</td></tr>
+<tr><th id="53">53</th><td><b>typedef</b> ::int8_t   int8_t;</td></tr>
+<tr><th id="54">54</th><td><b>typedef</b> ::uint16_t uint16_t;</td></tr>
+<tr><th id="55">55</th><td><b>typedef</b> ::int16_t  int16_t;</td></tr>
+<tr><th id="56">56</th><td><b>typedef</b> ::uint32_t uint32_t;</td></tr>
+<tr><th id="57">57</th><td><b>typedef</b> ::int32_t  int32_t;</td></tr>
+<tr><th id="58">58</th><td><b>typedef</b> ::uint64_t uint64_t;</td></tr>
+<tr><th id="59">59</th><td><b>typedef</b> ::int64_t  int64_t;</td></tr>
+<tr><th id="60">60</th><td>}</td></tr>
+<tr><th id="61">61</th><td>}</td></tr>
+<tr><th id="62">62</th><td><u>#<span data-ppcond="32">endif</span></u></td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td><b>typedef</b> <a class="macro" href="Macros.h.html#33" title="std::ptrdiff_t" data-ref="_M/EIGEN_DEFAULT_DENSE_INDEX_TYPE">EIGEN_DEFAULT_DENSE_INDEX_TYPE</a> <dfn class="typedef" id="Eigen::DenseIndex" title='Eigen::DenseIndex' data-type='std::ptrdiff_t' data-ref="Eigen::DenseIndex">DenseIndex</dfn>;</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc"> * <span class="command">\brief</span> The Index type as used for the API.</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc"> * <span class="command">\details</span> To change this,<span class="command"> \c</span> <span class="arg">\#defin</span>e the preprocessor symbol<span class="command"> \c</span> <span class="arg">EIGEN_DEFAULT_DENSE_INDEX_TYPE.</span></i></td></tr>
+<tr><th id="71">71</th><td><i class="doc"> * <span class="command">\sa</span><span class="command"> \blank</span><span class="command"> \ref</span> <span class="arg">TopicPreprocessorDirectives,</span> StorageIndex.</i></td></tr>
+<tr><th id="72">72</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><b>typedef</b> <a class="macro" href="Macros.h.html#33" title="std::ptrdiff_t" data-ref="_M/EIGEN_DEFAULT_DENSE_INDEX_TYPE">EIGEN_DEFAULT_DENSE_INDEX_TYPE</a> <dfn class="typedef" id="Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</dfn>;</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td><i class="doc">/** <span class="command">\internal</span></i></td></tr>
+<tr><th id="79">79</th><td><i class="doc">  *<span class="verb"> \file Meta.h</span></i></td></tr>
+<tr><th id="80">80</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> This file contains generic metaprogramming classes which are not specifically related to Eigen.</span></i></td></tr>
+<tr><th id="81">81</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \note In case you wonder, yes we're aware that Boost already provides all these features,</span></i></td></tr>
+<tr><th id="82">82</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> we however don't want to add a dependency to Boost.</span></i></td></tr>
+<tr><th id="83">83</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/<span class="verb"></span></i></td></tr>
+<tr><th id="84">84</th><td><i class="doc"><span class="verb"></span></i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">//<span class="verb"> Only recent versions of ICC complain about using ptrdiff_t to hold pointers,</span></i></td></tr>
+<tr><th id="86">86</th><td><i class="doc"><span class="verb"></span>//<span class="verb"> and older versions do not provide *intptr_t types.</span></i></td></tr>
+<tr><th id="87">87</th><td><i class="doc"><span class="verb"></span></i><u>#<span data-ppcond="87">if</span> <a class="macro" href="#29" title="(0&gt;=1600 &amp;&amp; 17 &gt;= 11)" data-ref="_M/EIGEN_ICC_NEEDS_CSTDINT">EIGEN_ICC_NEEDS_CSTDINT</a></u></td></tr>
+<tr><th id="88">88</th><td><b>typedef</b> std::intptr_t  IntPtr;</td></tr>
+<tr><th id="89">89</th><td><b>typedef</b> std::uintptr_t UIntPtr;</td></tr>
+<tr><th id="90">90</th><td><u>#<span data-ppcond="87">else</span></u></td></tr>
+<tr><th id="91">91</th><td><b>typedef</b> <span class="namespace">std::</span><a class="typedef" href="../../../../../../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a> <dfn class="typedef" id="Eigen::internal::IntPtr" title='Eigen::internal::IntPtr' data-type='std::ptrdiff_t' data-ref="Eigen::internal::IntPtr">IntPtr</dfn>;</td></tr>
+<tr><th id="92">92</th><td><b>typedef</b> <span class="namespace">std::</span><a class="typedef" href="../../../../../../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="typedef" id="Eigen::internal::UIntPtr" title='Eigen::internal::UIntPtr' data-type='std::size_t' data-ref="Eigen::internal::UIntPtr">UIntPtr</dfn>;</td></tr>
+<tr><th id="93">93</th><td><u>#<span data-ppcond="87">endif</span></u></td></tr>
+<tr><th id="94">94</th><td><u>#undef <a class="macro" href="#29" data-ref="_M/EIGEN_ICC_NEEDS_CSTDINT">EIGEN_ICC_NEEDS_CSTDINT</a></u></td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::true_type" title='Eigen::internal::true_type' data-ref="Eigen::internal::true_type">true_type</dfn> {  <b>enum</b> { <dfn class="enum" id="Eigen::internal::true_type::value" title='Eigen::internal::true_type::value' data-ref="Eigen::internal::true_type::value">value</dfn> = <var>1</var> }; };</td></tr>
+<tr><th id="97">97</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::false_type" title='Eigen::internal::false_type' data-ref="Eigen::internal::false_type">false_type</dfn> { <b>enum</b> { <dfn class="enum" id="Eigen::internal::false_type::value" title='Eigen::internal::false_type::value' data-ref="Eigen::internal::false_type::value">value</dfn> = <var>0</var> }; };</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td><b>template</b>&lt;<em>bool</em> Condition&gt;</td></tr>
+<tr><th id="100">100</th><td><b>struct</b> <dfn class="type" id="Eigen::internal::bool_constant" title='Eigen::internal::bool_constant' data-ref="Eigen::internal::bool_constant">bool_constant</dfn>;</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="103">103</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::bool_constant" title='Eigen::internal::bool_constant' data-ref="Eigen::internal::bool_constant"><a class="type" href="#Eigen::internal::bool_constant" title='Eigen::internal::bool_constant' data-ref="Eigen::internal::bool_constant">bool_constant</a></dfn>&lt;<b>true</b>&gt; : <a class="type" href="#Eigen::internal::true_type" title='Eigen::internal::true_type' data-ref="Eigen::internal::true_type">true_type</a> {};</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="106">106</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::bool_constant" title='Eigen::internal::bool_constant' data-ref="Eigen::internal::bool_constant"><a class="type" href="#Eigen::internal::bool_constant" title='Eigen::internal::bool_constant' data-ref="Eigen::internal::bool_constant">bool_constant</a></dfn>&lt;<b>false</b>&gt; : <a class="type" href="#Eigen::internal::false_type" title='Eigen::internal::false_type' data-ref="Eigen::internal::false_type">false_type</a> {};</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td><b>template</b>&lt;<em>bool</em> Condition, <b>typename</b> Then, <b>typename</b> Else&gt;</td></tr>
+<tr><th id="109">109</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::conditional" title='Eigen::internal::conditional' data-ref="Eigen::internal::conditional">conditional</dfn> { <b>typedef</b> Then <dfn class="typedef" id="Eigen::internal::conditional::type" title='Eigen::internal::conditional::type' data-type='Then' data-ref="Eigen::internal::conditional::type">type</dfn>; };</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td><b>template</b>&lt;<b>typename</b> Then, <b>typename</b> Else&gt;</td></tr>
+<tr><th id="112">112</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::conditional" title='Eigen::internal::conditional' data-ref="Eigen::internal::conditional">conditional</dfn> &lt;<b>false</b>, Then, Else&gt; { <b>typedef</b> Else <dfn class="typedef" id="Eigen::internal::conditional{false,type-parameter-0-0,type-parameter-0-1}::type" title='Eigen::internal::conditional&lt;false, type-parameter-0-0, type-parameter-0-1&gt;::type' data-type='Else' data-ref="Eigen::internal::conditional{false,type-parameter-0-0,type-parameter-0-1}::type">type</dfn>; };</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_reference" title='Eigen::internal::remove_reference' data-ref="Eigen::internal::remove_reference">remove_reference</dfn> { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_reference::type" title='Eigen::internal::remove_reference::type' data-type='T' data-ref="Eigen::internal::remove_reference::type">type</dfn>; };</td></tr>
+<tr><th id="115">115</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_reference" title='Eigen::internal::remove_reference' data-ref="Eigen::internal::remove_reference">remove_reference</dfn>&lt;T&amp;&gt; { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_reference{type-parameter-0-0&amp;}::type" title='Eigen::internal::remove_reference&lt;type-parameter-0-0 &amp;&gt;::type' data-type='T' data-ref="Eigen::internal::remove_reference{type-parameter-0-0&amp;}::type">type</dfn>; };</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_pointer" title='Eigen::internal::remove_pointer' data-ref="Eigen::internal::remove_pointer">remove_pointer</dfn> { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_pointer::type" title='Eigen::internal::remove_pointer::type' data-type='T' data-ref="Eigen::internal::remove_pointer::type">type</dfn>; };</td></tr>
+<tr><th id="118">118</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_pointer" title='Eigen::internal::remove_pointer' data-ref="Eigen::internal::remove_pointer">remove_pointer</dfn>&lt;T*&gt; { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_pointer{type-parameter-0-0*}::type" title='Eigen::internal::remove_pointer&lt;type-parameter-0-0 *&gt;::type' data-type='T' data-ref="Eigen::internal::remove_pointer{type-parameter-0-0*}::type">type</dfn>; };</td></tr>
+<tr><th id="119">119</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_pointer" title='Eigen::internal::remove_pointer' data-ref="Eigen::internal::remove_pointer">remove_pointer</dfn>&lt;T*<em>const</em>&gt; { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_pointer{type-parameter-0-0*const}::type" title='Eigen::internal::remove_pointer&lt;type-parameter-0-0 *const&gt;::type' data-type='T' data-ref="Eigen::internal::remove_pointer{type-parameter-0-0*const}::type">type</dfn>; };</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_const" title='Eigen::internal::remove_const' data-ref="Eigen::internal::remove_const">remove_const</dfn> { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_const::type" title='Eigen::internal::remove_const::type' data-type='T' data-ref="Eigen::internal::remove_const::type">type</dfn>; };</td></tr>
+<tr><th id="122">122</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_const" title='Eigen::internal::remove_const' data-ref="Eigen::internal::remove_const">remove_const</dfn>&lt;<em>const</em> T&gt; { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_const{consttype-parameter-0-0}::type" title='Eigen::internal::remove_const&lt;const type-parameter-0-0&gt;::type' data-type='T' data-ref="Eigen::internal::remove_const{consttype-parameter-0-0}::type">type</dfn>; };</td></tr>
+<tr><th id="123">123</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_const" title='Eigen::internal::remove_const' data-ref="Eigen::internal::remove_const">remove_const</dfn>&lt;<em>const</em> T[]&gt; { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_const{consttype-parameter-0-0[]}::type" title='Eigen::internal::remove_const&lt;const type-parameter-0-0[]&gt;::type' data-type='T[]' data-ref="Eigen::internal::remove_const{consttype-parameter-0-0[]}::type">type</dfn>[]; };</td></tr>
+<tr><th id="124">124</th><td><b>template</b> &lt;<b>class</b> T, <em>unsigned</em> <em>int</em> Size&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_const" title='Eigen::internal::remove_const' data-ref="Eigen::internal::remove_const">remove_const</dfn>&lt;<em>const</em> T[<a class="tu ref" href="#Eigen::internal::remove_const{consttype-parameter-0-0[Size]}::Size" title='Eigen::internal::remove_const&lt;const type-parameter-0-0[Size]&gt;::Size' data-ref="Eigen::internal::remove_const{consttype-parameter-0-0[Size]}::Size">Size</a>]&gt; { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_const{consttype-parameter-0-0[Size]}::type" title='Eigen::internal::remove_const&lt;const type-parameter-0-0[Size]&gt;::type' data-type='T[Size]' data-ref="Eigen::internal::remove_const{consttype-parameter-0-0[Size]}::type">type</dfn>[<a class="tu ref" href="#Eigen::internal::remove_const{consttype-parameter-0-0[Size]}::Size" title='Eigen::internal::remove_const&lt;const type-parameter-0-0[Size]&gt;::Size' data-ref="Eigen::internal::remove_const{consttype-parameter-0-0[Size]}::Size">Size</a>]; };</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</dfn> { <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::remove_all::type" title='Eigen::internal::remove_all::type' data-type='T' data-ref="Eigen::internal::remove_all::type">type</dfn>; };</td></tr>
+<tr><th id="127">127</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</dfn>&lt;<em>const</em> T&gt;   { <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;T&gt;::type <dfn class="typedef" id="Eigen::internal::remove_all{consttype-parameter-0-0}::type" title='Eigen::internal::remove_all&lt;const type-parameter-0-0&gt;::type' data-type='typename remove_all&lt;T&gt;::type' data-ref="Eigen::internal::remove_all{consttype-parameter-0-0}::type">type</dfn>; };</td></tr>
+<tr><th id="128">128</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</dfn>&lt;T <em>const</em>&amp;&gt;  { <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;T&gt;::type <dfn class="typedef" id="Eigen::internal::remove_all{consttype-parameter-0-0&amp;}::type" title='Eigen::internal::remove_all&lt;const type-parameter-0-0 &amp;&gt;::type' data-type='typename remove_all&lt;T&gt;::type' data-ref="Eigen::internal::remove_all{consttype-parameter-0-0&amp;}::type">type</dfn>; };</td></tr>
+<tr><th id="129">129</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</dfn>&lt;T&amp;&gt;        { <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;T&gt;::type <dfn class="typedef" id="Eigen::internal::remove_all{type-parameter-0-0&amp;}::type" title='Eigen::internal::remove_all&lt;type-parameter-0-0 &amp;&gt;::type' data-type='typename remove_all&lt;T&gt;::type' data-ref="Eigen::internal::remove_all{type-parameter-0-0&amp;}::type">type</dfn>; };</td></tr>
+<tr><th id="130">130</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</dfn>&lt;T <em>const</em>*&gt;  { <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;T&gt;::type <dfn class="typedef" id="Eigen::internal::remove_all{consttype-parameter-0-0*}::type" title='Eigen::internal::remove_all&lt;const type-parameter-0-0 *&gt;::type' data-type='typename remove_all&lt;T&gt;::type' data-ref="Eigen::internal::remove_all{consttype-parameter-0-0*}::type">type</dfn>; };</td></tr>
+<tr><th id="131">131</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</dfn>&lt;T*&gt;        { <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;T&gt;::type <dfn class="typedef" id="Eigen::internal::remove_all{type-parameter-0-0*}::type" title='Eigen::internal::remove_all&lt;type-parameter-0-0 *&gt;::type' data-type='typename remove_all&lt;T&gt;::type' data-ref="Eigen::internal::remove_all{type-parameter-0-0*}::type">type</dfn>; };</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</dfn>      { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic::value" title='Eigen::internal::is_arithmetic::value' data-ref="Eigen::internal::is_arithmetic::value">value</dfn> = <b>false</b> }; };</td></tr>
+<tr><th id="134">134</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>float</em>&gt;         { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{float}::value" title='Eigen::internal::is_arithmetic&lt;float&gt;::value' data-ref="Eigen::internal::is_arithmetic{float}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="135">135</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>double</em>&gt;        { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{double}::value" title='Eigen::internal::is_arithmetic&lt;double&gt;::value' data-ref="Eigen::internal::is_arithmetic{double}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="136">136</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>long</em> <em>double</em>&gt;   { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{longdouble}::value" title='Eigen::internal::is_arithmetic&lt;long double&gt;::value' data-ref="Eigen::internal::is_arithmetic{longdouble}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="137">137</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>bool</em>&gt;          { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{bool}::value" title='Eigen::internal::is_arithmetic&lt;bool&gt;::value' data-ref="Eigen::internal::is_arithmetic{bool}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="138">138</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>char</em>&gt;          { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{char}::value" title='Eigen::internal::is_arithmetic&lt;char&gt;::value' data-ref="Eigen::internal::is_arithmetic{char}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="139">139</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>signed</em> <em>char</em>&gt;   { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{signedchar}::value" title='Eigen::internal::is_arithmetic&lt;signed char&gt;::value' data-ref="Eigen::internal::is_arithmetic{signedchar}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="140">140</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>unsigned</em> <em>char</em>&gt; { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{unsignedchar}::value" title='Eigen::internal::is_arithmetic&lt;unsigned char&gt;::value' data-ref="Eigen::internal::is_arithmetic{unsignedchar}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="141">141</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>signed</em> <em>short</em>&gt;  { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{short}::value" title='Eigen::internal::is_arithmetic&lt;short&gt;::value' data-ref="Eigen::internal::is_arithmetic{short}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="142">142</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>unsigned</em> <em>short</em>&gt;{ <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{unsignedshort}::value" title='Eigen::internal::is_arithmetic&lt;unsigned short&gt;::value' data-ref="Eigen::internal::is_arithmetic{unsignedshort}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="143">143</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>signed</em> <em>int</em>&gt;    { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{int}::value" title='Eigen::internal::is_arithmetic&lt;int&gt;::value' data-ref="Eigen::internal::is_arithmetic{int}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="144">144</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>unsigned</em> <em>int</em>&gt;  { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{unsignedint}::value" title='Eigen::internal::is_arithmetic&lt;unsigned int&gt;::value' data-ref="Eigen::internal::is_arithmetic{unsignedint}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="145">145</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>signed</em> <em>long</em>&gt;   { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{long}::value" title='Eigen::internal::is_arithmetic&lt;long&gt;::value' data-ref="Eigen::internal::is_arithmetic{long}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="146">146</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>unsigned</em> <em>long</em>&gt; { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{unsignedlong}::value" title='Eigen::internal::is_arithmetic&lt;unsigned long&gt;::value' data-ref="Eigen::internal::is_arithmetic{unsignedlong}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td><b>template</b>&lt;<b>typename</b> T, <b>typename</b> U&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_same" title='Eigen::internal::is_same' data-ref="Eigen::internal::is_same">is_same</dfn> { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_same::value" title='Eigen::internal::is_same::value' data-ref="Eigen::internal::is_same::value">value</dfn> = <var>0</var> }; };</td></tr>
+<tr><th id="149">149</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_same" title='Eigen::internal::is_same' data-ref="Eigen::internal::is_same">is_same</dfn>&lt;T,T&gt; { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_same{type-parameter-0-0,type-parameter-0-0}::value" title='Eigen::internal::is_same&lt;type-parameter-0-0, type-parameter-0-0&gt;::value' data-ref="Eigen::internal::is_same{type-parameter-0-0,type-parameter-0-0}::value">value</dfn> = <var>1</var> }; };</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td><b>template</b>&lt; <b>class</b> T &gt;</td></tr>
+<tr><th id="152">152</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::is_void" title='Eigen::internal::is_void' data-ref="Eigen::internal::is_void">is_void</dfn> : <a class="type" href="#Eigen::internal::is_same" title='Eigen::internal::is_same' data-ref="Eigen::internal::is_same">is_same</a>&lt;<em>void</em>, <b>typename</b> <a class="type" href="#Eigen::internal::remove_const" title='Eigen::internal::remove_const' data-ref="Eigen::internal::remove_const">remove_const</a>&lt;T&gt;::type&gt; {};</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td><u>#<span data-ppcond="154">if</span> <a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a></u></td></tr>
+<tr><th id="155">155</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>signed</em> <em>long</em> <em>long</em>&gt;   { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{longlong}::value" title='Eigen::internal::is_arithmetic&lt;long long&gt;::value' data-ref="Eigen::internal::is_arithmetic{longlong}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="156">156</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic"><a class="type" href="#Eigen::internal::is_arithmetic" title='Eigen::internal::is_arithmetic' data-ref="Eigen::internal::is_arithmetic">is_arithmetic</a></dfn>&lt;<em>unsigned</em> <em>long</em> <em>long</em>&gt; { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_arithmetic{unsignedlonglong}::value" title='Eigen::internal::is_arithmetic&lt;unsigned long long&gt;::value' data-ref="Eigen::internal::is_arithmetic{unsignedlonglong}::value">value</dfn> = <b>true</b> }; };</td></tr>
+<tr><th id="157">157</th><td><b>using</b> <span class="namespace">std::</span>is_integral;</td></tr>
+<tr><th id="158">158</th><td><u>#<span data-ppcond="154">else</span></u></td></tr>
+<tr><th id="159">159</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> is_integral               { <b>enum</b> { value = <b>false</b> }; };</td></tr>
+<tr><th id="160">160</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>bool</em>&gt;                   { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="161">161</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>char</em>&gt;                   { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="162">162</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>signed</em> <em>char</em>&gt;            { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="163">163</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>unsigned</em> <em>char</em>&gt;          { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="164">164</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>signed</em> <em>short</em>&gt;           { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="165">165</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>unsigned</em> <em>short</em>&gt;         { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="166">166</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>signed</em> <em>int</em>&gt;             { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="167">167</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>unsigned</em> <em>int</em>&gt;           { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="168">168</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>signed</em> <em>long</em>&gt;            { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="169">169</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>unsigned</em> <em>long</em>&gt;          { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="170">170</th><td><u>#if EIGEN_COMP_MSVC</u></td></tr>
+<tr><th id="171">171</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>signed</em> __int64&gt;         { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="172">172</th><td><b>template</b>&lt;&gt; <b>struct</b> is_integral&lt;<em>unsigned</em> __int64&gt;       { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="173">173</th><td><u>#endif</u></td></tr>
+<tr><th id="174">174</th><td><u>#<span data-ppcond="154">endif</span></u></td></tr>
+<tr><th id="175">175</th><td></td></tr>
+<tr><th id="176">176</th><td><u>#<span data-ppcond="176">if</span> <a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a></u></td></tr>
+<tr><th id="177">177</th><td><b>using</b> <span class="namespace">std::</span>make_unsigned;</td></tr>
+<tr><th id="178">178</th><td><u>#<span data-ppcond="176">else</span></u></td></tr>
+<tr><th id="179">179</th><td><i>// TODO: Possibly improve this implementation of make_unsigned.</i></td></tr>
+<tr><th id="180">180</th><td><i>// It is currently used only by</i></td></tr>
+<tr><th id="181">181</th><td><i>// template&lt;typename Scalar&gt; struct random_default_impl&lt;Scalar, false, true&gt;.</i></td></tr>
+<tr><th id="182">182</th><td><b>template</b>&lt;<b>typename</b>&gt; <b>struct</b> make_unsigned;</td></tr>
+<tr><th id="183">183</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>char</em>&gt;             { <b>typedef</b> <em>unsigned</em> <em>char</em> type; };</td></tr>
+<tr><th id="184">184</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>signed</em> <em>char</em>&gt;      { <b>typedef</b> <em>unsigned</em> <em>char</em> type; };</td></tr>
+<tr><th id="185">185</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>unsigned</em> <em>char</em>&gt;    { <b>typedef</b> <em>unsigned</em> <em>char</em> type; };</td></tr>
+<tr><th id="186">186</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>signed</em> <em>short</em>&gt;     { <b>typedef</b> <em>unsigned</em> <em>short</em> type; };</td></tr>
+<tr><th id="187">187</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>unsigned</em> <em>short</em>&gt;   { <b>typedef</b> <em>unsigned</em> <em>short</em> type; };</td></tr>
+<tr><th id="188">188</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>signed</em> <em>int</em>&gt;       { <b>typedef</b> <em>unsigned</em> <em>int</em> type; };</td></tr>
+<tr><th id="189">189</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>unsigned</em> <em>int</em>&gt;     { <b>typedef</b> <em>unsigned</em> <em>int</em> type; };</td></tr>
+<tr><th id="190">190</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>signed</em> <em>long</em>&gt;      { <b>typedef</b> <em>unsigned</em> <em>long</em> type; };</td></tr>
+<tr><th id="191">191</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>unsigned</em> <em>long</em>&gt;    { <b>typedef</b> <em>unsigned</em> <em>long</em> type; };</td></tr>
+<tr><th id="192">192</th><td><u>#if EIGEN_COMP_MSVC</u></td></tr>
+<tr><th id="193">193</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>signed</em> __int64&gt;   { <b>typedef</b> <em>unsigned</em> __int64 type; };</td></tr>
+<tr><th id="194">194</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>unsigned</em> __int64&gt; { <b>typedef</b> <em>unsigned</em> __int64 type; };</td></tr>
+<tr><th id="195">195</th><td><u>#endif</u></td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td><i>// Some platforms define int64_t as `long long` even for C++03, where</i></td></tr>
+<tr><th id="198">198</th><td><i>// `long long` is not guaranteed by the standard. In this case we are missing</i></td></tr>
+<tr><th id="199">199</th><td><i>// the definition for make_unsigned. If we just define it, we run into issues</i></td></tr>
+<tr><th id="200">200</th><td><i>// where `long long` doesn't exist in some compilers for C++03. We therefore add</i></td></tr>
+<tr><th id="201">201</th><td><i>// the specialization for these platforms only.</i></td></tr>
+<tr><th id="202">202</th><td><u>#if EIGEN_OS_MAC || EIGEN_COMP_MINGW</u></td></tr>
+<tr><th id="203">203</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>unsigned</em> <em>long</em> <em>long</em>&gt; { <b>typedef</b> <em>unsigned</em> <em>long</em> <em>long</em> type; };</td></tr>
+<tr><th id="204">204</th><td><b>template</b>&lt;&gt; <b>struct</b> make_unsigned&lt;<em>long</em> <em>long</em>&gt;          { <b>typedef</b> <em>unsigned</em> <em>long</em> <em>long</em> type; };</td></tr>
+<tr><th id="205">205</th><td><u>#endif</u></td></tr>
+<tr><th id="206">206</th><td><u>#<span data-ppcond="176">endif</span></u></td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td><b>template</b> &lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const" title='Eigen::internal::add_const' data-ref="Eigen::internal::add_const">add_const</dfn> { <b>typedef</b> <em>const</em> T <dfn class="typedef" id="Eigen::internal::add_const::type" title='Eigen::internal::add_const::type' data-type='const T' data-ref="Eigen::internal::add_const::type">type</dfn>; };</td></tr>
+<tr><th id="209">209</th><td><b>template</b> &lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const" title='Eigen::internal::add_const' data-ref="Eigen::internal::add_const">add_const</dfn>&lt;T&amp;&gt; { <b>typedef</b> T&amp; <dfn class="typedef" id="Eigen::internal::add_const{type-parameter-0-0&amp;}::type" title='Eigen::internal::add_const&lt;type-parameter-0-0 &amp;&gt;::type' data-type='T &amp;' data-ref="Eigen::internal::add_const{type-parameter-0-0&amp;}::type">type</dfn>; };</td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td><b>template</b> &lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_const" title='Eigen::internal::is_const' data-ref="Eigen::internal::is_const">is_const</dfn> { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_const::value" title='Eigen::internal::is_const::value' data-ref="Eigen::internal::is_const::value">value</dfn> = <var>0</var> }; };</td></tr>
+<tr><th id="212">212</th><td><b>template</b> &lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::is_const" title='Eigen::internal::is_const' data-ref="Eigen::internal::is_const">is_const</dfn>&lt;T <em>const</em>&gt; { <b>enum</b> { <dfn class="enum" id="Eigen::internal::is_const{consttype-parameter-0-0}::value" title='Eigen::internal::is_const&lt;const type-parameter-0-0&gt;::value' data-ref="Eigen::internal::is_const{consttype-parameter-0-0}::value">value</dfn> = <var>1</var> }; };</td></tr>
+<tr><th id="213">213</th><td></td></tr>
+<tr><th id="214">214</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const_on_value_type" title='Eigen::internal::add_const_on_value_type' data-ref="Eigen::internal::add_const_on_value_type">add_const_on_value_type</dfn>            { <b>typedef</b> <em>const</em> T <dfn class="typedef" id="Eigen::internal::add_const_on_value_type::type" title='Eigen::internal::add_const_on_value_type::type' data-type='const T' data-ref="Eigen::internal::add_const_on_value_type::type">type</dfn>;  };</td></tr>
+<tr><th id="215">215</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const_on_value_type" title='Eigen::internal::add_const_on_value_type' data-ref="Eigen::internal::add_const_on_value_type">add_const_on_value_type</dfn>&lt;T&amp;&gt;        { <b>typedef</b> T <em>const</em>&amp; <dfn class="typedef" id="Eigen::internal::add_const_on_value_type{type-parameter-0-0&amp;}::type" title='Eigen::internal::add_const_on_value_type&lt;type-parameter-0-0 &amp;&gt;::type' data-type='const T &amp;' data-ref="Eigen::internal::add_const_on_value_type{type-parameter-0-0&amp;}::type">type</dfn>; };</td></tr>
+<tr><th id="216">216</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const_on_value_type" title='Eigen::internal::add_const_on_value_type' data-ref="Eigen::internal::add_const_on_value_type">add_const_on_value_type</dfn>&lt;T*&gt;        { <b>typedef</b> T <em>const</em>* <dfn class="typedef" id="Eigen::internal::add_const_on_value_type{type-parameter-0-0*}::type" title='Eigen::internal::add_const_on_value_type&lt;type-parameter-0-0 *&gt;::type' data-type='const T *' data-ref="Eigen::internal::add_const_on_value_type{type-parameter-0-0*}::type">type</dfn>; };</td></tr>
+<tr><th id="217">217</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const_on_value_type" title='Eigen::internal::add_const_on_value_type' data-ref="Eigen::internal::add_const_on_value_type">add_const_on_value_type</dfn>&lt;T* <em>const</em>&gt;  { <b>typedef</b> T <em>const</em>* <em>const</em> <dfn class="typedef" id="Eigen::internal::add_const_on_value_type{type-parameter-0-0*const}::type" title='Eigen::internal::add_const_on_value_type&lt;type-parameter-0-0 *const&gt;::type' data-type='const T *const' data-ref="Eigen::internal::add_const_on_value_type{type-parameter-0-0*const}::type">type</dfn>; };</td></tr>
+<tr><th id="218">218</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::add_const_on_value_type" title='Eigen::internal::add_const_on_value_type' data-ref="Eigen::internal::add_const_on_value_type">add_const_on_value_type</dfn>&lt;T <em>const</em>* <em>const</em>&gt;  { <b>typedef</b> T <em>const</em>* <em>const</em> <dfn class="typedef" id="Eigen::internal::add_const_on_value_type{consttype-parameter-0-0*const}::type" title='Eigen::internal::add_const_on_value_type&lt;const type-parameter-0-0 *const&gt;::type' data-type='const T *const' data-ref="Eigen::internal::add_const_on_value_type{consttype-parameter-0-0*const}::type">type</dfn>; };</td></tr>
+<tr><th id="219">219</th><td></td></tr>
+<tr><th id="220">220</th><td><u>#<span data-ppcond="220">if</span> <a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a></u></td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td><b>using</b> <span class="namespace">std::</span>is_convertible;</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td><u>#<span data-ppcond="220">else</span></u></td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td><b>template</b>&lt;<b>typename</b> From, <b>typename</b> To&gt;</td></tr>
+<tr><th id="227">227</th><td><b>struct</b> is_convertible_impl</td></tr>
+<tr><th id="228">228</th><td>{</td></tr>
+<tr><th id="229">229</th><td><b>private</b>:</td></tr>
+<tr><th id="230">230</th><td>  <b>struct</b> any_conversion</td></tr>
+<tr><th id="231">231</th><td>  {</td></tr>
+<tr><th id="232">232</th><td>    <b>template</b> &lt;<b>typename</b> T&gt; any_conversion(<em>const</em> <em>volatile</em> T&amp;);</td></tr>
+<tr><th id="233">233</th><td>    <b>template</b> &lt;<b>typename</b> T&gt; any_conversion(T&amp;);</td></tr>
+<tr><th id="234">234</th><td>  };</td></tr>
+<tr><th id="235">235</th><td>  <b>struct</b> yes {<em>int</em> a[<var>1</var>];};</td></tr>
+<tr><th id="236">236</th><td>  <b>struct</b> no  {<em>int</em> a[<var>2</var>];};</td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td>  <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="239">239</th><td>  <em>static</em> yes test(T, <em>int</em>);</td></tr>
+<tr><th id="240">240</th><td></td></tr>
+<tr><th id="241">241</th><td>  <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="242">242</th><td>  <em>static</em> no  test(any_conversion, ...);</td></tr>
+<tr><th id="243">243</th><td></td></tr>
+<tr><th id="244">244</th><td><b>public</b>:</td></tr>
+<tr><th id="245">245</th><td>  <em>static</em> <b>typename</b> internal::remove_reference&lt;From&gt;::type* ms_from;</td></tr>
+<tr><th id="246">246</th><td><u>#ifdef __INTEL_COMPILER</u></td></tr>
+<tr><th id="247">247</th><td>  <u>#pragma warning push</u></td></tr>
+<tr><th id="248">248</th><td>  <u>#pragma warning ( disable : 2259 )</u></td></tr>
+<tr><th id="249">249</th><td><u>#endif</u></td></tr>
+<tr><th id="250">250</th><td>  <b>enum</b> { value = <b>sizeof</b>(test&lt;To&gt;(*ms_from, <var>0</var>))==<b>sizeof</b>(yes) };</td></tr>
+<tr><th id="251">251</th><td><u>#ifdef __INTEL_COMPILER</u></td></tr>
+<tr><th id="252">252</th><td>  <u>#pragma warning pop</u></td></tr>
+<tr><th id="253">253</th><td><u>#endif</u></td></tr>
+<tr><th id="254">254</th><td>};</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td><b>template</b>&lt;<b>typename</b> From, <b>typename</b> To&gt;</td></tr>
+<tr><th id="257">257</th><td><b>struct</b> is_convertible</td></tr>
+<tr><th id="258">258</th><td>{</td></tr>
+<tr><th id="259">259</th><td>  <b>enum</b> { value = is_convertible_impl&lt;From,To&gt;::value };</td></tr>
+<tr><th id="260">260</th><td>};</td></tr>
+<tr><th id="261">261</th><td></td></tr>
+<tr><th id="262">262</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="263">263</th><td><b>struct</b> is_convertible&lt;T,T&amp;&gt; { <b>enum</b> { value = <b>false</b> }; };</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="266">266</th><td><b>struct</b> is_convertible&lt;<em>const</em> T,<em>const</em> T&amp;&gt; { <b>enum</b> { value = <b>true</b> }; };</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td><u>#<span data-ppcond="220">endif</span></u></td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> Allows to enable/disable an overload</span></i></td></tr>
+<tr><th id="271">271</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> according to a compile time condition.</span></i></td></tr>
+<tr><th id="272">272</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="273">273</th><td><span class="verb"></span><b>template</b>&lt;<em>bool</em> Condition, <b>typename</b> T=<em>void</em>&gt; <b>struct</b> <dfn class="type" id="Eigen::internal::enable_if" title='Eigen::internal::enable_if' data-ref="Eigen::internal::enable_if">enable_if</dfn>;</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::enable_if" title='Eigen::internal::enable_if' data-ref="Eigen::internal::enable_if">enable_if</dfn>&lt;<b>true</b>,T&gt;</td></tr>
+<tr><th id="276">276</th><td>{ <b>typedef</b> T <dfn class="typedef" id="Eigen::internal::enable_if{true,type-parameter-0-0}::type" title='Eigen::internal::enable_if&lt;true, type-parameter-0-0&gt;::type' data-type='T' data-ref="Eigen::internal::enable_if{true,type-parameter-0-0}::type">type</dfn>; };</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+<tr><th id="278">278</th><td><u>#<span data-ppcond="278">if</span> defined(<span class="macro" data-ref="_M/EIGEN_GPU_COMPILE_PHASE">EIGEN_GPU_COMPILE_PHASE</span>) &amp;&amp; !<a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a></u></td></tr>
+<tr><th id="279">279</th><td><u>#if !defined(__FLT_EPSILON__)</u></td></tr>
+<tr><th id="280">280</th><td><u>#define __FLT_EPSILON__ FLT_EPSILON</u></td></tr>
+<tr><th id="281">281</th><td><u>#define __DBL_EPSILON__ DBL_EPSILON</u></td></tr>
+<tr><th id="282">282</th><td><u>#endif</u></td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td><b>namespace</b> device {</td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> numeric_limits</td></tr>
+<tr><th id="287">287</th><td>{</td></tr>
+<tr><th id="288">288</th><td>  EIGEN_DEVICE_FUNC</td></tr>
+<tr><th id="289">289</th><td>  <em>static</em> EIGEN_CONSTEXPR T epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="290">290</th><td>  <em>static</em> T (max)() { assert(<b>false</b> &amp;&amp; <q>"Highest not supported for this type"</q>); }</td></tr>
+<tr><th id="291">291</th><td>  <em>static</em> T (min)() { assert(<b>false</b> &amp;&amp; <q>"Lowest not supported for this type"</q>); }</td></tr>
+<tr><th id="292">292</th><td>  <em>static</em> T infinity() { assert(<b>false</b> &amp;&amp; <q>"Infinity not supported for this type"</q>); }</td></tr>
+<tr><th id="293">293</th><td>  <em>static</em> T quiet_NaN() { assert(<b>false</b> &amp;&amp; <q>"quiet_NaN not supported for this type"</q>); }</td></tr>
+<tr><th id="294">294</th><td>};</td></tr>
+<tr><th id="295">295</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>float</em>&gt;</td></tr>
+<tr><th id="296">296</th><td>{</td></tr>
+<tr><th id="297">297</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="298">298</th><td>  <em>static</em> <em>float</em> epsilon() { <b>return</b> __FLT_EPSILON__; }</td></tr>
+<tr><th id="299">299</th><td>  EIGEN_DEVICE_FUNC</td></tr>
+<tr><th id="300">300</th><td>  <em>static</em> <em>float</em> (max)() {</td></tr>
+<tr><th id="301">301</th><td>  <u>#if defined(EIGEN_CUDA_ARCH)</u></td></tr>
+<tr><th id="302">302</th><td>    <b>return</b> CUDART_MAX_NORMAL_F;</td></tr>
+<tr><th id="303">303</th><td>  <u>#else</u></td></tr>
+<tr><th id="304">304</th><td>    <b>return</b> HIPRT_MAX_NORMAL_F;</td></tr>
+<tr><th id="305">305</th><td>  <u>#endif</u></td></tr>
+<tr><th id="306">306</th><td>  }</td></tr>
+<tr><th id="307">307</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="308">308</th><td>  <em>static</em> <em>float</em> (min)() { <b>return</b> FLT_MIN; }</td></tr>
+<tr><th id="309">309</th><td>  EIGEN_DEVICE_FUNC</td></tr>
+<tr><th id="310">310</th><td>  <em>static</em> <em>float</em> infinity() {</td></tr>
+<tr><th id="311">311</th><td>  <u>#if defined(EIGEN_CUDA_ARCH)</u></td></tr>
+<tr><th id="312">312</th><td>    <b>return</b> CUDART_INF_F;</td></tr>
+<tr><th id="313">313</th><td>  <u>#else</u></td></tr>
+<tr><th id="314">314</th><td>    <b>return</b> HIPRT_INF_F;</td></tr>
+<tr><th id="315">315</th><td>  <u>#endif</u></td></tr>
+<tr><th id="316">316</th><td>  }</td></tr>
+<tr><th id="317">317</th><td>  EIGEN_DEVICE_FUNC</td></tr>
+<tr><th id="318">318</th><td>  <em>static</em> <em>float</em> quiet_NaN() {</td></tr>
+<tr><th id="319">319</th><td>  <u>#if defined(EIGEN_CUDA_ARCH)</u></td></tr>
+<tr><th id="320">320</th><td>    <b>return</b> CUDART_NAN_F;</td></tr>
+<tr><th id="321">321</th><td>  <u>#else</u></td></tr>
+<tr><th id="322">322</th><td>    <b>return</b> HIPRT_NAN_F;</td></tr>
+<tr><th id="323">323</th><td>  <u>#endif</u></td></tr>
+<tr><th id="324">324</th><td>  }</td></tr>
+<tr><th id="325">325</th><td>};</td></tr>
+<tr><th id="326">326</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>double</em>&gt;</td></tr>
+<tr><th id="327">327</th><td>{</td></tr>
+<tr><th id="328">328</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="329">329</th><td>  <em>static</em> <em>double</em> epsilon() { <b>return</b> __DBL_EPSILON__; }</td></tr>
+<tr><th id="330">330</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="331">331</th><td>  <em>static</em> <em>double</em> (max)() { <b>return</b> DBL_MAX; }</td></tr>
+<tr><th id="332">332</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="333">333</th><td>  <em>static</em> <em>double</em> (min)() { <b>return</b> DBL_MIN; }</td></tr>
+<tr><th id="334">334</th><td>  EIGEN_DEVICE_FUNC</td></tr>
+<tr><th id="335">335</th><td>  <em>static</em> <em>double</em> infinity() {</td></tr>
+<tr><th id="336">336</th><td>  <u>#if defined(EIGEN_CUDA_ARCH)</u></td></tr>
+<tr><th id="337">337</th><td>    <b>return</b> CUDART_INF;</td></tr>
+<tr><th id="338">338</th><td>  <u>#else</u></td></tr>
+<tr><th id="339">339</th><td>    <b>return</b> HIPRT_INF;</td></tr>
+<tr><th id="340">340</th><td>  <u>#endif</u></td></tr>
+<tr><th id="341">341</th><td>  }</td></tr>
+<tr><th id="342">342</th><td>  EIGEN_DEVICE_FUNC</td></tr>
+<tr><th id="343">343</th><td>  <em>static</em> <em>double</em> quiet_NaN() {</td></tr>
+<tr><th id="344">344</th><td>  <u>#if defined(EIGEN_CUDA_ARCH)</u></td></tr>
+<tr><th id="345">345</th><td>    <b>return</b> CUDART_NAN;</td></tr>
+<tr><th id="346">346</th><td>  <u>#else</u></td></tr>
+<tr><th id="347">347</th><td>    <b>return</b> HIPRT_NAN;</td></tr>
+<tr><th id="348">348</th><td>  <u>#endif</u></td></tr>
+<tr><th id="349">349</th><td>  }</td></tr>
+<tr><th id="350">350</th><td>};</td></tr>
+<tr><th id="351">351</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>int</em>&gt;</td></tr>
+<tr><th id="352">352</th><td>{</td></tr>
+<tr><th id="353">353</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="354">354</th><td>  <em>static</em> <em>int</em> epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="355">355</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="356">356</th><td>  <em>static</em> <em>int</em> (max)() { <b>return</b> INT_MAX; }</td></tr>
+<tr><th id="357">357</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="358">358</th><td>  <em>static</em> <em>int</em> (min)() { <b>return</b> INT_MIN; }</td></tr>
+<tr><th id="359">359</th><td>};</td></tr>
+<tr><th id="360">360</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>unsigned</em> <em>int</em>&gt;</td></tr>
+<tr><th id="361">361</th><td>{</td></tr>
+<tr><th id="362">362</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="363">363</th><td>  <em>static</em> <em>unsigned</em> <em>int</em> epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="364">364</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="365">365</th><td>  <em>static</em> <em>unsigned</em> <em>int</em> (max)() { <b>return</b> UINT_MAX; }</td></tr>
+<tr><th id="366">366</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="367">367</th><td>  <em>static</em> <em>unsigned</em> <em>int</em> (min)() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="368">368</th><td>};</td></tr>
+<tr><th id="369">369</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>long</em>&gt;</td></tr>
+<tr><th id="370">370</th><td>{</td></tr>
+<tr><th id="371">371</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="372">372</th><td>  <em>static</em> <em>long</em> epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="373">373</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="374">374</th><td>  <em>static</em> <em>long</em> (max)() { <b>return</b> LONG_MAX; }</td></tr>
+<tr><th id="375">375</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="376">376</th><td>  <em>static</em> <em>long</em> (min)() { <b>return</b> LONG_MIN; }</td></tr>
+<tr><th id="377">377</th><td>};</td></tr>
+<tr><th id="378">378</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>unsigned</em> <em>long</em>&gt;</td></tr>
+<tr><th id="379">379</th><td>{</td></tr>
+<tr><th id="380">380</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="381">381</th><td>  <em>static</em> <em>unsigned</em> <em>long</em> epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="382">382</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="383">383</th><td>  <em>static</em> <em>unsigned</em> <em>long</em> (max)() { <b>return</b> ULONG_MAX; }</td></tr>
+<tr><th id="384">384</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="385">385</th><td>  <em>static</em> <em>unsigned</em> <em>long</em> (min)() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="386">386</th><td>};</td></tr>
+<tr><th id="387">387</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>long</em> <em>long</em>&gt;</td></tr>
+<tr><th id="388">388</th><td>{</td></tr>
+<tr><th id="389">389</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="390">390</th><td>  <em>static</em> <em>long</em> <em>long</em> epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="391">391</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="392">392</th><td>  <em>static</em> <em>long</em> <em>long</em> (max)() { <b>return</b> LLONG_MAX; }</td></tr>
+<tr><th id="393">393</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="394">394</th><td>  <em>static</em> <em>long</em> <em>long</em> (min)() { <b>return</b> LLONG_MIN; }</td></tr>
+<tr><th id="395">395</th><td>};</td></tr>
+<tr><th id="396">396</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>unsigned</em> <em>long</em> <em>long</em>&gt;</td></tr>
+<tr><th id="397">397</th><td>{</td></tr>
+<tr><th id="398">398</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="399">399</th><td>  <em>static</em> <em>unsigned</em> <em>long</em> <em>long</em> epsilon() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="400">400</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="401">401</th><td>  <em>static</em> <em>unsigned</em> <em>long</em> <em>long</em> (max)() { <b>return</b> ULLONG_MAX; }</td></tr>
+<tr><th id="402">402</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="403">403</th><td>  <em>static</em> <em>unsigned</em> <em>long</em> <em>long</em> (min)() { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="404">404</th><td>};</td></tr>
+<tr><th id="405">405</th><td><b>template</b>&lt;&gt; <b>struct</b> numeric_limits&lt;<em>bool</em>&gt;</td></tr>
+<tr><th id="406">406</th><td>{</td></tr>
+<tr><th id="407">407</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="408">408</th><td>  <em>static</em> <em>bool</em> epsilon() { <b>return</b> <b>false</b>; }</td></tr>
+<tr><th id="409">409</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR</td></tr>
+<tr><th id="410">410</th><td>  <em>static</em> <em>bool</em> (max)() { <b>return</b> <b>true</b>; }</td></tr>
+<tr><th id="411">411</th><td>  EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR </td></tr>
+<tr><th id="412">412</th><td>  <em>static</em> <em>bool</em> (min)() { <b>return</b> <b>false</b>; }</td></tr>
+<tr><th id="413">413</th><td>};</td></tr>
+<tr><th id="414">414</th><td></td></tr>
+<tr><th id="415">415</th><td>}</td></tr>
+<tr><th id="416">416</th><td></td></tr>
+<tr><th id="417">417</th><td><u>#<span data-ppcond="278">endif</span> // defined(EIGEN_GPU_COMPILE_PHASE) &amp;&amp; !EIGEN_HAS_CXX11</u></td></tr>
+<tr><th id="418">418</th><td></td></tr>
+<tr><th id="419">419</th><td><i class="doc">/** <span class="command">\internal</span></i></td></tr>
+<tr><th id="420">420</th><td><i class="doc">  *<span class="verb"> A base class do disable default copy ctor and copy assignment operator.</span></i></td></tr>
+<tr><th id="421">421</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="422">422</th><td><span class="verb"></span><b>class</b> <dfn class="type def" id="Eigen::internal::noncopyable" title='Eigen::internal::noncopyable' data-ref="Eigen::internal::noncopyable">noncopyable</dfn></td></tr>
+<tr><th id="423">423</th><td>{</td></tr>
+<tr><th id="424">424</th><td>  <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <dfn class="decl fn" id="_ZN5Eigen8internal11noncopyableC1ERKS1_" title='Eigen::internal::noncopyable::noncopyable' data-ref="_ZN5Eigen8internal11noncopyableC1ERKS1_">noncopyable</dfn>(<em>const</em> <a class="type" href="#Eigen::internal::noncopyable" title='Eigen::internal::noncopyable' data-ref="Eigen::internal::noncopyable">noncopyable</a>&amp;);</td></tr>
+<tr><th id="425">425</th><td>  <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <em>const</em> <a class="type" href="#Eigen::internal::noncopyable" title='Eigen::internal::noncopyable' data-ref="Eigen::internal::noncopyable">noncopyable</a>&amp; <dfn class="decl fn" id="_ZN5Eigen8internal11noncopyableaSERKS1_" title='Eigen::internal::noncopyable::operator=' data-ref="_ZN5Eigen8internal11noncopyableaSERKS1_"><b>operator</b>=</dfn>(<em>const</em> <a class="type" href="#Eigen::internal::noncopyable" title='Eigen::internal::noncopyable' data-ref="Eigen::internal::noncopyable">noncopyable</a>&amp;);</td></tr>
+<tr><th id="426">426</th><td><b>protected</b>:</td></tr>
+<tr><th id="427">427</th><td>  <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <dfn class="decl def fn" id="_ZN5Eigen8internal11noncopyableC1Ev" title='Eigen::internal::noncopyable::noncopyable' data-ref="_ZN5Eigen8internal11noncopyableC1Ev">noncopyable</dfn>() {}</td></tr>
+<tr><th id="428">428</th><td>  <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <dfn class="decl def fn" id="_ZN5Eigen8internal11noncopyableD1Ev" title='Eigen::internal::noncopyable::~noncopyable' data-ref="_ZN5Eigen8internal11noncopyableD1Ev">~noncopyable</dfn>() {}</td></tr>
+<tr><th id="429">429</th><td>};</td></tr>
+<tr><th id="430">430</th><td></td></tr>
+<tr><th id="431">431</th><td><i class="doc">/** <span class="command">\internal</span></i></td></tr>
+<tr><th id="432">432</th><td><i class="doc">  *<span class="verb"> Provides access to the number of elements in the object of as a compile-time constant expression.</span></i></td></tr>
+<tr><th id="433">433</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> It "returns" Eigen::Dynamic if the size cannot be resolved at compile-time (default).</span></i></td></tr>
+<tr><th id="434">434</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"></span></i></td></tr>
+<tr><th id="435">435</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> Similar to std::tuple_size, but more general.</span></i></td></tr>
+<tr><th id="436">436</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"></span></i></td></tr>
+<tr><th id="437">437</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> It currently supports:</span></i></td></tr>
+<tr><th id="438">438</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">  - any types T defining T::SizeAtCompileTime</span></i></td></tr>
+<tr><th id="439">439</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">  - plain C arrays as T[N]</span></i></td></tr>
+<tr><th id="440">440</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">  - std::array (c++11)</span></i></td></tr>
+<tr><th id="441">441</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">  - some internal types such as SingleRange and AllRange</span></i></td></tr>
+<tr><th id="442">442</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"></span></i></td></tr>
+<tr><th id="443">443</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> The second template parameter eases SFINAE-based specializations.</span></i></td></tr>
+<tr><th id="444">444</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="445">445</th><td><span class="verb"></span><b>template</b>&lt;<b>typename</b> T, <b>typename</b> EnableIf = <em>void</em>&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::array_size" title='Eigen::internal::array_size' data-ref="Eigen::internal::array_size">array_size</dfn> {</td></tr>
+<tr><th id="446">446</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::array_size::value" title='Eigen::internal::array_size::value' data-ref="Eigen::internal::array_size::value">value</dfn> = <a class="ref" href="Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a> };</td></tr>
+<tr><th id="447">447</th><td>};</td></tr>
+<tr><th id="448">448</th><td></td></tr>
+<tr><th id="449">449</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::array_size" title='Eigen::internal::array_size' data-ref="Eigen::internal::array_size">array_size</dfn>&lt;T,<b>typename</b> <span class="namespace">internal::</span><a class="type" href="#Eigen::internal::enable_if" title='Eigen::internal::enable_if' data-ref="Eigen::internal::enable_if">enable_if</a>&lt;((T::SizeAtCompileTime&amp;<var>0</var>)==<var>0</var>)&gt;::type&gt; {</td></tr>
+<tr><th id="450">450</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::array_size{type-parameter-0-0,typenameenable_if{((T::SizeAtCompileTime&amp;0)==0),void}::type}::value" title='Eigen::internal::array_size&lt;type-parameter-0-0, typename enable_if&lt;((T::SizeAtCompileTime &amp; 0) == 0), void&gt;::type&gt;::value' data-ref="Eigen::internal::array_size{type-parameter-0-0,typenameenable_if{((T::SizeAtCompileTime&amp;0)==0),void}::type}::value">value</dfn> = T::SizeAtCompileTime };</td></tr>
+<tr><th id="451">451</th><td>};</td></tr>
+<tr><th id="452">452</th><td></td></tr>
+<tr><th id="453">453</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::array_size" title='Eigen::internal::array_size' data-ref="Eigen::internal::array_size">array_size</dfn>&lt;<em>const</em> T (&amp;)[<a class="tu ref" href="#Eigen::internal::array_size{consttype-parameter-0-0(&amp;)[N]}::N" title='Eigen::internal::array_size&lt;const type-parameter-0-0 (&amp;)[N]&gt;::N' data-ref="Eigen::internal::array_size{consttype-parameter-0-0(&amp;)[N]}::N">N</a>]&gt; {</td></tr>
+<tr><th id="454">454</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::array_size{consttype-parameter-0-0(&amp;)[N]}::value" title='Eigen::internal::array_size&lt;const type-parameter-0-0 (&amp;)[N]&gt;::value' data-ref="Eigen::internal::array_size{consttype-parameter-0-0(&amp;)[N]}::value">value</dfn> = <a class="tu ref" href="#Eigen::internal::array_size{consttype-parameter-0-0(&amp;)[N]}::N" title='Eigen::internal::array_size&lt;const type-parameter-0-0 (&amp;)[N]&gt;::N' data-ref="Eigen::internal::array_size{consttype-parameter-0-0(&amp;)[N]}::N">N</a> };</td></tr>
+<tr><th id="455">455</th><td>};</td></tr>
+<tr><th id="456">456</th><td><b>template</b>&lt;<b>typename</b> T, <em>int</em> N&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::array_size" title='Eigen::internal::array_size' data-ref="Eigen::internal::array_size">array_size</dfn>&lt;T (&amp;)[<a class="tu ref" href="#Eigen::internal::array_size{type-parameter-0-0(&amp;)[N]}::N" title='Eigen::internal::array_size&lt;type-parameter-0-0 (&amp;)[N]&gt;::N' data-ref="Eigen::internal::array_size{type-parameter-0-0(&amp;)[N]}::N">N</a>]&gt; {</td></tr>
+<tr><th id="457">457</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::array_size{type-parameter-0-0(&amp;)[N]}::value" title='Eigen::internal::array_size&lt;type-parameter-0-0 (&amp;)[N]&gt;::value' data-ref="Eigen::internal::array_size{type-parameter-0-0(&amp;)[N]}::value">value</dfn> = <a class="tu ref" href="#Eigen::internal::array_size{type-parameter-0-0(&amp;)[N]}::N" title='Eigen::internal::array_size&lt;type-parameter-0-0 (&amp;)[N]&gt;::N' data-ref="Eigen::internal::array_size{type-parameter-0-0(&amp;)[N]}::N">N</a> };</td></tr>
+<tr><th id="458">458</th><td>};</td></tr>
+<tr><th id="459">459</th><td></td></tr>
+<tr><th id="460">460</th><td><u>#<span data-ppcond="460">if</span> <a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a></u></td></tr>
+<tr><th id="461">461</th><td><b>template</b>&lt;<b>typename</b> T, <span class="namespace">std::</span><a class="typedef" href="../../../../../../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> N&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::array_size" title='Eigen::internal::array_size' data-ref="Eigen::internal::array_size">array_size</dfn>&lt;<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;T,<a class="tu ref" href="#Eigen::internal::array_size{constarray{type-parameter-0-0,_Nm}}::N" title='Eigen::internal::array_size&lt;const array&lt;type-parameter-0-0, _Nm&gt;&gt;::N' data-ref="Eigen::internal::array_size{constarray{type-parameter-0-0,_Nm}}::N">N</a>&gt; &gt; {</td></tr>
+<tr><th id="462">462</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::array_size{constarray{type-parameter-0-0,_Nm}}::value" title='Eigen::internal::array_size&lt;const array&lt;type-parameter-0-0, _Nm&gt;&gt;::value' data-ref="Eigen::internal::array_size{constarray{type-parameter-0-0,_Nm}}::value">value</dfn> = <a class="tu ref" href="#Eigen::internal::array_size{constarray{type-parameter-0-0,_Nm}}::N" title='Eigen::internal::array_size&lt;const array&lt;type-parameter-0-0, _Nm&gt;&gt;::N' data-ref="Eigen::internal::array_size{constarray{type-parameter-0-0,_Nm}}::N">N</a> };</td></tr>
+<tr><th id="463">463</th><td>};</td></tr>
+<tr><th id="464">464</th><td><b>template</b>&lt;<b>typename</b> T, <span class="namespace">std::</span><a class="typedef" href="../../../../../../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> N&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::array_size" title='Eigen::internal::array_size' data-ref="Eigen::internal::array_size">array_size</dfn>&lt;<span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;T,<a class="tu ref" href="#Eigen::internal::array_size{array{type-parameter-0-0,_Nm}}::N" title='Eigen::internal::array_size&lt;array&lt;type-parameter-0-0, _Nm&gt;&gt;::N' data-ref="Eigen::internal::array_size{array{type-parameter-0-0,_Nm}}::N">N</a>&gt; &gt; {</td></tr>
+<tr><th id="465">465</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::array_size{array{type-parameter-0-0,_Nm}}::value" title='Eigen::internal::array_size&lt;array&lt;type-parameter-0-0, _Nm&gt;&gt;::value' data-ref="Eigen::internal::array_size{array{type-parameter-0-0,_Nm}}::value">value</dfn> = <a class="tu ref" href="#Eigen::internal::array_size{array{type-parameter-0-0,_Nm}}::N" title='Eigen::internal::array_size&lt;array&lt;type-parameter-0-0, _Nm&gt;&gt;::N' data-ref="Eigen::internal::array_size{array{type-parameter-0-0,_Nm}}::N">N</a> };</td></tr>
+<tr><th id="466">466</th><td>};</td></tr>
+<tr><th id="467">467</th><td><u>#<span data-ppcond="460">endif</span></u></td></tr>
+<tr><th id="468">468</th><td></td></tr>
+<tr><th id="469">469</th><td><i class="doc">/** <span class="command">\internal</span></i></td></tr>
+<tr><th id="470">470</th><td><i class="doc">  *<span class="verb"> Analogue of the std::size free function.</span></i></td></tr>
+<tr><th id="471">471</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> It returns the size of the container or view \a x of type \c T</span></i></td></tr>
+<tr><th id="472">472</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"></span></i></td></tr>
+<tr><th id="473">473</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> It currently supports:</span></i></td></tr>
+<tr><th id="474">474</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">  - any types T defining a member T::size() const</span></i></td></tr>
+<tr><th id="475">475</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">  - plain C arrays as T[N]</span></i></td></tr>
+<tr><th id="476">476</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"></span></i></td></tr>
+<tr><th id="477">477</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="478">478</th><td><span class="verb"></span><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="479">479</th><td><a class="macro" href="Macros.h.html#785" title="constexpr" data-ref="_M/EIGEN_CONSTEXPR">EIGEN_CONSTEXPR</a> <a class="typedef" href="#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="decl def fn" id="_ZN5Eigen8internal4sizeERKT_" title='Eigen::internal::size' data-ref="_ZN5Eigen8internal4sizeERKT_">size</dfn>(<em>const</em> T&amp; <dfn class="local col4 decl" id="5784x" title='x' data-type='const T &amp;' data-ref="5784x">x</dfn>) { <b>return</b> <a class="local col4 ref" href="#5784x" title='x' data-ref="5784x">x</a>.size(); }</td></tr>
+<tr><th id="480">480</th><td></td></tr>
+<tr><th id="481">481</th><td><b>template</b>&lt;<b>typename</b> T,<span class="namespace">std::</span><a class="typedef" href="../../../../../../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> N&gt;</td></tr>
+<tr><th id="482">482</th><td><a class="macro" href="Macros.h.html#785" title="constexpr" data-ref="_M/EIGEN_CONSTEXPR">EIGEN_CONSTEXPR</a> <a class="typedef" href="#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="decl def fn" id="_ZN5Eigen8internal4sizeERAT0__KT_" title='Eigen::internal::size' data-ref="_ZN5Eigen8internal4sizeERAT0__KT_">size</dfn>(<em>const</em> T (&amp;) [<a class="tu ref" href="#N" title='N' data-ref="N">N</a>]) { <b>return</b> <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a>; }</td></tr>
+<tr><th id="483">483</th><td></td></tr>
+<tr><th id="484">484</th><td><i class="doc">/** <span class="command">\internal</span></i></td></tr>
+<tr><th id="485">485</th><td><i class="doc">  *<span class="verb"> Convenient struct to get the result type of a nullary, unary, binary, or</span></i></td></tr>
+<tr><th id="486">486</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> ternary functor.</span></i></td></tr>
+<tr><th id="487">487</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> </span></i></td></tr>
+<tr><th id="488">488</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> Pre C++11:</span></i></td></tr>
+<tr><th id="489">489</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> Supports both a Func::result_type member and templated</span></i></td></tr>
+<tr><th id="490">490</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> Func::result&lt;Func(ArgTypes...)&gt;::type member.</span></i></td></tr>
+<tr><th id="491">491</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> </span></i></td></tr>
+<tr><th id="492">492</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> If none of these members is provided, then the type of the first</span></i></td></tr>
+<tr><th id="493">493</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> argument is returned.</span></i></td></tr>
+<tr><th id="494">494</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> </span></i></td></tr>
+<tr><th id="495">495</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> Post C++11:</span></i></td></tr>
+<tr><th id="496">496</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> This uses std::result_of. However, note the `type` member removes</span></i></td></tr>
+<tr><th id="497">497</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> const and converts references/pointers to their corresponding value type.</span></i></td></tr>
+<tr><th id="498">498</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="499">499</th><td><span class="verb"></span><u>#<span data-ppcond="499">if</span> <a class="macro" href="Macros.h.html#715" title="1" data-ref="_M/EIGEN_HAS_STD_INVOKE_RESULT">EIGEN_HAS_STD_INVOKE_RESULT</a></u></td></tr>
+<tr><th id="500">500</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> <dfn class="type" id="Eigen::internal::result_of" title='Eigen::internal::result_of' data-ref="Eigen::internal::result_of">result_of</dfn>;</td></tr>
+<tr><th id="501">501</th><td></td></tr>
+<tr><th id="502">502</th><td><b>template</b>&lt;<b>typename</b> F, <b>typename</b>... ArgTypes&gt;</td></tr>
+<tr><th id="503">503</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::result_of" title='Eigen::internal::result_of' data-ref="Eigen::internal::result_of">result_of</dfn>&lt;F(ArgTypes...)&gt; {</td></tr>
+<tr><th id="504">504</th><td>  <b>typedef</b> <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/type_traits.html#std::invoke_result" title='std::invoke_result' data-ref="std::invoke_result">invoke_result</a>&lt;F, ArgTypes...&gt;::type <dfn class="typedef" id="Eigen::internal::result_of{type-parameter-0-0(type-parameter-0-1...)}::type1" title='Eigen::internal::result_of&lt;type-parameter-0-0 (type-parameter-0-1...)&gt;::type1' data-type='typename std::invoke_result&lt;F, ArgTypes...&gt;::type' data-ref="Eigen::internal::result_of{type-parameter-0-0(type-parameter-0-1...)}::type1">type1</dfn>;</td></tr>
+<tr><th id="505">505</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;<a class="typedef" href="#Eigen::internal::result_of{type-parameter-0-0(type-parameter-0-1...)}::type1" title='Eigen::internal::result_of&lt;type-parameter-0-0 (type-parameter-0-1...)&gt;::type1' data-type='typename std::invoke_result&lt;F, ArgTypes...&gt;::type' data-ref="Eigen::internal::result_of{type-parameter-0-0(type-parameter-0-1...)}::type1">type1</a>&gt;::type <dfn class="typedef" id="Eigen::internal::result_of{type-parameter-0-0(type-parameter-0-1...)}::type" title='Eigen::internal::result_of&lt;type-parameter-0-0 (type-parameter-0-1...)&gt;::type' data-type='typename remove_all&lt;type1&gt;::type' data-ref="Eigen::internal::result_of{type-parameter-0-0(type-parameter-0-1...)}::type">type</dfn>;</td></tr>
+<tr><th id="506">506</th><td>};</td></tr>
+<tr><th id="507">507</th><td><u>#<span data-ppcond="499">elif</span> EIGEN_HAS_STD_RESULT_OF</u></td></tr>
+<tr><th id="508">508</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> result_of {</td></tr>
+<tr><th id="509">509</th><td>  <b>typedef</b> <b>typename</b> std::result_of&lt;T&gt;::type type1;</td></tr>
+<tr><th id="510">510</th><td>  <b>typedef</b> <b>typename</b> remove_all&lt;type1&gt;::type type;</td></tr>
+<tr><th id="511">511</th><td>};</td></tr>
+<tr><th id="512">512</th><td><u>#else</u></td></tr>
+<tr><th id="513">513</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>struct</b> result_of { };</td></tr>
+<tr><th id="514">514</th><td></td></tr>
+<tr><th id="515">515</th><td><b>struct</b> has_none {<em>int</em> a[<var>1</var>];};</td></tr>
+<tr><th id="516">516</th><td><b>struct</b> has_std_result_type {<em>int</em> a[<var>2</var>];};</td></tr>
+<tr><th id="517">517</th><td><b>struct</b> has_tr1_result {<em>int</em> a[<var>3</var>];};</td></tr>
+<tr><th id="518">518</th><td></td></tr>
+<tr><th id="519">519</th><td><b>template</b>&lt;<b>typename</b> Func, <em>int</em> SizeOf&gt;</td></tr>
+<tr><th id="520">520</th><td><b>struct</b> nullary_result_of_select {};</td></tr>
+<tr><th id="521">521</th><td></td></tr>
+<tr><th id="522">522</th><td><b>template</b>&lt;<b>typename</b> Func&gt;</td></tr>
+<tr><th id="523">523</th><td><b>struct</b> nullary_result_of_select&lt;Func, <b>sizeof</b>(has_std_result_type)&gt; {<b>typedef</b> <b>typename</b> Func::result_type type;};</td></tr>
+<tr><th id="524">524</th><td></td></tr>
+<tr><th id="525">525</th><td><b>template</b>&lt;<b>typename</b> Func&gt;</td></tr>
+<tr><th id="526">526</th><td><b>struct</b> nullary_result_of_select&lt;Func, <b>sizeof</b>(has_tr1_result)&gt; {<b>typedef</b> <b>typename</b> Func::<b>template</b> result&lt;Func()&gt;::type type;};</td></tr>
+<tr><th id="527">527</th><td></td></tr>
+<tr><th id="528">528</th><td><b>template</b>&lt;<b>typename</b> Func&gt;</td></tr>
+<tr><th id="529">529</th><td><b>struct</b> result_of&lt;Func()&gt; {</td></tr>
+<tr><th id="530">530</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="531">531</th><td>    <em>static</em> has_std_result_type    testFunctor(T <em>const</em> *, <b>typename</b> T::result_type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="532">532</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="533">533</th><td>    <em>static</em> has_tr1_result         testFunctor(T <em>const</em> *, <b>typename</b> T::<b>template</b> result&lt;T()&gt;::type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="534">534</th><td>    <em>static</em> has_none               testFunctor(...);</td></tr>
+<tr><th id="535">535</th><td></td></tr>
+<tr><th id="536">536</th><td>    <i>// note that the following indirection is needed for gcc-3.3</i></td></tr>
+<tr><th id="537">537</th><td>    <b>enum</b> {FunctorType = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;Func*&gt;(<var>0</var>)))};</td></tr>
+<tr><th id="538">538</th><td>    <b>typedef</b> <b>typename</b> nullary_result_of_select&lt;Func, FunctorType&gt;::type type;</td></tr>
+<tr><th id="539">539</th><td>};</td></tr>
+<tr><th id="540">540</th><td></td></tr>
+<tr><th id="541">541</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType, <em>int</em> SizeOf=<b>sizeof</b>(has_none)&gt;</td></tr>
+<tr><th id="542">542</th><td><b>struct</b> unary_result_of_select {<b>typedef</b> <b>typename</b> internal::remove_all&lt;ArgType&gt;::type type;};</td></tr>
+<tr><th id="543">543</th><td></td></tr>
+<tr><th id="544">544</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType&gt;</td></tr>
+<tr><th id="545">545</th><td><b>struct</b> unary_result_of_select&lt;Func, ArgType, <b>sizeof</b>(has_std_result_type)&gt; {<b>typedef</b> <b>typename</b> Func::result_type type;};</td></tr>
+<tr><th id="546">546</th><td></td></tr>
+<tr><th id="547">547</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType&gt;</td></tr>
+<tr><th id="548">548</th><td><b>struct</b> unary_result_of_select&lt;Func, ArgType, <b>sizeof</b>(has_tr1_result)&gt; {<b>typedef</b> <b>typename</b> Func::<b>template</b> result&lt;Func(ArgType)&gt;::type type;};</td></tr>
+<tr><th id="549">549</th><td></td></tr>
+<tr><th id="550">550</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType&gt;</td></tr>
+<tr><th id="551">551</th><td><b>struct</b> result_of&lt;Func(ArgType)&gt; {</td></tr>
+<tr><th id="552">552</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="553">553</th><td>    <em>static</em> has_std_result_type    testFunctor(T <em>const</em> *, <b>typename</b> T::result_type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="554">554</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="555">555</th><td>    <em>static</em> has_tr1_result         testFunctor(T <em>const</em> *, <b>typename</b> T::<b>template</b> result&lt;T(ArgType)&gt;::type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="556">556</th><td>    <em>static</em> has_none               testFunctor(...);</td></tr>
+<tr><th id="557">557</th><td></td></tr>
+<tr><th id="558">558</th><td>    <i>// note that the following indirection is needed for gcc-3.3</i></td></tr>
+<tr><th id="559">559</th><td>    <b>enum</b> {FunctorType = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;Func*&gt;(<var>0</var>)))};</td></tr>
+<tr><th id="560">560</th><td>    <b>typedef</b> <b>typename</b> unary_result_of_select&lt;Func, ArgType, FunctorType&gt;::type type;</td></tr>
+<tr><th id="561">561</th><td>};</td></tr>
+<tr><th id="562">562</th><td></td></tr>
+<tr><th id="563">563</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1, <em>int</em> SizeOf=<b>sizeof</b>(has_none)&gt;</td></tr>
+<tr><th id="564">564</th><td><b>struct</b> binary_result_of_select {<b>typedef</b> <b>typename</b> internal::remove_all&lt;ArgType0&gt;::type type;};</td></tr>
+<tr><th id="565">565</th><td></td></tr>
+<tr><th id="566">566</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1&gt;</td></tr>
+<tr><th id="567">567</th><td><b>struct</b> binary_result_of_select&lt;Func, ArgType0, ArgType1, <b>sizeof</b>(has_std_result_type)&gt;</td></tr>
+<tr><th id="568">568</th><td>{<b>typedef</b> <b>typename</b> Func::result_type type;};</td></tr>
+<tr><th id="569">569</th><td></td></tr>
+<tr><th id="570">570</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1&gt;</td></tr>
+<tr><th id="571">571</th><td><b>struct</b> binary_result_of_select&lt;Func, ArgType0, ArgType1, <b>sizeof</b>(has_tr1_result)&gt;</td></tr>
+<tr><th id="572">572</th><td>{<b>typedef</b> <b>typename</b> Func::<b>template</b> result&lt;Func(ArgType0,ArgType1)&gt;::type type;};</td></tr>
+<tr><th id="573">573</th><td></td></tr>
+<tr><th id="574">574</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1&gt;</td></tr>
+<tr><th id="575">575</th><td><b>struct</b> result_of&lt;Func(ArgType0,ArgType1)&gt; {</td></tr>
+<tr><th id="576">576</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="577">577</th><td>    <em>static</em> has_std_result_type    testFunctor(T <em>const</em> *, <b>typename</b> T::result_type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="578">578</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="579">579</th><td>    <em>static</em> has_tr1_result         testFunctor(T <em>const</em> *, <b>typename</b> T::<b>template</b> result&lt;T(ArgType0,ArgType1)&gt;::type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="580">580</th><td>    <em>static</em> has_none               testFunctor(...);</td></tr>
+<tr><th id="581">581</th><td></td></tr>
+<tr><th id="582">582</th><td>    <i>// note that the following indirection is needed for gcc-3.3</i></td></tr>
+<tr><th id="583">583</th><td>    <b>enum</b> {FunctorType = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;Func*&gt;(<var>0</var>)))};</td></tr>
+<tr><th id="584">584</th><td>    <b>typedef</b> <b>typename</b> binary_result_of_select&lt;Func, ArgType0, ArgType1, FunctorType&gt;::type type;</td></tr>
+<tr><th id="585">585</th><td>};</td></tr>
+<tr><th id="586">586</th><td></td></tr>
+<tr><th id="587">587</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1, <b>typename</b> ArgType2, <em>int</em> SizeOf=<b>sizeof</b>(has_none)&gt;</td></tr>
+<tr><th id="588">588</th><td><b>struct</b> ternary_result_of_select {<b>typedef</b> <b>typename</b> internal::remove_all&lt;ArgType0&gt;::type type;};</td></tr>
+<tr><th id="589">589</th><td></td></tr>
+<tr><th id="590">590</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1, <b>typename</b> ArgType2&gt;</td></tr>
+<tr><th id="591">591</th><td><b>struct</b> ternary_result_of_select&lt;Func, ArgType0, ArgType1, ArgType2, <b>sizeof</b>(has_std_result_type)&gt;</td></tr>
+<tr><th id="592">592</th><td>{<b>typedef</b> <b>typename</b> Func::result_type type;};</td></tr>
+<tr><th id="593">593</th><td></td></tr>
+<tr><th id="594">594</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1, <b>typename</b> ArgType2&gt;</td></tr>
+<tr><th id="595">595</th><td><b>struct</b> ternary_result_of_select&lt;Func, ArgType0, ArgType1, ArgType2, <b>sizeof</b>(has_tr1_result)&gt;</td></tr>
+<tr><th id="596">596</th><td>{<b>typedef</b> <b>typename</b> Func::<b>template</b> result&lt;Func(ArgType0,ArgType1,ArgType2)&gt;::type type;};</td></tr>
+<tr><th id="597">597</th><td></td></tr>
+<tr><th id="598">598</th><td><b>template</b>&lt;<b>typename</b> Func, <b>typename</b> ArgType0, <b>typename</b> ArgType1, <b>typename</b> ArgType2&gt;</td></tr>
+<tr><th id="599">599</th><td><b>struct</b> result_of&lt;Func(ArgType0,ArgType1,ArgType2)&gt; {</td></tr>
+<tr><th id="600">600</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="601">601</th><td>    <em>static</em> has_std_result_type    testFunctor(T <em>const</em> *, <b>typename</b> T::result_type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="602">602</th><td>    <b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="603">603</th><td>    <em>static</em> has_tr1_result         testFunctor(T <em>const</em> *, <b>typename</b> T::<b>template</b> result&lt;T(ArgType0,ArgType1,ArgType2)&gt;::type <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="604">604</th><td>    <em>static</em> has_none               testFunctor(...);</td></tr>
+<tr><th id="605">605</th><td></td></tr>
+<tr><th id="606">606</th><td>    <i>// note that the following indirection is needed for gcc-3.3</i></td></tr>
+<tr><th id="607">607</th><td>    <b>enum</b> {FunctorType = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;Func*&gt;(<var>0</var>)))};</td></tr>
+<tr><th id="608">608</th><td>    <b>typedef</b> <b>typename</b> ternary_result_of_select&lt;Func, ArgType0, ArgType1, ArgType2, FunctorType&gt;::type type;</td></tr>
+<tr><th id="609">609</th><td>};</td></tr>
+<tr><th id="610">610</th><td></td></tr>
+<tr><th id="611">611</th><td><u>#<span data-ppcond="499">endif</span></u></td></tr>
+<tr><th id="612">612</th><td></td></tr>
+<tr><th id="613">613</th><td><u>#<span data-ppcond="613">if</span> <a class="macro" href="Macros.h.html#715" title="1" data-ref="_M/EIGEN_HAS_STD_INVOKE_RESULT">EIGEN_HAS_STD_INVOKE_RESULT</a></u></td></tr>
+<tr><th id="614">614</th><td><b>template</b>&lt;<b>typename</b> F, <b>typename</b>... ArgTypes&gt;</td></tr>
+<tr><th id="615">615</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::invoke_result" title='Eigen::internal::invoke_result' data-ref="Eigen::internal::invoke_result">invoke_result</dfn> {</td></tr>
+<tr><th id="616">616</th><td>  <b>typedef</b> <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/type_traits.html#std::invoke_result" title='std::invoke_result' data-ref="std::invoke_result">invoke_result</a>&lt;F, ArgTypes...&gt;::type <dfn class="typedef" id="Eigen::internal::invoke_result::type1" title='Eigen::internal::invoke_result::type1' data-type='typename std::invoke_result&lt;F, ArgTypes...&gt;::type' data-ref="Eigen::internal::invoke_result::type1">type1</dfn>;</td></tr>
+<tr><th id="617">617</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="#Eigen::internal::remove_all" title='Eigen::internal::remove_all' data-ref="Eigen::internal::remove_all">remove_all</a>&lt;<a class="typedef" href="#Eigen::internal::invoke_result::type1" title='Eigen::internal::invoke_result::type1' data-type='typename std::invoke_result&lt;F, ArgTypes...&gt;::type' data-ref="Eigen::internal::invoke_result::type1">type1</a>&gt;::type <dfn class="typedef" id="Eigen::internal::invoke_result::type" title='Eigen::internal::invoke_result::type' data-type='typename remove_all&lt;type1&gt;::type' data-ref="Eigen::internal::invoke_result::type">type</dfn>;</td></tr>
+<tr><th id="618">618</th><td>};</td></tr>
+<tr><th id="619">619</th><td><u>#<span data-ppcond="613">elif</span> EIGEN_HAS_CXX11</u></td></tr>
+<tr><th id="620">620</th><td><b>template</b>&lt;<b>typename</b> F, <b>typename</b>... ArgTypes&gt;</td></tr>
+<tr><th id="621">621</th><td><b>struct</b> invoke_result {</td></tr>
+<tr><th id="622">622</th><td>  <b>typedef</b> <b>typename</b> result_of&lt;F(ArgTypes...)&gt;::type type1;</td></tr>
+<tr><th id="623">623</th><td>  <b>typedef</b> <b>typename</b> remove_all&lt;type1&gt;::type type;</td></tr>
+<tr><th id="624">624</th><td>};</td></tr>
+<tr><th id="625">625</th><td><u>#else</u></td></tr>
+<tr><th id="626">626</th><td><b>template</b>&lt;<b>typename</b> F, <b>typename</b> ArgType0 = <em>void</em>, <b>typename</b> ArgType1 = <em>void</em>, <b>typename</b> ArgType2 = <em>void</em>&gt;</td></tr>
+<tr><th id="627">627</th><td><b>struct</b> invoke_result {</td></tr>
+<tr><th id="628">628</th><td>  <b>typedef</b> <b>typename</b> result_of&lt;F(ArgType0, ArgType1, ArgType2)&gt;::type type1;</td></tr>
+<tr><th id="629">629</th><td>  <b>typedef</b> <b>typename</b> remove_all&lt;type1&gt;::type type;</td></tr>
+<tr><th id="630">630</th><td>};</td></tr>
+<tr><th id="631">631</th><td></td></tr>
+<tr><th id="632">632</th><td><b>template</b>&lt;<b>typename</b> F&gt;</td></tr>
+<tr><th id="633">633</th><td><b>struct</b> invoke_result&lt;F, <em>void</em>, <em>void</em>, <em>void</em>&gt; {</td></tr>
+<tr><th id="634">634</th><td>  <b>typedef</b> <b>typename</b> result_of&lt;F()&gt;::type type1;</td></tr>
+<tr><th id="635">635</th><td>  <b>typedef</b> <b>typename</b> remove_all&lt;type1&gt;::type type;</td></tr>
+<tr><th id="636">636</th><td>};</td></tr>
+<tr><th id="637">637</th><td></td></tr>
+<tr><th id="638">638</th><td><b>template</b>&lt;<b>typename</b> F, <b>typename</b> ArgType0&gt;</td></tr>
+<tr><th id="639">639</th><td><b>struct</b> invoke_result&lt;F, ArgType0, <em>void</em>, <em>void</em>&gt; {</td></tr>
+<tr><th id="640">640</th><td>  <b>typedef</b> <b>typename</b> result_of&lt;F(ArgType0)&gt;::type type1;</td></tr>
+<tr><th id="641">641</th><td>  <b>typedef</b> <b>typename</b> remove_all&lt;type1&gt;::type type;</td></tr>
+<tr><th id="642">642</th><td>};</td></tr>
+<tr><th id="643">643</th><td></td></tr>
+<tr><th id="644">644</th><td><b>template</b>&lt;<b>typename</b> F, <b>typename</b> ArgType0, <b>typename</b> ArgType1&gt;</td></tr>
+<tr><th id="645">645</th><td><b>struct</b> invoke_result&lt;F, ArgType0, ArgType1, <em>void</em>&gt; {</td></tr>
+<tr><th id="646">646</th><td>  <b>typedef</b> <b>typename</b> result_of&lt;F(ArgType0, ArgType1)&gt;::type type1;</td></tr>
+<tr><th id="647">647</th><td>  <b>typedef</b> <b>typename</b> remove_all&lt;type1&gt;::type type;</td></tr>
+<tr><th id="648">648</th><td>};</td></tr>
+<tr><th id="649">649</th><td><u>#<span data-ppcond="613">endif</span></u></td></tr>
+<tr><th id="650">650</th><td></td></tr>
+<tr><th id="651">651</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</dfn> { <em>char</em> <dfn class="decl field" id="Eigen::internal::meta_yes::a" title='Eigen::internal::meta_yes::a' data-ref="Eigen::internal::meta_yes::a">a</dfn>[<var>1</var>]; };</td></tr>
+<tr><th id="652">652</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::meta_no" title='Eigen::internal::meta_no' data-ref="Eigen::internal::meta_no">meta_no</dfn>  { <em>char</em> <dfn class="decl field" id="Eigen::internal::meta_no::a" title='Eigen::internal::meta_no::a' data-ref="Eigen::internal::meta_no::a">a</dfn>[<var>2</var>]; };</td></tr>
+<tr><th id="653">653</th><td></td></tr>
+<tr><th id="654">654</th><td><i>// Check whether T::ReturnType does exist</i></td></tr>
+<tr><th id="655">655</th><td><b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="656">656</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::has_ReturnType" title='Eigen::internal::has_ReturnType' data-ref="Eigen::internal::has_ReturnType">has_ReturnType</dfn></td></tr>
+<tr><th id="657">657</th><td>{</td></tr>
+<tr><th id="658">658</th><td>  <b>template</b> &lt;<b>typename</b> C&gt; <em>static</em> <a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a> <dfn class="decl fn" id="_ZN5Eigen8internal14has_ReturnType11testFunctorEPKTL0__PKNS2_10ReturnTypeE" title='Eigen::internal::has_ReturnType::testFunctor' data-ref="_ZN5Eigen8internal14has_ReturnType11testFunctorEPKTL0__PKNS2_10ReturnTypeE">testFunctor</dfn>(C <em>const</em> *, <b>typename</b> C::ReturnType <em>const</em> * = <var>0</var>);</td></tr>
+<tr><th id="659">659</th><td>  <b>template</b> &lt;<b>typename</b> C&gt; <em>static</em> <a class="type" href="#Eigen::internal::meta_no" title='Eigen::internal::meta_no' data-ref="Eigen::internal::meta_no">meta_no</a>  <dfn class="decl fn" id="_ZN5Eigen8internal14has_ReturnType11testFunctorEz" title='Eigen::internal::has_ReturnType::testFunctor' data-ref="_ZN5Eigen8internal14has_ReturnType11testFunctorEz">testFunctor</dfn>(...);</td></tr>
+<tr><th id="660">660</th><td></td></tr>
+<tr><th id="661">661</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::has_ReturnType::value" title='Eigen::internal::has_ReturnType::value' data-ref="Eigen::internal::has_ReturnType::value">value</dfn> = <b>sizeof</b>(testFunctor&lt;T&gt;(<b>static_cast</b>&lt;T*&gt;(<var>0</var>))) == <b>sizeof</b>(<a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a>) };</td></tr>
+<tr><th id="662">662</th><td>};</td></tr>
+<tr><th id="663">663</th><td></td></tr>
+<tr><th id="664">664</th><td><b>template</b>&lt;<b>typename</b> T&gt; <em>const</em> T* <dfn class="decl fn" id="_ZN5Eigen8internal10return_ptrEv" title='Eigen::internal::return_ptr' data-ref="_ZN5Eigen8internal10return_ptrEv">return_ptr</dfn>();</td></tr>
+<tr><th id="665">665</th><td></td></tr>
+<tr><th id="666">666</th><td><b>template</b> &lt;<b>typename</b> T, <b>typename</b> IndexType=<a class="typedef" href="#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>&gt;</td></tr>
+<tr><th id="667">667</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::has_nullary_operator" title='Eigen::internal::has_nullary_operator' data-ref="Eigen::internal::has_nullary_operator">has_nullary_operator</dfn></td></tr>
+<tr><th id="668">668</th><td>{</td></tr>
+<tr><th id="669">669</th><td>  <b>template</b> &lt;<b>typename</b> C&gt; <em>static</em> <a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a> <dfn class="decl fn" id="_ZN5Eigen8internal20has_nullary_operator11testFunctorEPKTL0__PNS0_9enable_ifIXgtszclptcl10return_ptrIS2_EEonclELi0EEvE4typeE" title='Eigen::internal::has_nullary_operator::testFunctor' data-ref="_ZN5Eigen8internal20has_nullary_operator11testFunctorEPKTL0__PNS0_9enable_ifIXgtszclptcl10return_ptrIS2_EEonclELi0EEvE4typeE">testFunctor</dfn>(C <em>const</em> *,<b>typename</b> <a class="type" href="#Eigen::internal::enable_if" title='Eigen::internal::enable_if' data-ref="Eigen::internal::enable_if">enable_if</a>&lt;(<b>sizeof</b>(return_ptr&lt;C&gt;()-&gt;<b>operator</b>()())&gt;<var>0</var>)&gt;::type * = <var>0</var>);</td></tr>
+<tr><th id="670">670</th><td>  <em>static</em> <a class="type" href="#Eigen::internal::meta_no" title='Eigen::internal::meta_no' data-ref="Eigen::internal::meta_no">meta_no</a> <dfn class="decl fn" id="_ZN5Eigen8internal20has_nullary_operator11testFunctorEz" title='Eigen::internal::has_nullary_operator::testFunctor' data-ref="_ZN5Eigen8internal20has_nullary_operator11testFunctorEz">testFunctor</dfn>(...);</td></tr>
+<tr><th id="671">671</th><td></td></tr>
+<tr><th id="672">672</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::has_nullary_operator::value" title='Eigen::internal::has_nullary_operator::value' data-ref="Eigen::internal::has_nullary_operator::value">value</dfn> = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;T*&gt;(<var>0</var>))) == <b>sizeof</b>(<a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a>) };</td></tr>
+<tr><th id="673">673</th><td>};</td></tr>
+<tr><th id="674">674</th><td></td></tr>
+<tr><th id="675">675</th><td><b>template</b> &lt;<b>typename</b> T, <b>typename</b> IndexType=<a class="typedef" href="#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>&gt;</td></tr>
+<tr><th id="676">676</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::has_unary_operator" title='Eigen::internal::has_unary_operator' data-ref="Eigen::internal::has_unary_operator">has_unary_operator</dfn></td></tr>
+<tr><th id="677">677</th><td>{</td></tr>
+<tr><th id="678">678</th><td>  <b>template</b> &lt;<b>typename</b> C&gt; <em>static</em> <a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a> <dfn class="decl fn" id="_ZN5Eigen8internal18has_unary_operator11testFunctorEPKTL0__PNS0_9enable_ifIXgtszclptcl10return_ptrIS2_EEonclcvT0_Li0EELi0EEvE4typeE" title='Eigen::internal::has_unary_operator::testFunctor' data-ref="_ZN5Eigen8internal18has_unary_operator11testFunctorEPKTL0__PNS0_9enable_ifIXgtszclptcl10return_ptrIS2_EEonclcvT0_Li0EELi0EEvE4typeE">testFunctor</dfn>(C <em>const</em> *,<b>typename</b> <a class="type" href="#Eigen::internal::enable_if" title='Eigen::internal::enable_if' data-ref="Eigen::internal::enable_if">enable_if</a>&lt;(<b>sizeof</b>(return_ptr&lt;C&gt;()-&gt;<b>operator</b>()(IndexType(<var>0</var>)))&gt;<var>0</var>)&gt;::type * = <var>0</var>);</td></tr>
+<tr><th id="679">679</th><td>  <em>static</em> <a class="type" href="#Eigen::internal::meta_no" title='Eigen::internal::meta_no' data-ref="Eigen::internal::meta_no">meta_no</a> <dfn class="decl fn" id="_ZN5Eigen8internal18has_unary_operator11testFunctorEz" title='Eigen::internal::has_unary_operator::testFunctor' data-ref="_ZN5Eigen8internal18has_unary_operator11testFunctorEz">testFunctor</dfn>(...);</td></tr>
+<tr><th id="680">680</th><td></td></tr>
+<tr><th id="681">681</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::has_unary_operator::value" title='Eigen::internal::has_unary_operator::value' data-ref="Eigen::internal::has_unary_operator::value">value</dfn> = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;T*&gt;(<var>0</var>))) == <b>sizeof</b>(<a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a>) };</td></tr>
+<tr><th id="682">682</th><td>};</td></tr>
+<tr><th id="683">683</th><td></td></tr>
+<tr><th id="684">684</th><td><b>template</b> &lt;<b>typename</b> T, <b>typename</b> IndexType=<a class="typedef" href="#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>&gt;</td></tr>
+<tr><th id="685">685</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::has_binary_operator" title='Eigen::internal::has_binary_operator' data-ref="Eigen::internal::has_binary_operator">has_binary_operator</dfn></td></tr>
+<tr><th id="686">686</th><td>{</td></tr>
+<tr><th id="687">687</th><td>  <b>template</b> &lt;<b>typename</b> C&gt; <em>static</em> <a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a> <dfn class="decl fn" id="_ZN5Eigen8internal19has_binary_operator11testFunctorEPKTL0__PNS0_9enable_ifIXgtszclptcl10return_ptrIS2_EEonclcvT0_Li0EcvS6_Li0EELi0EEvE4typeE" title='Eigen::internal::has_binary_operator::testFunctor' data-ref="_ZN5Eigen8internal19has_binary_operator11testFunctorEPKTL0__PNS0_9enable_ifIXgtszclptcl10return_ptrIS2_EEonclcvT0_Li0EcvS6_Li0EELi0EEvE4typeE">testFunctor</dfn>(C <em>const</em> *,<b>typename</b> <a class="type" href="#Eigen::internal::enable_if" title='Eigen::internal::enable_if' data-ref="Eigen::internal::enable_if">enable_if</a>&lt;(<b>sizeof</b>(return_ptr&lt;C&gt;()-&gt;<b>operator</b>()(IndexType(<var>0</var>),IndexType(<var>0</var>)))&gt;<var>0</var>)&gt;::type * = <var>0</var>);</td></tr>
+<tr><th id="688">688</th><td>  <em>static</em> <a class="type" href="#Eigen::internal::meta_no" title='Eigen::internal::meta_no' data-ref="Eigen::internal::meta_no">meta_no</a> <dfn class="decl fn" id="_ZN5Eigen8internal19has_binary_operator11testFunctorEz" title='Eigen::internal::has_binary_operator::testFunctor' data-ref="_ZN5Eigen8internal19has_binary_operator11testFunctorEz">testFunctor</dfn>(...);</td></tr>
+<tr><th id="689">689</th><td></td></tr>
+<tr><th id="690">690</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::has_binary_operator::value" title='Eigen::internal::has_binary_operator::value' data-ref="Eigen::internal::has_binary_operator::value">value</dfn> = <b>sizeof</b>(testFunctor(<b>static_cast</b>&lt;T*&gt;(<var>0</var>))) == <b>sizeof</b>(<a class="type" href="#Eigen::internal::meta_yes" title='Eigen::internal::meta_yes' data-ref="Eigen::internal::meta_yes">meta_yes</a>) };</td></tr>
+<tr><th id="691">691</th><td>};</td></tr>
+<tr><th id="692">692</th><td></td></tr>
+<tr><th id="693">693</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> In short, it computes int(sqrt(\a Y)) with \a Y an integer.</span></i></td></tr>
+<tr><th id="694">694</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> Usage example: \code meta_sqrt&lt;1023&gt;::ret \endcode</span></i></td></tr>
+<tr><th id="695">695</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="696">696</th><td><span class="verb"></span><b>template</b>&lt;<em>int</em> Y,</td></tr>
+<tr><th id="697">697</th><td>         <em>int</em> InfX = <var>0</var>,</td></tr>
+<tr><th id="698">698</th><td>         <em>int</em> SupX = ((<a class="tu ref" href="#Eigen::internal::meta_sqrt::Y" title='Eigen::internal::meta_sqrt::Y' data-use='r' data-ref="Eigen::internal::meta_sqrt::Y">Y</a>==<var>1</var>) ? <var>1</var> : <a class="tu ref" href="#Eigen::internal::meta_sqrt::Y" title='Eigen::internal::meta_sqrt::Y' data-use='r' data-ref="Eigen::internal::meta_sqrt::Y">Y</a>/<var>2</var>),</td></tr>
+<tr><th id="699">699</th><td>         <em>bool</em> Done = ((<a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a>-<a class="tu ref" href="#Eigen::internal::meta_sqrt::InfX" title='Eigen::internal::meta_sqrt::InfX' data-use='r' data-ref="Eigen::internal::meta_sqrt::InfX">InfX</a>)&lt;=<var>1</var> ? <b>true</b> : ((<a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a>*<a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a> &lt;= <a class="tu ref" href="#Eigen::internal::meta_sqrt::Y" title='Eigen::internal::meta_sqrt::Y' data-use='r' data-ref="Eigen::internal::meta_sqrt::Y">Y</a>) &amp;&amp; ((<a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a>+<var>1</var>)*(<a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a>+<var>1</var>) &gt; <a class="tu ref" href="#Eigen::internal::meta_sqrt::Y" title='Eigen::internal::meta_sqrt::Y' data-use='r' data-ref="Eigen::internal::meta_sqrt::Y">Y</a>))) &gt;</td></tr>
+<tr><th id="700">700</th><td>                                <i>// use ?: instead of || just to shut up a stupid gcc 4.3 warning</i></td></tr>
+<tr><th id="701">701</th><td><b>class</b> <dfn class="type def" id="Eigen::internal::meta_sqrt" title='Eigen::internal::meta_sqrt' data-ref="Eigen::internal::meta_sqrt">meta_sqrt</dfn></td></tr>
+<tr><th id="702">702</th><td>{</td></tr>
+<tr><th id="703">703</th><td>    <b>enum</b> {</td></tr>
+<tr><th id="704">704</th><td>      <dfn class="enum" id="Eigen::internal::meta_sqrt::MidX" title='Eigen::internal::meta_sqrt::MidX' data-ref="Eigen::internal::meta_sqrt::MidX">MidX</dfn> = (<a class="tu ref" href="#Eigen::internal::meta_sqrt::InfX" title='Eigen::internal::meta_sqrt::InfX' data-use='r' data-ref="Eigen::internal::meta_sqrt::InfX">InfX</a>+<a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a>)/<var>2</var>,</td></tr>
+<tr><th id="705">705</th><td>      <dfn class="enum" id="Eigen::internal::meta_sqrt::TakeInf" title='Eigen::internal::meta_sqrt::TakeInf' data-ref="Eigen::internal::meta_sqrt::TakeInf">TakeInf</dfn> = <a class="enum" href="#Eigen::internal::meta_sqrt::MidX" title='Eigen::internal::meta_sqrt::MidX' data-ref="Eigen::internal::meta_sqrt::MidX">MidX</a>*<a class="enum" href="#Eigen::internal::meta_sqrt::MidX" title='Eigen::internal::meta_sqrt::MidX' data-ref="Eigen::internal::meta_sqrt::MidX">MidX</a> &gt; <a class="tu ref" href="#Eigen::internal::meta_sqrt::Y" title='Eigen::internal::meta_sqrt::Y' data-use='r' data-ref="Eigen::internal::meta_sqrt::Y">Y</a> ? <var>1</var> : <var>0</var>,</td></tr>
+<tr><th id="706">706</th><td>      <dfn class="enum" id="Eigen::internal::meta_sqrt::NewInf" title='Eigen::internal::meta_sqrt::NewInf' data-ref="Eigen::internal::meta_sqrt::NewInf">NewInf</dfn> = <em>int</em>(<a class="enum" href="#Eigen::internal::meta_sqrt::TakeInf" title='Eigen::internal::meta_sqrt::TakeInf' data-ref="Eigen::internal::meta_sqrt::TakeInf">TakeInf</a>) ? <a class="tu ref" href="#Eigen::internal::meta_sqrt::InfX" title='Eigen::internal::meta_sqrt::InfX' data-ref="Eigen::internal::meta_sqrt::InfX">InfX</a> : <em>int</em>(<a class="enum" href="#Eigen::internal::meta_sqrt::MidX" title='Eigen::internal::meta_sqrt::MidX' data-ref="Eigen::internal::meta_sqrt::MidX">MidX</a>),</td></tr>
+<tr><th id="707">707</th><td>      <dfn class="enum" id="Eigen::internal::meta_sqrt::NewSup" title='Eigen::internal::meta_sqrt::NewSup' data-ref="Eigen::internal::meta_sqrt::NewSup">NewSup</dfn> = <em>int</em>(<a class="enum" href="#Eigen::internal::meta_sqrt::TakeInf" title='Eigen::internal::meta_sqrt::TakeInf' data-ref="Eigen::internal::meta_sqrt::TakeInf">TakeInf</a>) ? <em>int</em>(<a class="enum" href="#Eigen::internal::meta_sqrt::MidX" title='Eigen::internal::meta_sqrt::MidX' data-ref="Eigen::internal::meta_sqrt::MidX">MidX</a>) : <a class="tu ref" href="#Eigen::internal::meta_sqrt::SupX" title='Eigen::internal::meta_sqrt::SupX' data-ref="Eigen::internal::meta_sqrt::SupX">SupX</a></td></tr>
+<tr><th id="708">708</th><td>    };</td></tr>
+<tr><th id="709">709</th><td>  <b>public</b>:</td></tr>
+<tr><th id="710">710</th><td>    <b>enum</b> { <dfn class="enum" id="Eigen::internal::meta_sqrt::ret" title='Eigen::internal::meta_sqrt::ret' data-ref="Eigen::internal::meta_sqrt::ret">ret</dfn> = <a class="type" href="#Eigen::internal::meta_sqrt" title='Eigen::internal::meta_sqrt' data-ref="Eigen::internal::meta_sqrt">meta_sqrt</a>&lt;<a class="tu ref" href="#Eigen::internal::meta_sqrt::Y" title='Eigen::internal::meta_sqrt::Y' data-ref="Eigen::internal::meta_sqrt::Y">Y</a>,<a class="enum" href="#Eigen::internal::meta_sqrt::NewInf" title='Eigen::internal::meta_sqrt::NewInf' data-ref="Eigen::internal::meta_sqrt::NewInf">NewInf</a>,<a class="enum" href="#Eigen::internal::meta_sqrt::NewSup" title='Eigen::internal::meta_sqrt::NewSup' data-ref="Eigen::internal::meta_sqrt::NewSup">NewSup</a>&gt;::ret };</td></tr>
+<tr><th id="711">711</th><td>};</td></tr>
+<tr><th id="712">712</th><td></td></tr>
+<tr><th id="713">713</th><td><b>template</b>&lt;<em>int</em> Y, <em>int</em> InfX, <em>int</em> SupX&gt;</td></tr>
+<tr><th id="714">714</th><td><b>class</b> <dfn class="type def" id="Eigen::internal::meta_sqrt" title='Eigen::internal::meta_sqrt' data-ref="Eigen::internal::meta_sqrt">meta_sqrt</dfn>&lt;<a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::Y" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::Y' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::Y">Y</a>, <a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::InfX" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::InfX' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::InfX">InfX</a>, <a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::SupX' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX">SupX</a>, <b>true</b>&gt; { <b>public</b>:  <b>enum</b> { <dfn class="enum" id="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::ret" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::ret' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::ret">ret</dfn> = (<a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX">SupX</a>*<a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::SupX' data-use='r' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX">SupX</a> &lt;= <a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::Y" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::Y' data-use='r' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::Y">Y</a>) ? <a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::SupX' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::SupX">SupX</a> : <a class="tu ref" href="#Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::InfX" title='Eigen::internal::meta_sqrt&lt;Y, InfX, SupX, true&gt;::InfX' data-ref="Eigen::internal::meta_sqrt{Y,InfX,SupX,true}::InfX">InfX</a> }; };</td></tr>
+<tr><th id="715">715</th><td></td></tr>
+<tr><th id="716">716</th><td></td></tr>
+<tr><th id="717">717</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> Computes the least common multiple of two positive integer A and B</span></i></td></tr>
+<tr><th id="718">718</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> at compile-time. </span></i></td></tr>
+<tr><th id="719">719</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="720">720</th><td><span class="verb"></span><b>template</b>&lt;<em>int</em> A, <em>int</em> B, <em>int</em> K=<var>1</var>, <em>bool</em> Done = ((<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::A" title='Eigen::internal::meta_least_common_multiple::A' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple::A">A</a>*<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::K" title='Eigen::internal::meta_least_common_multiple::K' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple::K">K</a>)%<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::B" title='Eigen::internal::meta_least_common_multiple::B' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple::B">B</a>)==<var>0</var>, <em>bool</em> Big=(<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::A" title='Eigen::internal::meta_least_common_multiple::A' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple::A">A</a>&gt;=<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::B" title='Eigen::internal::meta_least_common_multiple::B' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple::B">B</a>)&gt;</td></tr>
+<tr><th id="721">721</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::meta_least_common_multiple" title='Eigen::internal::meta_least_common_multiple' data-ref="Eigen::internal::meta_least_common_multiple">meta_least_common_multiple</dfn></td></tr>
+<tr><th id="722">722</th><td>{</td></tr>
+<tr><th id="723">723</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::meta_least_common_multiple::ret" title='Eigen::internal::meta_least_common_multiple::ret' data-ref="Eigen::internal::meta_least_common_multiple::ret">ret</dfn> = <a class="type" href="#Eigen::internal::meta_least_common_multiple" title='Eigen::internal::meta_least_common_multiple' data-ref="Eigen::internal::meta_least_common_multiple">meta_least_common_multiple</a>&lt;<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::A" title='Eigen::internal::meta_least_common_multiple::A' data-ref="Eigen::internal::meta_least_common_multiple::A">A</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::B" title='Eigen::internal::meta_least_common_multiple::B' data-ref="Eigen::internal::meta_least_common_multiple::B">B</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple::K" title='Eigen::internal::meta_least_common_multiple::K' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple::K">K</a>+<var>1</var>&gt;::ret };</td></tr>
+<tr><th id="724">724</th><td>};</td></tr>
+<tr><th id="725">725</th><td><b>template</b>&lt;<em>int</em> A, <em>int</em> B, <em>int</em> K, <em>bool</em> Done&gt;</td></tr>
+<tr><th id="726">726</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::meta_least_common_multiple" title='Eigen::internal::meta_least_common_multiple' data-ref="Eigen::internal::meta_least_common_multiple">meta_least_common_multiple</dfn>&lt;<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::A" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::A' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::A">A</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::B" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::B' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::B">B</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::K" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::K' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::K">K</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::Done" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::Done' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::Done">Done</a>,<b>false</b>&gt;</td></tr>
+<tr><th id="727">727</th><td>{</td></tr>
+<tr><th id="728">728</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::ret" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::ret' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::ret">ret</dfn> = <a class="type" href="#Eigen::internal::meta_least_common_multiple" title='Eigen::internal::meta_least_common_multiple' data-ref="Eigen::internal::meta_least_common_multiple">meta_least_common_multiple</a>&lt;<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::B" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::B' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::B">B</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::A" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::A' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::A">A</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::K" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, Done, false&gt;::K' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,Done,false}::K">K</a>&gt;::ret };</td></tr>
+<tr><th id="729">729</th><td>};</td></tr>
+<tr><th id="730">730</th><td><b>template</b>&lt;<em>int</em> A, <em>int</em> B, <em>int</em> K&gt;</td></tr>
+<tr><th id="731">731</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::meta_least_common_multiple" title='Eigen::internal::meta_least_common_multiple' data-ref="Eigen::internal::meta_least_common_multiple">meta_least_common_multiple</dfn>&lt;<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::A" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, true, true&gt;::A' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::A">A</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::B" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, true, true&gt;::B' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::B">B</a>,<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::K" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, true, true&gt;::K' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::K">K</a>,<b>true</b>,<b>true</b>&gt;</td></tr>
+<tr><th id="732">732</th><td>{</td></tr>
+<tr><th id="733">733</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::ret" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, true, true&gt;::ret' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::ret">ret</dfn> = <a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::A" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, true, true&gt;::A' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::A">A</a>*<a class="tu ref" href="#Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::K" title='Eigen::internal::meta_least_common_multiple&lt;A, B, K, true, true&gt;::K' data-use='r' data-ref="Eigen::internal::meta_least_common_multiple{A,B,K,true,true}::K">K</a> };</td></tr>
+<tr><th id="734">734</th><td>};</td></tr>
+<tr><th id="735">735</th><td></td></tr>
+<tr><th id="736">736</th><td></td></tr>
+<tr><th id="737">737</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> determines whether the product of two numeric types is allowed and what the return type is *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="738">738</th><td><span class="verb"></span><b>template</b>&lt;<b>typename</b> T, <b>typename</b> U&gt; <b>struct</b> <dfn class="type def" id="Eigen::internal::scalar_product_traits" title='Eigen::internal::scalar_product_traits' data-ref="Eigen::internal::scalar_product_traits">scalar_product_traits</dfn></td></tr>
+<tr><th id="739">739</th><td>{</td></tr>
+<tr><th id="740">740</th><td>  <b>enum</b> { <dfn class="enum" id="Eigen::internal::scalar_product_traits::Defined" title='Eigen::internal::scalar_product_traits::Defined' data-ref="Eigen::internal::scalar_product_traits::Defined">Defined</dfn> = <var>0</var> };</td></tr>
+<tr><th id="741">741</th><td>};</td></tr>
+<tr><th id="742">742</th><td></td></tr>
+<tr><th id="743">743</th><td><i>// FIXME quick workaround around current limitation of result_of</i></td></tr>
+<tr><th id="744">744</th><td><i>// template&lt;typename Scalar, typename ArgType0, typename ArgType1&gt;</i></td></tr>
+<tr><th id="745">745</th><td><i>// struct result_of&lt;scalar_product_op&lt;Scalar&gt;(ArgType0,ArgType1)&gt; {</i></td></tr>
+<tr><th id="746">746</th><td><i>// typedef typename scalar_product_traits&lt;typename remove_all&lt;ArgType0&gt;::type, typename remove_all&lt;ArgType1&gt;::type&gt;::ReturnType type;</i></td></tr>
+<tr><th id="747">747</th><td><i>// };</i></td></tr>
+<tr><th id="748">748</th><td></td></tr>
+<tr><th id="749">749</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> Obtains a POD type suitable to use as storage for an object of a size</span></i></td></tr>
+<tr><th id="750">750</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> of at most Len bytes, aligned as specified by \c Align.</span></i></td></tr>
+<tr><th id="751">751</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="752">752</th><td><span class="verb"></span><b>template</b>&lt;<em>unsigned</em> Len, <em>unsigned</em> Align&gt;</td></tr>
+<tr><th id="753">753</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::aligned_storage" title='Eigen::internal::aligned_storage' data-ref="Eigen::internal::aligned_storage">aligned_storage</dfn> {</td></tr>
+<tr><th id="754">754</th><td>  <b>struct</b> <dfn class="type def" id="Eigen::internal::aligned_storage::type" title='Eigen::internal::aligned_storage::type' data-ref="Eigen::internal::aligned_storage::type">type</dfn> {</td></tr>
+<tr><th id="755">755</th><td>    <a class="macro" href="ConfigureVectorization.h.html#40" title="alignas(Align)" data-ref="_M/EIGEN_ALIGN_TO_BOUNDARY">EIGEN_ALIGN_TO_BOUNDARY</a>(<a class="tu member" href="#Eigen::internal::aligned_storage::Align" title='Eigen::internal::aligned_storage::Align' data-ref="Eigen::internal::aligned_storage::Align">Align</a>) <em>unsigned</em> <em>char</em> <dfn class="decl field" id="Eigen::internal::aligned_storage::type::data" title='Eigen::internal::aligned_storage::type::data' data-ref="Eigen::internal::aligned_storage::type::data">data</dfn>[<a class="tu member" href="#Eigen::internal::aligned_storage::Len" title='Eigen::internal::aligned_storage::Len' data-ref="Eigen::internal::aligned_storage::Len">Len</a>];</td></tr>
+<tr><th id="756">756</th><td>  };</td></tr>
+<tr><th id="757">757</th><td>};</td></tr>
+<tr><th id="758">758</th><td></td></tr>
+<tr><th id="759">759</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="760">760</th><td></td></tr>
+<tr><th id="761">761</th><td><b>namespace</b> <span class="namespace">numext</span> {</td></tr>
+<tr><th id="762">762</th><td></td></tr>
+<tr><th id="763">763</th><td><u>#<span data-ppcond="763">if</span> defined(<span class="macro" data-ref="_M/EIGEN_GPU_COMPILE_PHASE">EIGEN_GPU_COMPILE_PHASE</span>)</u></td></tr>
+<tr><th id="764">764</th><td><b>template</b>&lt;<b>typename</b> T&gt; EIGEN_DEVICE_FUNC   <em>void</em> swap(T &amp;a, T &amp;b) { T tmp = b; b = a; a = tmp; }</td></tr>
+<tr><th id="765">765</th><td><u>#<span data-ppcond="763">else</span></u></td></tr>
+<tr><th id="766">766</th><td><b>template</b>&lt;<b>typename</b> T&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <em>void</em> <dfn class="decl def fn" id="_ZN5Eigen6numext4swapERT_S2_" title='Eigen::numext::swap' data-ref="_ZN5Eigen6numext4swapERT_S2_">swap</dfn>(T &amp;<dfn class="local col5 decl" id="5785a" title='a' data-type='T &amp;' data-ref="5785a">a</dfn>, T &amp;<dfn class="local col6 decl" id="5786b" title='b' data-type='T &amp;' data-ref="5786b">b</dfn>) { <span class="namespace">std::</span>swap(<a class="local col5 ref" href="#5785a" title='a' data-ref="5785a">a</a>,<a class="local col6 ref" href="#5786b" title='b' data-ref="5786b">b</a>); }</td></tr>
+<tr><th id="767">767</th><td><u>#<span data-ppcond="763">endif</span></u></td></tr>
+<tr><th id="768">768</th><td></td></tr>
+<tr><th id="769">769</th><td><u>#<span data-ppcond="769">if</span> defined(<span class="macro" data-ref="_M/EIGEN_GPU_COMPILE_PHASE">EIGEN_GPU_COMPILE_PHASE</span>) &amp;&amp; !<a class="macro" href="Macros.h.html#655" title="1" data-ref="_M/EIGEN_HAS_CXX11">EIGEN_HAS_CXX11</a></u></td></tr>
+<tr><th id="770">770</th><td><b>using</b> internal::device::numeric_limits;</td></tr>
+<tr><th id="771">771</th><td><u>#<span data-ppcond="769">else</span></u></td></tr>
+<tr><th id="772">772</th><td><b>using</b> <span class="namespace">std::</span>numeric_limits;</td></tr>
+<tr><th id="773">773</th><td><u>#<span data-ppcond="769">endif</span></u></td></tr>
+<tr><th id="774">774</th><td></td></tr>
+<tr><th id="775">775</th><td><i>// Integer division with rounding up.</i></td></tr>
+<tr><th id="776">776</th><td><i>// T is assumed to be an integer type with a&gt;=0, and b&gt;0</i></td></tr>
+<tr><th id="777">777</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="778">778</th><td><a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="779">779</th><td>T <dfn class="decl def fn" id="_ZN5Eigen6numext8div_ceilERKT_S3_" title='Eigen::numext::div_ceil' data-ref="_ZN5Eigen6numext8div_ceilERKT_S3_">div_ceil</dfn>(<em>const</em> T &amp;<dfn class="local col7 decl" id="5787a" title='a' data-type='const T &amp;' data-ref="5787a">a</dfn>, <em>const</em> T &amp;<dfn class="local col8 decl" id="5788b" title='b' data-type='const T &amp;' data-ref="5788b">b</dfn>)</td></tr>
+<tr><th id="780">780</th><td>{</td></tr>
+<tr><th id="781">781</th><td>  <b>return</b> (<a class="local col7 ref" href="#5787a" title='a' data-ref="5787a">a</a>+<a class="local col8 ref" href="#5788b" title='b' data-ref="5788b">b</a>-<var>1</var>) / <a class="local col8 ref" href="#5788b" title='b' data-ref="5788b">b</a>;</td></tr>
+<tr><th id="782">782</th><td>}</td></tr>
+<tr><th id="783">783</th><td></td></tr>
+<tr><th id="784">784</th><td><i>// The aim of the following functions is to bypass -Wfloat-equal warnings</i></td></tr>
+<tr><th id="785">785</th><td><i>// when we really want a strict equality comparison on floating points.</i></td></tr>
+<tr><th id="786">786</th><td><b>template</b>&lt;<b>typename</b> X, <b>typename</b> Y&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="787">787</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen6numext12equal_strictERKT_RKT0_" title='Eigen::numext::equal_strict' data-ref="_ZN5Eigen6numext12equal_strictERKT_RKT0_">equal_strict</dfn>(<em>const</em> X&amp; <dfn class="local col9 decl" id="5789x" title='x' data-type='const X &amp;' data-ref="5789x">x</dfn>,<em>const</em> Y&amp; <dfn class="local col0 decl" id="5790y" title='y' data-type='const Y &amp;' data-ref="5790y">y</dfn>) { <b>return</b> <a class="local col9 ref" href="#5789x" title='x' data-ref="5789x">x</a> == <a class="local col0 ref" href="#5790y" title='y' data-ref="5790y">y</a>; }</td></tr>
+<tr><th id="788">788</th><td></td></tr>
+<tr><th id="789">789</th><td><u>#<span data-ppcond="789">if</span> !defined(<span class="macro" data-ref="_M/EIGEN_GPU_COMPILE_PHASE">EIGEN_GPU_COMPILE_PHASE</span>) || (!defined(<span class="macro" data-ref="_M/EIGEN_CUDA_ARCH">EIGEN_CUDA_ARCH</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/EIGEN_CONSTEXPR_ARE_DEVICE_FUNC">EIGEN_CONSTEXPR_ARE_DEVICE_FUNC</span>))</u></td></tr>
+<tr><th id="790">790</th><td><b>template</b>&lt;&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="791">791</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen6numext12equal_strictERKT_RKT0_" title='Eigen::numext::equal_strict' data-ref="_ZN5Eigen6numext12equal_strictERKT_RKT0_">equal_strict</dfn>(<em>const</em> <em>float</em>&amp; <dfn class="local col1 decl" id="5791x" title='x' data-type='const float &amp;' data-ref="5791x">x</dfn>,<em>const</em> <em>float</em>&amp; <dfn class="local col2 decl" id="5792y" title='y' data-type='const float &amp;' data-ref="5792y">y</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#std::equal_to" title='std::equal_to' data-ref="std::equal_to">equal_to</a>&lt;<em>float</em>&gt;<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#373" title='std::equal_to&lt;float&gt;::equal_to' data-ref="_ZNSt8equal_toIfEC1Ev">(</a>)<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#_ZNKSt8equal_toclERKT_S2_" title='std::equal_to::operator()' data-ref="_ZNKSt8equal_toclERKT_S2_">(<a class="local col1 ref" href="#5791x" title='x' data-ref="5791x">x</a>,<a class="local col2 ref" href="#5792y" title='y' data-ref="5792y">y</a>)</a>; }</td></tr>
+<tr><th id="792">792</th><td></td></tr>
+<tr><th id="793">793</th><td><b>template</b>&lt;&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="794">794</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen6numext12equal_strictERKT_RKT0_" title='Eigen::numext::equal_strict' data-ref="_ZN5Eigen6numext12equal_strictERKT_RKT0_">equal_strict</dfn>(<em>const</em> <em>double</em>&amp; <dfn class="local col3 decl" id="5793x" title='x' data-type='const double &amp;' data-ref="5793x">x</dfn>,<em>const</em> <em>double</em>&amp; <dfn class="local col4 decl" id="5794y" title='y' data-type='const double &amp;' data-ref="5794y">y</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#std::equal_to" title='std::equal_to' data-ref="std::equal_to">equal_to</a>&lt;<em>double</em>&gt;<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#373" title='std::equal_to&lt;double&gt;::equal_to' data-ref="_ZNSt8equal_toIdEC1Ev">(</a>)<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#_ZNKSt8equal_toclERKT_S2_" title='std::equal_to::operator()' data-ref="_ZNKSt8equal_toclERKT_S2_">(<a class="local col3 ref" href="#5793x" title='x' data-ref="5793x">x</a>,<a class="local col4 ref" href="#5794y" title='y' data-ref="5794y">y</a>)</a>; }</td></tr>
+<tr><th id="795">795</th><td><u>#<span data-ppcond="789">endif</span></u></td></tr>
+<tr><th id="796">796</th><td></td></tr>
+<tr><th id="797">797</th><td><b>template</b>&lt;<b>typename</b> X, <b>typename</b> Y&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="798">798</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen6numext16not_equal_strictERKT_RKT0_" title='Eigen::numext::not_equal_strict' data-ref="_ZN5Eigen6numext16not_equal_strictERKT_RKT0_">not_equal_strict</dfn>(<em>const</em> X&amp; <dfn class="local col5 decl" id="5795x" title='x' data-type='const X &amp;' data-ref="5795x">x</dfn>,<em>const</em> Y&amp; <dfn class="local col6 decl" id="5796y" title='y' data-type='const Y &amp;' data-ref="5796y">y</dfn>) { <b>return</b> <a class="local col5 ref" href="#5795x" title='x' data-ref="5795x">x</a> != <a class="local col6 ref" href="#5796y" title='y' data-ref="5796y">y</a>; }</td></tr>
+<tr><th id="799">799</th><td></td></tr>
+<tr><th id="800">800</th><td><u>#<span data-ppcond="800">if</span> !defined(<span class="macro" data-ref="_M/EIGEN_GPU_COMPILE_PHASE">EIGEN_GPU_COMPILE_PHASE</span>) || (!defined(<span class="macro" data-ref="_M/EIGEN_CUDA_ARCH">EIGEN_CUDA_ARCH</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/EIGEN_CONSTEXPR_ARE_DEVICE_FUNC">EIGEN_CONSTEXPR_ARE_DEVICE_FUNC</span>))</u></td></tr>
+<tr><th id="801">801</th><td><b>template</b>&lt;&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="802">802</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen6numext16not_equal_strictERKT_RKT0_" title='Eigen::numext::not_equal_strict' data-ref="_ZN5Eigen6numext16not_equal_strictERKT_RKT0_">not_equal_strict</dfn>(<em>const</em> <em>float</em>&amp; <dfn class="local col7 decl" id="5797x" title='x' data-type='const float &amp;' data-ref="5797x">x</dfn>,<em>const</em> <em>float</em>&amp; <dfn class="local col8 decl" id="5798y" title='y' data-type='const float &amp;' data-ref="5798y">y</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#std::not_equal_to" title='std::not_equal_to' data-ref="std::not_equal_to">not_equal_to</a>&lt;<em>float</em>&gt;<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#383" title='std::not_equal_to&lt;float&gt;::not_equal_to' data-ref="_ZNSt12not_equal_toIfEC1Ev">(</a>)<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#_ZNKSt12not_equal_toclERKT_S2_" title='std::not_equal_to::operator()' data-ref="_ZNKSt12not_equal_toclERKT_S2_">(<a class="local col7 ref" href="#5797x" title='x' data-ref="5797x">x</a>,<a class="local col8 ref" href="#5798y" title='y' data-ref="5798y">y</a>)</a>; }</td></tr>
+<tr><th id="803">803</th><td></td></tr>
+<tr><th id="804">804</th><td><b>template</b>&lt;&gt; <a class="macro" href="Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a> <a class="macro" href="Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="805">805</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen6numext16not_equal_strictERKT_RKT0_" title='Eigen::numext::not_equal_strict' data-ref="_ZN5Eigen6numext16not_equal_strictERKT_RKT0_">not_equal_strict</dfn>(<em>const</em> <em>double</em>&amp; <dfn class="local col9 decl" id="5799x" title='x' data-type='const double &amp;' data-ref="5799x">x</dfn>,<em>const</em> <em>double</em>&amp; <dfn class="local col0 decl" id="5800y" title='y' data-type='const double &amp;' data-ref="5800y">y</dfn>) { <b>return</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#std::not_equal_to" title='std::not_equal_to' data-ref="std::not_equal_to">not_equal_to</a>&lt;<em>double</em>&gt;<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#383" title='std::not_equal_to&lt;double&gt;::not_equal_to' data-ref="_ZNSt12not_equal_toIdEC1Ev">(</a>)<a class="ref fn" href="../../../../../../../../include/c++/13/bits/stl_function.h.html#_ZNKSt12not_equal_toclERKT_S2_" title='std::not_equal_to::operator()' data-ref="_ZNKSt12not_equal_toclERKT_S2_">(<a class="local col9 ref" href="#5799x" title='x' data-ref="5799x">x</a>,<a class="local col0 ref" href="#5800y" title='y' data-ref="5800y">y</a>)</a>; }</td></tr>
+<tr><th id="806">806</th><td><u>#<span data-ppcond="800">endif</span></u></td></tr>
+<tr><th id="807">807</th><td></td></tr>
+<tr><th id="808">808</th><td>} <i>// end namespace numext</i></td></tr>
+<tr><th id="809">809</th><td></td></tr>
+<tr><th id="810">810</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="811">811</th><td></td></tr>
+<tr><th id="812">812</th><td><u>#<span data-ppcond="11">endif</span> // EIGEN_META_H</u></td></tr>
+<tr><th id="813">813</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

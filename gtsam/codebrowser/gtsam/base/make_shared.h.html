@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>make_shared.h source code [codebrowser/gtsam/base/make_shared.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/base/make_shared.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>base</a>/<a href='make_shared.h.html'>make_shared.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2020, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">make_shared.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span> make_shared trampoline function to ensure proper alignment</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Fan Jiang</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><u>#pragma once</u></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="types.h.html">&lt;gtsam/base/types.h&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="../3rdparty/Eigen/Eigen/Core.html">&lt;Eigen/Core&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="28">28</th><td>  <i class="doc">/// An shorthand alias for accessing the \::type inside std::enable_if that can be used in a template directly</i></td></tr>
+<tr><th id="29">29</th><td>  <b>template</b>&lt;<em>bool</em> B, <b>class</b> T = <em>void</em>&gt;</td></tr>
+<tr><th id="30">30</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::enable_if_t" title='gtsam::enable_if_t' data-type='typename std::enable_if&lt;B, T&gt;::type' data-ref="gtsam::enable_if_t">enable_if_t</dfn> = <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;<a class="tu ref" href="#gtsam::B" title='gtsam::B' data-ref="gtsam::B">B</a>, T&gt;::type;</td></tr>
+<tr><th id="31">31</th><td>}</td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc">   * Add our own `make_shared` as a layer of wrapping on `std::make_shared`</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc">   * This solves the problem with the stock `make_shared` that custom alignment is not respected, causing SEGFAULTs</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc">   * at runtime, which is notoriously hard to debug.</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">   * Explanation</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc">   * ===============</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc">   * The template `needs_eigen_aligned_allocator&lt;T&gt;::value` will evaluate to `std::true_type` if the type alias</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc">   * `_eigen_aligned_allocator_trait = void` is present in a class, which is automatically added by the</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc">   * `GTSAM_MAKE_ALIGNED_OPERATOR_NEW` macro.</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">   * This function declaration will only be taken when the above condition is true, so if some object does not need to</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">   * be aligned, `gtsam::make_shared` will fall back to the next definition, which is a simple wrapper for</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc">   * `std::make_shared`.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">T</span> The type of object being constructed</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Args</span> Type of the arguments of the constructor</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">args</span> Arguments of the constructor</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc">   * <span class="command">@return</span> The object created as a std::shared_ptr&lt;T&gt;</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="55">55</th><td>  <b>template</b>&lt;<b>typename</b> T, <b>typename</b> ... Args&gt;</td></tr>
+<tr><th id="56">56</th><td>  <span class="namespace">gtsam::</span><a class="type" href="#gtsam::enable_if_t" title='gtsam::enable_if_t' data-ref="gtsam::enable_if_t">enable_if_t</a>&lt;<a class="type" href="types.h.html#gtsam::needs_eigen_aligned_allocator" title='gtsam::needs_eigen_aligned_allocator' data-ref="gtsam::needs_eigen_aligned_allocator">needs_eigen_aligned_allocator</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;T&gt;&gt; <dfn class="decl def fn" id="_ZN5gtsam11make_sharedEDpOT0_" title='gtsam::make_shared' data-ref="_ZN5gtsam11make_sharedEDpOT0_">make_shared</dfn>(Args &amp;&amp;... <dfn class="local col4 decl" id="20474args" title='args' data-type='Args &amp;&amp;...' data-ref="20474args">args</dfn>) {</td></tr>
+<tr><th id="57">57</th><td>    <b>return</b> <span class="namespace">std::</span>allocate_shared&lt;T&gt;(<span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/Memory.h.html#Eigen::aligned_allocator" title='Eigen::aligned_allocator' data-ref="Eigen::aligned_allocator">aligned_allocator</a>&lt;T&gt;(), <span class="namespace">std::</span>forward&lt;Args&gt;(<a class="local col4 ref" href="#20474args" title='args' data-ref="20474args">args</a>)...);</td></tr>
+<tr><th id="58">58</th><td>  }</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <i class="doc">/// Fall back to the boost version if no need for alignment</i></td></tr>
+<tr><th id="61">61</th><td>  <b>template</b>&lt;<b>typename</b> T, <b>typename</b> ... Args&gt;</td></tr>
+<tr><th id="62">62</th><td>  <span class="namespace">gtsam::</span><a class="type" href="#gtsam::enable_if_t" title='gtsam::enable_if_t' data-ref="gtsam::enable_if_t">enable_if_t</a>&lt;!<a class="type" href="types.h.html#gtsam::needs_eigen_aligned_allocator" title='gtsam::needs_eigen_aligned_allocator' data-ref="gtsam::needs_eigen_aligned_allocator">needs_eigen_aligned_allocator</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;T&gt;&gt; <dfn class="decl def fn" id="_ZN5gtsam11make_sharedEDpOT0_" title='gtsam::make_shared' data-ref="_ZN5gtsam11make_sharedEDpOT0_">make_shared</dfn>(Args &amp;&amp;... <dfn class="local col5 decl" id="20475args" title='args' data-type='Args &amp;&amp;...' data-ref="20475args">args</dfn>) {</td></tr>
+<tr><th id="63">63</th><td>    <b>return</b> <span class="namespace">std::</span>make_shared&lt;T&gt;(<span class="namespace">std::</span>forward&lt;Args&gt;(<a class="local col5 ref" href="#20475args" title='args' data-ref="20475args">args</a>)...);</td></tr>
+<tr><th id="64">64</th><td>  }</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>}</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

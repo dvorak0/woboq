@@ -1,0 +1,224 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SparseColEtree.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseCore/SparseColEtree.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseCore/SparseColEtree.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>SparseCore</a>/<a href='SparseColEtree.h.html'>SparseColEtree.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2012 Désiré Nuentsa-Wakam &lt;desire.nuentsa_wakam@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>//</i></td></tr>
+<tr><th id="6">6</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="7">7</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="8">8</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><i>/* </i></td></tr>
+<tr><th id="12">12</th><td><i> </i></td></tr>
+<tr><th id="13">13</th><td><i> * NOTE: This file is the modified version of sp_coletree.c file in SuperLU </i></td></tr>
+<tr><th id="14">14</th><td><i> </i></td></tr>
+<tr><th id="15">15</th><td><i> * -- SuperLU routine (version 3.1) --</i></td></tr>
+<tr><th id="16">16</th><td><i> * Univ. of California Berkeley, Xerox Palo Alto Research Center,</i></td></tr>
+<tr><th id="17">17</th><td><i> * and Lawrence Berkeley National Lab.</i></td></tr>
+<tr><th id="18">18</th><td><i> * August 1, 2008</i></td></tr>
+<tr><th id="19">19</th><td><i> *</i></td></tr>
+<tr><th id="20">20</th><td><i> * Copyright (c) 1994 by Xerox Corporation.  All rights reserved.</i></td></tr>
+<tr><th id="21">21</th><td><i> *</i></td></tr>
+<tr><th id="22">22</th><td><i> * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY</i></td></tr>
+<tr><th id="23">23</th><td><i> * EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.</i></td></tr>
+<tr><th id="24">24</th><td><i> *</i></td></tr>
+<tr><th id="25">25</th><td><i> * Permission is hereby granted to use or copy this program for any</i></td></tr>
+<tr><th id="26">26</th><td><i> * purpose, provided the above notices are retained on all copies.</i></td></tr>
+<tr><th id="27">27</th><td><i> * Permission to modify the code and to distribute modified code is</i></td></tr>
+<tr><th id="28">28</th><td><i> * granted, provided the above notices are retained, and a notice that</i></td></tr>
+<tr><th id="29">29</th><td><i> * the code was modified is included with the above copyright notice.</i></td></tr>
+<tr><th id="30">30</th><td><i> */</i></td></tr>
+<tr><th id="31">31</th><td><u>#<span data-ppcond="31">ifndef</span> <span class="macro" data-ref="_M/SPARSE_COLETREE_H">SPARSE_COLETREE_H</span></u></td></tr>
+<tr><th id="32">32</th><td><u>#define <dfn class="macro" id="_M/SPARSE_COLETREE_H" data-ref="_M/SPARSE_COLETREE_H">SPARSE_COLETREE_H</dfn></u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><i class="doc">/** Find the root of the tree/set containing the vertex i : Use Path halving */</i> </td></tr>
+<tr><th id="39">39</th><td><b>template</b>&lt;<b>typename</b> Index, <b>typename</b> IndexVector&gt;</td></tr>
+<tr><th id="40">40</th><td>Index <dfn class="decl def fn" id="_ZN5Eigen8internal10etree_findET_RT0_" title='Eigen::internal::etree_find' data-ref="_ZN5Eigen8internal10etree_findET_RT0_">etree_find</dfn> (Index <dfn class="local col1 decl" id="25541i" title='i' data-type='Index' data-ref="25541i">i</dfn>, IndexVector&amp; <dfn class="local col2 decl" id="25542pp" title='pp' data-type='IndexVector &amp;' data-ref="25542pp">pp</dfn>)</td></tr>
+<tr><th id="41">41</th><td>{</td></tr>
+<tr><th id="42">42</th><td>  Index <dfn class="local col3 decl" id="25543p" title='p' data-type='Index' data-ref="25543p">p</dfn> = <a class="local col2 ref" href="#25542pp" title='pp' data-ref="25542pp">pp</a>(<a class="local col1 ref" href="#25541i" title='i' data-ref="25541i">i</a>); <i>// Parent </i></td></tr>
+<tr><th id="43">43</th><td>  Index <dfn class="local col4 decl" id="25544gp" title='gp' data-type='Index' data-ref="25544gp">gp</dfn> = <a class="local col2 ref" href="#25542pp" title='pp' data-ref="25542pp">pp</a>(<a class="local col3 ref" href="#25543p" title='p' data-ref="25543p">p</a>); <i>// Grand parent </i></td></tr>
+<tr><th id="44">44</th><td>  <b>while</b> (<a class="local col4 ref" href="#25544gp" title='gp' data-ref="25544gp">gp</a> != <a class="local col3 ref" href="#25543p" title='p' data-ref="25543p">p</a>) </td></tr>
+<tr><th id="45">45</th><td>  {</td></tr>
+<tr><th id="46">46</th><td>    <a class="local col2 ref" href="#25542pp" title='pp' data-ref="25542pp">pp</a>(<a class="local col1 ref" href="#25541i" title='i' data-ref="25541i">i</a>) = <a class="local col4 ref" href="#25544gp" title='gp' data-ref="25544gp">gp</a>; <i>// Parent pointer on find path is changed to former grand parent</i></td></tr>
+<tr><th id="47">47</th><td>    <a class="local col1 ref" href="#25541i" title='i' data-ref="25541i">i</a> = <a class="local col4 ref" href="#25544gp" title='gp' data-ref="25544gp">gp</a>; </td></tr>
+<tr><th id="48">48</th><td>    <a class="local col3 ref" href="#25543p" title='p' data-ref="25543p">p</a> = <a class="local col2 ref" href="#25542pp" title='pp' data-ref="25542pp">pp</a>(<a class="local col1 ref" href="#25541i" title='i' data-ref="25541i">i</a>);</td></tr>
+<tr><th id="49">49</th><td>    <a class="local col4 ref" href="#25544gp" title='gp' data-ref="25544gp">gp</a> = <a class="local col2 ref" href="#25542pp" title='pp' data-ref="25542pp">pp</a>(<a class="local col3 ref" href="#25543p" title='p' data-ref="25543p">p</a>);</td></tr>
+<tr><th id="50">50</th><td>  }</td></tr>
+<tr><th id="51">51</th><td>  <b>return</b> <a class="local col3 ref" href="#25543p" title='p' data-ref="25543p">p</a>; </td></tr>
+<tr><th id="52">52</th><td>}</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><i class="doc">/** Compute the column elimination tree of a sparse matrix</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">mat</span> The matrix in column-major format. </i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">parent</span> The elimination tree</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">firstRowElt</span> The column index of the first element in each row</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">perm</span> The permutation to apply to the column of<span class="command"> \b</span> <span class="arg">mat</span></i></td></tr>
+<tr><th id="59">59</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="60">60</th><td><b>template</b> &lt;<b>typename</b> MatrixType, <b>typename</b> IndexVector&gt;</td></tr>
+<tr><th id="61">61</th><td><em>int</em> <dfn class="decl def fn" id="_ZN5Eigen8internal8coletreeERKT_RT0_S5_PNS1_12StorageIndexE" title='Eigen::internal::coletree' data-ref="_ZN5Eigen8internal8coletreeERKT_RT0_S5_PNS1_12StorageIndexE">coletree</dfn>(<em>const</em> MatrixType&amp; <dfn class="local col5 decl" id="25545mat" title='mat' data-type='const MatrixType &amp;' data-ref="25545mat">mat</dfn>, IndexVector&amp; <dfn class="local col6 decl" id="25546parent" title='parent' data-type='IndexVector &amp;' data-ref="25546parent">parent</dfn>, IndexVector&amp; <dfn class="local col7 decl" id="25547firstRowElt" title='firstRowElt' data-type='IndexVector &amp;' data-ref="25547firstRowElt">firstRowElt</dfn>, <b>typename</b> MatrixType::StorageIndex *<dfn class="local col8 decl" id="25548perm" title='perm' data-type='typename MatrixType::StorageIndex *' data-ref="25548perm">perm</dfn>=<var>0</var>)</td></tr>
+<tr><th id="62">62</th><td>{</td></tr>
+<tr><th id="63">63</th><td>  <b>typedef</b> <b>typename</b> MatrixType::StorageIndex <dfn class="local col9 typedef" id="25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</dfn>;</td></tr>
+<tr><th id="64">64</th><td>  <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col0 decl" id="25550nc" title='nc' data-type='StorageIndex' data-ref="25550nc">nc</dfn> = convert_index&lt;<a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a>&gt;(<a class="local col5 ref" href="#25545mat" title='mat' data-ref="25545mat">mat</a>.cols()); <i>// Number of columns</i></td></tr>
+<tr><th id="65">65</th><td>  <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col1 decl" id="25551m" title='m' data-type='StorageIndex' data-ref="25551m">m</dfn> = convert_index&lt;<a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a>&gt;(<a class="local col5 ref" href="#25545mat" title='mat' data-ref="25545mat">mat</a>.rows());</td></tr>
+<tr><th id="66">66</th><td>  <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col2 decl" id="25552diagSize" title='diagSize' data-type='StorageIndex' data-ref="25552diagSize">diagSize</dfn> = (<span class="namespace">std::</span>min)(<a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>,<a class="local col1 ref" href="#25551m" title='m' data-ref="25551m">m</a>);</td></tr>
+<tr><th id="67">67</th><td>  IndexVector <dfn class="local col3 decl" id="25553root" title='root' data-type='IndexVector' data-ref="25553root">root</dfn>(<a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>); <i>// root of subtree of etree </i></td></tr>
+<tr><th id="68">68</th><td>  <a class="local col3 ref" href="#25553root" title='root' data-ref="25553root">root</a>.setZero();</td></tr>
+<tr><th id="69">69</th><td>  IndexVector <dfn class="local col4 decl" id="25554pp" title='pp' data-type='IndexVector' data-ref="25554pp">pp</dfn>(<a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>); <i>// disjoint sets </i></td></tr>
+<tr><th id="70">70</th><td>  <a class="local col4 ref" href="#25554pp" title='pp' data-ref="25554pp">pp</a>.setZero(); <i>// Initialize disjoint sets </i></td></tr>
+<tr><th id="71">71</th><td>  <a class="local col6 ref" href="#25546parent" title='parent' data-ref="25546parent">parent</a>.resize(<a class="local col5 ref" href="#25545mat" title='mat' data-ref="25545mat">mat</a>.cols());</td></tr>
+<tr><th id="72">72</th><td>  <i>//Compute first nonzero column in each row </i></td></tr>
+<tr><th id="73">73</th><td>  <a class="local col7 ref" href="#25547firstRowElt" title='firstRowElt' data-ref="25547firstRowElt">firstRowElt</a>.resize(<a class="local col1 ref" href="#25551m" title='m' data-ref="25551m">m</a>);</td></tr>
+<tr><th id="74">74</th><td>  <a class="local col7 ref" href="#25547firstRowElt" title='firstRowElt' data-ref="25547firstRowElt">firstRowElt</a>.setConstant(<a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>);</td></tr>
+<tr><th id="75">75</th><td>  <a class="local col7 ref" href="#25547firstRowElt" title='firstRowElt' data-ref="25547firstRowElt">firstRowElt</a>.segment(<var>0</var>, <a class="local col2 ref" href="#25552diagSize" title='diagSize' data-ref="25552diagSize">diagSize</a>).setLinSpaced(<a class="local col2 ref" href="#25552diagSize" title='diagSize' data-ref="25552diagSize">diagSize</a>, <var>0</var>, <a class="local col2 ref" href="#25552diagSize" title='diagSize' data-ref="25552diagSize">diagSize</a>-<var>1</var>);</td></tr>
+<tr><th id="76">76</th><td>  <em>bool</em> <dfn class="local col5 decl" id="25555found_diag" title='found_diag' data-type='bool' data-ref="25555found_diag">found_diag</dfn>;</td></tr>
+<tr><th id="77">77</th><td>  <b>for</b> (<a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col6 decl" id="25556col" title='col' data-type='StorageIndex' data-ref="25556col">col</dfn> = <var>0</var>; <a class="local col6 ref" href="#25556col" title='col' data-ref="25556col">col</a> &lt; <a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>; <a class="local col6 ref" href="#25556col" title='col' data-ref="25556col">col</a>++)</td></tr>
+<tr><th id="78">78</th><td>  {</td></tr>
+<tr><th id="79">79</th><td>    <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col7 decl" id="25557pcol" title='pcol' data-type='StorageIndex' data-ref="25557pcol">pcol</dfn> = <a class="local col6 ref" href="#25556col" title='col' data-ref="25556col">col</a>;</td></tr>
+<tr><th id="80">80</th><td>    <b>if</b>(<a class="local col8 ref" href="#25548perm" title='perm' data-ref="25548perm">perm</a>) <a class="local col7 ref" href="#25557pcol" title='pcol' data-ref="25557pcol">pcol</a>  = <a class="local col8 ref" href="#25548perm" title='perm' data-ref="25548perm">perm</a>[<a class="local col6 ref" href="#25556col" title='col' data-ref="25556col">col</a>];</td></tr>
+<tr><th id="81">81</th><td>    <b>for</b> (<b>typename</b> MatrixType::InnerIterator <dfn class="local col8 decl" id="25558it" title='it' data-type='typename MatrixType::InnerIterator' data-ref="25558it">it</dfn>(<a class="local col5 ref" href="#25545mat" title='mat' data-ref="25545mat">mat</a>, <a class="local col7 ref" href="#25557pcol" title='pcol' data-ref="25557pcol">pcol</a>); <a class="local col8 ref" href="#25558it" title='it' data-ref="25558it">it</a>; ++<a class="local col8 ref" href="#25558it" title='it' data-ref="25558it">it</a>)</td></tr>
+<tr><th id="82">82</th><td>    { </td></tr>
+<tr><th id="83">83</th><td>      <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col9 decl" id="25559row" title='row' data-type='Index' data-ref="25559row">row</dfn> = <a class="local col8 ref" href="#25558it" title='it' data-ref="25558it">it</a>.row();</td></tr>
+<tr><th id="84">84</th><td>      <a class="local col7 ref" href="#25547firstRowElt" title='firstRowElt' data-ref="25547firstRowElt">firstRowElt</a>(<a class="local col9 ref" href="#25559row" title='row' data-ref="25559row">row</a>) = (<span class="namespace">std::</span>min)(<a class="local col7 ref" href="#25547firstRowElt" title='firstRowElt' data-ref="25547firstRowElt">firstRowElt</a>(<a class="local col9 ref" href="#25559row" title='row' data-ref="25559row">row</a>), <a class="local col6 ref" href="#25556col" title='col' data-ref="25556col">col</a>);</td></tr>
+<tr><th id="85">85</th><td>    }</td></tr>
+<tr><th id="86">86</th><td>  }</td></tr>
+<tr><th id="87">87</th><td>  <i>/* Compute etree by Liu's algorithm for symmetric matrices,</i></td></tr>
+<tr><th id="88">88</th><td><i>          except use (firstRowElt[r],c) in place of an edge (r,c) of A.</i></td></tr>
+<tr><th id="89">89</th><td><i>    Thus each row clique in A'*A is replaced by a star</i></td></tr>
+<tr><th id="90">90</th><td><i>    centered at its first vertex, which has the same fill. */</i></td></tr>
+<tr><th id="91">91</th><td>  <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col0 decl" id="25560rset" title='rset' data-type='StorageIndex' data-ref="25560rset">rset</dfn>, <dfn class="local col1 decl" id="25561cset" title='cset' data-type='StorageIndex' data-ref="25561cset">cset</dfn>, <dfn class="local col2 decl" id="25562rroot" title='rroot' data-type='StorageIndex' data-ref="25562rroot">rroot</dfn>;</td></tr>
+<tr><th id="92">92</th><td>  <b>for</b> (<a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col3 decl" id="25563col" title='col' data-type='StorageIndex' data-ref="25563col">col</dfn> = <var>0</var>; <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a> &lt; <a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>; <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>++) </td></tr>
+<tr><th id="93">93</th><td>  {</td></tr>
+<tr><th id="94">94</th><td>    <a class="local col5 ref" href="#25555found_diag" title='found_diag' data-ref="25555found_diag">found_diag</a> = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>&gt;=<a class="local col1 ref" href="#25551m" title='m' data-ref="25551m">m</a>;</td></tr>
+<tr><th id="95">95</th><td>    <a class="local col4 ref" href="#25554pp" title='pp' data-ref="25554pp">pp</a>(<a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>) = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>; </td></tr>
+<tr><th id="96">96</th><td>    <a class="local col1 ref" href="#25561cset" title='cset' data-ref="25561cset">cset</a> = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>; </td></tr>
+<tr><th id="97">97</th><td>    <a class="local col3 ref" href="#25553root" title='root' data-ref="25553root">root</a>(<a class="local col1 ref" href="#25561cset" title='cset' data-ref="25561cset">cset</a>) = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>; </td></tr>
+<tr><th id="98">98</th><td>    <a class="local col6 ref" href="#25546parent" title='parent' data-ref="25546parent">parent</a>(<a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>) = <a class="local col0 ref" href="#25550nc" title='nc' data-ref="25550nc">nc</a>; </td></tr>
+<tr><th id="99">99</th><td>    <i>/* The diagonal element is treated here even if it does not exist in the matrix</i></td></tr>
+<tr><th id="100">100</th><td><i>     * hence the loop is executed once more */</i> </td></tr>
+<tr><th id="101">101</th><td>    <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col4 decl" id="25564pcol" title='pcol' data-type='StorageIndex' data-ref="25564pcol">pcol</dfn> = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>;</td></tr>
+<tr><th id="102">102</th><td>    <b>if</b>(<a class="local col8 ref" href="#25548perm" title='perm' data-ref="25548perm">perm</a>) <a class="local col4 ref" href="#25564pcol" title='pcol' data-ref="25564pcol">pcol</a>  = <a class="local col8 ref" href="#25548perm" title='perm' data-ref="25548perm">perm</a>[<a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>];</td></tr>
+<tr><th id="103">103</th><td>    <b>for</b> (<b>typename</b> MatrixType::InnerIterator <dfn class="local col5 decl" id="25565it" title='it' data-type='typename MatrixType::InnerIterator' data-ref="25565it">it</dfn>(<a class="local col5 ref" href="#25545mat" title='mat' data-ref="25545mat">mat</a>, <a class="local col4 ref" href="#25564pcol" title='pcol' data-ref="25564pcol">pcol</a>); <a class="local col5 ref" href="#25565it" title='it' data-ref="25565it">it</a>||!<a class="local col5 ref" href="#25555found_diag" title='found_diag' data-ref="25555found_diag">found_diag</a>; ++<a class="local col5 ref" href="#25565it" title='it' data-ref="25565it">it</a>)</td></tr>
+<tr><th id="104">104</th><td>    { <i>//  A sequence of interleaved find and union is performed </i></td></tr>
+<tr><th id="105">105</th><td>      <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col6 decl" id="25566i" title='i' data-type='Index' data-ref="25566i">i</dfn> = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>;</td></tr>
+<tr><th id="106">106</th><td>      <b>if</b>(<a class="local col5 ref" href="#25565it" title='it' data-ref="25565it">it</a>) <a class="local col6 ref" href="#25566i" title='i' data-ref="25566i">i</a> = <a class="local col5 ref" href="#25565it" title='it' data-ref="25565it">it</a>.index();</td></tr>
+<tr><th id="107">107</th><td>      <b>if</b> (<a class="local col6 ref" href="#25566i" title='i' data-ref="25566i">i</a> == <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>) <a class="local col5 ref" href="#25555found_diag" title='found_diag' data-ref="25555found_diag">found_diag</a> = <b>true</b>;</td></tr>
+<tr><th id="108">108</th><td>      </td></tr>
+<tr><th id="109">109</th><td>      <a class="local col9 typedef" href="#25549StorageIndex" title='StorageIndex' data-type='typename MatrixType::StorageIndex' data-ref="25549StorageIndex">StorageIndex</a> <dfn class="local col7 decl" id="25567row" title='row' data-type='StorageIndex' data-ref="25567row">row</dfn> = <a class="local col7 ref" href="#25547firstRowElt" title='firstRowElt' data-ref="25547firstRowElt">firstRowElt</a>(<a class="local col6 ref" href="#25566i" title='i' data-ref="25566i">i</a>);</td></tr>
+<tr><th id="110">110</th><td>      <b>if</b> (<a class="local col7 ref" href="#25567row" title='row' data-ref="25567row">row</a> &gt;= <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>) <b>continue</b>; </td></tr>
+<tr><th id="111">111</th><td>      <a class="local col0 ref" href="#25560rset" title='rset' data-ref="25560rset">rset</a> = <span class="namespace">internal::</span>etree_find(<a class="local col7 ref" href="#25567row" title='row' data-ref="25567row">row</a>, <a class="local col4 ref" href="#25554pp" title='pp' data-ref="25554pp">pp</a>); <i>// Find the name of the set containing row</i></td></tr>
+<tr><th id="112">112</th><td>      <a class="local col2 ref" href="#25562rroot" title='rroot' data-ref="25562rroot">rroot</a> = <a class="local col3 ref" href="#25553root" title='root' data-ref="25553root">root</a>(<a class="local col0 ref" href="#25560rset" title='rset' data-ref="25560rset">rset</a>);</td></tr>
+<tr><th id="113">113</th><td>      <b>if</b> (<a class="local col2 ref" href="#25562rroot" title='rroot' data-ref="25562rroot">rroot</a> != <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>) </td></tr>
+<tr><th id="114">114</th><td>      {</td></tr>
+<tr><th id="115">115</th><td>        <a class="local col6 ref" href="#25546parent" title='parent' data-ref="25546parent">parent</a>(<a class="local col2 ref" href="#25562rroot" title='rroot' data-ref="25562rroot">rroot</a>) = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>; </td></tr>
+<tr><th id="116">116</th><td>        <a class="local col4 ref" href="#25554pp" title='pp' data-ref="25554pp">pp</a>(<a class="local col1 ref" href="#25561cset" title='cset' data-ref="25561cset">cset</a>) = <a class="local col0 ref" href="#25560rset" title='rset' data-ref="25560rset">rset</a>; </td></tr>
+<tr><th id="117">117</th><td>        <a class="local col1 ref" href="#25561cset" title='cset' data-ref="25561cset">cset</a> = <a class="local col0 ref" href="#25560rset" title='rset' data-ref="25560rset">rset</a>; </td></tr>
+<tr><th id="118">118</th><td>        <a class="local col3 ref" href="#25553root" title='root' data-ref="25553root">root</a>(<a class="local col1 ref" href="#25561cset" title='cset' data-ref="25561cset">cset</a>) = <a class="local col3 ref" href="#25563col" title='col' data-ref="25563col">col</a>; </td></tr>
+<tr><th id="119">119</th><td>      }</td></tr>
+<tr><th id="120">120</th><td>    }</td></tr>
+<tr><th id="121">121</th><td>  }</td></tr>
+<tr><th id="122">122</th><td>  <b>return</b> <var>0</var>;  </td></tr>
+<tr><th id="123">123</th><td>}</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td><i class="doc">/** </i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">  * Depth-first search from vertex n.  No recursion.</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">  * This routine was contributed by Cédric Doucet, CEDRAT Group, Meylan, France.</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">*/</i></td></tr>
+<tr><th id="129">129</th><td><b>template</b> &lt;<b>typename</b> IndexVector&gt;</td></tr>
+<tr><th id="130">130</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5Eigen8internal8nr_etdfsENT_6ScalarERS1_S3_S3_S3_S2_" title='Eigen::internal::nr_etdfs' data-ref="_ZN5Eigen8internal8nr_etdfsENT_6ScalarERS1_S3_S3_S3_S2_">nr_etdfs</dfn> (<b>typename</b> IndexVector::Scalar <dfn class="local col8 decl" id="25568n" title='n' data-type='typename IndexVector::Scalar' data-ref="25568n">n</dfn>, IndexVector&amp; <dfn class="local col9 decl" id="25569parent" title='parent' data-type='IndexVector &amp;' data-ref="25569parent">parent</dfn>, IndexVector&amp; <dfn class="local col0 decl" id="25570first_kid" title='first_kid' data-type='IndexVector &amp;' data-ref="25570first_kid">first_kid</dfn>, IndexVector&amp; <dfn class="local col1 decl" id="25571next_kid" title='next_kid' data-type='IndexVector &amp;' data-ref="25571next_kid">next_kid</dfn>, IndexVector&amp; <dfn class="local col2 decl" id="25572post" title='post' data-type='IndexVector &amp;' data-ref="25572post">post</dfn>, <b>typename</b> IndexVector::Scalar <dfn class="local col3 decl" id="25573postnum" title='postnum' data-type='typename IndexVector::Scalar' data-ref="25573postnum">postnum</dfn>)</td></tr>
+<tr><th id="131">131</th><td>{</td></tr>
+<tr><th id="132">132</th><td>  <b>typedef</b> <b>typename</b> IndexVector::Scalar <dfn class="local col4 typedef" id="25574StorageIndex" title='StorageIndex' data-type='typename IndexVector::Scalar' data-ref="25574StorageIndex">StorageIndex</dfn>;</td></tr>
+<tr><th id="133">133</th><td>  <a class="local col4 typedef" href="#25574StorageIndex" title='StorageIndex' data-type='typename IndexVector::Scalar' data-ref="25574StorageIndex">StorageIndex</a> <dfn class="local col5 decl" id="25575current" title='current' data-type='StorageIndex' data-ref="25575current">current</dfn> = <a class="local col8 ref" href="#25568n" title='n' data-ref="25568n">n</a>, <dfn class="local col6 decl" id="25576first" title='first' data-type='StorageIndex' data-ref="25576first">first</dfn>, <dfn class="local col7 decl" id="25577next" title='next' data-type='StorageIndex' data-ref="25577next">next</dfn>;</td></tr>
+<tr><th id="134">134</th><td>  <b>while</b> (<a class="local col3 ref" href="#25573postnum" title='postnum' data-ref="25573postnum">postnum</a> != <a class="local col8 ref" href="#25568n" title='n' data-ref="25568n">n</a>) </td></tr>
+<tr><th id="135">135</th><td>  {</td></tr>
+<tr><th id="136">136</th><td>    <i>// No kid for the current node</i></td></tr>
+<tr><th id="137">137</th><td>    <a class="local col6 ref" href="#25576first" title='first' data-ref="25576first">first</a> = <a class="local col0 ref" href="#25570first_kid" title='first_kid' data-ref="25570first_kid">first_kid</a>(<a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a>);</td></tr>
+<tr><th id="138">138</th><td>    </td></tr>
+<tr><th id="139">139</th><td>    <i>// no kid for the current node</i></td></tr>
+<tr><th id="140">140</th><td>    <b>if</b> (<a class="local col6 ref" href="#25576first" title='first' data-ref="25576first">first</a> == -<var>1</var>) </td></tr>
+<tr><th id="141">141</th><td>    {</td></tr>
+<tr><th id="142">142</th><td>      <i>// Numbering this node because it has no kid </i></td></tr>
+<tr><th id="143">143</th><td>      <a class="local col2 ref" href="#25572post" title='post' data-ref="25572post">post</a>(<a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a>) = <a class="local col3 ref" href="#25573postnum" title='postnum' data-ref="25573postnum">postnum</a>++;</td></tr>
+<tr><th id="144">144</th><td>      </td></tr>
+<tr><th id="145">145</th><td>      <i>// looking for the next kid </i></td></tr>
+<tr><th id="146">146</th><td>      <a class="local col7 ref" href="#25577next" title='next' data-ref="25577next">next</a> = <a class="local col1 ref" href="#25571next_kid" title='next_kid' data-ref="25571next_kid">next_kid</a>(<a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a>); </td></tr>
+<tr><th id="147">147</th><td>      <b>while</b> (<a class="local col7 ref" href="#25577next" title='next' data-ref="25577next">next</a> == -<var>1</var>) </td></tr>
+<tr><th id="148">148</th><td>      {</td></tr>
+<tr><th id="149">149</th><td>        <i>// No more kids : back to the parent node</i></td></tr>
+<tr><th id="150">150</th><td>        <a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a> = <a class="local col9 ref" href="#25569parent" title='parent' data-ref="25569parent">parent</a>(<a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a>); </td></tr>
+<tr><th id="151">151</th><td>        <i>// numbering the parent node </i></td></tr>
+<tr><th id="152">152</th><td>        <a class="local col2 ref" href="#25572post" title='post' data-ref="25572post">post</a>(<a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a>) = <a class="local col3 ref" href="#25573postnum" title='postnum' data-ref="25573postnum">postnum</a>++;</td></tr>
+<tr><th id="153">153</th><td>        </td></tr>
+<tr><th id="154">154</th><td>        <i>// Get the next kid </i></td></tr>
+<tr><th id="155">155</th><td>        <a class="local col7 ref" href="#25577next" title='next' data-ref="25577next">next</a> = <a class="local col1 ref" href="#25571next_kid" title='next_kid' data-ref="25571next_kid">next_kid</a>(<a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a>); </td></tr>
+<tr><th id="156">156</th><td>      }</td></tr>
+<tr><th id="157">157</th><td>      <i>// stopping criterion </i></td></tr>
+<tr><th id="158">158</th><td>      <b>if</b> (<a class="local col3 ref" href="#25573postnum" title='postnum' data-ref="25573postnum">postnum</a> == <a class="local col8 ref" href="#25568n" title='n' data-ref="25568n">n</a>+<var>1</var>) <b>return</b>; </td></tr>
+<tr><th id="159">159</th><td>      </td></tr>
+<tr><th id="160">160</th><td>      <i>// Updating current node </i></td></tr>
+<tr><th id="161">161</th><td>      <a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a> = <a class="local col7 ref" href="#25577next" title='next' data-ref="25577next">next</a>; </td></tr>
+<tr><th id="162">162</th><td>    }</td></tr>
+<tr><th id="163">163</th><td>    <b>else</b> </td></tr>
+<tr><th id="164">164</th><td>    {</td></tr>
+<tr><th id="165">165</th><td>      <a class="local col5 ref" href="#25575current" title='current' data-ref="25575current">current</a> = <a class="local col6 ref" href="#25576first" title='first' data-ref="25576first">first</a>; </td></tr>
+<tr><th id="166">166</th><td>    }</td></tr>
+<tr><th id="167">167</th><td>  }</td></tr>
+<tr><th id="168">168</th><td>}</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">  * <span class="command">\brief</span> Post order a tree </i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">n</span> the number of nodes</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">parent</span> Input tree</i></td></tr>
+<tr><th id="175">175</th><td><i class="doc">  * <span class="command">\param</span> <span class="arg">post</span> postordered tree</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="177">177</th><td><b>template</b> &lt;<b>typename</b> IndexVector&gt;</td></tr>
+<tr><th id="178">178</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5Eigen8internal13treePostorderENT_6ScalarERS1_S3_" title='Eigen::internal::treePostorder' data-ref="_ZN5Eigen8internal13treePostorderENT_6ScalarERS1_S3_">treePostorder</dfn>(<b>typename</b> IndexVector::Scalar <dfn class="local col8 decl" id="25578n" title='n' data-type='typename IndexVector::Scalar' data-ref="25578n">n</dfn>, IndexVector&amp; <dfn class="local col9 decl" id="25579parent" title='parent' data-type='IndexVector &amp;' data-ref="25579parent">parent</dfn>, IndexVector&amp; <dfn class="local col0 decl" id="25580post" title='post' data-type='IndexVector &amp;' data-ref="25580post">post</dfn>)</td></tr>
+<tr><th id="179">179</th><td>{</td></tr>
+<tr><th id="180">180</th><td>  <b>typedef</b> <b>typename</b> IndexVector::Scalar <dfn class="local col1 typedef" id="25581StorageIndex" title='StorageIndex' data-type='typename IndexVector::Scalar' data-ref="25581StorageIndex">StorageIndex</dfn>;</td></tr>
+<tr><th id="181">181</th><td>  IndexVector <dfn class="local col2 decl" id="25582first_kid" title='first_kid' data-type='IndexVector' data-ref="25582first_kid">first_kid</dfn>, <dfn class="local col3 decl" id="25583next_kid" title='next_kid' data-type='IndexVector' data-ref="25583next_kid">next_kid</dfn>; <i>// Linked list of children </i></td></tr>
+<tr><th id="182">182</th><td>  <a class="local col1 typedef" href="#25581StorageIndex" title='StorageIndex' data-type='typename IndexVector::Scalar' data-ref="25581StorageIndex">StorageIndex</a> <dfn class="local col4 decl" id="25584postnum" title='postnum' data-type='StorageIndex' data-ref="25584postnum">postnum</dfn>; </td></tr>
+<tr><th id="183">183</th><td>  <i>// Allocate storage for working arrays and results </i></td></tr>
+<tr><th id="184">184</th><td>  <a class="local col2 ref" href="#25582first_kid" title='first_kid' data-ref="25582first_kid">first_kid</a>.resize(<a class="local col8 ref" href="#25578n" title='n' data-ref="25578n">n</a>+<var>1</var>); </td></tr>
+<tr><th id="185">185</th><td>  <a class="local col3 ref" href="#25583next_kid" title='next_kid' data-ref="25583next_kid">next_kid</a>.setZero(<a class="local col8 ref" href="#25578n" title='n' data-ref="25578n">n</a>+<var>1</var>);</td></tr>
+<tr><th id="186">186</th><td>  <a class="local col0 ref" href="#25580post" title='post' data-ref="25580post">post</a>.setZero(<a class="local col8 ref" href="#25578n" title='n' data-ref="25578n">n</a>+<var>1</var>);</td></tr>
+<tr><th id="187">187</th><td>  </td></tr>
+<tr><th id="188">188</th><td>  <i>// Set up structure describing children</i></td></tr>
+<tr><th id="189">189</th><td>  <a class="local col2 ref" href="#25582first_kid" title='first_kid' data-ref="25582first_kid">first_kid</a>.setConstant(-<var>1</var>); </td></tr>
+<tr><th id="190">190</th><td>  <b>for</b> (<a class="local col1 typedef" href="#25581StorageIndex" title='StorageIndex' data-type='typename IndexVector::Scalar' data-ref="25581StorageIndex">StorageIndex</a> <dfn class="local col5 decl" id="25585v" title='v' data-type='StorageIndex' data-ref="25585v">v</dfn> = <a class="local col8 ref" href="#25578n" title='n' data-ref="25578n">n</a>-<var>1</var>; <a class="local col5 ref" href="#25585v" title='v' data-ref="25585v">v</a> &gt;= <var>0</var>; <a class="local col5 ref" href="#25585v" title='v' data-ref="25585v">v</a>--) </td></tr>
+<tr><th id="191">191</th><td>  {</td></tr>
+<tr><th id="192">192</th><td>    <a class="local col1 typedef" href="#25581StorageIndex" title='StorageIndex' data-type='typename IndexVector::Scalar' data-ref="25581StorageIndex">StorageIndex</a> <dfn class="local col6 decl" id="25586dad" title='dad' data-type='StorageIndex' data-ref="25586dad">dad</dfn> = <a class="local col9 ref" href="#25579parent" title='parent' data-ref="25579parent">parent</a>(<a class="local col5 ref" href="#25585v" title='v' data-ref="25585v">v</a>);</td></tr>
+<tr><th id="193">193</th><td>    <a class="local col3 ref" href="#25583next_kid" title='next_kid' data-ref="25583next_kid">next_kid</a>(<a class="local col5 ref" href="#25585v" title='v' data-ref="25585v">v</a>) = <a class="local col2 ref" href="#25582first_kid" title='first_kid' data-ref="25582first_kid">first_kid</a>(<a class="local col6 ref" href="#25586dad" title='dad' data-ref="25586dad">dad</a>); </td></tr>
+<tr><th id="194">194</th><td>    <a class="local col2 ref" href="#25582first_kid" title='first_kid' data-ref="25582first_kid">first_kid</a>(<a class="local col6 ref" href="#25586dad" title='dad' data-ref="25586dad">dad</a>) = <a class="local col5 ref" href="#25585v" title='v' data-ref="25585v">v</a>; </td></tr>
+<tr><th id="195">195</th><td>  }</td></tr>
+<tr><th id="196">196</th><td>  </td></tr>
+<tr><th id="197">197</th><td>  <i>// Depth-first search from dummy root vertex #n</i></td></tr>
+<tr><th id="198">198</th><td>  <a class="local col4 ref" href="#25584postnum" title='postnum' data-ref="25584postnum">postnum</a> = <var>0</var>; </td></tr>
+<tr><th id="199">199</th><td>  <span class="namespace">internal::</span>nr_etdfs(<a class="local col8 ref" href="#25578n" title='n' data-ref="25578n">n</a>, <a class="local col9 ref" href="#25579parent" title='parent' data-ref="25579parent">parent</a>, <a class="local col2 ref" href="#25582first_kid" title='first_kid' data-ref="25582first_kid">first_kid</a>, <a class="local col3 ref" href="#25583next_kid" title='next_kid' data-ref="25583next_kid">next_kid</a>, <a class="local col0 ref" href="#25580post" title='post' data-ref="25580post">post</a>, <a class="local col4 ref" href="#25584postnum" title='postnum' data-ref="25584postnum">postnum</a>);</td></tr>
+<tr><th id="200">200</th><td>}</td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td><u>#<span data-ppcond="31">endif</span> // SPARSE_COLETREE_H</u></td></tr>
+<tr><th id="207">207</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

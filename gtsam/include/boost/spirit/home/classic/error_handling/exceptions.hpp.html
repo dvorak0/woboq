@@ -1,0 +1,383 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>exceptions.hpp source code [include/boost/spirit/home/classic/error_handling/exceptions.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::spirit::classic::assertion,boost::spirit::classic::assertive_parser,boost::spirit::classic::error_status,boost::spirit::classic::fallback_parser,boost::spirit::classic::guard,boost::spirit::classic::guard_gen,boost::spirit::classic::parser_error,boost::spirit::classic::parser_error_base "/>
+<link rel="stylesheet" href="../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/spirit/home/classic/error_handling/exceptions.hpp'; var root_path = '../../../../../..'; var data_path = '../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../..'>include</a>/<a href='../../../..'>boost</a>/<a href='../../..'>spirit</a>/<a href='../..'>home</a>/<a href='..'>classic</a>/<a href='./'>error_handling</a>/<a href='exceptions.hpp.html'>exceptions.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*=============================================================================</i></td></tr>
+<tr><th id="2">2</th><td><i>    Copyright (c) 2001-2003 Joel de Guzman</i></td></tr>
+<tr><th id="3">3</th><td><i>    <a href="http://spirit.sourceforge.net/">http://spirit.sourceforge.net/</a></i></td></tr>
+<tr><th id="4">4</th><td><i></i></td></tr>
+<tr><th id="5">5</th><td><i>  Distributed under the Boost Software License, Version 1.0. (See accompanying</i></td></tr>
+<tr><th id="6">6</th><td><i>  file LICENSE_1_0.txt or copy at <a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="7">7</th><td><i>=============================================================================*/</i></td></tr>
+<tr><th id="8">8</th><td><u>#<span data-ppcond="8">ifndef</span> <span class="macro" data-ref="_M/BOOST_SPIRIT_EXCEPTIONS_HPP">BOOST_SPIRIT_EXCEPTIONS_HPP</span></u></td></tr>
+<tr><th id="9">9</th><td><u>#define <dfn class="macro" id="_M/BOOST_SPIRIT_EXCEPTIONS_HPP" data-ref="_M/BOOST_SPIRIT_EXCEPTIONS_HPP">BOOST_SPIRIT_EXCEPTIONS_HPP</dfn></u></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#include <a href="../../../../config.hpp.html">&lt;boost/config.hpp&gt;</a></u></td></tr>
+<tr><th id="12">12</th><td><u>#include <a href="../../../../throw_exception.hpp.html">&lt;boost/throw_exception.hpp&gt;</a></u></td></tr>
+<tr><th id="13">13</th><td><u>#include <a href="../namespace.hpp.html">&lt;boost/spirit/home/classic/namespace.hpp&gt;</a></u></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="../core/parser.hpp.html">&lt;boost/spirit/home/classic/core/parser.hpp&gt;</a></u></td></tr>
+<tr><th id="15">15</th><td><u>#include <a href="../core/composite/composite.hpp.html">&lt;boost/spirit/home/classic/core/composite/composite.hpp&gt;</a></u></td></tr>
+<tr><th id="16">16</th><td><u>#include <a href="../../../../../c++/13/exception.html">&lt;exception&gt;</a></u></td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><u>#include <a href="exceptions_fwd.hpp.html">&lt;boost/spirit/home/classic/error_handling/exceptions_fwd.hpp&gt;</a></u></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><b>namespace</b> <span class="namespace">boost</span> { <b>namespace</b> <span class="namespace">spirit</span> {</td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><a class="macro" href="../namespace.hpp.html#29" title="namespace classic {" data-ref="_M/BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN">BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN</a></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="25">25</th><td><i>    //</i></td></tr>
+<tr><th id="26">26</th><td><i>    //  parser_error_base class</i></td></tr>
+<tr><th id="27">27</th><td><i>    //</i></td></tr>
+<tr><th id="28">28</th><td><i>    //      This is the base class of parser_error (see below). This may be</i></td></tr>
+<tr><th id="29">29</th><td><i>    //      used to catch any type of parser error.</i></td></tr>
+<tr><th id="30">30</th><td><i>    //</i></td></tr>
+<tr><th id="31">31</th><td><i>    //      This exception shouldn't propagate outside the parser. However to</i></td></tr>
+<tr><th id="32">32</th><td><i>    //      avoid quirks of many platforms/implementations which fall outside</i></td></tr>
+<tr><th id="33">33</th><td><i>    //      the C++ standard, we derive parser_error_base from std::exception</i></td></tr>
+<tr><th id="34">34</th><td><i>    //      to allow a single catch handler to catch all exceptions.</i></td></tr>
+<tr><th id="35">35</th><td><i>    //</i></td></tr>
+<tr><th id="36">36</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="37">37</th><td>    <b>class</b> <a class="macro" href="../../../../config/compiler/clang.hpp.html#115" title="__attribute__((__visibility__(&quot;default&quot;)))" data-ref="_M/BOOST_SYMBOL_VISIBLE">BOOST_SYMBOL_VISIBLE</a> <dfn class="type def" id="boost::spirit::classic::parser_error_base" title='boost::spirit::classic::parser_error_base' data-ref="boost::spirit::classic::parser_error_base">parser_error_base</dfn> : <b>public</b> <span class="namespace">std::</span><a class="type" href="../../../../../c++/13/bits/exception.h.html#std::exception" title='std::exception' data-ref="std::exception">exception</a></td></tr>
+<tr><th id="38">38</th><td>    {</td></tr>
+<tr><th id="39">39</th><td>    <b>protected</b>:</td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic17parser_error_baseC1Ev" title='boost::spirit::classic::parser_error_base::parser_error_base' data-ref="_ZN5boost6spirit7classic17parser_error_baseC1Ev">parser_error_base</dfn>() {}</td></tr>
+<tr><th id="42">42</th><td>        <b>virtual</b> <dfn class="virtual decl def fn" id="_ZN5boost6spirit7classic17parser_error_baseD1Ev" title='boost::spirit::classic::parser_error_base::~parser_error_base' data-ref="_ZN5boost6spirit7classic17parser_error_baseD1Ev">~parser_error_base</dfn>() <a class="macro" href="../../../../config/detail/suffix.hpp.html#1021" title="noexcept" data-ref="_M/BOOST_NOEXCEPT_OR_NOTHROW">BOOST_NOEXCEPT_OR_NOTHROW</a> {}</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td>    <b>public</b>:</td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic17parser_error_baseC1ERKS2_" title='boost::spirit::classic::parser_error_base::parser_error_base' data-ref="_ZN5boost6spirit7classic17parser_error_baseC1ERKS2_">parser_error_base</dfn>(<a class="type" href="#boost::spirit::classic::parser_error_base" title='boost::spirit::classic::parser_error_base' data-ref="boost::spirit::classic::parser_error_base">parser_error_base</a> <em>const</em>&amp; <dfn class="local col4 decl" id="5284rhs" title='rhs' data-type='const parser_error_base &amp;' data-ref="5284rhs">rhs</dfn>)</td></tr>
+<tr><th id="47">47</th><td>            : <span class="namespace">std::</span><a class="type" href="../../../../../c++/13/bits/exception.h.html#std::exception" title='std::exception' data-ref="std::exception">exception</a><a class="ref fn" href="../../../../../c++/13/bits/exception.h.html#_ZNSt9exceptionC1ERKS_" title='std::exception::exception' data-ref="_ZNSt9exceptionC1ERKS_">(</a><a class="local col4 ref" href="#5284rhs" title='rhs' data-ref="5284rhs">rhs</a>) {}</td></tr>
+<tr><th id="48">48</th><td>        <a class="type" href="#boost::spirit::classic::parser_error_base" title='boost::spirit::classic::parser_error_base' data-ref="boost::spirit::classic::parser_error_base">parser_error_base</a>&amp; <dfn class="decl def fn" id="_ZN5boost6spirit7classic17parser_error_baseaSERKS2_" title='boost::spirit::classic::parser_error_base::operator=' data-ref="_ZN5boost6spirit7classic17parser_error_baseaSERKS2_"><b>operator</b>=</dfn>(<a class="type" href="#boost::spirit::classic::parser_error_base" title='boost::spirit::classic::parser_error_base' data-ref="boost::spirit::classic::parser_error_base">parser_error_base</a> <em>const</em>&amp;)</td></tr>
+<tr><th id="49">49</th><td>        {</td></tr>
+<tr><th id="50">50</th><td>            <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="51">51</th><td>        }</td></tr>
+<tr><th id="52">52</th><td>    };</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="55">55</th><td><i>    //</i></td></tr>
+<tr><th id="56">56</th><td><i>    //  parser_error class</i></td></tr>
+<tr><th id="57">57</th><td><i>    //</i></td></tr>
+<tr><th id="58">58</th><td><i>    //      Generic parser exception class. This is the base class for all</i></td></tr>
+<tr><th id="59">59</th><td><i>    //      parser exceptions. The exception holds the iterator position</i></td></tr>
+<tr><th id="60">60</th><td><i>    //      where the error was encountered in its member variable "where".</i></td></tr>
+<tr><th id="61">61</th><td><i>    //      The parser_error also holds information regarding the error</i></td></tr>
+<tr><th id="62">62</th><td><i>    //      (error descriptor) in its member variable "descriptor".</i></td></tr>
+<tr><th id="63">63</th><td><i>    //</i></td></tr>
+<tr><th id="64">64</th><td><i>    //      The throw_ function creates and throws a parser_error given</i></td></tr>
+<tr><th id="65">65</th><td><i>    //      an iterator and an error descriptor.</i></td></tr>
+<tr><th id="66">66</th><td><i>    //</i></td></tr>
+<tr><th id="67">67</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="68">68</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT, <b>typename</b> IteratorT&gt;</td></tr>
+<tr><th id="69">69</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::parser_error" title='boost::spirit::classic::parser_error' data-ref="boost::spirit::classic::parser_error">parser_error</dfn> : <b>public</b> <a class="type" href="#boost::spirit::classic::parser_error_base" title='boost::spirit::classic::parser_error_base' data-ref="boost::spirit::classic::parser_error_base">parser_error_base</a></td></tr>
+<tr><th id="70">70</th><td>    {</td></tr>
+<tr><th id="71">71</th><td>        <b>typedef</b> ErrorDescrT <dfn class="typedef" id="boost::spirit::classic::parser_error::error_descr_t" title='boost::spirit::classic::parser_error::error_descr_t' data-type='ErrorDescrT' data-ref="boost::spirit::classic::parser_error::error_descr_t">error_descr_t</dfn>;</td></tr>
+<tr><th id="72">72</th><td>        <b>typedef</b> IteratorT <dfn class="typedef" id="boost::spirit::classic::parser_error::iterator_t" title='boost::spirit::classic::parser_error::iterator_t' data-type='IteratorT' data-ref="boost::spirit::classic::parser_error::iterator_t">iterator_t</dfn>;</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic12parser_errorC1ET0_T_" title='boost::spirit::classic::parser_error::parser_error&lt;ErrorDescrT, IteratorT&gt;' data-ref="_ZN5boost6spirit7classic12parser_errorC1ET0_T_">parser_error</dfn>(IteratorT <dfn class="local col5 decl" id="5285where_" title='where_' data-type='IteratorT' data-ref="5285where_">where_</dfn>, ErrorDescrT <dfn class="local col6 decl" id="5286descriptor_" title='descriptor_' data-type='ErrorDescrT' data-ref="5286descriptor_">descriptor_</dfn>)</td></tr>
+<tr><th id="75">75</th><td>        : <a class="member field" href="#boost::spirit::classic::parser_error::where" title='boost::spirit::classic::parser_error::where' data-ref="boost::spirit::classic::parser_error::where">where</a>(<a class="local col5 ref" href="#5285where_" title='where_' data-ref="5285where_">where_</a>), <a class="member field" href="#boost::spirit::classic::parser_error::descriptor" title='boost::spirit::classic::parser_error::descriptor' data-ref="boost::spirit::classic::parser_error::descriptor">descriptor</a>(<a class="local col6 ref" href="#5286descriptor_" title='descriptor_' data-ref="5286descriptor_">descriptor_</a>) {}</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic12parser_errorC1ERKNS1_12parser_errorIT_T0_EE" title='boost::spirit::classic::parser_error::parser_error&lt;ErrorDescrT, IteratorT&gt;' data-ref="_ZN5boost6spirit7classic12parser_errorC1ERKNS1_12parser_errorIT_T0_EE">parser_error</dfn>(parser_error <em>const</em>&amp; <dfn class="local col7 decl" id="5287rhs" title='rhs' data-type='const parser_error&lt;ErrorDescrT, IteratorT&gt; &amp;' data-ref="5287rhs">rhs</dfn>)</td></tr>
+<tr><th id="78">78</th><td>        : <a class="type" href="#boost::spirit::classic::parser_error_base" title='boost::spirit::classic::parser_error_base' data-ref="boost::spirit::classic::parser_error_base">parser_error_base</a>(<a class="local col7 ref" href="#5287rhs" title='rhs' data-ref="5287rhs">rhs</a>)</td></tr>
+<tr><th id="79">79</th><td>        , <a class="member field" href="#boost::spirit::classic::parser_error::where" title='boost::spirit::classic::parser_error::where' data-ref="boost::spirit::classic::parser_error::where">where</a>(<a class="local col7 ref" href="#5287rhs" title='rhs' data-ref="5287rhs">rhs</a>.where), <a class="member field" href="#boost::spirit::classic::parser_error::descriptor" title='boost::spirit::classic::parser_error::descriptor' data-ref="boost::spirit::classic::parser_error::descriptor">descriptor</a>(<a class="local col7 ref" href="#5287rhs" title='rhs' data-ref="5287rhs">rhs</a>.descriptor) {}</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>        parser_error&amp;</td></tr>
+<tr><th id="82">82</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic12parser_erroraSERKNS1_12parser_errorIT_T0_EE" title='boost::spirit::classic::parser_error::operator=' data-ref="_ZN5boost6spirit7classic12parser_erroraSERKNS1_12parser_errorIT_T0_EE"><b>operator</b>=</dfn>(parser_error <em>const</em>&amp; <dfn class="local col8 decl" id="5288rhs" title='rhs' data-type='const parser_error&lt;ErrorDescrT, IteratorT&gt; &amp;' data-ref="5288rhs">rhs</dfn>)</td></tr>
+<tr><th id="83">83</th><td>        {</td></tr>
+<tr><th id="84">84</th><td>            <a class="member field" href="#boost::spirit::classic::parser_error::where" title='boost::spirit::classic::parser_error::where' data-ref="boost::spirit::classic::parser_error::where">where</a> = <a class="local col8 ref" href="#5288rhs" title='rhs' data-ref="5288rhs">rhs</a>.where;</td></tr>
+<tr><th id="85">85</th><td>            <a class="member field" href="#boost::spirit::classic::parser_error::descriptor" title='boost::spirit::classic::parser_error::descriptor' data-ref="boost::spirit::classic::parser_error::descriptor">descriptor</a> = <a class="local col8 ref" href="#5288rhs" title='rhs' data-ref="5288rhs">rhs</a>.descriptor;</td></tr>
+<tr><th id="86">86</th><td>            <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="87">87</th><td>        }</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>        <b>virtual</b></td></tr>
+<tr><th id="90">90</th><td>        <dfn class="virtual decl def fn" id="_ZN5boost6spirit7classic12parser_errorD1Ev" title='boost::spirit::classic::parser_error::~parser_error&lt;ErrorDescrT, IteratorT&gt;' data-ref="_ZN5boost6spirit7classic12parser_errorD1Ev">~parser_error</dfn>() <a class="macro" href="../../../../config/detail/suffix.hpp.html#1021" title="noexcept" data-ref="_M/BOOST_NOEXCEPT_OR_NOTHROW">BOOST_NOEXCEPT_OR_NOTHROW</a> {}</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>        <b>virtual</b> <em>const</em> <em>char</em>*</td></tr>
+<tr><th id="93">93</th><td>        <dfn class="virtual decl def fn" id="_ZNK5boost6spirit7classic12parser_error4whatEv" title='boost::spirit::classic::parser_error::what' data-ref="_ZNK5boost6spirit7classic12parser_error4whatEv">what</dfn>() <em>const</em> <a class="macro" href="../../../../config/detail/suffix.hpp.html#1021" title="noexcept" data-ref="_M/BOOST_NOEXCEPT_OR_NOTHROW">BOOST_NOEXCEPT_OR_NOTHROW</a></td></tr>
+<tr><th id="94">94</th><td>        {</td></tr>
+<tr><th id="95">95</th><td>            <b>return</b> <q>"BOOST_SPIRIT_CLASSIC_NS::parser_error"</q>;</td></tr>
+<tr><th id="96">96</th><td>        }</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>        IteratorT <dfn class="decl field" id="boost::spirit::classic::parser_error::where" title='boost::spirit::classic::parser_error::where' data-ref="boost::spirit::classic::parser_error::where">where</dfn>;</td></tr>
+<tr><th id="99">99</th><td>        ErrorDescrT <dfn class="decl field" id="boost::spirit::classic::parser_error::descriptor" title='boost::spirit::classic::parser_error::descriptor' data-ref="boost::spirit::classic::parser_error::descriptor">descriptor</dfn>;</td></tr>
+<tr><th id="100">100</th><td>    };</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <i>//////////////////////////////////</i></td></tr>
+<tr><th id="103">103</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT, <b>typename</b> IteratorT&gt;</td></tr>
+<tr><th id="104">104</th><td>    <b>inline</b> <em>void</em></td></tr>
+<tr><th id="105">105</th><td>    <dfn class="decl def fn" id="_ZN5boost6spirit7classic6throw_ET0_T_" title='boost::spirit::classic::throw_' data-ref="_ZN5boost6spirit7classic6throw_ET0_T_">throw_</dfn>(IteratorT <dfn class="local col9 decl" id="5289where" title='where' data-type='IteratorT' data-ref="5289where">where</dfn>, ErrorDescrT <dfn class="local col0 decl" id="5290descriptor" title='descriptor' data-type='ErrorDescrT' data-ref="5290descriptor">descriptor</dfn>)</td></tr>
+<tr><th id="106">106</th><td>    {</td></tr>
+<tr><th id="107">107</th><td>         <span class="namespace">boost::</span>throw_exception(</td></tr>
+<tr><th id="108">108</th><td>            <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::parser_error" title='boost::spirit::classic::parser_error' data-ref="boost::spirit::classic::parser_error">parser_error</a>&lt;ErrorDescrT, IteratorT&gt;(<a class="local col9 ref" href="#5289where" title='where' data-ref="5289where">where</a>, <a class="local col0 ref" href="#5290descriptor" title='descriptor' data-ref="5290descriptor">descriptor</a>));</td></tr>
+<tr><th id="109">109</th><td>    }</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="112">112</th><td><i>    //</i></td></tr>
+<tr><th id="113">113</th><td><i>    //  assertive_parser class</i></td></tr>
+<tr><th id="114">114</th><td><i>    //</i></td></tr>
+<tr><th id="115">115</th><td><i>    //      An assertive_parser class is a parser that throws an exception</i></td></tr>
+<tr><th id="116">116</th><td><i>    //      in response to a parsing failure. The assertive_parser throws a</i></td></tr>
+<tr><th id="117">117</th><td><i>    //      parser_error exception rather than returning an unsuccessful</i></td></tr>
+<tr><th id="118">118</th><td><i>    //      match to signal that the parser failed to match the input.</i></td></tr>
+<tr><th id="119">119</th><td><i>    //</i></td></tr>
+<tr><th id="120">120</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="121">121</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT, <b>typename</b> ParserT&gt;</td></tr>
+<tr><th id="122">122</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::assertive_parser" title='boost::spirit::classic::assertive_parser' data-ref="boost::spirit::classic::assertive_parser">assertive_parser</dfn></td></tr>
+<tr><th id="123">123</th><td>    :   <b>public</b> <a class="type" href="../core/composite/composite.hpp.html#boost::spirit::classic::unary" title='boost::spirit::classic::unary' data-ref="boost::spirit::classic::unary">unary</a>&lt;ParserT, <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser" title='boost::spirit::classic::parser' data-ref="boost::spirit::classic::parser">parser</a>&lt;<a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::assertive_parser" title='boost::spirit::classic::assertive_parser' data-ref="boost::spirit::classic::assertive_parser">assertive_parser</a>&lt;ErrorDescrT, ParserT&gt; &gt; &gt;</td></tr>
+<tr><th id="124">124</th><td>    {</td></tr>
+<tr><th id="125">125</th><td>        <b>typedef</b> <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::assertive_parser" title='boost::spirit::classic::assertive_parser' data-ref="boost::spirit::classic::assertive_parser">assertive_parser</a>&lt;ErrorDescrT, ParserT&gt;  <dfn class="typedef" id="boost::spirit::classic::assertive_parser::self_t" title='boost::spirit::classic::assertive_parser::self_t' data-type='assertive_parser&lt;ErrorDescrT, ParserT&gt;' data-ref="boost::spirit::classic::assertive_parser::self_t">self_t</dfn>;</td></tr>
+<tr><th id="126">126</th><td>        <b>typedef</b> <a class="type" href="../core/composite/composite.hpp.html#boost::spirit::classic::unary" title='boost::spirit::classic::unary' data-ref="boost::spirit::classic::unary">unary</a>&lt;ParserT, <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser" title='boost::spirit::classic::parser' data-ref="boost::spirit::classic::parser">parser</a>&lt;<a class="typedef" href="#boost::spirit::classic::assertive_parser::self_t" title='boost::spirit::classic::assertive_parser::self_t' data-type='assertive_parser&lt;ErrorDescrT, ParserT&gt;' data-ref="boost::spirit::classic::assertive_parser::self_t">self_t</a>&gt; &gt;         <dfn class="typedef" id="boost::spirit::classic::assertive_parser::base_t" title='boost::spirit::classic::assertive_parser::base_t' data-type='unary&lt;ParserT, parser&lt;self_t&gt;&gt;' data-ref="boost::spirit::classic::assertive_parser::base_t">base_t</dfn>;</td></tr>
+<tr><th id="127">127</th><td>        <b>typedef</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::unary_parser_category" title='boost::spirit::classic::unary_parser_category' data-ref="boost::spirit::classic::unary_parser_category">unary_parser_category</a>                   <dfn class="typedef" id="boost::spirit::classic::assertive_parser::parser_category_t" title='boost::spirit::classic::assertive_parser::parser_category_t' data-type='unary_parser_category' data-ref="boost::spirit::classic::assertive_parser::parser_category_t">parser_category_t</dfn>;</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic16assertive_parserC1ERKT0_T_" title='boost::spirit::classic::assertive_parser::assertive_parser&lt;ErrorDescrT, ParserT&gt;' data-ref="_ZN5boost6spirit7classic16assertive_parserC1ERKT0_T_">assertive_parser</dfn>(ParserT <em>const</em>&amp; <dfn class="local col1 decl" id="5291parser" title='parser' data-type='const ParserT &amp;' data-ref="5291parser">parser</dfn>, ErrorDescrT <dfn class="local col2 decl" id="5292descriptor_" title='descriptor_' data-type='ErrorDescrT' data-ref="5292descriptor_">descriptor_</dfn>)</td></tr>
+<tr><th id="130">130</th><td>        : <a class="typedef" href="#boost::spirit::classic::assertive_parser::base_t" title='boost::spirit::classic::assertive_parser::base_t' data-type='unary&lt;ParserT, parser&lt;self_t&gt;&gt;' data-ref="boost::spirit::classic::assertive_parser::base_t">base_t</a>(<a class="local col1 ref" href="#5291parser" title='parser' data-ref="5291parser">parser</a>), <a class="member field" href="#boost::spirit::classic::assertive_parser::descriptor" title='boost::spirit::classic::assertive_parser::descriptor' data-ref="boost::spirit::classic::assertive_parser::descriptor">descriptor</a>(<a class="local col2 ref" href="#5292descriptor_" title='descriptor_' data-ref="5292descriptor_">descriptor_</a>) {}</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>        <b>template</b> &lt;<b>typename</b> ScannerT&gt;</td></tr>
+<tr><th id="133">133</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::assertive_parser::result" title='boost::spirit::classic::assertive_parser::result' data-ref="boost::spirit::classic::assertive_parser::result">result</dfn></td></tr>
+<tr><th id="134">134</th><td>        {</td></tr>
+<tr><th id="135">135</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser_result" title='boost::spirit::classic::parser_result' data-ref="boost::spirit::classic::parser_result">parser_result</a>&lt;ParserT, ScannerT&gt;::type <dfn class="typedef" id="boost::spirit::classic::assertive_parser::result::type" title='boost::spirit::classic::assertive_parser::result::type' data-type='typename parser_result&lt;ParserT, ScannerT&gt;::type' data-ref="boost::spirit::classic::assertive_parser::result::type">type</dfn>;</td></tr>
+<tr><th id="136">136</th><td>        };</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>        <b>template</b> &lt;<b>typename</b> ScannerT&gt;</td></tr>
+<tr><th id="139">139</th><td>        <b>typename</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser_result" title='boost::spirit::classic::parser_result' data-ref="boost::spirit::classic::parser_result">parser_result</a>&lt;<a class="typedef" href="#boost::spirit::classic::assertive_parser::self_t" title='boost::spirit::classic::assertive_parser::self_t' data-type='assertive_parser&lt;ErrorDescrT, ParserT&gt;' data-ref="boost::spirit::classic::assertive_parser::self_t">self_t</a>, ScannerT&gt;::type</td></tr>
+<tr><th id="140">140</th><td>        <dfn class="decl def fn" id="_ZNK5boost6spirit7classic16assertive_parser5parseERKTL0__" title='boost::spirit::classic::assertive_parser::parse' data-ref="_ZNK5boost6spirit7classic16assertive_parser5parseERKTL0__">parse</dfn>(ScannerT <em>const</em>&amp; <dfn class="local col3 decl" id="5293scan" title='scan' data-type='const ScannerT &amp;' data-ref="5293scan">scan</dfn>) <em>const</em></td></tr>
+<tr><th id="141">141</th><td>        {</td></tr>
+<tr><th id="142">142</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser_result" title='boost::spirit::classic::parser_result' data-ref="boost::spirit::classic::parser_result">parser_result</a>&lt;ParserT, ScannerT&gt;::type <dfn class="local col4 typedef" id="5294result_t" title='result_t' data-type='typename parser_result&lt;ParserT, ScannerT&gt;::type' data-ref="5294result_t">result_t</dfn>;</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>            <a class="local col4 typedef" href="#5294result_t" title='result_t' data-type='typename parser_result&lt;ParserT, ScannerT&gt;::type' data-ref="5294result_t">result_t</a> <dfn class="local col5 decl" id="5295hit" title='hit' data-type='result_t' data-ref="5295hit">hit</dfn> = <b>this</b>-&gt;subject().parse(<a class="local col3 ref" href="#5293scan" title='scan' data-ref="5293scan">scan</a>);</td></tr>
+<tr><th id="145">145</th><td>            <b>if</b> (!<a class="local col5 ref" href="#5295hit" title='hit' data-ref="5295hit">hit</a>)</td></tr>
+<tr><th id="146">146</th><td>            {</td></tr>
+<tr><th id="147">147</th><td>                throw_(<a class="local col3 ref" href="#5293scan" title='scan' data-ref="5293scan">scan</a>.first, <a class="member field" href="#boost::spirit::classic::assertive_parser::descriptor" title='boost::spirit::classic::assertive_parser::descriptor' data-ref="boost::spirit::classic::assertive_parser::descriptor">descriptor</a>);</td></tr>
+<tr><th id="148">148</th><td>            }</td></tr>
+<tr><th id="149">149</th><td>            <b>return</b> <a class="local col5 ref" href="#5295hit" title='hit' data-ref="5295hit">hit</a>;</td></tr>
+<tr><th id="150">150</th><td>        }</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>        ErrorDescrT <dfn class="decl field" id="boost::spirit::classic::assertive_parser::descriptor" title='boost::spirit::classic::assertive_parser::descriptor' data-ref="boost::spirit::classic::assertive_parser::descriptor">descriptor</dfn>;</td></tr>
+<tr><th id="153">153</th><td>    };</td></tr>
+<tr><th id="154">154</th><td></td></tr>
+<tr><th id="155">155</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="156">156</th><td><i>    //</i></td></tr>
+<tr><th id="157">157</th><td><i>    //  assertion class</i></td></tr>
+<tr><th id="158">158</th><td><i>    //</i></td></tr>
+<tr><th id="159">159</th><td><i>    //      assertive_parsers are never instantiated directly. The assertion</i></td></tr>
+<tr><th id="160">160</th><td><i>    //      class is used to indirectly create an assertive_parser object.</i></td></tr>
+<tr><th id="161">161</th><td><i>    //      Before declaring the grammar, we declare some assertion objects.</i></td></tr>
+<tr><th id="162">162</th><td><i>    //      Examples:</i></td></tr>
+<tr><th id="163">163</th><td><i>    //</i></td></tr>
+<tr><th id="164">164</th><td><i>    //          enum Errors</i></td></tr>
+<tr><th id="165">165</th><td><i>    //          {</i></td></tr>
+<tr><th id="166">166</th><td><i>    //              program_expected, begin_expected, end_expected</i></td></tr>
+<tr><th id="167">167</th><td><i>    //          };</i></td></tr>
+<tr><th id="168">168</th><td><i>    //</i></td></tr>
+<tr><th id="169">169</th><td><i>    //          assertion&lt;Errors&gt;   expect_program(program_expected);</i></td></tr>
+<tr><th id="170">170</th><td><i>    //          assertion&lt;Errors&gt;   expect_begin(begin_expected);</i></td></tr>
+<tr><th id="171">171</th><td><i>    //          assertion&lt;Errors&gt;   expect_end(end_expected);</i></td></tr>
+<tr><th id="172">172</th><td><i>    //</i></td></tr>
+<tr><th id="173">173</th><td><i>    //      Now, we can use these assertions as wrappers around parsers:</i></td></tr>
+<tr><th id="174">174</th><td><i>    //</i></td></tr>
+<tr><th id="175">175</th><td><i>    //          expect_end(str_p("end"))</i></td></tr>
+<tr><th id="176">176</th><td><i>    //</i></td></tr>
+<tr><th id="177">177</th><td><i>    //      Take note that although the example uses enums to hold the</i></td></tr>
+<tr><th id="178">178</th><td><i>    //      information regarding the error (error desccriptor), we are free</i></td></tr>
+<tr><th id="179">179</th><td><i>    //      to use other types such as integers and strings. Enums are</i></td></tr>
+<tr><th id="180">180</th><td><i>    //      convenient for error handlers to easily catch since C++ treats</i></td></tr>
+<tr><th id="181">181</th><td><i>    //      enums as unique types.</i></td></tr>
+<tr><th id="182">182</th><td><i>    //</i></td></tr>
+<tr><th id="183">183</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="184">184</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT&gt;</td></tr>
+<tr><th id="185">185</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::assertion" title='boost::spirit::classic::assertion' data-ref="boost::spirit::classic::assertion">assertion</dfn></td></tr>
+<tr><th id="186">186</th><td>    {</td></tr>
+<tr><th id="187">187</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic9assertionC1ET_" title='boost::spirit::classic::assertion::assertion&lt;ErrorDescrT&gt;' data-ref="_ZN5boost6spirit7classic9assertionC1ET_">assertion</dfn>(ErrorDescrT <dfn class="local col6 decl" id="5296descriptor_" title='descriptor_' data-type='ErrorDescrT' data-ref="5296descriptor_">descriptor_</dfn>)</td></tr>
+<tr><th id="188">188</th><td>        : <a class="member field" href="#boost::spirit::classic::assertion::descriptor" title='boost::spirit::classic::assertion::descriptor' data-ref="boost::spirit::classic::assertion::descriptor">descriptor</a>(<a class="local col6 ref" href="#5296descriptor_" title='descriptor_' data-ref="5296descriptor_">descriptor_</a>) {}</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>        <b>template</b> &lt;<b>typename</b> ParserT&gt;</td></tr>
+<tr><th id="191">191</th><td>        <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::assertive_parser" title='boost::spirit::classic::assertive_parser' data-ref="boost::spirit::classic::assertive_parser">assertive_parser</a>&lt;ErrorDescrT, ParserT&gt;</td></tr>
+<tr><th id="192">192</th><td>        <dfn class="decl def fn" id="_ZNK5boost6spirit7classic9assertionclERKTL0__" title='boost::spirit::classic::assertion::operator()' data-ref="_ZNK5boost6spirit7classic9assertionclERKTL0__"><b>operator</b>()</dfn>(ParserT <em>const</em>&amp; <dfn class="local col7 decl" id="5297parser" title='parser' data-type='const ParserT &amp;' data-ref="5297parser">parser</dfn>) <em>const</em></td></tr>
+<tr><th id="193">193</th><td>        {</td></tr>
+<tr><th id="194">194</th><td>            <b>return</b> <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::assertive_parser" title='boost::spirit::classic::assertive_parser' data-ref="boost::spirit::classic::assertive_parser">assertive_parser</a>&lt;ErrorDescrT, ParserT&gt;(<a class="local col7 ref" href="#5297parser" title='parser' data-ref="5297parser">parser</a>, <a class="member field" href="#boost::spirit::classic::assertion::descriptor" title='boost::spirit::classic::assertion::descriptor' data-ref="boost::spirit::classic::assertion::descriptor">descriptor</a>);</td></tr>
+<tr><th id="195">195</th><td>        }</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>        ErrorDescrT <dfn class="decl field" id="boost::spirit::classic::assertion::descriptor" title='boost::spirit::classic::assertion::descriptor' data-ref="boost::spirit::classic::assertion::descriptor">descriptor</dfn>;</td></tr>
+<tr><th id="198">198</th><td>    };</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="201">201</th><td><i>    //</i></td></tr>
+<tr><th id="202">202</th><td><i>    //  error_status&lt;T&gt;</i></td></tr>
+<tr><th id="203">203</th><td><i>    //</i></td></tr>
+<tr><th id="204">204</th><td><i>    //      Where T is an attribute type compatible with the match attribute</i></td></tr>
+<tr><th id="205">205</th><td><i>    //      of the fallback_parser's subject (defaults to nil_t). The class</i></td></tr>
+<tr><th id="206">206</th><td><i>    //      error_status reports the result of an error handler (see</i></td></tr>
+<tr><th id="207">207</th><td><i>    //      fallback_parser). result can be one of:</i></td></tr>
+<tr><th id="208">208</th><td><i>    //</i></td></tr>
+<tr><th id="209">209</th><td><i>    //          fail:       quit and fail (return a no_match)</i></td></tr>
+<tr><th id="210">210</th><td><i>    //          retry:      attempt error recovery, possibly moving the scanner</i></td></tr>
+<tr><th id="211">211</th><td><i>    //          accept:     force success returning a matching length, moving</i></td></tr>
+<tr><th id="212">212</th><td><i>    //                      the scanner appropriately and returning an attribute</i></td></tr>
+<tr><th id="213">213</th><td><i>    //                      value</i></td></tr>
+<tr><th id="214">214</th><td><i>    //          rethrow:    rethrows the error.</i></td></tr>
+<tr><th id="215">215</th><td><i>    //</i></td></tr>
+<tr><th id="216">216</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="217">217</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="218">218</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::error_status" title='boost::spirit::classic::error_status' data-ref="boost::spirit::classic::error_status">error_status</dfn></td></tr>
+<tr><th id="219">219</th><td>    {</td></tr>
+<tr><th id="220">220</th><td>        <b>enum</b> <dfn class="type def" id="boost::spirit::classic::error_status::result_t" title='boost::spirit::classic::error_status::result_t' data-ref="boost::spirit::classic::error_status::result_t">result_t</dfn> { <dfn class="enum" id="boost::spirit::classic::error_status::fail" title='boost::spirit::classic::error_status::fail' data-ref="boost::spirit::classic::error_status::fail">fail</dfn>, <dfn class="enum" id="boost::spirit::classic::error_status::retry" title='boost::spirit::classic::error_status::retry' data-ref="boost::spirit::classic::error_status::retry">retry</dfn>, <dfn class="enum" id="boost::spirit::classic::error_status::accept" title='boost::spirit::classic::error_status::accept' data-ref="boost::spirit::classic::error_status::accept">accept</dfn>, <dfn class="enum" id="boost::spirit::classic::error_status::rethrow" title='boost::spirit::classic::error_status::rethrow' data-ref="boost::spirit::classic::error_status::rethrow">rethrow</dfn> };</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic12error_statusC1ENS2_8result_tElRKT_" title='boost::spirit::classic::error_status::error_status&lt;T&gt;' data-ref="_ZN5boost6spirit7classic12error_statusC1ENS2_8result_tElRKT_">error_status</dfn>(</td></tr>
+<tr><th id="223">223</th><td>            <a class="type" href="#boost::spirit::classic::error_status::result_t" title='boost::spirit::classic::error_status::result_t' data-ref="boost::spirit::classic::error_status::result_t">result_t</a> <dfn class="local col8 decl" id="5298result_" title='result_' data-type='result_t' data-ref="5298result_">result_</dfn> = <a class="enum" href="#boost::spirit::classic::error_status::fail" title='boost::spirit::classic::error_status::fail' data-ref="boost::spirit::classic::error_status::fail">fail</a>,</td></tr>
+<tr><th id="224">224</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a> <dfn class="local col9 decl" id="5299length_" title='length_' data-type='std::ptrdiff_t' data-ref="5299length_">length_</dfn> = -<var>1</var>,</td></tr>
+<tr><th id="225">225</th><td>            T <em>const</em>&amp; <dfn class="local col0 decl" id="5300value_" title='value_' data-type='const T &amp;' data-ref="5300value_">value_</dfn> = T())</td></tr>
+<tr><th id="226">226</th><td>        : <a class="member field" href="#boost::spirit::classic::error_status::result" title='boost::spirit::classic::error_status::result' data-ref="boost::spirit::classic::error_status::result">result</a>(<a class="local col8 ref" href="#5298result_" title='result_' data-ref="5298result_">result_</a>), <a class="member field" href="#boost::spirit::classic::error_status::length" title='boost::spirit::classic::error_status::length' data-ref="boost::spirit::classic::error_status::length">length</a>(<a class="local col9 ref" href="#5299length_" title='length_' data-ref="5299length_">length_</a>), <a class="member field" href="#boost::spirit::classic::error_status::value" title='boost::spirit::classic::error_status::value' data-ref="boost::spirit::classic::error_status::value">value</a>(<a class="local col0 ref" href="#5300value_" title='value_' data-ref="5300value_">value_</a>) {}</td></tr>
+<tr><th id="227">227</th><td></td></tr>
+<tr><th id="228">228</th><td>        <a class="type" href="#boost::spirit::classic::error_status::result_t" title='boost::spirit::classic::error_status::result_t' data-ref="boost::spirit::classic::error_status::result_t">result_t</a>        <dfn class="decl field" id="boost::spirit::classic::error_status::result" title='boost::spirit::classic::error_status::result' data-ref="boost::spirit::classic::error_status::result">result</dfn>;</td></tr>
+<tr><th id="229">229</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../../../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a>  <dfn class="decl field" id="boost::spirit::classic::error_status::length" title='boost::spirit::classic::error_status::length' data-ref="boost::spirit::classic::error_status::length">length</dfn>;</td></tr>
+<tr><th id="230">230</th><td>        T               <dfn class="decl field" id="boost::spirit::classic::error_status::value" title='boost::spirit::classic::error_status::value' data-ref="boost::spirit::classic::error_status::value">value</dfn>;</td></tr>
+<tr><th id="231">231</th><td>    };</td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="234">234</th><td><i>    //</i></td></tr>
+<tr><th id="235">235</th><td><i>    //  fallback_parser class</i></td></tr>
+<tr><th id="236">236</th><td><i>    //</i></td></tr>
+<tr><th id="237">237</th><td><i>    //      Handles exceptions of type parser_error&lt;ErrorDescrT, IteratorT&gt;</i></td></tr>
+<tr><th id="238">238</th><td><i>    //      thrown somewhere inside its embedded ParserT object. The class</i></td></tr>
+<tr><th id="239">239</th><td><i>    //      sets up a try block before delegating parsing to its subject.</i></td></tr>
+<tr><th id="240">240</th><td><i>    //      When an exception is caught, the catch block then calls the</i></td></tr>
+<tr><th id="241">241</th><td><i>    //      HandlerT object. HandlerT may be a function or a functor (with</i></td></tr>
+<tr><th id="242">242</th><td><i>    //      an operator() member function) compatible with the interface:</i></td></tr>
+<tr><th id="243">243</th><td><i>    //</i></td></tr>
+<tr><th id="244">244</th><td><i>    //          error_status&lt;T&gt;</i></td></tr>
+<tr><th id="245">245</th><td><i>    //          handler(ScannerT const&amp; scan, ErrorT error);</i></td></tr>
+<tr><th id="246">246</th><td><i>    //</i></td></tr>
+<tr><th id="247">247</th><td><i>    //      Where scan points to the scanner state prior to parsing and error</i></td></tr>
+<tr><th id="248">248</th><td><i>    //      is the error that arose (see parser_error). The handler must</i></td></tr>
+<tr><th id="249">249</th><td><i>    //      return an error_status&lt;T&gt; object (see above).</i></td></tr>
+<tr><th id="250">250</th><td><i>    //</i></td></tr>
+<tr><th id="251">251</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="252">252</th><td>    <b>namespace</b> <span class="namespace">impl</span></td></tr>
+<tr><th id="253">253</th><td>    {</td></tr>
+<tr><th id="254">254</th><td>        <b>template</b> &lt;<b>typename</b> RT, <b>typename</b> ParserT, <b>typename</b> ScannerT&gt;</td></tr>
+<tr><th id="255">255</th><td>        RT <a class="decl fn" href="impl/exceptions.ipp.html#_ZN5boost6spirit7classic4impl21fallback_parser_parseERKT0_RKT1_" title='boost::spirit::classic::impl::fallback_parser_parse' data-ref="_ZN5boost6spirit7classic4impl21fallback_parser_parseERKT0_RKT1_" id="_ZN5boost6spirit7classic4impl21fallback_parser_parseERKT0_RKT1_">fallback_parser_parse</a>(ParserT <em>const</em>&amp; <dfn class="local col1 decl" id="5301p" title='p' data-type='const ParserT &amp;' data-ref="5301p">p</dfn>, ScannerT <em>const</em>&amp; <dfn class="local col2 decl" id="5302scan" title='scan' data-type='const ScannerT &amp;' data-ref="5302scan">scan</dfn>);</td></tr>
+<tr><th id="256">256</th><td>    }</td></tr>
+<tr><th id="257">257</th><td></td></tr>
+<tr><th id="258">258</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT, <b>typename</b> ParserT, <b>typename</b> HandlerT&gt;</td></tr>
+<tr><th id="259">259</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::fallback_parser" title='boost::spirit::classic::fallback_parser' data-ref="boost::spirit::classic::fallback_parser">fallback_parser</dfn></td></tr>
+<tr><th id="260">260</th><td>    :   <b>public</b> <a class="type" href="../core/composite/composite.hpp.html#boost::spirit::classic::unary" title='boost::spirit::classic::unary' data-ref="boost::spirit::classic::unary">unary</a>&lt;ParserT,</td></tr>
+<tr><th id="261">261</th><td>        <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser" title='boost::spirit::classic::parser' data-ref="boost::spirit::classic::parser">parser</a>&lt;<a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::fallback_parser" title='boost::spirit::classic::fallback_parser' data-ref="boost::spirit::classic::fallback_parser">fallback_parser</a>&lt;ErrorDescrT, ParserT, HandlerT&gt; &gt; &gt;</td></tr>
+<tr><th id="262">262</th><td>    {</td></tr>
+<tr><th id="263">263</th><td>        <b>typedef</b> <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::fallback_parser" title='boost::spirit::classic::fallback_parser' data-ref="boost::spirit::classic::fallback_parser">fallback_parser</a>&lt;ErrorDescrT, ParserT, HandlerT&gt;</td></tr>
+<tr><th id="264">264</th><td>            <dfn class="typedef" id="boost::spirit::classic::fallback_parser::self_t" title='boost::spirit::classic::fallback_parser::self_t' data-type='fallback_parser&lt;ErrorDescrT, ParserT, HandlerT&gt;' data-ref="boost::spirit::classic::fallback_parser::self_t">self_t</dfn>;</td></tr>
+<tr><th id="265">265</th><td>        <b>typedef</b> ErrorDescrT</td></tr>
+<tr><th id="266">266</th><td>            <dfn class="typedef" id="boost::spirit::classic::fallback_parser::error_descr_t" title='boost::spirit::classic::fallback_parser::error_descr_t' data-type='ErrorDescrT' data-ref="boost::spirit::classic::fallback_parser::error_descr_t">error_descr_t</dfn>;</td></tr>
+<tr><th id="267">267</th><td>        <b>typedef</b> <a class="type" href="../core/composite/composite.hpp.html#boost::spirit::classic::unary" title='boost::spirit::classic::unary' data-ref="boost::spirit::classic::unary">unary</a>&lt;ParserT, <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser" title='boost::spirit::classic::parser' data-ref="boost::spirit::classic::parser">parser</a>&lt;<a class="typedef" href="#boost::spirit::classic::fallback_parser::self_t" title='boost::spirit::classic::fallback_parser::self_t' data-type='fallback_parser&lt;ErrorDescrT, ParserT, HandlerT&gt;' data-ref="boost::spirit::classic::fallback_parser::self_t">self_t</a>&gt; &gt;</td></tr>
+<tr><th id="268">268</th><td>            <dfn class="typedef" id="boost::spirit::classic::fallback_parser::base_t" title='boost::spirit::classic::fallback_parser::base_t' data-type='unary&lt;ParserT, parser&lt;self_t&gt;&gt;' data-ref="boost::spirit::classic::fallback_parser::base_t">base_t</dfn>;</td></tr>
+<tr><th id="269">269</th><td>        <b>typedef</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::unary_parser_category" title='boost::spirit::classic::unary_parser_category' data-ref="boost::spirit::classic::unary_parser_category">unary_parser_category</a></td></tr>
+<tr><th id="270">270</th><td>            <dfn class="typedef" id="boost::spirit::classic::fallback_parser::parser_category_t" title='boost::spirit::classic::fallback_parser::parser_category_t' data-type='unary_parser_category' data-ref="boost::spirit::classic::fallback_parser::parser_category_t">parser_category_t</dfn>;</td></tr>
+<tr><th id="271">271</th><td></td></tr>
+<tr><th id="272">272</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic15fallback_parserC1ERKT0_RKT1_" title='boost::spirit::classic::fallback_parser::fallback_parser&lt;ErrorDescrT, ParserT, HandlerT&gt;' data-ref="_ZN5boost6spirit7classic15fallback_parserC1ERKT0_RKT1_">fallback_parser</dfn>(ParserT <em>const</em>&amp; <dfn class="local col3 decl" id="5303parser" title='parser' data-type='const ParserT &amp;' data-ref="5303parser">parser</dfn>, HandlerT <em>const</em>&amp; <dfn class="local col4 decl" id="5304handler_" title='handler_' data-type='const HandlerT &amp;' data-ref="5304handler_">handler_</dfn>)</td></tr>
+<tr><th id="273">273</th><td>        : <a class="typedef" href="#boost::spirit::classic::fallback_parser::base_t" title='boost::spirit::classic::fallback_parser::base_t' data-type='unary&lt;ParserT, parser&lt;self_t&gt;&gt;' data-ref="boost::spirit::classic::fallback_parser::base_t">base_t</a>(<a class="local col3 ref" href="#5303parser" title='parser' data-ref="5303parser">parser</a>), <a class="member field" href="#boost::spirit::classic::fallback_parser::handler" title='boost::spirit::classic::fallback_parser::handler' data-ref="boost::spirit::classic::fallback_parser::handler">handler</a>(<a class="local col4 ref" href="#5304handler_" title='handler_' data-ref="5304handler_">handler_</a>) {}</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td>        <b>template</b> &lt;<b>typename</b> ScannerT&gt;</td></tr>
+<tr><th id="276">276</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::fallback_parser::result" title='boost::spirit::classic::fallback_parser::result' data-ref="boost::spirit::classic::fallback_parser::result">result</dfn></td></tr>
+<tr><th id="277">277</th><td>        {</td></tr>
+<tr><th id="278">278</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser_result" title='boost::spirit::classic::parser_result' data-ref="boost::spirit::classic::parser_result">parser_result</a>&lt;ParserT, ScannerT&gt;::type <dfn class="typedef" id="boost::spirit::classic::fallback_parser::result::type" title='boost::spirit::classic::fallback_parser::result::type' data-type='typename parser_result&lt;ParserT, ScannerT&gt;::type' data-ref="boost::spirit::classic::fallback_parser::result::type">type</dfn>;</td></tr>
+<tr><th id="279">279</th><td>        };</td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td>        <b>template</b> &lt;<b>typename</b> ScannerT&gt;</td></tr>
+<tr><th id="282">282</th><td>        <b>typename</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser_result" title='boost::spirit::classic::parser_result' data-ref="boost::spirit::classic::parser_result">parser_result</a>&lt;<a class="typedef" href="#boost::spirit::classic::fallback_parser::self_t" title='boost::spirit::classic::fallback_parser::self_t' data-type='fallback_parser&lt;ErrorDescrT, ParserT, HandlerT&gt;' data-ref="boost::spirit::classic::fallback_parser::self_t">self_t</a>, ScannerT&gt;::type</td></tr>
+<tr><th id="283">283</th><td>        <dfn class="decl def fn" id="_ZNK5boost6spirit7classic15fallback_parser5parseERKTL0__" title='boost::spirit::classic::fallback_parser::parse' data-ref="_ZNK5boost6spirit7classic15fallback_parser5parseERKTL0__">parse</dfn>(ScannerT <em>const</em>&amp; <dfn class="local col5 decl" id="5305scan" title='scan' data-type='const ScannerT &amp;' data-ref="5305scan">scan</dfn>) <em>const</em></td></tr>
+<tr><th id="284">284</th><td>        {</td></tr>
+<tr><th id="285">285</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::parser_result" title='boost::spirit::classic::parser_result' data-ref="boost::spirit::classic::parser_result">parser_result</a>&lt;<a class="typedef" href="#boost::spirit::classic::fallback_parser::self_t" title='boost::spirit::classic::fallback_parser::self_t' data-type='fallback_parser&lt;ErrorDescrT, ParserT, HandlerT&gt;' data-ref="boost::spirit::classic::fallback_parser::self_t">self_t</a>, ScannerT&gt;::type <dfn class="local col6 typedef" id="5306result_t" title='result_t' data-type='typename parser_result&lt;self_t, ScannerT&gt;::type' data-ref="5306result_t">result_t</dfn>;</td></tr>
+<tr><th id="286">286</th><td>            <b>return</b> <span class="namespace">impl::</span>fallback_parser_parse&lt;<a class="local col6 typedef" href="#5306result_t" title='result_t' data-type='typename parser_result&lt;self_t, ScannerT&gt;::type' data-ref="5306result_t">result_t</a>&gt;(*<b>this</b>, <a class="local col5 ref" href="#5305scan" title='scan' data-ref="5305scan">scan</a>);</td></tr>
+<tr><th id="287">287</th><td>        }</td></tr>
+<tr><th id="288">288</th><td></td></tr>
+<tr><th id="289">289</th><td>        HandlerT <dfn class="decl field" id="boost::spirit::classic::fallback_parser::handler" title='boost::spirit::classic::fallback_parser::handler' data-ref="boost::spirit::classic::fallback_parser::handler">handler</dfn>;</td></tr>
+<tr><th id="290">290</th><td>    };</td></tr>
+<tr><th id="291">291</th><td></td></tr>
+<tr><th id="292">292</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="293">293</th><td><i>    //</i></td></tr>
+<tr><th id="294">294</th><td><i>    //  guard class</i></td></tr>
+<tr><th id="295">295</th><td><i>    //</i></td></tr>
+<tr><th id="296">296</th><td><i>    //      fallback_parser objects are not instantiated directly. The guard</i></td></tr>
+<tr><th id="297">297</th><td><i>    //      class is used to indirectly create a fallback_parser object.</i></td></tr>
+<tr><th id="298">298</th><td><i>    //      guards are typically predeclared just like assertions (see the</i></td></tr>
+<tr><th id="299">299</th><td><i>    //      assertion class above; the example extends the previous example</i></td></tr>
+<tr><th id="300">300</th><td><i>    //      introduced in the assertion class above):</i></td></tr>
+<tr><th id="301">301</th><td><i>    //</i></td></tr>
+<tr><th id="302">302</th><td><i>    //          guard&lt;Errors&gt;   my_guard;</i></td></tr>
+<tr><th id="303">303</th><td><i>    //</i></td></tr>
+<tr><th id="304">304</th><td><i>    //      Errors, in this example is the error descriptor type we want to</i></td></tr>
+<tr><th id="305">305</th><td><i>    //      detect; This is essentially the ErrorDescrT template parameter</i></td></tr>
+<tr><th id="306">306</th><td><i>    //      of the fallback_parser class.</i></td></tr>
+<tr><th id="307">307</th><td><i>    //</i></td></tr>
+<tr><th id="308">308</th><td><i>    //      my_guard may now be used in a grammar declaration as:</i></td></tr>
+<tr><th id="309">309</th><td><i>    //</i></td></tr>
+<tr><th id="310">310</th><td><i>    //          my_guard(p)[h]</i></td></tr>
+<tr><th id="311">311</th><td><i>    //</i></td></tr>
+<tr><th id="312">312</th><td><i>    //      where p is a parser, h is a function or functor compatible with</i></td></tr>
+<tr><th id="313">313</th><td><i>    //      fallback_parser's HandlerT (see above).</i></td></tr>
+<tr><th id="314">314</th><td><i>    //</i></td></tr>
+<tr><th id="315">315</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="316">316</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT, <b>typename</b> ParserT&gt;</td></tr>
+<tr><th id="317">317</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::guard_gen" title='boost::spirit::classic::guard_gen' data-ref="boost::spirit::classic::guard_gen">guard_gen</dfn> : <b>public</b> <a class="type" href="../core/composite/composite.hpp.html#boost::spirit::classic::unary" title='boost::spirit::classic::unary' data-ref="boost::spirit::classic::unary">unary</a>&lt;ParserT, <a class="type" href="../core/nil.hpp.html#boost::spirit::classic::nil_t" title='boost::spirit::classic::nil_t' data-ref="boost::spirit::classic::nil_t">nil_t</a>&gt;</td></tr>
+<tr><th id="318">318</th><td>    {</td></tr>
+<tr><th id="319">319</th><td>        <b>typedef</b> <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::guard" title='boost::spirit::classic::guard' data-ref="boost::spirit::classic::guard">guard</a>&lt;ErrorDescrT&gt;      <dfn class="typedef" id="boost::spirit::classic::guard_gen::parser_generator_t" title='boost::spirit::classic::guard_gen::parser_generator_t' data-type='guard&lt;ErrorDescrT&gt;' data-ref="boost::spirit::classic::guard_gen::parser_generator_t">parser_generator_t</dfn>;</td></tr>
+<tr><th id="320">320</th><td>        <b>typedef</b> <a class="type" href="../core/parser.hpp.html#boost::spirit::classic::unary_parser_category" title='boost::spirit::classic::unary_parser_category' data-ref="boost::spirit::classic::unary_parser_category">unary_parser_category</a>   <dfn class="typedef" id="boost::spirit::classic::guard_gen::parser_category_t" title='boost::spirit::classic::guard_gen::parser_category_t' data-type='unary_parser_category' data-ref="boost::spirit::classic::guard_gen::parser_category_t">parser_category_t</dfn>;</td></tr>
+<tr><th id="321">321</th><td></td></tr>
+<tr><th id="322">322</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic9guard_genC1ERKT0_" title='boost::spirit::classic::guard_gen::guard_gen&lt;ErrorDescrT, ParserT&gt;' data-ref="_ZN5boost6spirit7classic9guard_genC1ERKT0_">guard_gen</dfn>(ParserT <em>const</em>&amp; <dfn class="local col7 decl" id="5307p" title='p' data-type='const ParserT &amp;' data-ref="5307p">p</dfn>)</td></tr>
+<tr><th id="323">323</th><td>        : <a class="type" href="../core/composite/composite.hpp.html#boost::spirit::classic::unary" title='boost::spirit::classic::unary' data-ref="boost::spirit::classic::unary">unary</a>&lt;ParserT, <a class="type" href="../core/nil.hpp.html#boost::spirit::classic::nil_t" title='boost::spirit::classic::nil_t' data-ref="boost::spirit::classic::nil_t">nil_t</a>&gt;(<a class="local col7 ref" href="#5307p" title='p' data-ref="5307p">p</a>) {}</td></tr>
+<tr><th id="324">324</th><td></td></tr>
+<tr><th id="325">325</th><td>        <b>template</b> &lt;<b>typename</b> HandlerT&gt;</td></tr>
+<tr><th id="326">326</th><td>        <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::fallback_parser" title='boost::spirit::classic::fallback_parser' data-ref="boost::spirit::classic::fallback_parser">fallback_parser</a>&lt;ErrorDescrT, ParserT, HandlerT&gt;</td></tr>
+<tr><th id="327">327</th><td>        <dfn class="decl def fn" id="_ZNK5boost6spirit7classic9guard_genixERKTL0__" title='boost::spirit::classic::guard_gen::operator[]' data-ref="_ZNK5boost6spirit7classic9guard_genixERKTL0__"><b>operator</b>[]</dfn>(HandlerT <em>const</em>&amp; <dfn class="local col8 decl" id="5308handler" title='handler' data-type='const HandlerT &amp;' data-ref="5308handler">handler</dfn>) <em>const</em></td></tr>
+<tr><th id="328">328</th><td>        {</td></tr>
+<tr><th id="329">329</th><td>            <b>return</b> <a class="type" href="exceptions_fwd.hpp.html#boost::spirit::classic::fallback_parser" title='boost::spirit::classic::fallback_parser' data-ref="boost::spirit::classic::fallback_parser">fallback_parser</a>&lt;ErrorDescrT, ParserT, HandlerT&gt;</td></tr>
+<tr><th id="330">330</th><td>                (<b>this</b>-&gt;subject(), <a class="local col8 ref" href="#5308handler" title='handler' data-ref="5308handler">handler</a>);</td></tr>
+<tr><th id="331">331</th><td>        }</td></tr>
+<tr><th id="332">332</th><td>    };</td></tr>
+<tr><th id="333">333</th><td></td></tr>
+<tr><th id="334">334</th><td>    <b>template</b> &lt;<b>typename</b> ErrorDescrT&gt;</td></tr>
+<tr><th id="335">335</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::guard" title='boost::spirit::classic::guard' data-ref="boost::spirit::classic::guard">guard</dfn></td></tr>
+<tr><th id="336">336</th><td>    {</td></tr>
+<tr><th id="337">337</th><td>        <b>template</b> &lt;<b>typename</b> ParserT&gt;</td></tr>
+<tr><th id="338">338</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::guard::result" title='boost::spirit::classic::guard::result' data-ref="boost::spirit::classic::guard::result">result</dfn></td></tr>
+<tr><th id="339">339</th><td>        {</td></tr>
+<tr><th id="340">340</th><td>            <b>typedef</b> <a class="type" href="#boost::spirit::classic::guard_gen" title='boost::spirit::classic::guard_gen' data-ref="boost::spirit::classic::guard_gen">guard_gen</a>&lt;ErrorDescrT, ParserT&gt; <dfn class="typedef" id="boost::spirit::classic::guard::result::type" title='boost::spirit::classic::guard::result::type' data-type='guard_gen&lt;ErrorDescrT, ParserT&gt;' data-ref="boost::spirit::classic::guard::result::type">type</dfn>;</td></tr>
+<tr><th id="341">341</th><td>        };</td></tr>
+<tr><th id="342">342</th><td></td></tr>
+<tr><th id="343">343</th><td>        <b>template</b> &lt;<b>typename</b> ParserT&gt;</td></tr>
+<tr><th id="344">344</th><td>        <em>static</em> <a class="type" href="#boost::spirit::classic::guard_gen" title='boost::spirit::classic::guard_gen' data-ref="boost::spirit::classic::guard_gen">guard_gen</a>&lt;ErrorDescrT, ParserT&gt;</td></tr>
+<tr><th id="345">345</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic5guard8generateERKTL0__" title='boost::spirit::classic::guard::generate' data-ref="_ZN5boost6spirit7classic5guard8generateERKTL0__">generate</dfn>(ParserT <em>const</em>&amp; <dfn class="local col9 decl" id="5309parser" title='parser' data-type='const ParserT &amp;' data-ref="5309parser">parser</dfn>)</td></tr>
+<tr><th id="346">346</th><td>        {</td></tr>
+<tr><th id="347">347</th><td>            <b>return</b> <a class="type" href="#boost::spirit::classic::guard_gen" title='boost::spirit::classic::guard_gen' data-ref="boost::spirit::classic::guard_gen">guard_gen</a>&lt;ErrorDescrT, ParserT&gt;(<a class="local col9 ref" href="#5309parser" title='parser' data-ref="5309parser">parser</a>);</td></tr>
+<tr><th id="348">348</th><td>        }</td></tr>
+<tr><th id="349">349</th><td></td></tr>
+<tr><th id="350">350</th><td>        <b>template</b> &lt;<b>typename</b> ParserT&gt;</td></tr>
+<tr><th id="351">351</th><td>        <a class="type" href="#boost::spirit::classic::guard_gen" title='boost::spirit::classic::guard_gen' data-ref="boost::spirit::classic::guard_gen">guard_gen</a>&lt;ErrorDescrT, ParserT&gt;</td></tr>
+<tr><th id="352">352</th><td>        <dfn class="decl def fn" id="_ZNK5boost6spirit7classic5guardclERKTL0__" title='boost::spirit::classic::guard::operator()' data-ref="_ZNK5boost6spirit7classic5guardclERKTL0__"><b>operator</b>()</dfn>(ParserT <em>const</em>&amp; <dfn class="local col0 decl" id="5310parser" title='parser' data-type='const ParserT &amp;' data-ref="5310parser">parser</dfn>) <em>const</em></td></tr>
+<tr><th id="353">353</th><td>        {</td></tr>
+<tr><th id="354">354</th><td>            <b>return</b> <a class="type" href="#boost::spirit::classic::guard_gen" title='boost::spirit::classic::guard_gen' data-ref="boost::spirit::classic::guard_gen">guard_gen</a>&lt;ErrorDescrT, ParserT&gt;(<a class="local col0 ref" href="#5310parser" title='parser' data-ref="5310parser">parser</a>);</td></tr>
+<tr><th id="355">355</th><td>        }</td></tr>
+<tr><th id="356">356</th><td>    };</td></tr>
+<tr><th id="357">357</th><td></td></tr>
+<tr><th id="358">358</th><td><a class="macro" href="../namespace.hpp.html#31" title="}" data-ref="_M/BOOST_SPIRIT_CLASSIC_NAMESPACE_END">BOOST_SPIRIT_CLASSIC_NAMESPACE_END</a></td></tr>
+<tr><th id="359">359</th><td></td></tr>
+<tr><th id="360">360</th><td>}} <i>// namespace BOOST_SPIRIT_CLASSIC_NS</i></td></tr>
+<tr><th id="361">361</th><td></td></tr>
+<tr><th id="362">362</th><td><u>#include <a href="impl/exceptions.ipp.html">&lt;boost/spirit/home/classic/error_handling/impl/exceptions.ipp&gt;</a></u></td></tr>
+<tr><th id="363">363</th><td><u>#<span data-ppcond="8">endif</span></u></td></tr>
+<tr><th id="364">364</th><td></td></tr>
+<tr><th id="365">365</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../codebrowser/gtsam_unstable/linear/QPSParser.cpp.html'>codebrowser/gtsam_unstable/linear/QPSParser.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

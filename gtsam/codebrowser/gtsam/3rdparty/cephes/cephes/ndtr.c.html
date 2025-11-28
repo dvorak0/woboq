@@ -1,0 +1,323 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ndtr.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/ndtr.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/ndtr.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='ndtr.c.html'>ndtr.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     ndtr.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Normal distribution function</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, y, ndtr();</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * y = ndtr( x );</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * Returns the area under the Gaussian probability density</i></td></tr>
+<tr><th id="18">18</th><td><i> * function, integrated from minus infinity to x:</i></td></tr>
+<tr><th id="19">19</th><td><i> *</i></td></tr>
+<tr><th id="20">20</th><td><i> *                            x</i></td></tr>
+<tr><th id="21">21</th><td><i> *                             -</i></td></tr>
+<tr><th id="22">22</th><td><i> *                   1        | |          2</i></td></tr>
+<tr><th id="23">23</th><td><i> *    ndtr(x)  = ---------    |    exp( - t /2 ) dt</i></td></tr>
+<tr><th id="24">24</th><td><i> *               sqrt(2pi)  | |</i></td></tr>
+<tr><th id="25">25</th><td><i> *                           -</i></td></tr>
+<tr><th id="26">26</th><td><i> *                          -inf.</i></td></tr>
+<tr><th id="27">27</th><td><i> *</i></td></tr>
+<tr><th id="28">28</th><td><i> *             =  ( 1 + erf(z) ) / 2</i></td></tr>
+<tr><th id="29">29</th><td><i> *             =  erfc(z) / 2</i></td></tr>
+<tr><th id="30">30</th><td><i> *</i></td></tr>
+<tr><th id="31">31</th><td><i> * where z = x/sqrt(2). Computation is via the functions</i></td></tr>
+<tr><th id="32">32</th><td><i> * erf and erfc.</i></td></tr>
+<tr><th id="33">33</th><td><i> *</i></td></tr>
+<tr><th id="34">34</th><td><i> *</i></td></tr>
+<tr><th id="35">35</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="36">36</th><td><i> *</i></td></tr>
+<tr><th id="37">37</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="38">38</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="39">39</th><td><i> *    IEEE     -13,0        30000       3.4e-14     6.7e-15</i></td></tr>
+<tr><th id="40">40</th><td><i> *</i></td></tr>
+<tr><th id="41">41</th><td><i> *</i></td></tr>
+<tr><th id="42">42</th><td><i> * ERROR MESSAGES:</i></td></tr>
+<tr><th id="43">43</th><td><i> *</i></td></tr>
+<tr><th id="44">44</th><td><i> *   message         condition         value returned</i></td></tr>
+<tr><th id="45">45</th><td><i> * erfc underflow    x &gt; 37.519379347       0.0</i></td></tr>
+<tr><th id="46">46</th><td><i> *</i></td></tr>
+<tr><th id="47">47</th><td><i> */</i></td></tr>
+<tr><th id="48">48</th><td><i>/*							erf.c</i></td></tr>
+<tr><th id="49">49</th><td><i> *</i></td></tr>
+<tr><th id="50">50</th><td><i> *	Error function</i></td></tr>
+<tr><th id="51">51</th><td><i> *</i></td></tr>
+<tr><th id="52">52</th><td><i> *</i></td></tr>
+<tr><th id="53">53</th><td><i> *</i></td></tr>
+<tr><th id="54">54</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="55">55</th><td><i> *</i></td></tr>
+<tr><th id="56">56</th><td><i> * double x, y, erf();</i></td></tr>
+<tr><th id="57">57</th><td><i> *</i></td></tr>
+<tr><th id="58">58</th><td><i> * y = erf( x );</i></td></tr>
+<tr><th id="59">59</th><td><i> *</i></td></tr>
+<tr><th id="60">60</th><td><i> *</i></td></tr>
+<tr><th id="61">61</th><td><i> *</i></td></tr>
+<tr><th id="62">62</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="63">63</th><td><i> *</i></td></tr>
+<tr><th id="64">64</th><td><i> * The integral is</i></td></tr>
+<tr><th id="65">65</th><td><i> *</i></td></tr>
+<tr><th id="66">66</th><td><i> *                           x</i></td></tr>
+<tr><th id="67">67</th><td><i> *                            -</i></td></tr>
+<tr><th id="68">68</th><td><i> *                 2         | |          2</i></td></tr>
+<tr><th id="69">69</th><td><i> *   erf(x)  =  --------     |    exp( - t  ) dt.</i></td></tr>
+<tr><th id="70">70</th><td><i> *              sqrt(pi)   | |</i></td></tr>
+<tr><th id="71">71</th><td><i> *                          -</i></td></tr>
+<tr><th id="72">72</th><td><i> *                           0</i></td></tr>
+<tr><th id="73">73</th><td><i> *</i></td></tr>
+<tr><th id="74">74</th><td><i> * For 0 &lt;= |x| &lt; 1, erf(x) = x * P4(x**2)/Q5(x**2); otherwise</i></td></tr>
+<tr><th id="75">75</th><td><i> * erf(x) = 1 - erfc(x).</i></td></tr>
+<tr><th id="76">76</th><td><i> *</i></td></tr>
+<tr><th id="77">77</th><td><i> *</i></td></tr>
+<tr><th id="78">78</th><td><i> *</i></td></tr>
+<tr><th id="79">79</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="80">80</th><td><i> *</i></td></tr>
+<tr><th id="81">81</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="82">82</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="83">83</th><td><i> *    IEEE      0,1         30000       3.7e-16     1.0e-16</i></td></tr>
+<tr><th id="84">84</th><td><i> *</i></td></tr>
+<tr><th id="85">85</th><td><i> */</i></td></tr>
+<tr><th id="86">86</th><td><i>/*							erfc.c</i></td></tr>
+<tr><th id="87">87</th><td><i> *</i></td></tr>
+<tr><th id="88">88</th><td><i> *	Complementary error function</i></td></tr>
+<tr><th id="89">89</th><td><i> *</i></td></tr>
+<tr><th id="90">90</th><td><i> *</i></td></tr>
+<tr><th id="91">91</th><td><i> *</i></td></tr>
+<tr><th id="92">92</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="93">93</th><td><i> *</i></td></tr>
+<tr><th id="94">94</th><td><i> * double x, y, erfc();</i></td></tr>
+<tr><th id="95">95</th><td><i> *</i></td></tr>
+<tr><th id="96">96</th><td><i> * y = erfc( x );</i></td></tr>
+<tr><th id="97">97</th><td><i> *</i></td></tr>
+<tr><th id="98">98</th><td><i> *</i></td></tr>
+<tr><th id="99">99</th><td><i> *</i></td></tr>
+<tr><th id="100">100</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="101">101</th><td><i> *</i></td></tr>
+<tr><th id="102">102</th><td><i> *</i></td></tr>
+<tr><th id="103">103</th><td><i> *  1 - erf(x) =</i></td></tr>
+<tr><th id="104">104</th><td><i> *</i></td></tr>
+<tr><th id="105">105</th><td><i> *                           inf.</i></td></tr>
+<tr><th id="106">106</th><td><i> *                             -</i></td></tr>
+<tr><th id="107">107</th><td><i> *                  2         | |          2</i></td></tr>
+<tr><th id="108">108</th><td><i> *   erfc(x)  =  --------     |    exp( - t  ) dt</i></td></tr>
+<tr><th id="109">109</th><td><i> *               sqrt(pi)   | |</i></td></tr>
+<tr><th id="110">110</th><td><i> *                           -</i></td></tr>
+<tr><th id="111">111</th><td><i> *                            x</i></td></tr>
+<tr><th id="112">112</th><td><i> *</i></td></tr>
+<tr><th id="113">113</th><td><i> *</i></td></tr>
+<tr><th id="114">114</th><td><i> * For small x, erfc(x) = 1 - erf(x); otherwise rational</i></td></tr>
+<tr><th id="115">115</th><td><i> * approximations are computed.</i></td></tr>
+<tr><th id="116">116</th><td><i> *</i></td></tr>
+<tr><th id="117">117</th><td><i> *</i></td></tr>
+<tr><th id="118">118</th><td><i> *</i></td></tr>
+<tr><th id="119">119</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="120">120</th><td><i> *</i></td></tr>
+<tr><th id="121">121</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="122">122</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="123">123</th><td><i> *    IEEE      0,26.6417   30000       5.7e-14     1.5e-14</i></td></tr>
+<tr><th id="124">124</th><td><i> */</i></td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td><i>/*</i></td></tr>
+<tr><th id="128">128</th><td><i> * Cephes Math Library Release 2.2:  June, 1992</i></td></tr>
+<tr><th id="129">129</th><td><i> * Copyright 1984, 1987, 1988, 1992 by Stephen L. Moshier</i></td></tr>
+<tr><th id="130">130</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="131">131</th><td><i> */</i></td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><u>#include &lt;float.h&gt;		/* DBL_EPSILON */</u></td></tr>
+<tr><th id="134">134</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MAXLOG" title='MAXLOG' data-ref="MAXLOG">MAXLOG</dfn>;</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="P" title='P' data-type='double[9]' data-ref="P">P</dfn>[] = {</td></tr>
+<tr><th id="139">139</th><td>    <var>2.46196981473530512524E-10</var>,</td></tr>
+<tr><th id="140">140</th><td>    <var>5.64189564831068821977E-1</var>,</td></tr>
+<tr><th id="141">141</th><td>    <var>7.46321056442269912687E0</var>,</td></tr>
+<tr><th id="142">142</th><td>    <var>4.86371970985681366614E1</var>,</td></tr>
+<tr><th id="143">143</th><td>    <var>1.96520832956077098242E2</var>,</td></tr>
+<tr><th id="144">144</th><td>    <var>5.26445194995477358631E2</var>,</td></tr>
+<tr><th id="145">145</th><td>    <var>9.34528527171957607540E2</var>,</td></tr>
+<tr><th id="146">146</th><td>    <var>1.02755188689515710272E3</var>,</td></tr>
+<tr><th id="147">147</th><td>    <var>5.57535335369399327526E2</var></td></tr>
+<tr><th id="148">148</th><td>};</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="Q" title='Q' data-type='double[8]' data-ref="Q">Q</dfn>[] = {</td></tr>
+<tr><th id="151">151</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="152">152</th><td>    <var>1.32281951154744992508E1</var>,</td></tr>
+<tr><th id="153">153</th><td>    <var>8.67072140885989742329E1</var>,</td></tr>
+<tr><th id="154">154</th><td>    <var>3.54937778887819891062E2</var>,</td></tr>
+<tr><th id="155">155</th><td>    <var>9.75708501743205489753E2</var>,</td></tr>
+<tr><th id="156">156</th><td>    <var>1.82390916687909736289E3</var>,</td></tr>
+<tr><th id="157">157</th><td>    <var>2.24633760818710981792E3</var>,</td></tr>
+<tr><th id="158">158</th><td>    <var>1.65666309194161350182E3</var>,</td></tr>
+<tr><th id="159">159</th><td>    <var>5.57535340817727675546E2</var></td></tr>
+<tr><th id="160">160</th><td>};</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="R" title='R' data-type='double[6]' data-ref="R">R</dfn>[] = {</td></tr>
+<tr><th id="163">163</th><td>    <var>5.64189583547755073984E-1</var>,</td></tr>
+<tr><th id="164">164</th><td>    <var>1.27536670759978104416E0</var>,</td></tr>
+<tr><th id="165">165</th><td>    <var>5.01905042251180477414E0</var>,</td></tr>
+<tr><th id="166">166</th><td>    <var>6.16021097993053585195E0</var>,</td></tr>
+<tr><th id="167">167</th><td>    <var>7.40974269950448939160E0</var>,</td></tr>
+<tr><th id="168">168</th><td>    <var>2.97886665372100240670E0</var></td></tr>
+<tr><th id="169">169</th><td>};</td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="S" title='S' data-type='double[6]' data-ref="S">S</dfn>[] = {</td></tr>
+<tr><th id="172">172</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="173">173</th><td>    <var>2.26052863220117276590E0</var>,</td></tr>
+<tr><th id="174">174</th><td>    <var>9.39603524938001434673E0</var>,</td></tr>
+<tr><th id="175">175</th><td>    <var>1.20489539808096656605E1</var>,</td></tr>
+<tr><th id="176">176</th><td>    <var>1.70814450747565897222E1</var>,</td></tr>
+<tr><th id="177">177</th><td>    <var>9.60896809063285878198E0</var>,</td></tr>
+<tr><th id="178">178</th><td>    <var>3.36907645100081516050E0</var></td></tr>
+<tr><th id="179">179</th><td>};</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="T" title='T' data-type='double[5]' data-ref="T">T</dfn>[] = {</td></tr>
+<tr><th id="182">182</th><td>    <var>9.60497373987051638749E0</var>,</td></tr>
+<tr><th id="183">183</th><td>    <var>9.00260197203842689217E1</var>,</td></tr>
+<tr><th id="184">184</th><td>    <var>2.23200534594684319226E3</var>,</td></tr>
+<tr><th id="185">185</th><td>    <var>7.00332514112805075473E3</var>,</td></tr>
+<tr><th id="186">186</th><td>    <var>5.55923013010394962768E4</var></td></tr>
+<tr><th id="187">187</th><td>};</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="U" title='U' data-type='double[5]' data-ref="U">U</dfn>[] = {</td></tr>
+<tr><th id="190">190</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="191">191</th><td>    <var>3.35617141647503099647E1</var>,</td></tr>
+<tr><th id="192">192</th><td>    <var>5.21357949780152679795E2</var>,</td></tr>
+<tr><th id="193">193</th><td>    <var>4.59432382970980127987E3</var>,</td></tr>
+<tr><th id="194">194</th><td>    <var>2.26290000613890934246E4</var>,</td></tr>
+<tr><th id="195">195</th><td>    <var>4.92673942608635921086E4</var></td></tr>
+<tr><th id="196">196</th><td>};</td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td><u>#define <dfn class="macro" id="_M/UTHRESH" data-ref="_M/UTHRESH">UTHRESH</dfn> 37.519379347</u></td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td><em>double</em> <dfn class="decl def fn" id="ndtr" title='ndtr' data-ref="ndtr">ndtr</dfn>(<em>double</em> <dfn class="local col1 decl" id="1a" title='a' data-type='double' data-ref="1a">a</dfn>)</td></tr>
+<tr><th id="202">202</th><td>{</td></tr>
+<tr><th id="203">203</th><td>    <em>double</em> <dfn class="local col2 decl" id="2x" title='x' data-type='double' data-ref="2x">x</dfn>, <dfn class="local col3 decl" id="3y" title='y' data-type='double' data-ref="3y">y</dfn>, <dfn class="local col4 decl" id="4z" title='z' data-type='double' data-ref="4z">z</dfn>;</td></tr>
+<tr><th id="204">204</th><td></td></tr>
+<tr><th id="205">205</th><td>    <b>if</b> (<a class="macro" href="mconf.h.html#99" title="__builtin_isnan (a)" data-ref="_M/cephes_isnan">cephes_isnan</a>(<a class="local col1 ref" href="#1a" title='a' data-ref="1a">a</a>)) {</td></tr>
+<tr><th id="206">206</th><td>        <a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"ndtr"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="207">207</th><td>        <b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="208">208</th><td>    }</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>    <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <a class="local col1 ref" href="#1a" title='a' data-ref="1a">a</a> * <a class="macro" href="../../../../../include/math.h.html#1159" title="0.70710678118654752440" data-ref="_M/M_SQRT1_2">M_SQRT1_2</a>;</td></tr>
+<tr><th id="211">211</th><td>    <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="212">212</th><td></td></tr>
+<tr><th id="213">213</th><td>    <b>if</b> (<a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> &lt; <a class="macro" href="../../../../../include/math.h.html#1159" title="0.70710678118654752440" data-ref="_M/M_SQRT1_2">M_SQRT1_2</a>) {</td></tr>
+<tr><th id="214">214</th><td>        <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <var>0.5</var> + <var>0.5</var> * <a class="ref fn" href="#erf" title='erf' data-ref="erf">erf</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="215">215</th><td>    }</td></tr>
+<tr><th id="216">216</th><td>    <b>else</b> {</td></tr>
+<tr><th id="217">217</th><td>        <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <var>0.5</var> * <a class="ref fn" href="#erfc" title='erfc' data-ref="erfc">erfc</a>(<a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>);</td></tr>
+<tr><th id="218">218</th><td>        <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &gt; <var>0</var>) {</td></tr>
+<tr><th id="219">219</th><td>            <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <var>1.0</var> - <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>;</td></tr>
+<tr><th id="220">220</th><td>        }</td></tr>
+<tr><th id="221">221</th><td>    }</td></tr>
+<tr><th id="222">222</th><td></td></tr>
+<tr><th id="223">223</th><td>    <b>return</b> <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>;</td></tr>
+<tr><th id="224">224</th><td>}</td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td><em>double</em> <dfn class="decl def fn" id="erfc" title='erfc' data-ref="erfc">erfc</dfn>(<em>double</em> <dfn class="local col5 decl" id="5a" title='a' data-type='double' data-ref="5a">a</dfn>)</td></tr>
+<tr><th id="228">228</th><td>{</td></tr>
+<tr><th id="229">229</th><td>    <em>double</em> <dfn class="local col6 decl" id="6p" title='p' data-type='double' data-ref="6p">p</dfn>, <dfn class="local col7 decl" id="7q" title='q' data-type='double' data-ref="7q">q</dfn>, <dfn class="local col8 decl" id="8x" title='x' data-type='double' data-ref="8x">x</dfn>, <dfn class="local col9 decl" id="9y" title='y' data-type='double' data-ref="9y">y</dfn>, <dfn class="local col0 decl" id="10z" title='z' data-type='double' data-ref="10z">z</dfn>;</td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td>    <b>if</b> (<a class="macro" href="mconf.h.html#99" title="__builtin_isnan (a)" data-ref="_M/cephes_isnan">cephes_isnan</a>(<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>)) {</td></tr>
+<tr><th id="232">232</th><td>        <a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"erfc"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="233">233</th><td>        <b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="234">234</th><td>    }</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>    <b>if</b> (<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="237">237</th><td>        <a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a> = -<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>;</td></tr>
+<tr><th id="238">238</th><td>    }</td></tr>
+<tr><th id="239">239</th><td>    <b>else</b> {</td></tr>
+<tr><th id="240">240</th><td>        <a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a> = <a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>;</td></tr>
+<tr><th id="241">241</th><td>    }</td></tr>
+<tr><th id="242">242</th><td></td></tr>
+<tr><th id="243">243</th><td>    <b>if</b> (<a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a> &lt; <var>1.0</var>) {</td></tr>
+<tr><th id="244">244</th><td>        <b>return</b> <var>1.0</var> - <a class="ref fn" href="#erf" title='erf' data-ref="erf">erf</a>(<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>);</td></tr>
+<tr><th id="245">245</th><td>    }</td></tr>
+<tr><th id="246">246</th><td></td></tr>
+<tr><th id="247">247</th><td>    <a class="local col0 ref" href="#10z" title='z' data-ref="10z">z</a> = -<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> * <a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>;</td></tr>
+<tr><th id="248">248</th><td></td></tr>
+<tr><th id="249">249</th><td>    <b>if</b> (<a class="local col0 ref" href="#10z" title='z' data-ref="10z">z</a> &lt; -<a class="ref" href="#MAXLOG" title='MAXLOG' data-ref="MAXLOG">MAXLOG</a>) {</td></tr>
+<tr><th id="250">250</th><td>        <b>goto</b> <a class="lbl" href="#11under" data-ref="11under">under</a>;</td></tr>
+<tr><th id="251">251</th><td>    }</td></tr>
+<tr><th id="252">252</th><td></td></tr>
+<tr><th id="253">253</th><td>    <a class="local col0 ref" href="#10z" title='z' data-ref="10z">z</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#95" title='exp' data-ref="exp">exp</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10z" title='z' data-ref="10z">z</a>);</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td>    <b>if</b> (<a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a> &lt; <var>8.0</var>) {</td></tr>
+<tr><th id="256">256</th><td>        <a class="local col6 ref" href="#6p" title='p' data-ref="6p">p</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#P" title='P' data-use='r' data-ref="P">P</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>);</td></tr>
+<tr><th id="257">257</th><td>        <a class="local col7 ref" href="#7q" title='q' data-ref="7q">q</a> = <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#Q" title='Q' data-use='r' data-ref="Q">Q</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>);</td></tr>
+<tr><th id="258">258</th><td>    }</td></tr>
+<tr><th id="259">259</th><td>    <b>else</b> {</td></tr>
+<tr><th id="260">260</th><td>        <a class="local col6 ref" href="#6p" title='p' data-ref="6p">p</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#R" title='R' data-use='r' data-ref="R">R</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>);</td></tr>
+<tr><th id="261">261</th><td>        <a class="local col7 ref" href="#7q" title='q' data-ref="7q">q</a> = <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<a class="local col8 ref" href="#8x" title='x' data-ref="8x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#S" title='S' data-use='r' data-ref="S">S</a>, <span class='inlayHint'>N:&nbsp;</span><var>6</var>);</td></tr>
+<tr><th id="262">262</th><td>    }</td></tr>
+<tr><th id="263">263</th><td>    <a class="local col9 ref" href="#9y" title='y' data-ref="9y">y</a> = (<a class="local col0 ref" href="#10z" title='z' data-ref="10z">z</a> * <a class="local col6 ref" href="#6p" title='p' data-ref="6p">p</a>) / <a class="local col7 ref" href="#7q" title='q' data-ref="7q">q</a>;</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td>    <b>if</b> (<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> &lt; <var>0</var>) {</td></tr>
+<tr><th id="266">266</th><td>        <a class="local col9 ref" href="#9y" title='y' data-ref="9y">y</a> = <var>2.0</var> - <a class="local col9 ref" href="#9y" title='y' data-ref="9y">y</a>;</td></tr>
+<tr><th id="267">267</th><td>    }</td></tr>
+<tr><th id="268">268</th><td></td></tr>
+<tr><th id="269">269</th><td>    <b>if</b> (<a class="local col9 ref" href="#9y" title='y' data-ref="9y">y</a> != <var>0.0</var>) {</td></tr>
+<tr><th id="270">270</th><td>        <b>return</b> <a class="local col9 ref" href="#9y" title='y' data-ref="9y">y</a>;</td></tr>
+<tr><th id="271">271</th><td>    }</td></tr>
+<tr><th id="272">272</th><td></td></tr>
+<tr><th id="273">273</th><td><dfn class="lbl" id="11under" data-ref="11under">under</dfn>:</td></tr>
+<tr><th id="274">274</th><td>    <a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"erfc"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_UNDERFLOW" title='SF_ERROR_UNDERFLOW' data-ref="SF_ERROR_UNDERFLOW">SF_ERROR_UNDERFLOW</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="275">275</th><td>    <b>if</b> (<a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> &lt; <var>0</var>) {</td></tr>
+<tr><th id="276">276</th><td>        <b>return</b> <var>2.0</var>;</td></tr>
+<tr><th id="277">277</th><td>    }</td></tr>
+<tr><th id="278">278</th><td>    <b>else</b> {</td></tr>
+<tr><th id="279">279</th><td>        <b>return</b> <var>0.0</var>;</td></tr>
+<tr><th id="280">280</th><td>    }</td></tr>
+<tr><th id="281">281</th><td>}</td></tr>
+<tr><th id="282">282</th><td></td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td></td></tr>
+<tr><th id="285">285</th><td><em>double</em> <dfn class="decl def fn" id="erf" title='erf' data-ref="erf">erf</dfn>(<em>double</em> <dfn class="local col2 decl" id="12x" title='x' data-type='double' data-ref="12x">x</dfn>)</td></tr>
+<tr><th id="286">286</th><td>{</td></tr>
+<tr><th id="287">287</th><td>    <em>double</em> <dfn class="local col3 decl" id="13y" title='y' data-type='double' data-ref="13y">y</dfn>, <dfn class="local col4 decl" id="14z" title='z' data-type='double' data-ref="14z">z</dfn>;</td></tr>
+<tr><th id="288">288</th><td></td></tr>
+<tr><th id="289">289</th><td>    <b>if</b> (<a class="macro" href="mconf.h.html#99" title="__builtin_isnan (x)" data-ref="_M/cephes_isnan">cephes_isnan</a>(<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>)) {</td></tr>
+<tr><th id="290">290</th><td>        <a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"erf"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="291">291</th><td>        <b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="292">292</th><td>    }</td></tr>
+<tr><th id="293">293</th><td></td></tr>
+<tr><th id="294">294</th><td>    <b>if</b> (<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="295">295</th><td>        <b>return</b> -<a class="ref fn" href="#erf" title='erf' data-ref="erf">erf</a>(<span class='inlayHint'>x:&nbsp;</span>-<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>);</td></tr>
+<tr><th id="296">296</th><td>    }</td></tr>
+<tr><th id="297">297</th><td></td></tr>
+<tr><th id="298">298</th><td>    <b>if</b> (<a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>) &gt; <var>1.0</var>) {</td></tr>
+<tr><th id="299">299</th><td>        <b>return</b> (<var>1.0</var> - <a class="ref fn" href="#erfc" title='erfc' data-ref="erfc">erfc</a>(<span class='inlayHint'>a:&nbsp;</span><a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>));</td></tr>
+<tr><th id="300">300</th><td>    }</td></tr>
+<tr><th id="301">301</th><td>    <a class="local col4 ref" href="#14z" title='z' data-ref="14z">z</a> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> * <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>;</td></tr>
+<tr><th id="302">302</th><td></td></tr>
+<tr><th id="303">303</th><td>    <a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#14z" title='z' data-ref="14z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#T" title='T' data-use='r' data-ref="T">T</a>, <span class='inlayHint'>N:&nbsp;</span><var>4</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#14z" title='z' data-ref="14z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#U" title='U' data-use='r' data-ref="U">U</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>);</td></tr>
+<tr><th id="304">304</th><td>    <b>return</b> <a class="local col3 ref" href="#13y" title='y' data-ref="13y">y</a>;</td></tr>
+<tr><th id="305">305</th><td>}</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

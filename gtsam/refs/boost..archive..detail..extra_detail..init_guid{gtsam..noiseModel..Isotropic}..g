@@ -1,0 +1,14 @@
+<dec f='codebrowser/gtsam/hybrid/tests/testSerializationHybrid.cpp' l='78' macro='1' type='const guid_initializer&lt;noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/gtsam/hybrid/tests/testSerializationHybrid.cpp' l='78' macro='1' type='const guid_initializer&lt;noiseModel::Isotropic&gt; &amp;'/>
+<dec f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='43' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='43' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<dec f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='39' macro='1' type='const guid_initializer&lt;noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='39' macro='1' type='const guid_initializer&lt;noiseModel::Isotropic&gt; &amp;'/>
+<dec f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='45' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='45' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<dec f='codebrowser/gtsam/sam/tests/testSerializationSam.cpp' l='42' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/gtsam/sam/tests/testSerializationSam.cpp' l='42' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<dec f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='42' macro='1' type='const guid_initializer&lt;noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='42' macro='1' type='const guid_initializer&lt;noiseModel::Isotropic&gt; &amp;'/>
+<dec f='codebrowser/tests/testSerializationSlam.cpp' l='130' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>
+<def f='codebrowser/tests/testSerializationSlam.cpp' l='130' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Isotropic&gt; &amp;'/>

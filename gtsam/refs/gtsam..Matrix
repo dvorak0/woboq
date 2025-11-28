@@ -1,0 +1,121 @@
+<doc f='codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/Matrix.h' l='55'>/** \class Matrix
+  * \ingroup Core_Module
+  *
+  * \brief The matrix class, also used for vectors and row-vectors
+  *
+  * The %Matrix class is the work-horse for all \em dense (\ref dense &quot;note&quot;) matrices and vectors within Eigen.
+  * Vectors are matrices with one column, and row-vectors are matrices with one row.
+  *
+  * The %Matrix class encompasses \em both fixed-size and dynamic-size objects (\ref fixedsize &quot;note&quot;).
+  *
+  * The first three template parameters are required:
+  * \tparam _Scalar Numeric type, e.g. float, double, int or std::complex&lt;float&gt;.
+  *                 User defined scalar types are supported as well (see \ref user_defined_scalars &quot;here&quot;).
+  * \tparam _Rows Number of rows, or \b Dynamic
+  * \tparam _Cols Number of columns, or \b Dynamic
+  *
+  * The remaining template parameters are optional -- in most cases you don&apos;t have to worry about them.
+  * \tparam _Options A combination of either \b #RowMajor or \b #ColMajor, and of either
+  *                 \b #AutoAlign or \b #DontAlign.
+  *                 The former controls \ref TopicStorageOrders &quot;storage order&quot;, and defaults to column-major. The latter controls alignment, which is required
+  *                 for vectorization. It defaults to aligning matrices except for fixed sizes that aren&apos;t a multiple of the packet size.
+  * \tparam _MaxRows Maximum number of rows. Defaults to \a _Rows (\ref maxrows &quot;note&quot;).
+  * \tparam _MaxCols Maximum number of columns. Defaults to \a _Cols (\ref maxrows &quot;note&quot;).
+  *
+  * Eigen provides a number of typedefs covering the usual cases. Here are some examples:
+  *
+  * \li \c Matrix2d is a 2x2 square matrix of doubles (\c Matrix&lt;double, 2, 2&gt;)
+  * \li \c Vector4f is a vector of 4 floats (\c Matrix&lt;float, 4, 1&gt;)
+  * \li \c RowVector3i is a row-vector of 3 ints (\c Matrix&lt;int, 1, 3&gt;)
+  *
+  * \li \c MatrixXf is a dynamic-size matrix of floats (\c Matrix&lt;float, Dynamic, Dynamic&gt;)
+  * \li \c VectorXf is a dynamic-size vector of floats (\c Matrix&lt;float, Dynamic, 1&gt;)
+  *
+  * \li \c Matrix2Xf is a partially fixed-size (dynamic-size) matrix of floats (\c Matrix&lt;float, 2, Dynamic&gt;)
+  * \li \c MatrixX3d is a partially dynamic-size (fixed-size) matrix of double (\c Matrix&lt;double, Dynamic, 3&gt;)
+  *
+  * See \link matrixtypedefs this page \endlink for a complete list of predefined \em %Matrix and \em Vector typedefs.
+  *
+  * You can access elements of vectors and matrices using normal subscripting:
+  *
+  * \code
+  * Eigen::VectorXd v(10);
+  * v[0] = 0.1;
+  * v[1] = 0.2;
+  * v(0) = 0.3;
+  * v(1) = 0.4;
+  *
+  * Eigen::MatrixXi m(10, 10);
+  * m(0, 1) = 1;
+  * m(0, 2) = 2;
+  * m(0, 3) = 3;
+  * \endcode
+  *
+  * This class can be extended with the help of the plugin mechanism described on the page
+  * \ref TopicCustomizing_Plugins by defining the preprocessor symbol \c EIGEN_MATRIX_PLUGIN.
+  *
+  * &lt;i&gt;&lt;b&gt;Some notes:&lt;/b&gt;&lt;/i&gt;
+  *
+  * &lt;dl&gt;
+  * &lt;dt&gt;&lt;b&gt;\anchor dense Dense versus sparse:&lt;/b&gt;&lt;/dt&gt;
+  * &lt;dd&gt;This %Matrix class handles dense, not sparse matrices and vectors. For sparse matrices and vectors, see the Sparse module.
+  *
+  * Dense matrices and vectors are plain usual arrays of coefficients. All the coefficients are stored, in an ordinary contiguous array.
+  * This is unlike Sparse matrices and vectors where the coefficients are stored as a list of nonzero coefficients.&lt;/dd&gt;
+  *
+  * &lt;dt&gt;&lt;b&gt;\anchor fixedsize Fixed-size versus dynamic-size:&lt;/b&gt;&lt;/dt&gt;
+  * &lt;dd&gt;Fixed-size means that the numbers of rows and columns are known are compile-time. In this case, Eigen allocates the array
+  * of coefficients as a fixed-size array, as a class member. This makes sense for very small matrices, typically up to 4x4, sometimes up
+  * to 16x16. Larger matrices should be declared as dynamic-size even if one happens to know their size at compile-time.
+  *
+  * Dynamic-size means that the numbers of rows or columns are not necessarily known at compile-time. In this case they are runtime
+  * variables, and the array of coefficients is allocated dynamically on the heap.
+  *
+  * Note that \em dense matrices, be they Fixed-size or Dynamic-size, &lt;em&gt;do not&lt;/em&gt; expand dynamically in the sense of a std::map.
+  * If you want this behavior, see the Sparse module.&lt;/dd&gt;
+  *
+  * &lt;dt&gt;&lt;b&gt;\anchor maxrows _MaxRows and _MaxCols:&lt;/b&gt;&lt;/dt&gt;
+  * &lt;dd&gt;In most cases, one just leaves these parameters to the default values.
+  * These parameters mean the maximum size of rows and columns that the matrix may have. They are useful in cases
+  * when the exact numbers of rows and columns are not known are compile-time, but it is known at compile-time that they cannot
+  * exceed a certain value. This happens when taking dynamic-size blocks inside fixed-size matrices: in this case _MaxRows and _MaxCols
+  * are the dimensions of the original matrix, while _Rows and _Cols are Dynamic.&lt;/dd&gt;
+  * &lt;/dl&gt;
+  *
+  * &lt;i&gt;&lt;b&gt;ABI and storage layout&lt;/b&gt;&lt;/i&gt;
+  *
+  * The table below summarizes the ABI of some possible Matrix instances which is fixed thorough the lifetime of Eigen 3.
+  * &lt;table  class=&quot;manual&quot;&gt;
+  * &lt;tr&gt;&lt;th&gt;Matrix type&lt;/th&gt;&lt;th&gt;Equivalent C structure&lt;/th&gt;&lt;/tr&gt;
+  * &lt;tr&gt;&lt;td&gt;\code Matrix&lt;T,Dynamic,Dynamic&gt; \endcode&lt;/td&gt;&lt;td&gt;\code
+  * struct {
+  *   T *data;                  // with (size_t(data)%EIGEN_MAX_ALIGN_BYTES)==0
+  *   Eigen::Index rows, cols;
+  *  };
+  * \endcode&lt;/td&gt;&lt;/tr&gt;
+  * &lt;tr class=&quot;alt&quot;&gt;&lt;td&gt;\code
+  * Matrix&lt;T,Dynamic,1&gt;
+  * Matrix&lt;T,1,Dynamic&gt; \endcode&lt;/td&gt;&lt;td&gt;\code
+  * struct {
+  *   T *data;                  // with (size_t(data)%EIGEN_MAX_ALIGN_BYTES)==0
+  *   Eigen::Index size;
+  *  };
+  * \endcode&lt;/td&gt;&lt;/tr&gt;
+  * &lt;tr&gt;&lt;td&gt;\code Matrix&lt;T,Rows,Cols&gt; \endcode&lt;/td&gt;&lt;td&gt;\code
+  * struct {
+  *   T data[Rows*Cols];        // with (size_t(data)%A(Rows*Cols*sizeof(T)))==0
+  *  };
+  * \endcode&lt;/td&gt;&lt;/tr&gt;
+  * &lt;tr class=&quot;alt&quot;&gt;&lt;td&gt;\code Matrix&lt;T,Dynamic,Dynamic,0,MaxRows,MaxCols&gt; \endcode&lt;/td&gt;&lt;td&gt;\code
+  * struct {
+  *   T data[MaxRows*MaxCols];  // with (size_t(data)%A(MaxRows*MaxCols*sizeof(T)))==0
+  *   Eigen::Index rows, cols;
+  *  };
+  * \endcode&lt;/td&gt;&lt;/tr&gt;
+  * &lt;/table&gt;
+  * Note that in this table Rows, Cols, MaxRows and MaxCols are all positive integers. A(S) is defined to the largest possible power-of-two
+  * smaller to EIGEN_MAX_STATIC_ALIGN_BYTES.
+  *
+  * \see MatrixBase for the majority of the API methods for matrices, \ref TopicClassHierarchy,
+  * \ref TopicStorageOrders
+  */</doc>

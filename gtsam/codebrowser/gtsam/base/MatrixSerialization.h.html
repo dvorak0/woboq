@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MatrixSerialization.h source code [codebrowser/gtsam/base/MatrixSerialization.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/base/MatrixSerialization.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>base</a>/<a href='MatrixSerialization.h.html'>MatrixSerialization.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   MatrixSerialization.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Serialization for matrices</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@date</span>    February 2022</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"></i></td></tr>
+<tr><th id="19">19</th><td><i class="doc">//<span class="command"> \callgraph</span></i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"></i></td></tr>
+<tr><th id="21">21</th><td><i class="doc">// Defined only if boost serialization is enabled</i></td></tr>
+<tr><th id="22">22</th><td><u>#<span data-ppcond="22">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#pragma once</u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="Matrix.h.html">&lt;gtsam/base/Matrix.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../3rdparty/Eigen/Eigen/Sparse.html">&lt;Eigen/Sparse&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../../../include/boost/serialization/array.hpp.html">&lt;boost/serialization/array.hpp&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../../../include/boost/serialization/nvp.hpp.html">&lt;boost/serialization/nvp.hpp&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../../../include/boost/serialization/split_free.hpp.html">&lt;boost/serialization/split_free.hpp&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><b>namespace</b> <span class="namespace">boost</span> {</td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">serialization</span> {</td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * Ref.</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * <a href="https://stackoverflow.com/questions/18382457/eigen-and-boostserialize/22903063#22903063">https://stackoverflow.com/questions/18382457/eigen-and-boostserialize/22903063#22903063</a></i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * Eigen supports calling resize() on both static and dynamic matrices.</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * This allows for a uniform API, with resize having no effect if the static</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * matrix is already the correct size.</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * <a href="https://eigen.tuxfamily.org/dox/group__TutorialMatrixClass.html#TutorialMatrixSizesResizing">https://eigen.tuxfamily.org/dox/group__TutorialMatrixClass.html#TutorialMatrixSizesResizing</a></i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * We use all the Matrix template parameters to ensure wide compatibility.</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * eigen_typekit in ROS uses the same code</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * <a href="http://docs.ros.org/lunar/api/eigen_typekit/html/eigen__mqueue_8cpp_source.html">http://docs.ros.org/lunar/api/eigen_typekit/html/eigen__mqueue_8cpp_source.html</a></i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"></i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">// split version - sends sizes ahead</i></td></tr>
+<tr><th id="51">51</th><td><b>template</b> &lt;<b>class</b> Archive, <b>typename</b> Scalar_, <em>int</em> Rows_, <em>int</em> Cols_, <em>int</em> Ops_,</td></tr>
+<tr><th id="52">52</th><td>          <em>int</em> MaxRows_, <em>int</em> MaxCols_&gt;</td></tr>
+<tr><th id="53">53</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization4saveERT_RKN5Eigen6MatrixIT0_XT1_EXT2_EXT3_EXT4_EXT5_EEEj" title='boost::serialization::save' data-ref="_ZN5boost13serialization4saveERT_RKN5Eigen6MatrixIT0_XT1_EXT2_EXT3_EXT4_EXT5_EEEj">save</dfn>(</td></tr>
+<tr><th id="54">54</th><td>    Archive&amp; <dfn class="local col9 decl" id="26469ar" title='ar' data-type='Archive &amp;' data-ref="26469ar">ar</dfn>,</td></tr>
+<tr><th id="55">55</th><td>    <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;Scalar_, <a class="tu ref" href="#Rows_" title='Rows_' data-ref="Rows_">Rows_</a>, <a class="tu ref" href="#Cols_" title='Cols_' data-ref="Cols_">Cols_</a>, <a class="tu ref" href="#Ops_" title='Ops_' data-ref="Ops_">Ops_</a>, <a class="tu ref" href="#MaxRows_" title='MaxRows_' data-ref="MaxRows_">MaxRows_</a>, <a class="tu ref" href="#MaxCols_" title='MaxCols_' data-ref="MaxCols_">MaxCols_</a>&gt;&amp; <dfn class="local col0 decl" id="26470m" title='m' data-type='const Eigen::Matrix&lt;Scalar_, Rows_, Cols_, Ops_, MaxRows_, MaxCols_&gt; &amp;' data-ref="26470m">m</dfn>,</td></tr>
+<tr><th id="56">56</th><td>    <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="57">57</th><td>  <em>const</em> <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="26471rows" title='rows' data-type='const size_t' data-ref="26471rows">rows</dfn> = <a class="local col0 ref" href="#26470m" title='m' data-ref="26470m">m</a>.rows(), <dfn class="local col2 decl" id="26472cols" title='cols' data-type='const size_t' data-ref="26472cols">cols</dfn> = <a class="local col0 ref" href="#26470m" title='m' data-ref="26470m">m</a>.cols();</td></tr>
+<tr><th id="58">58</th><td>  <a class="local col9 ref" href="#26469ar" title='ar' data-ref="26469ar">ar</a> &lt;&lt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;rows&quot;, rows)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col1 ref" href="#26471rows" title='rows' data-ref="26471rows">rows</a>);</td></tr>
+<tr><th id="59">59</th><td>  <a class="local col9 ref" href="#26469ar" title='ar' data-ref="26469ar">ar</a> &lt;&lt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;cols&quot;, cols)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col2 ref" href="#26472cols" title='cols' data-ref="26472cols">cols</a>);</td></tr>
+<tr><th id="60">60</th><td>  <a class="local col9 ref" href="#26469ar" title='ar' data-ref="26469ar">ar</a> &lt;&lt; make_nvp(<q>"data"</q>, make_array(<a class="local col0 ref" href="#26470m" title='m' data-ref="26470m">m</a>.data(), <a class="local col0 ref" href="#26470m" title='m' data-ref="26470m">m</a>.size()));</td></tr>
+<tr><th id="61">61</th><td>}</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td><b>template</b> &lt;<b>class</b> Archive, <b>typename</b> Scalar_, <em>int</em> Rows_, <em>int</em> Cols_, <em>int</em> Ops_,</td></tr>
+<tr><th id="64">64</th><td>          <em>int</em> MaxRows_, <em>int</em> MaxCols_&gt;</td></tr>
+<tr><th id="65">65</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization4loadERT_RN5Eigen6MatrixIT0_XT1_EXT2_EXT3_EXT4_EXT5_EEEj" title='boost::serialization::load' data-ref="_ZN5boost13serialization4loadERT_RN5Eigen6MatrixIT0_XT1_EXT2_EXT3_EXT4_EXT5_EEEj">load</dfn>(Archive&amp; <dfn class="local col3 decl" id="26473ar" title='ar' data-type='Archive &amp;' data-ref="26473ar">ar</dfn>,</td></tr>
+<tr><th id="66">66</th><td>          <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;Scalar_, <a class="tu ref" href="#Rows_" title='Rows_' data-ref="Rows_">Rows_</a>, <a class="tu ref" href="#Cols_" title='Cols_' data-ref="Cols_">Cols_</a>, <a class="tu ref" href="#Ops_" title='Ops_' data-ref="Ops_">Ops_</a>, <a class="tu ref" href="#MaxRows_" title='MaxRows_' data-ref="MaxRows_">MaxRows_</a>, <a class="tu ref" href="#MaxCols_" title='MaxCols_' data-ref="MaxCols_">MaxCols_</a>&gt;&amp; <dfn class="local col4 decl" id="26474m" title='m' data-type='Eigen::Matrix&lt;Scalar_, Rows_, Cols_, Ops_, MaxRows_, MaxCols_&gt; &amp;' data-ref="26474m">m</dfn>,</td></tr>
+<tr><th id="67">67</th><td>          <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="68">68</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="26475rows" title='rows' data-type='size_t' data-ref="26475rows">rows</dfn>, <dfn class="local col6 decl" id="26476cols" title='cols' data-type='size_t' data-ref="26476cols">cols</dfn>;</td></tr>
+<tr><th id="69">69</th><td>  <a class="local col3 ref" href="#26473ar" title='ar' data-ref="26473ar">ar</a> &gt;&gt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;rows&quot;, rows)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="local col5 ref" href="#26475rows" title='rows' data-ref="26475rows">rows</a></span>);</td></tr>
+<tr><th id="70">70</th><td>  <a class="local col3 ref" href="#26473ar" title='ar' data-ref="26473ar">ar</a> &gt;&gt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;cols&quot;, cols)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="local col6 ref" href="#26476cols" title='cols' data-ref="26476cols">cols</a></span>);</td></tr>
+<tr><th id="71">71</th><td>  <a class="local col4 ref" href="#26474m" title='m' data-ref="26474m">m</a>.resize(<a class="local col5 ref" href="#26475rows" title='rows' data-ref="26475rows">rows</a>, <a class="local col6 ref" href="#26476cols" title='cols' data-ref="26476cols">cols</a>);</td></tr>
+<tr><th id="72">72</th><td>  <a class="local col3 ref" href="#26473ar" title='ar' data-ref="26473ar">ar</a> &gt;&gt; make_nvp(<q>"data"</q>, make_array(<a class="local col4 ref" href="#26474m" title='m' data-ref="26474m">m</a>.data(), <a class="local col4 ref" href="#26474m" title='m' data-ref="26474m">m</a>.size()));</td></tr>
+<tr><th id="73">73</th><td>}</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td><i>// templated version of BOOST_SERIALIZATION_SPLIT_FREE(Eigen::Matrix);</i></td></tr>
+<tr><th id="76">76</th><td><b>template</b> &lt;<b>class</b> Archive, <b>typename</b> Scalar_, <em>int</em> Rows_, <em>int</em> Cols_, <em>int</em> Ops_,</td></tr>
+<tr><th id="77">77</th><td>          <em>int</em> MaxRows_, <em>int</em> MaxCols_&gt;</td></tr>
+<tr><th id="78">78</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization9serializeERT_RN5Eigen6MatrixIT0_XT1_EXT2_EXT3_EXT4_EXT5_EEEj" title='boost::serialization::serialize' data-ref="_ZN5boost13serialization9serializeERT_RN5Eigen6MatrixIT0_XT1_EXT2_EXT3_EXT4_EXT5_EEEj">serialize</dfn>(</td></tr>
+<tr><th id="79">79</th><td>    Archive&amp; <dfn class="local col7 decl" id="26477ar" title='ar' data-type='Archive &amp;' data-ref="26477ar">ar</dfn>,</td></tr>
+<tr><th id="80">80</th><td>    <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;Scalar_, <a class="tu ref" href="#Rows_" title='Rows_' data-ref="Rows_">Rows_</a>, <a class="tu ref" href="#Cols_" title='Cols_' data-ref="Cols_">Cols_</a>, <a class="tu ref" href="#Ops_" title='Ops_' data-ref="Ops_">Ops_</a>, <a class="tu ref" href="#MaxRows_" title='MaxRows_' data-ref="MaxRows_">MaxRows_</a>, <a class="tu ref" href="#MaxCols_" title='MaxCols_' data-ref="MaxCols_">MaxCols_</a>&gt;&amp; <dfn class="local col8 decl" id="26478m" title='m' data-type='Eigen::Matrix&lt;Scalar_, Rows_, Cols_, Ops_, MaxRows_, MaxCols_&gt; &amp;' data-ref="26478m">m</dfn>,</td></tr>
+<tr><th id="81">81</th><td>    <em>const</em> <em>unsigned</em> <em>int</em> <dfn class="local col9 decl" id="26479version" title='version' data-type='const unsigned int' data-ref="26479version">version</dfn>) {</td></tr>
+<tr><th id="82">82</th><td>  split_free(<a class="local col7 ref" href="#26477ar" title='ar' data-ref="26477ar">ar</a>, <a class="local col8 ref" href="#26478m" title='m' data-ref="26478m">m</a>, <a class="local col9 ref" href="#26479version" title='version' data-ref="26479version">version</a>);</td></tr>
+<tr><th id="83">83</th><td>}</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td><i>// specialized to Matrix for MATLAB wrapper</i></td></tr>
+<tr><th id="86">86</th><td><b>template</b> &lt;<b>class</b> Archive&gt;</td></tr>
+<tr><th id="87">87</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization9serializeERT_RN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEj" title='boost::serialization::serialize' data-ref="_ZN5boost13serialization9serializeERT_RN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEj">serialize</dfn>(Archive&amp; <dfn class="local col0 decl" id="26480ar" title='ar' data-type='Archive &amp;' data-ref="26480ar">ar</dfn>, <span class="namespace">gtsam::</span><a class="typedef" href="Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&amp; <dfn class="local col1 decl" id="26481m" title='m' data-type='gtsam::Matrix &amp;' data-ref="26481m">m</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <dfn class="local col2 decl" id="26482version" title='version' data-type='const unsigned int' data-ref="26482version">version</dfn>) {</td></tr>
+<tr><th id="88">88</th><td>  split_free(<a class="local col0 ref" href="#26480ar" title='ar' data-ref="26480ar">ar</a>, <a class="local col1 ref" href="#26481m" title='m' data-ref="26481m">m</a>, <a class="local col2 ref" href="#26482version" title='version' data-ref="26482version">version</a>);</td></tr>
+<tr><th id="89">89</th><td>}</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td><i>/******************************************************************************/</i></td></tr>
+<tr><th id="92">92</th><td><i>/// Customized functions for serializing Eigen::SparseVector</i></td></tr>
+<tr><th id="93">93</th><td><b>template</b> &lt;<b>class</b> Archive, <b>typename</b> _Scalar, <em>int</em> _Options, <b>typename</b> _Index&gt;</td></tr>
+<tr><th id="94">94</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization4saveERT_RKN5Eigen12SparseVectorIT0_XT1_ET2_EEj" title='boost::serialization::save' data-ref="_ZN5boost13serialization4saveERT_RKN5Eigen12SparseVectorIT0_XT1_ET2_EEj">save</dfn>(Archive&amp; <dfn class="local col3 decl" id="26483ar" title='ar' data-type='Archive &amp;' data-ref="26483ar">ar</dfn>, <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/SparseCore/SparseUtil.h.html#Eigen::SparseVector" title='Eigen::SparseVector' data-ref="Eigen::SparseVector">SparseVector</a>&lt;_Scalar, <a class="tu ref" href="#_Options" title='_Options' data-ref="_Options">_Options</a>, _Index&gt;&amp; <dfn class="local col4 decl" id="26484m" title='m' data-type='const Eigen::SparseVector&lt;_Scalar, _Options, _Index&gt; &amp;' data-ref="26484m">m</dfn>,</td></tr>
+<tr><th id="95">95</th><td>          <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="96">96</th><td>  _Index <dfn class="local col5 decl" id="26485size" title='size' data-type='_Index' data-ref="26485size">size</dfn> = <a class="local col4 ref" href="#26484m" title='m' data-ref="26484m">m</a>.size();</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<span class="namespace">Eigen::</span><a class="typedef" href="../3rdparty/Eigen/Eigen/src/Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>, _Scalar&gt;&gt; <dfn class="local col6 decl" id="26486data" title='data' data-type='std::vector&lt;std::pair&lt;Eigen::Index, _Scalar&gt;&gt;' data-ref="26486data">data</dfn>;</td></tr>
+<tr><th id="99">99</th><td>  <b>for</b> (<b>typename</b> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/SparseCore/SparseUtil.h.html#Eigen::SparseVector" title='Eigen::SparseVector' data-ref="Eigen::SparseVector">SparseVector</a>&lt;_Scalar, <a class="tu ref" href="#_Options" title='_Options' data-ref="_Options">_Options</a>, _Index&gt;::InnerIterator</td></tr>
+<tr><th id="100">100</th><td>           <dfn class="local col7 decl" id="26487it" title='it' data-type='typename Eigen::SparseVector&lt;_Scalar, _Options, _Index&gt;::InnerIterator' data-ref="26487it">it</dfn>(<a class="local col4 ref" href="#26484m" title='m' data-ref="26484m">m</a>);</td></tr>
+<tr><th id="101">101</th><td>       <a class="local col7 ref" href="#26487it" title='it' data-ref="26487it">it</a>; ++<a class="local col7 ref" href="#26487it" title='it' data-ref="26487it">it</a>)</td></tr>
+<tr><th id="102">102</th><td>    <a class="local col6 ref" href="#26486data" title='data' data-ref="26486data">data</a>.push_back({<a class="local col7 ref" href="#26487it" title='it' data-ref="26487it">it</a>.index(), <a class="local col7 ref" href="#26487it" title='it' data-ref="26487it">it</a>.value()});</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>  <a class="local col3 ref" href="#26483ar" title='ar' data-ref="26483ar">ar</a> &lt;&lt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;size&quot;, size)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col5 ref" href="#26485size" title='size' data-ref="26485size">size</a>);</td></tr>
+<tr><th id="105">105</th><td>  <a class="local col3 ref" href="#26483ar" title='ar' data-ref="26483ar">ar</a> &lt;&lt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;data&quot;, data)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col6 ref" href="#26486data" title='data' data-ref="26486data">data</a>);</td></tr>
+<tr><th id="106">106</th><td>}</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td><b>template</b> &lt;<b>class</b> Archive, <b>typename</b> _Scalar, <em>int</em> _Options, <b>typename</b> _Index&gt;</td></tr>
+<tr><th id="109">109</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization4loadERT_RN5Eigen12SparseVectorIT0_XT1_ET2_EEj" title='boost::serialization::load' data-ref="_ZN5boost13serialization4loadERT_RN5Eigen12SparseVectorIT0_XT1_ET2_EEj">load</dfn>(Archive&amp; <dfn class="local col8 decl" id="26488ar" title='ar' data-type='Archive &amp;' data-ref="26488ar">ar</dfn>, <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/SparseCore/SparseUtil.h.html#Eigen::SparseVector" title='Eigen::SparseVector' data-ref="Eigen::SparseVector">SparseVector</a>&lt;_Scalar, <a class="tu ref" href="#_Options" title='_Options' data-ref="_Options">_Options</a>, _Index&gt;&amp; <dfn class="local col9 decl" id="26489m" title='m' data-type='Eigen::SparseVector&lt;_Scalar, _Options, _Index&gt; &amp;' data-ref="26489m">m</dfn>,</td></tr>
+<tr><th id="110">110</th><td>          <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="111">111</th><td>  _Index <dfn class="local col0 decl" id="26490size" title='size' data-type='_Index' data-ref="26490size">size</dfn>;</td></tr>
+<tr><th id="112">112</th><td>  <a class="local col8 ref" href="#26488ar" title='ar' data-ref="26488ar">ar</a> &gt;&gt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;size&quot;, size)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col0 ref" href="#26490size" title='size' data-ref="26490size">size</a>);</td></tr>
+<tr><th id="113">113</th><td>  <a class="local col9 ref" href="#26489m" title='m' data-ref="26489m">m</a>.resize(<a class="local col0 ref" href="#26490size" title='size' data-ref="26490size">size</a>);</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<span class="namespace">Eigen::</span><a class="typedef" href="../3rdparty/Eigen/Eigen/src/Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>, _Scalar&gt;&gt; <dfn class="local col1 decl" id="26491data" title='data' data-type='std::vector&lt;std::pair&lt;Eigen::Index, _Scalar&gt;&gt;' data-ref="26491data">data</dfn>;</td></tr>
+<tr><th id="116">116</th><td>  <a class="local col8 ref" href="#26488ar" title='ar' data-ref="26488ar">ar</a> &gt;&gt; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;data&quot;, data)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col1 ref" href="#26491data" title='data' data-ref="26491data">data</a>);</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>  <b>for</b> (<em>auto</em>&amp;&amp; <dfn class="local col2 decl" id="26492d" title='d' data-type='auto &amp;&amp;' data-ref="26492d">d</dfn> : <a class="local col1 ref" href="#26491data" title='data' data-ref="26491data">data</a>) {</td></tr>
+<tr><th id="119">119</th><td>    <a class="local col9 ref" href="#26489m" title='m' data-ref="26489m">m</a>.coeffRef(<a class="local col2 ref" href="#26492d" title='d' data-ref="26492d">d</a>.first) = <a class="local col2 ref" href="#26492d" title='d' data-ref="26492d">d</a>.second;</td></tr>
+<tr><th id="120">120</th><td>  }</td></tr>
+<tr><th id="121">121</th><td>}</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td><b>template</b> &lt;<b>class</b> Archive, <b>typename</b> _Scalar, <em>int</em> _Options, <b>typename</b> _Index&gt;</td></tr>
+<tr><th id="124">124</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5boost13serialization9serializeERT_RN5Eigen12SparseVectorIT0_XT1_ET2_EEj" title='boost::serialization::serialize' data-ref="_ZN5boost13serialization9serializeERT_RN5Eigen12SparseVectorIT0_XT1_ET2_EEj">serialize</dfn>(Archive&amp; <dfn class="local col3 decl" id="26493ar" title='ar' data-type='Archive &amp;' data-ref="26493ar">ar</dfn>, <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/SparseCore/SparseUtil.h.html#Eigen::SparseVector" title='Eigen::SparseVector' data-ref="Eigen::SparseVector">SparseVector</a>&lt;_Scalar, <a class="tu ref" href="#_Options" title='_Options' data-ref="_Options">_Options</a>, _Index&gt;&amp; <dfn class="local col4 decl" id="26494m" title='m' data-type='Eigen::SparseVector&lt;_Scalar, _Options, _Index&gt; &amp;' data-ref="26494m">m</dfn>,</td></tr>
+<tr><th id="125">125</th><td>               <em>const</em> <em>unsigned</em> <em>int</em> <dfn class="local col5 decl" id="26495version" title='version' data-type='const unsigned int' data-ref="26495version">version</dfn>) {</td></tr>
+<tr><th id="126">126</th><td>  split_free(<a class="local col3 ref" href="#26493ar" title='ar' data-ref="26493ar">ar</a>, <a class="local col4 ref" href="#26494m" title='m' data-ref="26494m">m</a>, <a class="local col5 ref" href="#26495version" title='version' data-ref="26495version">version</a>);</td></tr>
+<tr><th id="127">127</th><td>}</td></tr>
+<tr><th id="128">128</th><td><i>/******************************************************************************/</i></td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>}  <i>// namespace serialization</i></td></tr>
+<tr><th id="131">131</th><td>}  <i>// namespace boost</i></td></tr>
+<tr><th id="132">132</th><td><u>#<span data-ppcond="22">endif</span></u></td></tr>
+<tr><th id="133">133</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

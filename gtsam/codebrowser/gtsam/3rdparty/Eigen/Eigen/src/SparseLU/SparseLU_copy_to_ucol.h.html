@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SparseLU_copy_to_ucol.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseLU/SparseLU_copy_to_ucol.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/SparseLU/SparseLU_copy_to_ucol.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>SparseLU</a>/<a href='SparseLU_copy_to_ucol.h.html'>SparseLU_copy_to_ucol.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2012 Désiré Nuentsa-Wakam &lt;desire.nuentsa_wakam@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>//</i></td></tr>
+<tr><th id="6">6</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="7">7</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="8">8</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="9">9</th><td><i>/* </i></td></tr>
+<tr><th id="10">10</th><td><i> </i></td></tr>
+<tr><th id="11">11</th><td><i> * NOTE: This file is the modified version of [s,d,c,z]copy_to_ucol.c file in SuperLU </i></td></tr>
+<tr><th id="12">12</th><td><i> </i></td></tr>
+<tr><th id="13">13</th><td><i> * -- SuperLU routine (version 2.0) --</i></td></tr>
+<tr><th id="14">14</th><td><i> * Univ. of California Berkeley, Xerox Palo Alto Research Center,</i></td></tr>
+<tr><th id="15">15</th><td><i> * and Lawrence Berkeley National Lab.</i></td></tr>
+<tr><th id="16">16</th><td><i> * November 15, 1997</i></td></tr>
+<tr><th id="17">17</th><td><i> *</i></td></tr>
+<tr><th id="18">18</th><td><i> * Copyright (c) 1994 by Xerox Corporation.  All rights reserved.</i></td></tr>
+<tr><th id="19">19</th><td><i> *</i></td></tr>
+<tr><th id="20">20</th><td><i> * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY</i></td></tr>
+<tr><th id="21">21</th><td><i> * EXPRESSED OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.</i></td></tr>
+<tr><th id="22">22</th><td><i> *</i></td></tr>
+<tr><th id="23">23</th><td><i> * Permission is hereby granted to use or copy this program for any</i></td></tr>
+<tr><th id="24">24</th><td><i> * purpose, provided the above notices are retained on all copies.</i></td></tr>
+<tr><th id="25">25</th><td><i> * Permission to modify the code and to distribute modified code is</i></td></tr>
+<tr><th id="26">26</th><td><i> * granted, provided the above notices are retained, and a notice that</i></td></tr>
+<tr><th id="27">27</th><td><i> * the code was modified is included with the above copyright notice.</i></td></tr>
+<tr><th id="28">28</th><td><i> */</i></td></tr>
+<tr><th id="29">29</th><td><u>#<span data-ppcond="29">ifndef</span> <span class="macro" data-ref="_M/SPARSELU_COPY_TO_UCOL_H">SPARSELU_COPY_TO_UCOL_H</span></u></td></tr>
+<tr><th id="30">30</th><td><u>#define <dfn class="macro" id="_M/SPARSELU_COPY_TO_UCOL_H" data-ref="_M/SPARSELU_COPY_TO_UCOL_H">SPARSELU_COPY_TO_UCOL_H</dfn></u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * <span class="command">\brief</span> Performs numeric block updates (sup-col) in topological order</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">jcol</span> current column to update</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">nseg</span> Number of segments in the U part</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">segrep</span> segment representative ...</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">repfnz</span> First nonzero column in each row  ...</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">perm_r</span> Row permutation </i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">dense</span> Store the full representation of the column</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * <span class="command">\param</span> <span class="arg">glu</span> Global LU data. </i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> * <span class="command">\return</span> 0 - successful return </i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> *         &gt; 0 - number of bytes allocated when run out of space</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="49">49</th><td><b>template</b> &lt;<b>typename</b> Scalar, <b>typename</b> StorageIndex&gt;</td></tr>
+<tr><th id="50">50</th><td><a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <a class="type" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl" title='Eigen::internal::SparseLUImpl' data-ref="Eigen::internal::SparseLUImpl">SparseLUImpl</a>&lt;Scalar,StorageIndex&gt;::<dfn class="decl def fn" id="_ZN5Eigen8internal12SparseLUImpl12copy_to_ucolEllRNS_6MatrixIT0_Lin1ELi1ELi0ELin1ELi1EEENS_3RefIS4_Li0ENS0_11conditionalIXsr6MatrixIS3_L_ZNS_L7Dynamic1002596" title='Eigen::internal::SparseLUImpl::copy_to_ucol' data-ref="_ZN5Eigen8internal12SparseLUImpl12copy_to_ucolEllRNS_6MatrixIT0_Lin1ELi1ELi0ELin1ELi1EEENS_3RefIS4_Li0ENS0_11conditionalIXsr6MatrixIS3_L_ZNS_L7Dynamic1002596">copy_to_ucol</dfn>(<em>const</em> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col0 decl" id="25910jcol" title='jcol' data-type='const Index' data-ref="25910jcol">jcol</dfn>, <em>const</em> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col1 decl" id="25911nseg" title='nseg' data-type='const Index' data-ref="25911nseg">nseg</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col2 decl" id="25912segrep" title='segrep' data-type='IndexVector &amp;' data-ref="25912segrep">segrep</dfn>,</td></tr>
+<tr><th id="51">51</th><td>                                                      <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::BlockIndexVector" title='Eigen::internal::SparseLUImpl::BlockIndexVector' data-type='Ref&lt;Matrix&lt;StorageIndex, Dynamic, 1&gt;&gt;' data-ref="Eigen::internal::SparseLUImpl::BlockIndexVector">BlockIndexVector</a> <dfn class="local col3 decl" id="25913repfnz" title='repfnz' data-type='BlockIndexVector' data-ref="25913repfnz">repfnz</dfn> ,<a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&amp; <dfn class="local col4 decl" id="25914perm_r" title='perm_r' data-type='IndexVector &amp;' data-ref="25914perm_r">perm_r</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::BlockScalarVector" title='Eigen::internal::SparseLUImpl::BlockScalarVector' data-type='Ref&lt;Matrix&lt;Scalar, Dynamic, 1&gt;&gt;' data-ref="Eigen::internal::SparseLUImpl::BlockScalarVector">BlockScalarVector</a> <dfn class="local col5 decl" id="25915dense" title='dense' data-type='BlockScalarVector' data-ref="25915dense">dense</dfn>, <a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::GlobalLU_t" title='Eigen::internal::SparseLUImpl::GlobalLU_t' data-type='LU_GlobalLU_t&lt;IndexVector, ScalarVector&gt;' data-ref="Eigen::internal::SparseLUImpl::GlobalLU_t">GlobalLU_t</a>&amp; <dfn class="local col6 decl" id="25916glu" title='glu' data-type='GlobalLU_t &amp;' data-ref="25916glu">glu</dfn>)</td></tr>
+<tr><th id="52">52</th><td>{  </td></tr>
+<tr><th id="53">53</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col7 decl" id="25917ksub" title='ksub' data-type='Index' data-ref="25917ksub">ksub</dfn>, <dfn class="local col8 decl" id="25918krep" title='krep' data-type='Index' data-ref="25918krep">krep</dfn>, <dfn class="local col9 decl" id="25919ksupno" title='ksupno' data-type='Index' data-ref="25919ksupno">ksupno</dfn>; </td></tr>
+<tr><th id="54">54</th><td>    </td></tr>
+<tr><th id="55">55</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col0 decl" id="25920jsupno" title='jsupno' data-type='Index' data-ref="25920jsupno">jsupno</dfn> = <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.supno(<a class="local col0 ref" href="#25910jcol" title='jcol' data-ref="25910jcol">jcol</a>);</td></tr>
+<tr><th id="56">56</th><td>  </td></tr>
+<tr><th id="57">57</th><td>  <i>// For each nonzero supernode segment of U[*,j] in topological order </i></td></tr>
+<tr><th id="58">58</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col1 decl" id="25921k" title='k' data-type='Index' data-ref="25921k">k</dfn> = <a class="local col1 ref" href="#25911nseg" title='nseg' data-ref="25911nseg">nseg</a> - <var>1</var>, <dfn class="local col2 decl" id="25922i" title='i' data-type='Index' data-ref="25922i">i</dfn>; </td></tr>
+<tr><th id="59">59</th><td>  StorageIndex <dfn class="local col3 decl" id="25923nextu" title='nextu' data-type='StorageIndex' data-ref="25923nextu">nextu</dfn> = <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.xusub(<a class="local col0 ref" href="#25910jcol" title='jcol' data-ref="25910jcol">jcol</a>); </td></tr>
+<tr><th id="60">60</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col4 decl" id="25924kfnz" title='kfnz' data-type='Index' data-ref="25924kfnz">kfnz</dfn>, <dfn class="local col5 decl" id="25925isub" title='isub' data-type='Index' data-ref="25925isub">isub</dfn>, <dfn class="local col6 decl" id="25926segsize" title='segsize' data-type='Index' data-ref="25926segsize">segsize</dfn>; </td></tr>
+<tr><th id="61">61</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col7 decl" id="25927new_next" title='new_next' data-type='Index' data-ref="25927new_next">new_next</dfn>,<dfn class="local col8 decl" id="25928irow" title='irow' data-type='Index' data-ref="25928irow">irow</dfn>; </td></tr>
+<tr><th id="62">62</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col9 decl" id="25929fsupc" title='fsupc' data-type='Index' data-ref="25929fsupc">fsupc</dfn>, <dfn class="local col0 decl" id="25930mem" title='mem' data-type='Index' data-ref="25930mem">mem</dfn>; </td></tr>
+<tr><th id="63">63</th><td>  <b>for</b> (<a class="local col7 ref" href="#25917ksub" title='ksub' data-ref="25917ksub">ksub</a> = <var>0</var>; <a class="local col7 ref" href="#25917ksub" title='ksub' data-ref="25917ksub">ksub</a> &lt; <a class="local col1 ref" href="#25911nseg" title='nseg' data-ref="25911nseg">nseg</a>; <a class="local col7 ref" href="#25917ksub" title='ksub' data-ref="25917ksub">ksub</a>++)</td></tr>
+<tr><th id="64">64</th><td>  {</td></tr>
+<tr><th id="65">65</th><td>    <a class="local col8 ref" href="#25918krep" title='krep' data-ref="25918krep">krep</a> = <a class="local col2 ref" href="#25912segrep" title='segrep' data-ref="25912segrep">segrep</a>(<a class="local col1 ref" href="#25921k" title='k' data-ref="25921k">k</a>); <a class="local col1 ref" href="#25921k" title='k' data-ref="25921k">k</a>--; </td></tr>
+<tr><th id="66">66</th><td>    <a class="local col9 ref" href="#25919ksupno" title='ksupno' data-ref="25919ksupno">ksupno</a> = <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.supno(<a class="local col8 ref" href="#25918krep" title='krep' data-ref="25918krep">krep</a>); </td></tr>
+<tr><th id="67">67</th><td>    <b>if</b> (<a class="local col0 ref" href="#25920jsupno" title='jsupno' data-ref="25920jsupno">jsupno</a> != <a class="local col9 ref" href="#25919ksupno" title='ksupno' data-ref="25919ksupno">ksupno</a> ) <i>// should go into ucol(); </i></td></tr>
+<tr><th id="68">68</th><td>    {</td></tr>
+<tr><th id="69">69</th><td>      <a class="local col4 ref" href="#25924kfnz" title='kfnz' data-ref="25924kfnz">kfnz</a> = <a class="local col3 ref" href="#25913repfnz" title='repfnz' data-ref="25913repfnz">repfnz</a>(<a class="local col8 ref" href="#25918krep" title='krep' data-ref="25918krep">krep</a>); </td></tr>
+<tr><th id="70">70</th><td>      <b>if</b> (<a class="local col4 ref" href="#25924kfnz" title='kfnz' data-ref="25924kfnz">kfnz</a> != <a class="enum" href="SparseLU_Memory.h.html#Eigen::internal::emptyIdxLU" title='Eigen::internal::emptyIdxLU' data-ref="Eigen::internal::emptyIdxLU">emptyIdxLU</a>)</td></tr>
+<tr><th id="71">71</th><td>      { <i>// Nonzero U-segment </i></td></tr>
+<tr><th id="72">72</th><td>        <a class="local col9 ref" href="#25929fsupc" title='fsupc' data-ref="25929fsupc">fsupc</a> = <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.xsup(<a class="local col9 ref" href="#25919ksupno" title='ksupno' data-ref="25919ksupno">ksupno</a>); </td></tr>
+<tr><th id="73">73</th><td>        <a class="local col5 ref" href="#25925isub" title='isub' data-ref="25925isub">isub</a> = <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.xlsub(<a class="local col9 ref" href="#25929fsupc" title='fsupc' data-ref="25929fsupc">fsupc</a>) + <a class="local col4 ref" href="#25924kfnz" title='kfnz' data-ref="25924kfnz">kfnz</a> - <a class="local col9 ref" href="#25929fsupc" title='fsupc' data-ref="25929fsupc">fsupc</a>; </td></tr>
+<tr><th id="74">74</th><td>        <a class="local col6 ref" href="#25926segsize" title='segsize' data-ref="25926segsize">segsize</a> = <a class="local col8 ref" href="#25918krep" title='krep' data-ref="25918krep">krep</a> - <a class="local col4 ref" href="#25924kfnz" title='kfnz' data-ref="25924kfnz">kfnz</a> + <var>1</var>; </td></tr>
+<tr><th id="75">75</th><td>        <a class="local col7 ref" href="#25927new_next" title='new_next' data-ref="25927new_next">new_next</a> = <a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a> + <a class="local col6 ref" href="#25926segsize" title='segsize' data-ref="25926segsize">segsize</a>; </td></tr>
+<tr><th id="76">76</th><td>        <b>while</b> (<a class="local col7 ref" href="#25927new_next" title='new_next' data-ref="25927new_next">new_next</a> &gt; <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.nzumax) </td></tr>
+<tr><th id="77">77</th><td>        {</td></tr>
+<tr><th id="78">78</th><td>          <a class="local col0 ref" href="#25930mem" title='mem' data-ref="25930mem">mem</a> = memXpand&lt;<a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::ScalarVector" title='Eigen::internal::SparseLUImpl::ScalarVector' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::ScalarVector">ScalarVector</a>&gt;(<a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.ucol, <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.nzumax, <a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a>, <a class="enum" href="SparseLU_Structs.h.html#Eigen::internal::UCOL" title='Eigen::internal::UCOL' data-ref="Eigen::internal::UCOL">UCOL</a>, <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.num_expansions); </td></tr>
+<tr><th id="79">79</th><td>          <b>if</b> (<a class="local col0 ref" href="#25930mem" title='mem' data-ref="25930mem">mem</a>) <b>return</b> <a class="local col0 ref" href="#25930mem" title='mem' data-ref="25930mem">mem</a>; </td></tr>
+<tr><th id="80">80</th><td>          <a class="local col0 ref" href="#25930mem" title='mem' data-ref="25930mem">mem</a> = memXpand&lt;<a class="typedef" href="SparseLUImpl.h.html#Eigen::internal::SparseLUImpl::IndexVector" title='Eigen::internal::SparseLUImpl::IndexVector' data-type='Matrix&lt;StorageIndex, Dynamic, 1&gt;' data-ref="Eigen::internal::SparseLUImpl::IndexVector">IndexVector</a>&gt;(<a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.usub, <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.nzumax, <a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a>, <a class="enum" href="SparseLU_Structs.h.html#Eigen::internal::USUB" title='Eigen::internal::USUB' data-ref="Eigen::internal::USUB">USUB</a>, <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.num_expansions); </td></tr>
+<tr><th id="81">81</th><td>          <b>if</b> (<a class="local col0 ref" href="#25930mem" title='mem' data-ref="25930mem">mem</a>) <b>return</b> <a class="local col0 ref" href="#25930mem" title='mem' data-ref="25930mem">mem</a>; </td></tr>
+<tr><th id="82">82</th><td>          </td></tr>
+<tr><th id="83">83</th><td>        }</td></tr>
+<tr><th id="84">84</th><td>        </td></tr>
+<tr><th id="85">85</th><td>        <b>for</b> (<a class="local col2 ref" href="#25922i" title='i' data-ref="25922i">i</a> = <var>0</var>; <a class="local col2 ref" href="#25922i" title='i' data-ref="25922i">i</a> &lt; <a class="local col6 ref" href="#25926segsize" title='segsize' data-ref="25926segsize">segsize</a>; <a class="local col2 ref" href="#25922i" title='i' data-ref="25922i">i</a>++)</td></tr>
+<tr><th id="86">86</th><td>        {</td></tr>
+<tr><th id="87">87</th><td>          <a class="local col8 ref" href="#25928irow" title='irow' data-ref="25928irow">irow</a> = <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.lsub(<a class="local col5 ref" href="#25925isub" title='isub' data-ref="25925isub">isub</a>); </td></tr>
+<tr><th id="88">88</th><td>          <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.usub(<a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a>) = <a class="local col4 ref" href="#25914perm_r" title='perm_r' data-ref="25914perm_r">perm_r</a>(<a class="local col8 ref" href="#25928irow" title='irow' data-ref="25928irow">irow</a>); <i>// Unlike the L part, the U part is stored in its final order</i></td></tr>
+<tr><th id="89">89</th><td>          <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.ucol(<a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a>) = <a class="local col5 ref" href="#25915dense" title='dense' data-ref="25915dense">dense</a>(<a class="local col8 ref" href="#25928irow" title='irow' data-ref="25928irow">irow</a>); </td></tr>
+<tr><th id="90">90</th><td>          <a class="local col5 ref" href="#25915dense" title='dense' data-ref="25915dense">dense</a>(<a class="local col8 ref" href="#25928irow" title='irow' data-ref="25928irow">irow</a>) = Scalar(<var>0.0</var>); </td></tr>
+<tr><th id="91">91</th><td>          <a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a>++;</td></tr>
+<tr><th id="92">92</th><td>          <a class="local col5 ref" href="#25925isub" title='isub' data-ref="25925isub">isub</a>++;</td></tr>
+<tr><th id="93">93</th><td>        }</td></tr>
+<tr><th id="94">94</th><td>        </td></tr>
+<tr><th id="95">95</th><td>      } <i>// end nonzero U-segment </i></td></tr>
+<tr><th id="96">96</th><td>      </td></tr>
+<tr><th id="97">97</th><td>    } <i>// end if jsupno </i></td></tr>
+<tr><th id="98">98</th><td>    </td></tr>
+<tr><th id="99">99</th><td>  } <i>// end for each segment</i></td></tr>
+<tr><th id="100">100</th><td>  <a class="local col6 ref" href="#25916glu" title='glu' data-ref="25916glu">glu</a>.xusub(<a class="local col0 ref" href="#25910jcol" title='jcol' data-ref="25910jcol">jcol</a> + <var>1</var>) = <a class="local col3 ref" href="#25923nextu" title='nextu' data-ref="25923nextu">nextu</a>; <i>// close U(*,jcol)</i></td></tr>
+<tr><th id="101">101</th><td>  <b>return</b> <var>0</var>; </td></tr>
+<tr><th id="102">102</th><td>}</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>} <i>// namespace internal</i></td></tr>
+<tr><th id="105">105</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td><u>#<span data-ppcond="29">endif</span> // SPARSELU_COPY_TO_UCOL_H</u></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

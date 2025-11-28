@@ -1,0 +1,2 @@
+<use f='codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/products/GeneralBlockPanelKernel.h' l='879' u='c' c='_ZNK5Eigen8internal11gebp_traitsISt7complexIT_ES4_XT0_EXT1_EXT2_EXT3_EE4maddERKNS0_11conditionalILNS5_Ut_E0ENS0_18packet_conditionalIXT3_ENS0_13packet7648902'/>
+<dec f='codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/products/GeneralBlockPanelKernel.h' l='920' type='conj_helper&lt;LhsScalar, RhsScalar, ConjLhs, ConjRhs&gt;'/>

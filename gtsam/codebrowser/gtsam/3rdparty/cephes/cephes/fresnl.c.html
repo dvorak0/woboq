@@ -1,0 +1,237 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>fresnl.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/fresnl.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/fresnl.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='fresnl.c.html'>fresnl.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     fresnl.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Fresnel integral</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, S, C;</i></td></tr>
+<tr><th id="10">10</th><td><i> * void fresnl();</i></td></tr>
+<tr><th id="11">11</th><td><i> *</i></td></tr>
+<tr><th id="12">12</th><td><i> * fresnl( x, _&amp;S, _&amp;C );</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * Evaluates the Fresnel integrals</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> *           x</i></td></tr>
+<tr><th id="20">20</th><td><i> *           -</i></td></tr>
+<tr><th id="21">21</th><td><i> *          | |</i></td></tr>
+<tr><th id="22">22</th><td><i> * C(x) =   |   cos(pi/2 t**2) dt,</i></td></tr>
+<tr><th id="23">23</th><td><i> *        | |</i></td></tr>
+<tr><th id="24">24</th><td><i> *         -</i></td></tr>
+<tr><th id="25">25</th><td><i> *          0</i></td></tr>
+<tr><th id="26">26</th><td><i> *</i></td></tr>
+<tr><th id="27">27</th><td><i> *           x</i></td></tr>
+<tr><th id="28">28</th><td><i> *           -</i></td></tr>
+<tr><th id="29">29</th><td><i> *          | |</i></td></tr>
+<tr><th id="30">30</th><td><i> * S(x) =   |   sin(pi/2 t**2) dt.</i></td></tr>
+<tr><th id="31">31</th><td><i> *        | |</i></td></tr>
+<tr><th id="32">32</th><td><i> *         -</i></td></tr>
+<tr><th id="33">33</th><td><i> *          0</i></td></tr>
+<tr><th id="34">34</th><td><i> *</i></td></tr>
+<tr><th id="35">35</th><td><i> *</i></td></tr>
+<tr><th id="36">36</th><td><i> * The integrals are evaluated by a power series for x &lt; 1.</i></td></tr>
+<tr><th id="37">37</th><td><i> * For x &gt;= 1 auxiliary functions f(x) and g(x) are employed</i></td></tr>
+<tr><th id="38">38</th><td><i> * such that</i></td></tr>
+<tr><th id="39">39</th><td><i> *</i></td></tr>
+<tr><th id="40">40</th><td><i> * C(x) = 0.5 + f(x) sin( pi/2 x**2 ) - g(x) cos( pi/2 x**2 )</i></td></tr>
+<tr><th id="41">41</th><td><i> * S(x) = 0.5 - f(x) cos( pi/2 x**2 ) - g(x) sin( pi/2 x**2 )</i></td></tr>
+<tr><th id="42">42</th><td><i> *</i></td></tr>
+<tr><th id="43">43</th><td><i> *</i></td></tr>
+<tr><th id="44">44</th><td><i> *</i></td></tr>
+<tr><th id="45">45</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="46">46</th><td><i> *</i></td></tr>
+<tr><th id="47">47</th><td><i> *  Relative error.</i></td></tr>
+<tr><th id="48">48</th><td><i> *</i></td></tr>
+<tr><th id="49">49</th><td><i> * Arithmetic  function   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="50">50</th><td><i> *   IEEE       S(x)      0, 10       10000       2.0e-15     3.2e-16</i></td></tr>
+<tr><th id="51">51</th><td><i> *   IEEE       C(x)      0, 10       10000       1.8e-15     3.3e-16</i></td></tr>
+<tr><th id="52">52</th><td><i> */</i></td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><i>/*</i></td></tr>
+<tr><th id="55">55</th><td><i> * Cephes Math Library Release 2.1:  January, 1989</i></td></tr>
+<tr><th id="56">56</th><td><i> * Copyright 1984, 1987, 1989 by Stephen L. Moshier</i></td></tr>
+<tr><th id="57">57</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="58">58</th><td><i> */</i></td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td><i  data-doc="sn">/* S(x) for small x */</i></td></tr>
+<tr><th id="63">63</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="sn" title='sn' data-type='double[6]' data-ref="sn">sn</dfn>[<var>6</var>] = {</td></tr>
+<tr><th id="64">64</th><td>    -<var>2.99181919401019853726E3</var>,</td></tr>
+<tr><th id="65">65</th><td>    <var>7.08840045257738576863E5</var>,</td></tr>
+<tr><th id="66">66</th><td>    -<var>6.29741486205862506537E7</var>,</td></tr>
+<tr><th id="67">67</th><td>    <var>2.54890880573376359104E9</var>,</td></tr>
+<tr><th id="68">68</th><td>    -<var>4.42979518059697779103E10</var>,</td></tr>
+<tr><th id="69">69</th><td>    <var>3.18016297876567817986E11</var>,</td></tr>
+<tr><th id="70">70</th><td>};</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="sd" title='sd' data-type='double[6]' data-ref="sd">sd</dfn>[<var>6</var>] = {</td></tr>
+<tr><th id="73">73</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="74">74</th><td>    <var>2.81376268889994315696E2</var>,</td></tr>
+<tr><th id="75">75</th><td>    <var>4.55847810806532581675E4</var>,</td></tr>
+<tr><th id="76">76</th><td>    <var>5.17343888770096400730E6</var>,</td></tr>
+<tr><th id="77">77</th><td>    <var>4.19320245898111231129E8</var>,</td></tr>
+<tr><th id="78">78</th><td>    <var>2.24411795645340920940E10</var>,</td></tr>
+<tr><th id="79">79</th><td>    <var>6.07366389490084639049E11</var>,</td></tr>
+<tr><th id="80">80</th><td>};</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><i  data-doc="cn">/* C(x) for small x */</i></td></tr>
+<tr><th id="83">83</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="cn" title='cn' data-type='double[6]' data-ref="cn">cn</dfn>[<var>6</var>] = {</td></tr>
+<tr><th id="84">84</th><td>    -<var>4.98843114573573548651E-8</var>,</td></tr>
+<tr><th id="85">85</th><td>    <var>9.50428062829859605134E-6</var>,</td></tr>
+<tr><th id="86">86</th><td>    -<var>6.45191435683965050962E-4</var>,</td></tr>
+<tr><th id="87">87</th><td>    <var>1.88843319396703850064E-2</var>,</td></tr>
+<tr><th id="88">88</th><td>    -<var>2.05525900955013891793E-1</var>,</td></tr>
+<tr><th id="89">89</th><td>    <var>9.99999999999999998822E-1</var>,</td></tr>
+<tr><th id="90">90</th><td>};</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="cd" title='cd' data-type='double[7]' data-ref="cd">cd</dfn>[<var>7</var>] = {</td></tr>
+<tr><th id="93">93</th><td>    <var>3.99982968972495980367E-12</var>,</td></tr>
+<tr><th id="94">94</th><td>    <var>9.15439215774657478799E-10</var>,</td></tr>
+<tr><th id="95">95</th><td>    <var>1.25001862479598821474E-7</var>,</td></tr>
+<tr><th id="96">96</th><td>    <var>1.22262789024179030997E-5</var>,</td></tr>
+<tr><th id="97">97</th><td>    <var>8.68029542941784300606E-4</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>4.12142090722199792936E-2</var>,</td></tr>
+<tr><th id="99">99</th><td>    <var>1.00000000000000000118E0</var>,</td></tr>
+<tr><th id="100">100</th><td>};</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td><i  data-doc="fn">/* Auxiliary function f(x) */</i></td></tr>
+<tr><th id="103">103</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="fn" title='fn' data-type='double[10]' data-ref="fn">fn</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="104">104</th><td>    <var>4.21543555043677546506E-1</var>,</td></tr>
+<tr><th id="105">105</th><td>    <var>1.43407919780758885261E-1</var>,</td></tr>
+<tr><th id="106">106</th><td>    <var>1.15220955073585758835E-2</var>,</td></tr>
+<tr><th id="107">107</th><td>    <var>3.45017939782574027900E-4</var>,</td></tr>
+<tr><th id="108">108</th><td>    <var>4.63613749287867322088E-6</var>,</td></tr>
+<tr><th id="109">109</th><td>    <var>3.05568983790257605827E-8</var>,</td></tr>
+<tr><th id="110">110</th><td>    <var>1.02304514164907233465E-10</var>,</td></tr>
+<tr><th id="111">111</th><td>    <var>1.72010743268161828879E-13</var>,</td></tr>
+<tr><th id="112">112</th><td>    <var>1.34283276233062758925E-16</var>,</td></tr>
+<tr><th id="113">113</th><td>    <var>3.76329711269987889006E-20</var>,</td></tr>
+<tr><th id="114">114</th><td>};</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="fd" title='fd' data-type='double[10]' data-ref="fd">fd</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="117">117</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="118">118</th><td>    <var>7.51586398353378947175E-1</var>,</td></tr>
+<tr><th id="119">119</th><td>    <var>1.16888925859191382142E-1</var>,</td></tr>
+<tr><th id="120">120</th><td>    <var>6.44051526508858611005E-3</var>,</td></tr>
+<tr><th id="121">121</th><td>    <var>1.55934409164153020873E-4</var>,</td></tr>
+<tr><th id="122">122</th><td>    <var>1.84627567348930545870E-6</var>,</td></tr>
+<tr><th id="123">123</th><td>    <var>1.12699224763999035261E-8</var>,</td></tr>
+<tr><th id="124">124</th><td>    <var>3.60140029589371370404E-11</var>,</td></tr>
+<tr><th id="125">125</th><td>    <var>5.88754533621578410010E-14</var>,</td></tr>
+<tr><th id="126">126</th><td>    <var>4.52001434074129701496E-17</var>,</td></tr>
+<tr><th id="127">127</th><td>    <var>1.25443237090011264384E-20</var>,</td></tr>
+<tr><th id="128">128</th><td>};</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td><i  data-doc="gn">/* Auxiliary function g(x) */</i></td></tr>
+<tr><th id="131">131</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="gn" title='gn' data-type='double[11]' data-ref="gn">gn</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="132">132</th><td>    <var>5.04442073643383265887E-1</var>,</td></tr>
+<tr><th id="133">133</th><td>    <var>1.97102833525523411709E-1</var>,</td></tr>
+<tr><th id="134">134</th><td>    <var>1.87648584092575249293E-2</var>,</td></tr>
+<tr><th id="135">135</th><td>    <var>6.84079380915393090172E-4</var>,</td></tr>
+<tr><th id="136">136</th><td>    <var>1.15138826111884280931E-5</var>,</td></tr>
+<tr><th id="137">137</th><td>    <var>9.82852443688422223854E-8</var>,</td></tr>
+<tr><th id="138">138</th><td>    <var>4.45344415861750144738E-10</var>,</td></tr>
+<tr><th id="139">139</th><td>    <var>1.08268041139020870318E-12</var>,</td></tr>
+<tr><th id="140">140</th><td>    <var>1.37555460633261799868E-15</var>,</td></tr>
+<tr><th id="141">141</th><td>    <var>8.36354435630677421531E-19</var>,</td></tr>
+<tr><th id="142">142</th><td>    <var>1.86958710162783235106E-22</var>,</td></tr>
+<tr><th id="143">143</th><td>};</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="gd" title='gd' data-type='double[11]' data-ref="gd">gd</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="146">146</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="147">147</th><td>    <var>1.47495759925128324529E0</var>,</td></tr>
+<tr><th id="148">148</th><td>    <var>3.37748989120019970451E-1</var>,</td></tr>
+<tr><th id="149">149</th><td>    <var>2.53603741420338795122E-2</var>,</td></tr>
+<tr><th id="150">150</th><td>    <var>8.14679107184306179049E-4</var>,</td></tr>
+<tr><th id="151">151</th><td>    <var>1.27545075667729118702E-5</var>,</td></tr>
+<tr><th id="152">152</th><td>    <var>1.04314589657571990585E-7</var>,</td></tr>
+<tr><th id="153">153</th><td>    <var>4.60680728146520428211E-10</var>,</td></tr>
+<tr><th id="154">154</th><td>    <var>1.10273215066240270757E-12</var>,</td></tr>
+<tr><th id="155">155</th><td>    <var>1.38796531259578871258E-15</var>,</td></tr>
+<tr><th id="156">156</th><td>    <var>8.39158816283118707363E-19</var>,</td></tr>
+<tr><th id="157">157</th><td>    <var>1.86958710162783236342E-22</var>,</td></tr>
+<tr><th id="158">158</th><td>};</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>;</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><em>int</em> <dfn class="decl def fn" id="fresnl" title='fresnl' data-ref="fresnl">fresnl</dfn>(<em>double</em> <dfn class="local col1 decl" id="1xxa" title='xxa' data-type='double' data-ref="1xxa">xxa</dfn>, <em>double</em> *<dfn class="local col2 decl" id="2ssa" title='ssa' data-type='double *' data-ref="2ssa">ssa</dfn>, <em>double</em> *<dfn class="local col3 decl" id="3cca" title='cca' data-type='double *' data-ref="3cca">cca</dfn>)</td></tr>
+<tr><th id="163">163</th><td>{</td></tr>
+<tr><th id="164">164</th><td>    <em>double</em> <dfn class="local col4 decl" id="4f" title='f' data-type='double' data-ref="4f">f</dfn>, <dfn class="local col5 decl" id="5g" title='g' data-type='double' data-ref="5g">g</dfn>, <dfn class="local col6 decl" id="6cc" title='cc' data-type='double' data-ref="6cc">cc</dfn>, <dfn class="local col7 decl" id="7ss" title='ss' data-type='double' data-ref="7ss">ss</dfn>, <dfn class="local col8 decl" id="8c" title='c' data-type='double' data-ref="8c">c</dfn>, <dfn class="local col9 decl" id="9s" title='s' data-type='double' data-ref="9s">s</dfn>, <dfn class="local col0 decl" id="10t" title='t' data-type='double' data-ref="10t">t</dfn>, <dfn class="local col1 decl" id="11u" title='u' data-type='double' data-ref="11u">u</dfn>;</td></tr>
+<tr><th id="165">165</th><td>    <em>double</em> <dfn class="local col2 decl" id="12x" title='x' data-type='double' data-ref="12x">x</dfn>, <dfn class="local col3 decl" id="13x2" title='x2' data-type='double' data-ref="13x2">x2</dfn>;</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>    <b>if</b> (<a class="macro" href="mconf.h.html#100" title="__builtin_isinf_sign (xxa)" data-ref="_M/cephes_isinf">cephes_isinf</a>(<a class="local col1 ref" href="#1xxa" title='xxa' data-ref="1xxa">xxa</a>)) {</td></tr>
+<tr><th id="168">168</th><td>    <a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a> = <var>0.5</var>;</td></tr>
+<tr><th id="169">169</th><td>    <a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a> = <var>0.5</var>;</td></tr>
+<tr><th id="170">170</th><td>    <b>goto</b> <a class="lbl" href="#14done" data-ref="14done">done</a>;</td></tr>
+<tr><th id="171">171</th><td>    }</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td>    <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#1xxa" title='xxa' data-ref="1xxa">xxa</a>);</td></tr>
+<tr><th id="174">174</th><td>    <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> * <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>;</td></tr>
+<tr><th id="175">175</th><td>    <b>if</b> (<a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a> &lt; <var>2.5625</var>) {</td></tr>
+<tr><th id="176">176</th><td>	<a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> = <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a> * <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a>;</td></tr>
+<tr><th id="177">177</th><td>	<a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> * <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#sn" title='sn' data-use='r' data-ref="sn">sn</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#sd" title='sd' data-use='r' data-ref="sd">sd</a>, <span class='inlayHint'>N:&nbsp;</span><var>6</var>);</td></tr>
+<tr><th id="178">178</th><td>	<a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#cn" title='cn' data-use='r' data-ref="cn">cn</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>) / <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#cd" title='cd' data-use='r' data-ref="cd">cd</a>, <span class='inlayHint'>N:&nbsp;</span><var>6</var>);</td></tr>
+<tr><th id="179">179</th><td>	<b>goto</b> <a class="lbl" href="#14done" data-ref="14done">done</a>;</td></tr>
+<tr><th id="180">180</th><td>    }</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>    <b>if</b> (<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> &gt; <var>36974.0</var>) {</td></tr>
+<tr><th id="183">183</th><td>        <i>/*</i></td></tr>
+<tr><th id="184">184</th><td><i>         * <a href="http://functions.wolfram.com/GammaBetaErf/FresnelC/06/02/">http://functions.wolfram.com/GammaBetaErf/FresnelC/06/02/</a></i></td></tr>
+<tr><th id="185">185</th><td><i>         * <a href="http://functions.wolfram.com/GammaBetaErf/FresnelS/06/02/">http://functions.wolfram.com/GammaBetaErf/FresnelS/06/02/</a></i></td></tr>
+<tr><th id="186">186</th><td><i>         */</i></td></tr>
+<tr><th id="187">187</th><td>	<a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a> = <var>0.5</var> + <var>1</var>/(<a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a>*<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>) * <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#64" title='sin' data-ref="sin">sin</a>(<a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a>*<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>*<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>/<var>2</var>);</td></tr>
+<tr><th id="188">188</th><td>	<a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a> = <var>0.5</var> - <var>1</var>/(<a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a>*<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>) * <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#62" title='cos' data-ref="cos">cos</a>(<a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a>*<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>*<a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>/<var>2</var>);</td></tr>
+<tr><th id="189">189</th><td>	<b>goto</b> <a class="lbl" href="#14done" data-ref="14done">done</a>;</td></tr>
+<tr><th id="190">190</th><td>    }</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td>    <i>/*             Asymptotic power series auxiliary functions</i></td></tr>
+<tr><th id="194">194</th><td><i>     *             for large argument</i></td></tr>
+<tr><th id="195">195</th><td><i>     */</i></td></tr>
+<tr><th id="196">196</th><td>    <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a> = <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a> * <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>;</td></tr>
+<tr><th id="197">197</th><td>    <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> = <a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a> * <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a>;</td></tr>
+<tr><th id="198">198</th><td>    <a class="local col1 ref" href="#11u" title='u' data-ref="11u">u</a> = <var>1.0</var> / (<a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> * <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>);</td></tr>
+<tr><th id="199">199</th><td>    <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> = <var>1.0</var> / <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>;</td></tr>
+<tr><th id="200">200</th><td>    <a class="local col4 ref" href="#4f" title='f' data-ref="4f">f</a> = <var>1.0</var> - <a class="local col1 ref" href="#11u" title='u' data-ref="11u">u</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#11u" title='u' data-ref="11u">u</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#fn" title='fn' data-use='r' data-ref="fn">fn</a>, <span class='inlayHint'>N:&nbsp;</span><var>9</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#11u" title='u' data-ref="11u">u</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#fd" title='fd' data-use='r' data-ref="fd">fd</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>);</td></tr>
+<tr><th id="201">201</th><td>    <a class="local col5 ref" href="#5g" title='g' data-ref="5g">g</a> = <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#11u" title='u' data-ref="11u">u</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#gn" title='gn' data-use='r' data-ref="gn">gn</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#11u" title='u' data-ref="11u">u</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#gd" title='gd' data-use='r' data-ref="gd">gd</a>, <span class='inlayHint'>N:&nbsp;</span><var>11</var>);</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td>    <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> = <a class="macro" href="../../../../../include/math.h.html#1153" title="1.57079632679489661923" data-ref="_M/M_PI_2">M_PI_2</a> * <a class="local col3 ref" href="#13x2" title='x2' data-ref="13x2">x2</a>;</td></tr>
+<tr><th id="204">204</th><td>    <a class="local col8 ref" href="#8c" title='c' data-ref="8c">c</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#62" title='cos' data-ref="cos">cos</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>);</td></tr>
+<tr><th id="205">205</th><td>    <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#64" title='sin' data-ref="sin">sin</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>);</td></tr>
+<tr><th id="206">206</th><td>    <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a> = <a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a> * <a class="local col2 ref" href="#12x" title='x' data-ref="12x">x</a>;</td></tr>
+<tr><th id="207">207</th><td>    <a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a> = <var>0.5</var> + (<a class="local col4 ref" href="#4f" title='f' data-ref="4f">f</a> * <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> - <a class="local col5 ref" href="#5g" title='g' data-ref="5g">g</a> * <a class="local col8 ref" href="#8c" title='c' data-ref="8c">c</a>) / <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>;</td></tr>
+<tr><th id="208">208</th><td>    <a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a> = <var>0.5</var> - (<a class="local col4 ref" href="#4f" title='f' data-ref="4f">f</a> * <a class="local col8 ref" href="#8c" title='c' data-ref="8c">c</a> + <a class="local col5 ref" href="#5g" title='g' data-ref="5g">g</a> * <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>) / <a class="local col0 ref" href="#10t" title='t' data-ref="10t">t</a>;</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>  <dfn class="lbl" id="14done" data-ref="14done">done</dfn>:</td></tr>
+<tr><th id="211">211</th><td>    <b>if</b> (<a class="local col1 ref" href="#1xxa" title='xxa' data-ref="1xxa">xxa</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="212">212</th><td>	<a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a> = -<a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a>;</td></tr>
+<tr><th id="213">213</th><td>	<a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a> = -<a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a>;</td></tr>
+<tr><th id="214">214</th><td>    }</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td>    *<a class="local col3 ref" href="#3cca" title='cca' data-ref="3cca">cca</a> = <a class="local col6 ref" href="#6cc" title='cc' data-ref="6cc">cc</a>;</td></tr>
+<tr><th id="217">217</th><td>    *<a class="local col2 ref" href="#2ssa" title='ssa' data-ref="2ssa">ssa</a> = <a class="local col7 ref" href="#7ss" title='ss' data-ref="7ss">ss</a>;</td></tr>
+<tr><th id="218">218</th><td>    <b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="219">219</th><td>}</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

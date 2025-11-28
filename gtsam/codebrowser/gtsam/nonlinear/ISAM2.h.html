@@ -1,0 +1,388 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ISAM2.h source code [codebrowser/gtsam/nonlinear/ISAM2.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::ISAM2,gtsam::traits "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/nonlinear/ISAM2.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>nonlinear</a>/<a href='ISAM2.h.html'>ISAM2.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   ISAM2.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Incremental update functionality (ISAM2) for BayesTree, with fluid</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * relinearization.</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span>  Michael Kaess, Richard Roberts, Frank Dellaert</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"></i></td></tr>
+<tr><th id="19">19</th><td><i class="doc">//<span class="command"> \callgraph</span></i></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#pragma once</u></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../linear/GaussianBayesTree.h.html">&lt;gtsam/linear/GaussianBayesTree.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="ISAM2Clique.h.html">&lt;gtsam/nonlinear/ISAM2Clique.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="ISAM2Params.h.html">&lt;gtsam/nonlinear/ISAM2Params.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="ISAM2Result.h.html">&lt;gtsam/nonlinear/ISAM2Result.h&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="ISAM2UpdateParams.h.html">&lt;gtsam/nonlinear/ISAM2UpdateParams.h&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="NonlinearFactorGraph.h.html">&lt;gtsam/nonlinear/NonlinearFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../../../include/c++/13/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">isam2</span></i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * Implementation of the full ISAM2 algorithm for incremental nonlinear</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * optimization.</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * The typical cycle of using this class to create an instance by providing</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * ISAM2Params to the constructor, then add measurements and variables as they</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * arrive using the update() method.  At any time, calculateEstimate() may be</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * called to obtain the current estimate of all variables.</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="45">45</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::ISAM2" title='gtsam::ISAM2' data-ref="gtsam::ISAM2">ISAM2</dfn> : <b>public</b> <a class="type" href="../inference/FactorGraph.h.html#gtsam::BayesTree" title='gtsam::BayesTree' data-ref="gtsam::BayesTree">BayesTree</a>&lt;<a class="type" href="ISAM2Clique.h.html#gtsam::ISAM2Clique" title='gtsam::ISAM2Clique' data-ref="gtsam::ISAM2Clique">ISAM2Clique</a>&gt; {</td></tr>
+<tr><th id="46">46</th><td> <b>protected</b>:</td></tr>
+<tr><th id="47">47</th><td>  <i class="doc">/** The current linearization point */</i></td></tr>
+<tr><th id="48">48</th><td>  <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="decl field" id="gtsam::ISAM2::theta_" title='gtsam::ISAM2::theta_' data-ref="gtsam::ISAM2::theta_">theta_</dfn>;</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td>  <i class="doc">/** VariableIndex lets us look up factors by involved variable and keeps track</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">   * of dimensions */</i></td></tr>
+<tr><th id="52">52</th><td>  <a class="type" href="../inference/VariableIndex.h.html#gtsam::VariableIndex" title='gtsam::VariableIndex' data-ref="gtsam::VariableIndex">VariableIndex</a> <dfn class="decl field" id="gtsam::ISAM2::variableIndex_" title='gtsam::ISAM2::variableIndex_' data-ref="gtsam::ISAM2::variableIndex_">variableIndex_</dfn>;</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td>  <i class="doc">/** The linear delta from the last linear solution, an update to the estimate</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">   * in theta</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">   * This is<span class="command"> \c</span> <span class="arg">mutable</span> because it is a "cached" variable - it is not updated</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">   * until either requested with getDelta() or calculateEstimate(), or needed</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc">   * during update() to evaluate whether to relinearize variables.</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="61">61</th><td>  <em>mutable</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl field" id="gtsam::ISAM2::delta_" title='gtsam::ISAM2::delta_' data-ref="gtsam::ISAM2::delta_">delta_</dfn>;</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>  <em>mutable</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl field" id="gtsam::ISAM2::deltaNewton_" title='gtsam::ISAM2::deltaNewton_' data-ref="gtsam::ISAM2::deltaNewton_">deltaNewton_</dfn>;  <i>// Only used when using Dogleg - stores</i></td></tr>
+<tr><th id="64">64</th><td>                                      <i>// the Gauss-Newton update</i></td></tr>
+<tr><th id="65">65</th><td>  <em>mutable</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl field" id="gtsam::ISAM2::RgProd_" title='gtsam::ISAM2::RgProd_' data-ref="gtsam::ISAM2::RgProd_">RgProd_</dfn>;  <i>// Only used when using Dogleg - stores R*g and</i></td></tr>
+<tr><th id="66">66</th><td>                                 <i>// is updated incrementally</i></td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td>  <i class="doc">/** A cumulative mask for the variables that were replaced and have not yet</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">   * been updated in the linear solution delta_, this is only used internally,</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc">   * delta will always be updated if necessary when requested with getDelta()</i></td></tr>
+<tr><th id="71">71</th><td><i class="doc">   * or calculateEstimate().</i></td></tr>
+<tr><th id="72">72</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="73">73</th><td><i class="doc">   * This is<span class="command"> \c</span> <span class="arg">mutable</span> because it is used internally to not update delta_</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc">   * until it is needed.</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="76">76</th><td>  <em>mutable</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a> <dfn class="decl field" id="gtsam::ISAM2::deltaReplacedMask_" title='gtsam::ISAM2::deltaReplacedMask_' data-ref="gtsam::ISAM2::deltaReplacedMask_">deltaReplacedMask_</dfn>;  <i>// TODO(dellaert): Make sure accessed in</i></td></tr>
+<tr><th id="77">77</th><td>                                      <i>// the right way</i></td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>  <i class="doc">/** All original nonlinear factors are stored here to use during</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">   * relinearization */</i></td></tr>
+<tr><th id="81">81</th><td>  <a class="type" href="NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <dfn class="decl field" id="gtsam::ISAM2::nonlinearFactors_" title='gtsam::ISAM2::nonlinearFactors_' data-ref="gtsam::ISAM2::nonlinearFactors_">nonlinearFactors_</dfn>;</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>  <i class="doc">/** The current linear factors, which are only updated as needed */</i></td></tr>
+<tr><th id="84">84</th><td>  <em>mutable</em> <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> <dfn class="decl field" id="gtsam::ISAM2::linearFactors_" title='gtsam::ISAM2::linearFactors_' data-ref="gtsam::ISAM2::linearFactors_">linearFactors_</dfn>;</td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td>  <i class="doc">/** The current parameters */</i></td></tr>
+<tr><th id="87">87</th><td>  <a class="type" href="ISAM2Params.h.html#gtsam::ISAM2Params" title='gtsam::ISAM2Params' data-ref="gtsam::ISAM2Params">ISAM2Params</a> <dfn class="decl field" id="gtsam::ISAM2::params_" title='gtsam::ISAM2::params_' data-ref="gtsam::ISAM2::params_">params_</dfn>;</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>  <i class="doc">/** The current Dogleg Delta (trust region radius) */</i></td></tr>
+<tr><th id="90">90</th><td>  <em>mutable</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<em>double</em>&gt; <dfn class="decl field" id="gtsam::ISAM2::doglegDelta_" title='gtsam::ISAM2::doglegDelta_' data-ref="gtsam::ISAM2::doglegDelta_">doglegDelta_</dfn>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>  <i class="doc">/** Set of variables that are involved with linear factors from marginalized</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">   * variables and thus cannot have their linearization points changed. */</i></td></tr>
+<tr><th id="94">94</th><td>  <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a> <dfn class="decl field" id="gtsam::ISAM2::fixedVariables_" title='gtsam::ISAM2::fixedVariables_' data-ref="gtsam::ISAM2::fixedVariables_">fixedVariables_</dfn>;</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>  <em>int</em> <dfn class="decl field" id="gtsam::ISAM2::update_count_" title='gtsam::ISAM2::update_count_' data-ref="gtsam::ISAM2::update_count_">update_count_</dfn>;  <i class="doc">///&lt; Counter incremented every update(), used to determine</i></td></tr>
+<tr><th id="97">97</th><td>                      <i class="doc">///&lt; periodic relinearization</i></td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td> <b>public</b>:</td></tr>
+<tr><th id="100">100</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ISAM2::This" title='gtsam::ISAM2::This' data-type='ISAM2' data-ref="gtsam::ISAM2::This">This</dfn> = <a class="type" href="#gtsam::ISAM2" title='gtsam::ISAM2' data-ref="gtsam::ISAM2">ISAM2</a>;                       <i class="doc">///&lt; This class</i></td></tr>
+<tr><th id="101">101</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ISAM2::Base" title='gtsam::ISAM2::Base' data-type='BayesTree&lt;ISAM2Clique&gt;' data-ref="gtsam::ISAM2::Base">Base</dfn> = <a class="type" href="../inference/FactorGraph.h.html#gtsam::BayesTree" title='gtsam::BayesTree' data-ref="gtsam::BayesTree">BayesTree</a>&lt;<a class="type" href="ISAM2Clique.h.html#gtsam::ISAM2Clique" title='gtsam::ISAM2Clique' data-ref="gtsam::ISAM2Clique">ISAM2Clique</a>&gt;;      <i class="doc">///&lt; The BayesTree base class</i></td></tr>
+<tr><th id="102">102</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ISAM2::Clique" title='gtsam::ISAM2::Clique' data-type='Base::Clique' data-ref="gtsam::ISAM2::Clique">Clique</dfn> = <a class="typedef" href="#gtsam::ISAM2::Base" title='gtsam::ISAM2::Base' data-type='BayesTree&lt;ISAM2Clique&gt;' data-ref="gtsam::ISAM2::Base">Base</a>::<a class="typedef" href="../inference/BayesTree.h.html#gtsam::BayesTree{gtsam::ISAM2Clique}::Clique" title='gtsam::BayesTree&lt;gtsam::ISAM2Clique&gt;::Clique' data-type='gtsam::ISAM2Clique' data-ref="gtsam::BayesTree{gtsam::ISAM2Clique}::Clique">Clique</a>;              <i class="doc">///&lt; A clique</i></td></tr>
+<tr><th id="103">103</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ISAM2::sharedClique" title='gtsam::ISAM2::sharedClique' data-type='Base::sharedClique' data-ref="gtsam::ISAM2::sharedClique">sharedClique</dfn> = <a class="typedef" href="#gtsam::ISAM2::Base" title='gtsam::ISAM2::Base' data-type='BayesTree&lt;ISAM2Clique&gt;' data-ref="gtsam::ISAM2::Base">Base</a>::<a class="typedef" href="../inference/BayesTree.h.html#gtsam::BayesTree{gtsam::ISAM2Clique}::sharedClique" title='gtsam::BayesTree&lt;gtsam::ISAM2Clique&gt;::sharedClique' data-type='std::shared_ptr&lt;Clique&gt;' data-ref="gtsam::BayesTree{gtsam::ISAM2Clique}::sharedClique">sharedClique</a>;  <i class="doc">///&lt; Shared pointer to a clique</i></td></tr>
+<tr><th id="104">104</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ISAM2::Cliques" title='gtsam::ISAM2::Cliques' data-type='Base::Cliques' data-ref="gtsam::ISAM2::Cliques">Cliques</dfn> = <a class="typedef" href="#gtsam::ISAM2::Base" title='gtsam::ISAM2::Base' data-type='BayesTree&lt;ISAM2Clique&gt;' data-ref="gtsam::ISAM2::Base">Base</a>::<a class="typedef" href="../inference/BayesTree.h.html#gtsam::BayesTree{gtsam::ISAM2Clique}::Cliques" title='gtsam::BayesTree&lt;gtsam::ISAM2Clique&gt;::Cliques' data-type='FastList&lt;sharedClique&gt;' data-ref="gtsam::BayesTree{gtsam::ISAM2Clique}::Cliques">Cliques</a>;            <i class="doc">///&lt; List of Cliques</i></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>  <i class="doc">/** Create an empty ISAM2 instance */</i></td></tr>
+<tr><th id="107">107</th><td>  <b>explicit</b> <dfn class="decl fn" id="_ZN5gtsam5ISAM2C1ERKNS_11ISAM2ParamsE" title='gtsam::ISAM2::ISAM2' data-ref="_ZN5gtsam5ISAM2C1ERKNS_11ISAM2ParamsE">ISAM2</dfn>(<em>const</em> <a class="type" href="ISAM2Params.h.html#gtsam::ISAM2Params" title='gtsam::ISAM2Params' data-ref="gtsam::ISAM2Params">ISAM2Params</a>&amp; <dfn class="local col5 decl" id="795params" title='params' data-type='const ISAM2Params &amp;' data-ref="795params">params</dfn>);</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <i class="doc">/** Create an empty ISAM2 instance using the default set of parameters (see</i></td></tr>
+<tr><th id="110">110</th><td><i class="doc">   * ISAM2Params) */</i></td></tr>
+<tr><th id="111">111</th><td>  <dfn class="decl fn" id="_ZN5gtsam5ISAM2C1Ev" title='gtsam::ISAM2::ISAM2' data-ref="_ZN5gtsam5ISAM2C1Ev">ISAM2</dfn>();</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>  <i class="doc">/** default virtual destructor */</i></td></tr>
+<tr><th id="114">114</th><td>  <b>virtual</b> <dfn class="virtual decl def fn" id="_ZN5gtsam5ISAM2D1Ev" title='gtsam::ISAM2::~ISAM2' data-ref="_ZN5gtsam5ISAM2D1Ev">~ISAM2</dfn>() {}</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <i class="doc">/** Compare equality */</i></td></tr>
+<tr><th id="117">117</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl fn" id="_ZNK5gtsam5ISAM26equalsERKS0_d" title='gtsam::ISAM2::equals' data-ref="_ZNK5gtsam5ISAM26equalsERKS0_d">equals</dfn>(<em>const</em> <a class="type" href="#gtsam::ISAM2" title='gtsam::ISAM2' data-ref="gtsam::ISAM2">ISAM2</a>&amp; <dfn class="local col6 decl" id="796other" title='other' data-type='const ISAM2 &amp;' data-ref="796other">other</dfn>, <em>double</em> <dfn class="local col7 decl" id="797tol" title='tol' data-type='double' data-ref="797tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">   * Add new factors, updating the solution and relinearizing as needed.</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">   * Optionally, this function remove existing factors from the system to enable</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">   * behaviors such as swapping existing factors with new ones.</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">   * Add new measurements, and optionally new variables, to the current system.</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">   * This runs a full step of the ISAM2 algorithm, relinearizing and updating</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">   * the solution as needed, according to the wildfire and relinearize</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">   * thresholds.</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">newFactors</span> The new factors to be added to the system</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">newTheta</span> Initialization points for new variables to be added to the</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">   * system. You must include here all new variables occuring in newFactors</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">   * (which were not already in the system).  There must not be any variables</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">   * here that do not occur in newFactors, and additionally, variables that were</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">   * already in the system must not be included here.</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">removeFactorIndices</span> Indices of factors to remove from system</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">force_relinearize</span> Relinearize any variables whose delta magnitude is</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">   * sufficiently large (Params::relinearizeThreshold), regardless of the</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">   * relinearization interval (Params::relinearizeSkip).</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">constrainedKeys</span> is an optional map of keys to group labels, such</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">   * that a variable can be constrained to a particular grouping in the</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">   * BayesTree</i></td></tr>
+<tr><th id="143">143</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">noRelinKeys</span> is an optional set of nonlinear keys that iSAM2 will</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">   * hold at a constant linearization point, regardless of the size of the</i></td></tr>
+<tr><th id="145">145</th><td><i class="doc">   * linear delta</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">extraReelimKeys</span> is an optional set of nonlinear keys that iSAM2 will</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">   * re-eliminate, regardless of the size of the linear delta. This allows the</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">   * provided keys to be reordered.</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   * <span class="command">@return</span> An ISAM2Result struct containing information about the update</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="151">151</th><td>  <b>virtual</b> <a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result" title='gtsam::ISAM2Result' data-ref="gtsam::ISAM2Result">ISAM2Result</a> <dfn class="virtual decl fn" id="_ZN5gtsam5ISAM26updateERKNS_20NonlinearFactorGraphERKNS_6ValuesERKSt6vectorImSaImEERKSt8optionalINS_7FastMapImiEEERKSC_INS_8FastListImEEESM_b" title='gtsam::ISAM2::update' data-ref="_ZN5gtsam5ISAM26updateERKNS_20NonlinearFactorGraphERKNS_6ValuesERKSt6vectorImSaImEERKSt8optionalINS_7FastMapImiEEERKSC_INS_8FastListImEEESM_b">update</dfn>(</td></tr>
+<tr><th id="152">152</th><td>      <em>const</em> <a class="type" href="NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col8 decl" id="798newFactors" title='newFactors' data-type='const NonlinearFactorGraph &amp;' data-ref="798newFactors">newFactors</dfn> = <a class="type" href="NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a><a class="ref fn" href="NonlinearFactorGraph.h.html#_ZN5gtsam20NonlinearFactorGraphC1Ev" title='gtsam::NonlinearFactorGraph::NonlinearFactorGraph' data-ref="_ZN5gtsam20NonlinearFactorGraphC1Ev">(</a>),</td></tr>
+<tr><th id="153">153</th><td>      <em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col9 decl" id="799newTheta" title='newTheta' data-type='const Values &amp;' data-ref="799newTheta">newTheta</dfn> = <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a><a class="ref fn" href="Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev">(</a>),</td></tr>
+<tr><th id="154">154</th><td>      <em>const</em> <a class="typedef" href="../inference/Factor.h.html#gtsam::FactorIndices" title='gtsam::FactorIndices' data-type='FastVector&lt;FactorIndex&gt;' data-ref="gtsam::FactorIndices">FactorIndices</a>&amp; <dfn class="local col0 decl" id="800removeFactorIndices" title='removeFactorIndices' data-type='const FactorIndices &amp;' data-ref="800removeFactorIndices">removeFactorIndices</dfn> = <a class="typedef" href="../inference/Factor.h.html#gtsam::FactorIndices" title='gtsam::FactorIndices' data-type='FastVector&lt;FactorIndex&gt;' data-ref="gtsam::FactorIndices">FactorIndices</a><a class="ref fn" href="../../../include/c++/13/bits/stl_vector.h.html#_ZNSt6vectorC1Ev" title='std::vector::vector&lt;_Tp, _Alloc&gt;' data-ref="_ZNSt6vectorC1Ev">(</a>),</td></tr>
+<tr><th id="155">155</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<a class="type" href="../base/FastMap.h.html#gtsam::FastMap" title='gtsam::FastMap' data-ref="gtsam::FastMap">FastMap</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <em>int</em>&gt; &gt;&amp; <dfn class="local col1 decl" id="801constrainedKeys" title='constrainedKeys' data-type='const std::optional&lt;FastMap&lt;Key, int&gt;&gt; &amp;' data-ref="801constrainedKeys">constrainedKeys</dfn> = <a class="ref fn" href="../../../include/c++/13/optional.html#_ZNSt8optionalC1Ev" title='std::optional::optional&lt;_Tp&gt;' data-ref="_ZNSt8optionalC1Ev">{</a>},</td></tr>
+<tr><th id="156">156</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<a class="type" href="../base/FastList.h.html#gtsam::FastList" title='gtsam::FastList' data-ref="gtsam::FastList">FastList</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt; &gt;&amp; <dfn class="local col2 decl" id="802noRelinKeys" title='noRelinKeys' data-type='const std::optional&lt;FastList&lt;Key&gt;&gt; &amp;' data-ref="802noRelinKeys">noRelinKeys</dfn> = <a class="ref fn" href="../../../include/c++/13/optional.html#_ZNSt8optionalC1Ev" title='std::optional::optional&lt;_Tp&gt;' data-ref="_ZNSt8optionalC1Ev">{</a>},</td></tr>
+<tr><th id="157">157</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<a class="type" href="../base/FastList.h.html#gtsam::FastList" title='gtsam::FastList' data-ref="gtsam::FastList">FastList</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt; &gt;&amp; <dfn class="local col3 decl" id="803extraReelimKeys" title='extraReelimKeys' data-type='const std::optional&lt;FastList&lt;Key&gt;&gt; &amp;' data-ref="803extraReelimKeys">extraReelimKeys</dfn> = <a class="ref fn" href="../../../include/c++/13/optional.html#_ZNSt8optionalC1Ev" title='std::optional::optional&lt;_Tp&gt;' data-ref="_ZNSt8optionalC1Ev">{</a>},</td></tr>
+<tr><th id="158">158</th><td>      <em>bool</em> <dfn class="local col4 decl" id="804force_relinearize" title='force_relinearize' data-type='bool' data-ref="804force_relinearize">force_relinearize</dfn> = <b>false</b>);</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   * Add new factors, updating the solution and relinearizing as needed.</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="163">163</th><td><i class="doc">   * Alternative signature of update() (see its documentation above), with all</i></td></tr>
+<tr><th id="164">164</th><td><i class="doc">   * additional parameters in one structure. This form makes easier to keep</i></td></tr>
+<tr><th id="165">165</th><td><i class="doc">   * future API/ABI compatibility if parameters change.</i></td></tr>
+<tr><th id="166">166</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="167">167</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">newFactors</span> The new factors to be added to the system</i></td></tr>
+<tr><th id="168">168</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">newTheta</span> Initialization points for new variables to be added to the</i></td></tr>
+<tr><th id="169">169</th><td><i class="doc">   * system. You must include here all new variables occuring in newFactors</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">   * (which were not already in the system).  There must not be any variables</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">   * here that do not occur in newFactors, and additionally, variables that were</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">   * already in the system must not be included here.</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">updateParams</span> Additional parameters to control relinearization,</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">   * constrained keys, etc.</i></td></tr>
+<tr><th id="175">175</th><td><i class="doc">   * <span class="command">@return</span> An ISAM2Result struct containing information about the update</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc">   * <span class="command">@note</span> No default parameters to avoid ambiguous call errors.</i></td></tr>
+<tr><th id="177">177</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="178">178</th><td>  <b>virtual</b> <a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result" title='gtsam::ISAM2Result' data-ref="gtsam::ISAM2Result">ISAM2Result</a> <dfn class="virtual decl fn" id="_ZN5gtsam5ISAM26updateERKNS_20NonlinearFactorGraphERKNS_6ValuesERKNS_17ISAM2UpdateParamsE" title='gtsam::ISAM2::update' data-ref="_ZN5gtsam5ISAM26updateERKNS_20NonlinearFactorGraphERKNS_6ValuesERKNS_17ISAM2UpdateParamsE">update</dfn>(<em>const</em> <a class="type" href="NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col5 decl" id="805newFactors" title='newFactors' data-type='const NonlinearFactorGraph &amp;' data-ref="805newFactors">newFactors</dfn>,</td></tr>
+<tr><th id="179">179</th><td>                             <em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col6 decl" id="806newTheta" title='newTheta' data-type='const Values &amp;' data-ref="806newTheta">newTheta</dfn>,</td></tr>
+<tr><th id="180">180</th><td>                             <em>const</em> <a class="type" href="ISAM2UpdateParams.h.html#gtsam::ISAM2UpdateParams" title='gtsam::ISAM2UpdateParams' data-ref="gtsam::ISAM2UpdateParams">ISAM2UpdateParams</a>&amp; <dfn class="local col7 decl" id="807updateParams" title='updateParams' data-type='const ISAM2UpdateParams &amp;' data-ref="807updateParams">updateParams</dfn>);</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>  <i class="doc">/** Marginalize out variables listed in leafKeys.  These keys must be leaves</i></td></tr>
+<tr><th id="183">183</th><td><i class="doc">   * in the BayesTree.  Throws MarginalizeNonleafException if non-leaves are</i></td></tr>
+<tr><th id="184">184</th><td><i class="doc">   * requested to be marginalized.  Marginalization leaves a linear</i></td></tr>
+<tr><th id="185">185</th><td><i class="doc">   * approximation of the marginal in the system, and the linearization points</i></td></tr>
+<tr><th id="186">186</th><td><i class="doc">   * of any variables involved in this linear marginal become fixed.  The set</i></td></tr>
+<tr><th id="187">187</th><td><i class="doc">   * fixed variables will include any key involved with the marginalized</i></td></tr>
+<tr><th id="188">188</th><td><i class="doc">   * variables in the original factors, and possibly additional ones due to</i></td></tr>
+<tr><th id="189">189</th><td><i class="doc">   * fill-in.</i></td></tr>
+<tr><th id="190">190</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="191">191</th><td><i class="doc">   * If provided, 'marginalFactorsIndices' will be augmented with the factor</i></td></tr>
+<tr><th id="192">192</th><td><i class="doc">   * graph indices of the marginal factors added during the 'marginalizeLeaves'</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc">   * call</i></td></tr>
+<tr><th id="194">194</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="195">195</th><td><i class="doc">   * If provided, 'deletedFactorsIndices' will be augmented with the factor</i></td></tr>
+<tr><th id="196">196</th><td><i class="doc">   * graph indices of any factor that was removed during the 'marginalizeLeaves'</i></td></tr>
+<tr><th id="197">197</th><td><i class="doc">   * call</i></td></tr>
+<tr><th id="198">198</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="199">199</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam5ISAM217marginalizeLeavesERKNS_8FastListImEEPSt6vectorImSaImEES8_" title='gtsam::ISAM2::marginalizeLeaves' data-ref="_ZN5gtsam5ISAM217marginalizeLeavesERKNS_8FastListImEEPSt6vectorImSaImEES8_">marginalizeLeaves</dfn>(</td></tr>
+<tr><th id="200">200</th><td>      <em>const</em> <a class="type" href="../base/FastList.h.html#gtsam::FastList" title='gtsam::FastList' data-ref="gtsam::FastList">FastList</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;&amp; <dfn class="local col8 decl" id="808leafKeys" title='leafKeys' data-type='const FastList&lt;Key&gt; &amp;' data-ref="808leafKeys">leafKeys</dfn>,</td></tr>
+<tr><th id="201">201</th><td>      <a class="typedef" href="../inference/Factor.h.html#gtsam::FactorIndices" title='gtsam::FactorIndices' data-type='FastVector&lt;FactorIndex&gt;' data-ref="gtsam::FactorIndices">FactorIndices</a>* <dfn class="local col9 decl" id="809marginalFactorsIndices" title='marginalFactorsIndices' data-type='FactorIndices *' data-ref="809marginalFactorsIndices">marginalFactorsIndices</dfn> = <b>nullptr</b>,</td></tr>
+<tr><th id="202">202</th><td>      <a class="typedef" href="../inference/Factor.h.html#gtsam::FactorIndices" title='gtsam::FactorIndices' data-type='FastVector&lt;FactorIndex&gt;' data-ref="gtsam::FactorIndices">FactorIndices</a>* <dfn class="local col0 decl" id="810deletedFactorsIndices" title='deletedFactorsIndices' data-type='FactorIndices *' data-ref="810deletedFactorsIndices">deletedFactorsIndices</dfn> = <b>nullptr</b>);</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>  <i class="doc">/** An overload of marginalizeLeaves that takes references</i></td></tr>
+<tr><th id="205">205</th><td><i class="doc">   * to vectors instead of pointers to vectors and passes</i></td></tr>
+<tr><th id="206">206</th><td><i class="doc">   * it to the pointer version of the function.</i></td></tr>
+<tr><th id="207">207</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="208">208</th><td>  <b>template</b> &lt;<b>class</b>... OptArgs&gt;</td></tr>
+<tr><th id="209">209</th><td>      <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam5ISAM217marginalizeLeavesERKNS_8FastListImEEDpOT_" title='gtsam::ISAM2::marginalizeLeaves' data-ref="_ZN5gtsam5ISAM217marginalizeLeavesERKNS_8FastListImEEDpOT_">marginalizeLeaves</dfn>(<em>const</em> <a class="type" href="../base/FastList.h.html#gtsam::FastList" title='gtsam::FastList' data-ref="gtsam::FastList">FastList</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;&amp; <dfn class="local col1 decl" id="811leafKeys" title='leafKeys' data-type='const FastList&lt;Key&gt; &amp;' data-ref="811leafKeys">leafKeys</dfn>,</td></tr>
+<tr><th id="210">210</th><td>                             OptArgs&amp;&amp;... <dfn class="local col2 decl" id="812optArgs" title='optArgs' data-type='OptArgs &amp;&amp;...' data-ref="812optArgs">optArgs</dfn>) {</td></tr>
+<tr><th id="211">211</th><td>          <i>// dereference the optional arguments and pass</i></td></tr>
+<tr><th id="212">212</th><td><i>          // it to the pointer version</i></td></tr>
+<tr><th id="213">213</th><td>          marginalizeLeaves(<a class="local col1 ref" href="#811leafKeys" title='leafKeys' data-ref="811leafKeys">leafKeys</a>, (&amp;<a class="local col2 ref" href="#812optArgs" title='optArgs' data-ref="812optArgs">optArgs</a>)...);</td></tr>
+<tr><th id="214">214</th><td>      }</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td>  <i class="doc">/// Access the current linearization point</i></td></tr>
+<tr><th id="217">217</th><td>  <em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam5ISAM221getLinearizationPointEv" title='gtsam::ISAM2::getLinearizationPoint' data-ref="_ZNK5gtsam5ISAM221getLinearizationPointEv">getLinearizationPoint</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ISAM2::theta_" title='gtsam::ISAM2::theta_' data-ref="gtsam::ISAM2::theta_">theta_</a>; }</td></tr>
+<tr><th id="218">218</th><td></td></tr>
+<tr><th id="219">219</th><td>  <i class="doc">/// Check whether variable with given key exists in linearization point</i></td></tr>
+<tr><th id="220">220</th><td>  <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam5ISAM211valueExistsEm" title='gtsam::ISAM2::valueExists' data-ref="_ZNK5gtsam5ISAM211valueExistsEm">valueExists</dfn>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col3 decl" id="813key" title='key' data-type='Key' data-ref="813key">key</dfn>) <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ISAM2::theta_" title='gtsam::ISAM2::theta_' data-ref="gtsam::ISAM2::theta_">theta_</a>.<a class="ref fn" href="Values.h.html#_ZNK5gtsam6Values6existsEm" title='gtsam::Values::exists' data-ref="_ZNK5gtsam6Values6existsEm">exists</a>(<span class='inlayHint'>j:&nbsp;</span><a class="local col3 ref" href="#813key" title='key' data-ref="813key">key</a>); }</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>  <i class="doc">/** Compute an estimate from the incomplete linear delta computed during the</i></td></tr>
+<tr><th id="223">223</th><td><i class="doc">   * last update. This delta is incomplete because it was not updated below</i></td></tr>
+<tr><th id="224">224</th><td><i class="doc">   * wildfire_threshold.  If only a single variable is needed, it is faster to</i></td></tr>
+<tr><th id="225">225</th><td><i class="doc">   * call calculateEstimate(const KEY&amp;).</i></td></tr>
+<tr><th id="226">226</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="227">227</th><td>  <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="decl fn" id="_ZNK5gtsam5ISAM217calculateEstimateEv" title='gtsam::ISAM2::calculateEstimate' data-ref="_ZNK5gtsam5ISAM217calculateEstimateEv">calculateEstimate</dfn>() <em>const</em>;</td></tr>
+<tr><th id="228">228</th><td></td></tr>
+<tr><th id="229">229</th><td>  <i class="doc">/** Compute an estimate for a single variable using its incomplete linear</i></td></tr>
+<tr><th id="230">230</th><td><i class="doc">   * delta computed during the last update.  This is faster than calling the</i></td></tr>
+<tr><th id="231">231</th><td><i class="doc">   * no-argument version of calculateEstimate, which operates on all variables.</i></td></tr>
+<tr><th id="232">232</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">key</span></i></td></tr>
+<tr><th id="233">233</th><td><i class="doc">   * <span class="command">@return</span></i></td></tr>
+<tr><th id="234">234</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="235">235</th><td>  <b>template</b> &lt;<b>class</b> VALUE&gt;</td></tr>
+<tr><th id="236">236</th><td>  VALUE <dfn class="decl def fn" id="_ZNK5gtsam5ISAM217calculateEstimateEm" title='gtsam::ISAM2::calculateEstimate' data-ref="_ZNK5gtsam5ISAM217calculateEstimateEm">calculateEstimate</dfn>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col4 decl" id="814key" title='key' data-type='Key' data-ref="814key">key</dfn>) <em>const</em> {</td></tr>
+<tr><th id="237">237</th><td>    <em>const</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>&amp; <dfn class="local col5 decl" id="815delta" title='delta' data-type='const Vector &amp;' data-ref="815delta">delta</dfn> = <a class="member fn" href="#_ZNK5gtsam5ISAM28getDeltaEv" title='gtsam::ISAM2::getDelta' data-ref="_ZNK5gtsam5ISAM28getDeltaEv">getDelta</a>()<a class="ref fn" href="../linear/VectorValues.h.html#_ZNK5gtsam12VectorValuesixEm" title='gtsam::VectorValues::operator[]' data-ref="_ZNK5gtsam12VectorValuesixEm">[<a class="local col4 ref" href="#814key" title='key' data-ref="814key">key</a>]</a>;</td></tr>
+<tr><th id="238">238</th><td>    <b>return</b> <a class="type" href="../base/Testable.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;VALUE&gt;::Retract(<a class="member field" href="#gtsam::ISAM2::theta_" title='gtsam::ISAM2::theta_' data-ref="gtsam::ISAM2::theta_">theta_</a>.at&lt;VALUE&gt;(<a class="local col4 ref" href="#814key" title='key' data-ref="814key">key</a>), <a class="local col5 ref" href="#815delta" title='delta' data-ref="815delta">delta</a>);</td></tr>
+<tr><th id="239">239</th><td>  }</td></tr>
+<tr><th id="240">240</th><td></td></tr>
+<tr><th id="241">241</th><td>  <i class="doc">/** Compute an estimate for a single variable using its incomplete linear</i></td></tr>
+<tr><th id="242">242</th><td><i class="doc">   * delta computed during the last update.  This is faster than calling the</i></td></tr>
+<tr><th id="243">243</th><td><i class="doc">   * no-argument version of calculateEstimate, which operates on all variables.</i></td></tr>
+<tr><th id="244">244</th><td><i class="doc">   * This is a non-templated version that returns a Value base class for use</i></td></tr>
+<tr><th id="245">245</th><td><i class="doc">   * with the MATLAB wrapper.</i></td></tr>
+<tr><th id="246">246</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">key</span></i></td></tr>
+<tr><th id="247">247</th><td><i class="doc">   * <span class="command">@return</span></i></td></tr>
+<tr><th id="248">248</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="249">249</th><td>  <em>const</em> <a class="type" href="../base/Value.h.html#gtsam::Value" title='gtsam::Value' data-ref="gtsam::Value">Value</a>&amp; <dfn class="decl fn" id="_ZNK5gtsam5ISAM217calculateEstimateEm" title='gtsam::ISAM2::calculateEstimate' data-ref="_ZNK5gtsam5ISAM217calculateEstimateEm">calculateEstimate</dfn>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col6 decl" id="816key" title='key' data-type='Key' data-ref="816key">key</dfn>) <em>const</em>;</td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td>  <i class="doc">/** Return marginal on any variable as a covariance matrix */</i></td></tr>
+<tr><th id="252">252</th><td>  <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="decl fn" id="_ZNK5gtsam5ISAM218marginalCovarianceEm" title='gtsam::ISAM2::marginalCovariance' data-ref="_ZNK5gtsam5ISAM218marginalCovarianceEm">marginalCovariance</dfn>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col7 decl" id="817key" title='key' data-type='Key' data-ref="817key">key</dfn>) <em>const</em>;</td></tr>
+<tr><th id="253">253</th><td></td></tr>
+<tr><th id="254">254</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Public members for non-typical usage</span></i></td></tr>
+<tr><th id="255">255</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="256">256</th><td></td></tr>
+<tr><th id="257">257</th><td>  <i class="doc">/** Compute an estimate using a complete delta computed by a full</i></td></tr>
+<tr><th id="258">258</th><td><i class="doc">   * back-substitution.</i></td></tr>
+<tr><th id="259">259</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="260">260</th><td>  <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="decl fn" id="_ZNK5gtsam5ISAM221calculateBestEstimateEv" title='gtsam::ISAM2::calculateBestEstimate' data-ref="_ZNK5gtsam5ISAM221calculateBestEstimateEv">calculateBestEstimate</dfn>() <em>const</em>;</td></tr>
+<tr><th id="261">261</th><td></td></tr>
+<tr><th id="262">262</th><td>  <i class="doc">/** Access the current delta, computed during the last call to update */</i></td></tr>
+<tr><th id="263">263</th><td>  <em>const</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a>&amp; <dfn class="decl fn" id="_ZNK5gtsam5ISAM28getDeltaEv" title='gtsam::ISAM2::getDelta' data-ref="_ZNK5gtsam5ISAM28getDeltaEv">getDelta</dfn>() <em>const</em>;</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td>  <i class="doc">/** Compute the linear error */</i></td></tr>
+<tr><th id="266">266</th><td>  <em>double</em> <dfn class="decl fn" id="_ZNK5gtsam5ISAM25errorERKNS_12VectorValuesE" title='gtsam::ISAM2::error' data-ref="_ZNK5gtsam5ISAM25errorERKNS_12VectorValuesE">error</dfn>(<em>const</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a>&amp; <dfn class="local col8 decl" id="818x" title='x' data-type='const VectorValues &amp;' data-ref="818x">x</dfn>) <em>const</em>;</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td>  <i class="doc">/** Access the set of nonlinear factors */</i></td></tr>
+<tr><th id="269">269</th><td>  <em>const</em> <a class="type" href="NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam5ISAM216getFactorsUnsafeEv" title='gtsam::ISAM2::getFactorsUnsafe' data-ref="_ZNK5gtsam5ISAM216getFactorsUnsafeEv">getFactorsUnsafe</dfn>() <em>const</em> {</td></tr>
+<tr><th id="270">270</th><td>    <b>return</b> <a class="member field" href="#gtsam::ISAM2::nonlinearFactors_" title='gtsam::ISAM2::nonlinearFactors_' data-ref="gtsam::ISAM2::nonlinearFactors_">nonlinearFactors_</a>;</td></tr>
+<tr><th id="271">271</th><td>  }</td></tr>
+<tr><th id="272">272</th><td></td></tr>
+<tr><th id="273">273</th><td>  <i class="doc">/** Access the nonlinear variable index */</i></td></tr>
+<tr><th id="274">274</th><td>  <em>const</em> <a class="type" href="../inference/VariableIndex.h.html#gtsam::VariableIndex" title='gtsam::VariableIndex' data-ref="gtsam::VariableIndex">VariableIndex</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam5ISAM216getVariableIndexEv" title='gtsam::ISAM2::getVariableIndex' data-ref="_ZNK5gtsam5ISAM216getVariableIndexEv">getVariableIndex</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ISAM2::variableIndex_" title='gtsam::ISAM2::variableIndex_' data-ref="gtsam::ISAM2::variableIndex_">variableIndex_</a>; }</td></tr>
+<tr><th id="275">275</th><td></td></tr>
+<tr><th id="276">276</th><td>  <i class="doc">/** Access the nonlinear variable index */</i></td></tr>
+<tr><th id="277">277</th><td>  <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam5ISAM217getFixedVariablesEv" title='gtsam::ISAM2::getFixedVariables' data-ref="_ZNK5gtsam5ISAM217getFixedVariablesEv">getFixedVariables</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ISAM2::fixedVariables_" title='gtsam::ISAM2::fixedVariables_' data-ref="gtsam::ISAM2::fixedVariables_">fixedVariables_</a>; }</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>  <em>const</em> <a class="type" href="ISAM2Params.h.html#gtsam::ISAM2Params" title='gtsam::ISAM2Params' data-ref="gtsam::ISAM2Params">ISAM2Params</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam5ISAM26paramsEv" title='gtsam::ISAM2::params' data-ref="_ZNK5gtsam5ISAM26paramsEv">params</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ISAM2::params_" title='gtsam::ISAM2::params_' data-ref="gtsam::ISAM2::params_">params_</a>; }</td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td>  <i class="doc">/** prints out clique statistics */</i></td></tr>
+<tr><th id="282">282</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam5ISAM210printStatsEv" title='gtsam::ISAM2::printStats' data-ref="_ZNK5gtsam5ISAM210printStatsEv">printStats</dfn>() <em>const</em> { <a class="member fn" href="../inference/BayesTree.h.html#_ZNK5gtsam9BayesTree13getCliqueDataEv" title='gtsam::BayesTree::getCliqueData' data-ref="_ZNK5gtsam9BayesTree13getCliqueDataEv">getCliqueData</a>().<a class="ref fn" href="../inference/BayesTree.h.html#_ZNK5gtsam19BayesTreeCliqueData8getStatsEv" title='gtsam::BayesTreeCliqueData::getStats' data-ref="_ZNK5gtsam19BayesTreeCliqueData8getStatsEv">getStats</a>().<a class="ref fn" href="../inference/BayesTree.h.html#_ZNK5gtsam20BayesTreeCliqueStats5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::BayesTreeCliqueStats::print' data-ref="_ZNK5gtsam20BayesTreeCliqueStats5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</a>(); }</td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td>  <i class="doc">/** Compute the gradient of the energy function, <span class="command">\f$</span><span class="verb"> \nabla_{x=0} \left\Vert</span></i></td></tr>
+<tr><th id="285">285</th><td><i class="doc"><span class="verb"></span>   *<span class="verb"> \Sigma^{-1} R x - d \right\Vert^2 \</span>f$, centered around zero. The gradient</i></td></tr>
+<tr><th id="286">286</th><td><i class="doc">   * about zero is <span class="command">\f$</span><span class="verb"> -R^T d \</span>f$.  See also gradient(const GaussianBayesNet&amp;,</i></td></tr>
+<tr><th id="287">287</th><td><i class="doc">   * const VectorValues&amp;).</i></td></tr>
+<tr><th id="288">288</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="289">289</th><td><i class="doc">   * <span class="command">@return</span> A VectorValues storing the gradient.</i></td></tr>
+<tr><th id="290">290</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="291">291</th><td>  <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZNK5gtsam5ISAM214gradientAtZeroEv" title='gtsam::ISAM2::gradientAtZero' data-ref="_ZNK5gtsam5ISAM214gradientAtZeroEv">gradientAtZero</dfn>() <em>const</em>;</td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="294">294</th><td></td></tr>
+<tr><th id="295">295</th><td> <b>protected</b>:</td></tr>
+<tr><th id="296">296</th><td>  <i class="doc">/// Remove marked top and either recalculate in batch or incrementally.</i></td></tr>
+<tr><th id="297">297</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam5ISAM211recalculateERKNS_17ISAM2UpdateParamsERKNS_7FastSetImEEPNS_11ISAM2ResultE" title='gtsam::ISAM2::recalculate' data-ref="_ZN5gtsam5ISAM211recalculateERKNS_17ISAM2UpdateParamsERKNS_7FastSetImEEPNS_11ISAM2ResultE">recalculate</dfn>(<em>const</em> <a class="type" href="ISAM2UpdateParams.h.html#gtsam::ISAM2UpdateParams" title='gtsam::ISAM2UpdateParams' data-ref="gtsam::ISAM2UpdateParams">ISAM2UpdateParams</a>&amp; <dfn class="local col9 decl" id="819updateParams" title='updateParams' data-type='const ISAM2UpdateParams &amp;' data-ref="819updateParams">updateParams</dfn>,</td></tr>
+<tr><th id="298">298</th><td>                   <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>&amp; <dfn class="local col0 decl" id="820relinKeys" title='relinKeys' data-type='const KeySet &amp;' data-ref="820relinKeys">relinKeys</dfn>, <a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result" title='gtsam::ISAM2Result' data-ref="gtsam::ISAM2Result">ISAM2Result</a>* <dfn class="local col1 decl" id="821result" title='result' data-type='ISAM2Result *' data-ref="821result">result</dfn>);</td></tr>
+<tr><th id="299">299</th><td></td></tr>
+<tr><th id="300">300</th><td>  <i>// Do a batch step - reorder and relinearize all variables</i></td></tr>
+<tr><th id="301">301</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam5ISAM216recalculateBatchERKNS_17ISAM2UpdateParamsEPNS_7FastSetImEEPNS_11ISAM2ResultE" title='gtsam::ISAM2::recalculateBatch' data-ref="_ZN5gtsam5ISAM216recalculateBatchERKNS_17ISAM2UpdateParamsEPNS_7FastSetImEEPNS_11ISAM2ResultE">recalculateBatch</dfn>(<em>const</em> <a class="type" href="ISAM2UpdateParams.h.html#gtsam::ISAM2UpdateParams" title='gtsam::ISAM2UpdateParams' data-ref="gtsam::ISAM2UpdateParams">ISAM2UpdateParams</a>&amp; <dfn class="local col2 decl" id="822updateParams" title='updateParams' data-type='const ISAM2UpdateParams &amp;' data-ref="822updateParams">updateParams</dfn>,</td></tr>
+<tr><th id="302">302</th><td>                        <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>* <dfn class="local col3 decl" id="823affectedKeysSet" title='affectedKeysSet' data-type='KeySet *' data-ref="823affectedKeysSet">affectedKeysSet</dfn>, <a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result" title='gtsam::ISAM2Result' data-ref="gtsam::ISAM2Result">ISAM2Result</a>* <dfn class="local col4 decl" id="824result" title='result' data-type='ISAM2Result *' data-ref="824result">result</dfn>);</td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td>  <i>// retrieve all factors that ONLY contain the affected variables</i></td></tr>
+<tr><th id="305">305</th><td><i>  // (note that the remaining stuff is summarized in the cached factors)</i></td></tr>
+<tr><th id="306">306</th><td>  <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> <dfn class="decl fn" id="_ZN5gtsam5ISAM226relinearizeAffectedFactorsERKNS_17ISAM2UpdateParamsERKNS_8FastListImEERKNS_7FastSetImEE" title='gtsam::ISAM2::relinearizeAffectedFactors' data-ref="_ZN5gtsam5ISAM226relinearizeAffectedFactorsERKNS_17ISAM2UpdateParamsERKNS_8FastListImEERKNS_7FastSetImEE">relinearizeAffectedFactors</dfn>(</td></tr>
+<tr><th id="307">307</th><td>      <em>const</em> <a class="type" href="ISAM2UpdateParams.h.html#gtsam::ISAM2UpdateParams" title='gtsam::ISAM2UpdateParams' data-ref="gtsam::ISAM2UpdateParams">ISAM2UpdateParams</a>&amp; <dfn class="local col5 decl" id="825updateParams" title='updateParams' data-type='const ISAM2UpdateParams &amp;' data-ref="825updateParams">updateParams</dfn>, <em>const</em> <a class="type" href="../base/FastList.h.html#gtsam::FastList" title='gtsam::FastList' data-ref="gtsam::FastList">FastList</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;&amp; <dfn class="local col6 decl" id="826affectedKeys" title='affectedKeys' data-type='const FastList&lt;Key&gt; &amp;' data-ref="826affectedKeys">affectedKeys</dfn>,</td></tr>
+<tr><th id="308">308</th><td>      <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>&amp; <dfn class="local col7 decl" id="827relinKeys" title='relinKeys' data-type='const KeySet &amp;' data-ref="827relinKeys">relinKeys</dfn>);</td></tr>
+<tr><th id="309">309</th><td></td></tr>
+<tr><th id="310">310</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="311">311</th><td><i class="doc">   * <span class="command">@brief</span> Perform an incremental update of the factor graph to return a new</i></td></tr>
+<tr><th id="312">312</th><td><i class="doc">   * Bayes Tree with affected keys.</i></td></tr>
+<tr><th id="313">313</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="314">314</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">updateParams</span> Parameters for the ISAM2 update.</i></td></tr>
+<tr><th id="315">315</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">relinKeys</span> Keys of variables to relinearize.</i></td></tr>
+<tr><th id="316">316</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">affectedKeys</span> The set of keys which are affected in the update.</i></td></tr>
+<tr><th id="317">317</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">affectedKeysSet</span> [output] Affected and contaminated keys.</i></td></tr>
+<tr><th id="318">318</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">orphans</span> [output] List of orphanes cliques after elimination.</i></td></tr>
+<tr><th id="319">319</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">result</span> [output] The result of the incremental update step.</i></td></tr>
+<tr><th id="320">320</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="321">321</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam5ISAM222recalculateIncrementalERKNS_17ISAM2UpdateParamsERKNS_7FastSetImEERKNS_8FastListImEEPS5_PNS8_ISt10shared_ptrINS_11ISAM2CliqueEEEEPNS_11ISAM2ResultE" title='gtsam::ISAM2::recalculateIncremental' data-ref="_ZN5gtsam5ISAM222recalculateIncrementalERKNS_17ISAM2UpdateParamsERKNS_7FastSetImEERKNS_8FastListImEEPS5_PNS8_ISt10shared_ptrINS_11ISAM2CliqueEEEEPNS_11ISAM2ResultE">recalculateIncremental</dfn>(<em>const</em> <a class="type" href="ISAM2UpdateParams.h.html#gtsam::ISAM2UpdateParams" title='gtsam::ISAM2UpdateParams' data-ref="gtsam::ISAM2UpdateParams">ISAM2UpdateParams</a>&amp; <dfn class="local col8 decl" id="828updateParams" title='updateParams' data-type='const ISAM2UpdateParams &amp;' data-ref="828updateParams">updateParams</dfn>,</td></tr>
+<tr><th id="322">322</th><td>                              <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>&amp; <dfn class="local col9 decl" id="829relinKeys" title='relinKeys' data-type='const KeySet &amp;' data-ref="829relinKeys">relinKeys</dfn>,</td></tr>
+<tr><th id="323">323</th><td>                              <em>const</em> <a class="type" href="../base/FastList.h.html#gtsam::FastList" title='gtsam::FastList' data-ref="gtsam::FastList">FastList</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;&amp; <dfn class="local col0 decl" id="830affectedKeys" title='affectedKeys' data-type='const FastList&lt;Key&gt; &amp;' data-ref="830affectedKeys">affectedKeys</dfn>,</td></tr>
+<tr><th id="324">324</th><td>                              <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>* <dfn class="local col1 decl" id="831affectedKeysSet" title='affectedKeysSet' data-type='KeySet *' data-ref="831affectedKeysSet">affectedKeysSet</dfn>, <a class="typedef" href="#gtsam::ISAM2::Cliques" title='gtsam::ISAM2::Cliques' data-type='Base::Cliques' data-ref="gtsam::ISAM2::Cliques">Cliques</a>* <dfn class="local col2 decl" id="832orphans" title='orphans' data-type='Cliques *' data-ref="832orphans">orphans</dfn>,</td></tr>
+<tr><th id="325">325</th><td>                              <a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result" title='gtsam::ISAM2Result' data-ref="gtsam::ISAM2Result">ISAM2Result</a>* <dfn class="local col3 decl" id="833result" title='result' data-type='ISAM2Result *' data-ref="833result">result</dfn>);</td></tr>
+<tr><th id="326">326</th><td></td></tr>
+<tr><th id="327">327</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="328">328</th><td><i class="doc">   * Add new variables to the ISAM2 system.</i></td></tr>
+<tr><th id="329">329</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">newTheta</span> Initial values for new variables</i></td></tr>
+<tr><th id="330">330</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">variableStatus</span> optional detailed result structure</i></td></tr>
+<tr><th id="331">331</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="332">332</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam5ISAM212addVariablesERKNS_6ValuesEPNS_11ISAM2Result15DetailedResultsE" title='gtsam::ISAM2::addVariables' data-ref="_ZN5gtsam5ISAM212addVariablesERKNS_6ValuesEPNS_11ISAM2Result15DetailedResultsE">addVariables</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col4 decl" id="834newTheta" title='newTheta' data-type='const Values &amp;' data-ref="834newTheta">newTheta</dfn>,</td></tr>
+<tr><th id="333">333</th><td>                    <a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result" title='gtsam::ISAM2Result' data-ref="gtsam::ISAM2Result">ISAM2Result</a>::<a class="type" href="ISAM2Result.h.html#gtsam::ISAM2Result::DetailedResults" title='gtsam::ISAM2Result::DetailedResults' data-ref="gtsam::ISAM2Result::DetailedResults">DetailedResults</a>* <dfn class="local col5 decl" id="835detail" title='detail' data-type='ISAM2Result::DetailedResults *' data-ref="835detail">detail</dfn> = <var>0</var>);</td></tr>
+<tr><th id="334">334</th><td></td></tr>
+<tr><th id="335">335</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="336">336</th><td><i class="doc">   * Remove variables from the ISAM2 system.</i></td></tr>
+<tr><th id="337">337</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="338">338</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam5ISAM215removeVariablesERKNS_7FastSetImEE" title='gtsam::ISAM2::removeVariables' data-ref="_ZN5gtsam5ISAM215removeVariablesERKNS_7FastSetImEE">removeVariables</dfn>(<em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeySet" title='gtsam::KeySet' data-type='FastSet&lt;Key&gt;' data-ref="gtsam::KeySet">KeySet</a>&amp; <dfn class="local col6 decl" id="836unusedKeys" title='unusedKeys' data-type='const KeySet &amp;' data-ref="836unusedKeys">unusedKeys</dfn>);</td></tr>
+<tr><th id="339">339</th><td></td></tr>
+<tr><th id="340">340</th><td>  <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam5ISAM211updateDeltaEb" title='gtsam::ISAM2::updateDelta' data-ref="_ZNK5gtsam5ISAM211updateDeltaEb">updateDelta</dfn>(<em>bool</em> <dfn class="local col7 decl" id="837forceFullSolve" title='forceFullSolve' data-type='bool' data-ref="837forceFullSolve">forceFullSolve</dfn> = <b>false</b>) <em>const</em>;</td></tr>
+<tr><th id="341">341</th><td></td></tr>
+<tr><th id="342">342</th><td> <b>private</b>:</td></tr>
+<tr><th id="343">343</th><td><u>#<span data-ppcond="343">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="344">344</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="345">345</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="346">346</th><td>  <b>template</b>&lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="347">347</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam5ISAM29serializeERT_j" title='gtsam::ISAM2::serialize' data-ref="_ZN5gtsam5ISAM29serializeERT_j">serialize</dfn>(ARCHIVE &amp; <dfn class="local col8 decl" id="838ar" title='ar' data-type='ARCHIVE &amp;' data-ref="838ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="348">348</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#26" title="boost::serialization::make_nvp( &quot;Base&quot;, boost::serialization::base_object&lt;Base &gt;(*this) )" data-ref="_M/BOOST_SERIALIZATION_BASE_OBJECT_NVP">BOOST_SERIALIZATION_BASE_OBJECT_NVP</a>(<a class="typedef" href="#gtsam::ISAM2::Base" title='gtsam::ISAM2::Base' data-type='BayesTree&lt;ISAM2Clique&gt;' data-ref="gtsam::ISAM2::Base">Base</a>);</td></tr>
+<tr><th id="349">349</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;theta_&quot;, theta_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::theta_" title='gtsam::ISAM2::theta_' data-ref="gtsam::ISAM2::theta_">theta_</a></span>);</td></tr>
+<tr><th id="350">350</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;variableIndex_&quot;, variableIndex_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::variableIndex_" title='gtsam::ISAM2::variableIndex_' data-ref="gtsam::ISAM2::variableIndex_">variableIndex_</a></span>);</td></tr>
+<tr><th id="351">351</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;delta_&quot;, delta_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::delta_" title='gtsam::ISAM2::delta_' data-ref="gtsam::ISAM2::delta_">delta_</a></span>);</td></tr>
+<tr><th id="352">352</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;deltaNewton_&quot;, deltaNewton_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::deltaNewton_" title='gtsam::ISAM2::deltaNewton_' data-ref="gtsam::ISAM2::deltaNewton_">deltaNewton_</a></span>);</td></tr>
+<tr><th id="353">353</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;RgProd_&quot;, RgProd_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::RgProd_" title='gtsam::ISAM2::RgProd_' data-ref="gtsam::ISAM2::RgProd_">RgProd_</a></span>);</td></tr>
+<tr><th id="354">354</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;deltaReplacedMask_&quot;, deltaReplacedMask_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::deltaReplacedMask_" title='gtsam::ISAM2::deltaReplacedMask_' data-ref="gtsam::ISAM2::deltaReplacedMask_">deltaReplacedMask_</a></span>);</td></tr>
+<tr><th id="355">355</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;nonlinearFactors_&quot;, nonlinearFactors_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::nonlinearFactors_" title='gtsam::ISAM2::nonlinearFactors_' data-ref="gtsam::ISAM2::nonlinearFactors_">nonlinearFactors_</a></span>);</td></tr>
+<tr><th id="356">356</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;linearFactors_&quot;, linearFactors_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::linearFactors_" title='gtsam::ISAM2::linearFactors_' data-ref="gtsam::ISAM2::linearFactors_">linearFactors_</a></span>);</td></tr>
+<tr><th id="357">357</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;doglegDelta_&quot;, doglegDelta_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::doglegDelta_" title='gtsam::ISAM2::doglegDelta_' data-ref="gtsam::ISAM2::doglegDelta_">doglegDelta_</a></span>);</td></tr>
+<tr><th id="358">358</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;fixedVariables_&quot;, fixedVariables_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::fixedVariables_" title='gtsam::ISAM2::fixedVariables_' data-ref="gtsam::ISAM2::fixedVariables_">fixedVariables_</a></span>);</td></tr>
+<tr><th id="359">359</th><td>      <a class="local col8 ref" href="#838ar" title='ar' data-ref="838ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;update_count_&quot;, update_count_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::ISAM2::update_count_" title='gtsam::ISAM2::update_count_' data-ref="gtsam::ISAM2::update_count_">update_count_</a></span>);</td></tr>
+<tr><th id="360">360</th><td>  }</td></tr>
+<tr><th id="361">361</th><td><u>#<span data-ppcond="343">endif</span></u></td></tr>
+<tr><th id="362">362</th><td></td></tr>
+<tr><th id="363">363</th><td>};  <i>// ISAM2</i></td></tr>
+<tr><th id="364">364</th><td></td></tr>
+<tr><th id="365">365</th><td><i class="doc">/// traits</i></td></tr>
+<tr><th id="366">366</th><td><b>template</b> &lt;&gt;</td></tr>
+<tr><th id="367">367</th><td><b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits"><a class="type" href="../base/Testable.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a></dfn>&lt;<a class="type" href="#gtsam::ISAM2" title='gtsam::ISAM2' data-ref="gtsam::ISAM2">ISAM2</a>&gt; : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::ISAM2" title='gtsam::ISAM2' data-ref="gtsam::ISAM2">ISAM2</a>&gt; {};</td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="370">370</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/FixedLagSmootherExample.cpp.html'>codebrowser/examples/FixedLagSmootherExample.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

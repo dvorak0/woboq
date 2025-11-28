@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>chdtr.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/chdtr.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/chdtr.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='chdtr.c.html'>chdtr.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     chdtr.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Chi-square distribution</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double df, x, y, chdtr();</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * y = chdtr( df, x );</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * Returns the area under the left hand tail (from 0 to x)</i></td></tr>
+<tr><th id="18">18</th><td><i> * of the Chi square probability density function with</i></td></tr>
+<tr><th id="19">19</th><td><i> * v degrees of freedom.</i></td></tr>
+<tr><th id="20">20</th><td><i> *</i></td></tr>
+<tr><th id="21">21</th><td><i> *</i></td></tr>
+<tr><th id="22">22</th><td><i> *                                  inf.</i></td></tr>
+<tr><th id="23">23</th><td><i> *                                    -</i></td></tr>
+<tr><th id="24">24</th><td><i> *                        1          | |  v/2-1  -t/2</i></td></tr>
+<tr><th id="25">25</th><td><i> *  P( x | v )   =   -----------     |   t      e     dt</i></td></tr>
+<tr><th id="26">26</th><td><i> *                    v/2  -       | |</i></td></tr>
+<tr><th id="27">27</th><td><i> *                   2    | (v/2)   -</i></td></tr>
+<tr><th id="28">28</th><td><i> *                                   x</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> * where x is the Chi-square variable.</i></td></tr>
+<tr><th id="31">31</th><td><i> *</i></td></tr>
+<tr><th id="32">32</th><td><i> * The incomplete Gamma integral is used, according to the</i></td></tr>
+<tr><th id="33">33</th><td><i> * formula</i></td></tr>
+<tr><th id="34">34</th><td><i> *</i></td></tr>
+<tr><th id="35">35</th><td><i> *     y = chdtr( v, x ) = igam( v/2.0, x/2.0 ).</i></td></tr>
+<tr><th id="36">36</th><td><i> *</i></td></tr>
+<tr><th id="37">37</th><td><i> *</i></td></tr>
+<tr><th id="38">38</th><td><i> * The arguments must both be positive.</i></td></tr>
+<tr><th id="39">39</th><td><i> *</i></td></tr>
+<tr><th id="40">40</th><td><i> *</i></td></tr>
+<tr><th id="41">41</th><td><i> *</i></td></tr>
+<tr><th id="42">42</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="43">43</th><td><i> *</i></td></tr>
+<tr><th id="44">44</th><td><i> * See igam().</i></td></tr>
+<tr><th id="45">45</th><td><i> *</i></td></tr>
+<tr><th id="46">46</th><td><i> * ERROR MESSAGES:</i></td></tr>
+<tr><th id="47">47</th><td><i> *</i></td></tr>
+<tr><th id="48">48</th><td><i> *   message         condition      value returned</i></td></tr>
+<tr><th id="49">49</th><td><i> * chdtr domain   x &lt; 0 or v &lt; 1        0.0</i></td></tr>
+<tr><th id="50">50</th><td><i> */</i></td></tr>
+<tr><th id="51">51</th><td><i>/*							chdtrc()</i></td></tr>
+<tr><th id="52">52</th><td><i> *</i></td></tr>
+<tr><th id="53">53</th><td><i> *	Complemented Chi-square distribution</i></td></tr>
+<tr><th id="54">54</th><td><i> *</i></td></tr>
+<tr><th id="55">55</th><td><i> *</i></td></tr>
+<tr><th id="56">56</th><td><i> *</i></td></tr>
+<tr><th id="57">57</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="58">58</th><td><i> *</i></td></tr>
+<tr><th id="59">59</th><td><i> * double v, x, y, chdtrc();</i></td></tr>
+<tr><th id="60">60</th><td><i> *</i></td></tr>
+<tr><th id="61">61</th><td><i> * y = chdtrc( v, x );</i></td></tr>
+<tr><th id="62">62</th><td><i> *</i></td></tr>
+<tr><th id="63">63</th><td><i> *</i></td></tr>
+<tr><th id="64">64</th><td><i> *</i></td></tr>
+<tr><th id="65">65</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="66">66</th><td><i> *</i></td></tr>
+<tr><th id="67">67</th><td><i> * Returns the area under the right hand tail (from x to</i></td></tr>
+<tr><th id="68">68</th><td><i> * infinity) of the Chi square probability density function</i></td></tr>
+<tr><th id="69">69</th><td><i> * with v degrees of freedom:</i></td></tr>
+<tr><th id="70">70</th><td><i> *</i></td></tr>
+<tr><th id="71">71</th><td><i> *</i></td></tr>
+<tr><th id="72">72</th><td><i> *                                  inf.</i></td></tr>
+<tr><th id="73">73</th><td><i> *                                    -</i></td></tr>
+<tr><th id="74">74</th><td><i> *                        1          | |  v/2-1  -t/2</i></td></tr>
+<tr><th id="75">75</th><td><i> *  P( x | v )   =   -----------     |   t      e     dt</i></td></tr>
+<tr><th id="76">76</th><td><i> *                    v/2  -       | |</i></td></tr>
+<tr><th id="77">77</th><td><i> *                   2    | (v/2)   -</i></td></tr>
+<tr><th id="78">78</th><td><i> *                                   x</i></td></tr>
+<tr><th id="79">79</th><td><i> *</i></td></tr>
+<tr><th id="80">80</th><td><i> * where x is the Chi-square variable.</i></td></tr>
+<tr><th id="81">81</th><td><i> *</i></td></tr>
+<tr><th id="82">82</th><td><i> * The incomplete Gamma integral is used, according to the</i></td></tr>
+<tr><th id="83">83</th><td><i> * formula</i></td></tr>
+<tr><th id="84">84</th><td><i> *</i></td></tr>
+<tr><th id="85">85</th><td><i> *	y = chdtr( v, x ) = igamc( v/2.0, x/2.0 ).</i></td></tr>
+<tr><th id="86">86</th><td><i> *</i></td></tr>
+<tr><th id="87">87</th><td><i> *</i></td></tr>
+<tr><th id="88">88</th><td><i> * The arguments must both be positive.</i></td></tr>
+<tr><th id="89">89</th><td><i> *</i></td></tr>
+<tr><th id="90">90</th><td><i> *</i></td></tr>
+<tr><th id="91">91</th><td><i> *</i></td></tr>
+<tr><th id="92">92</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="93">93</th><td><i> *</i></td></tr>
+<tr><th id="94">94</th><td><i> * See igamc().</i></td></tr>
+<tr><th id="95">95</th><td><i> *</i></td></tr>
+<tr><th id="96">96</th><td><i> * ERROR MESSAGES:</i></td></tr>
+<tr><th id="97">97</th><td><i> *</i></td></tr>
+<tr><th id="98">98</th><td><i> *   message         condition      value returned</i></td></tr>
+<tr><th id="99">99</th><td><i> * chdtrc domain  x &lt; 0 or v &lt; 1        0.0</i></td></tr>
+<tr><th id="100">100</th><td><i> */</i></td></tr>
+<tr><th id="101">101</th><td><i>/*							chdtri()</i></td></tr>
+<tr><th id="102">102</th><td><i> *</i></td></tr>
+<tr><th id="103">103</th><td><i> *	Inverse of complemented Chi-square distribution</i></td></tr>
+<tr><th id="104">104</th><td><i> *</i></td></tr>
+<tr><th id="105">105</th><td><i> *</i></td></tr>
+<tr><th id="106">106</th><td><i> *</i></td></tr>
+<tr><th id="107">107</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="108">108</th><td><i> *</i></td></tr>
+<tr><th id="109">109</th><td><i> * double df, x, y, chdtri();</i></td></tr>
+<tr><th id="110">110</th><td><i> *</i></td></tr>
+<tr><th id="111">111</th><td><i> * x = chdtri( df, y );</i></td></tr>
+<tr><th id="112">112</th><td><i> *</i></td></tr>
+<tr><th id="113">113</th><td><i> *</i></td></tr>
+<tr><th id="114">114</th><td><i> *</i></td></tr>
+<tr><th id="115">115</th><td><i> *</i></td></tr>
+<tr><th id="116">116</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="117">117</th><td><i> *</i></td></tr>
+<tr><th id="118">118</th><td><i> * Finds the Chi-square argument x such that the integral</i></td></tr>
+<tr><th id="119">119</th><td><i> * from x to infinity of the Chi-square density is equal</i></td></tr>
+<tr><th id="120">120</th><td><i> * to the given cumulative probability y.</i></td></tr>
+<tr><th id="121">121</th><td><i> *</i></td></tr>
+<tr><th id="122">122</th><td><i> * This is accomplished using the inverse Gamma integral</i></td></tr>
+<tr><th id="123">123</th><td><i> * function and the relation</i></td></tr>
+<tr><th id="124">124</th><td><i> *</i></td></tr>
+<tr><th id="125">125</th><td><i> *    x/2 = igamci( df/2, y );</i></td></tr>
+<tr><th id="126">126</th><td><i> *</i></td></tr>
+<tr><th id="127">127</th><td><i> *</i></td></tr>
+<tr><th id="128">128</th><td><i> *</i></td></tr>
+<tr><th id="129">129</th><td><i> *</i></td></tr>
+<tr><th id="130">130</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="131">131</th><td><i> *</i></td></tr>
+<tr><th id="132">132</th><td><i> * See igami.c.</i></td></tr>
+<tr><th id="133">133</th><td><i> *</i></td></tr>
+<tr><th id="134">134</th><td><i> * ERROR MESSAGES:</i></td></tr>
+<tr><th id="135">135</th><td><i> *</i></td></tr>
+<tr><th id="136">136</th><td><i> *   message         condition      value returned</i></td></tr>
+<tr><th id="137">137</th><td><i> * chdtri domain   y &lt; 0 or y &gt; 1        0.0</i></td></tr>
+<tr><th id="138">138</th><td><i> *                     v &lt; 1</i></td></tr>
+<tr><th id="139">139</th><td><i> *</i></td></tr>
+<tr><th id="140">140</th><td><i> */</i></td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td><i>/*                                                             chdtr() */</i></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td><i>/*</i></td></tr>
+<tr><th id="146">146</th><td><i> * Cephes Math Library Release 2.0:  April, 1987</i></td></tr>
+<tr><th id="147">147</th><td><i> * Copyright 1984, 1987 by Stephen L. Moshier</i></td></tr>
+<tr><th id="148">148</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="149">149</th><td><i> */</i></td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td><em>double</em> <dfn class="decl def fn" id="chdtrc" title='chdtrc' data-ref="chdtrc">chdtrc</dfn>(<em>double</em> <dfn class="local col1 decl" id="1df" title='df' data-type='double' data-ref="1df">df</dfn>, <em>double</em> <dfn class="local col2 decl" id="2x" title='x' data-type='double' data-ref="2x">x</dfn>)</td></tr>
+<tr><th id="154">154</th><td>{</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>    <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &lt; <var>0.0</var>)</td></tr>
+<tr><th id="157">157</th><td>	<b>return</b> <var>1.0</var>;		<i>/* modified by T. Oliphant */</i></td></tr>
+<tr><th id="158">158</th><td>    <b>return</b> (<a class="ref fn" href="../cephes.h.html#igamc" title='igamc' data-ref="igamc">igamc</a>(<span class='inlayHint'>a:&nbsp;</span><a class="local col1 ref" href="#1df" title='df' data-ref="1df">df</a> / <var>2.0</var>, <span class='inlayHint'>x:&nbsp;</span><a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> / <var>2.0</var>));</td></tr>
+<tr><th id="159">159</th><td>}</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td><em>double</em> <dfn class="decl def fn" id="chdtr" title='chdtr' data-ref="chdtr">chdtr</dfn>(<em>double</em> <dfn class="local col3 decl" id="3df" title='df' data-type='double' data-ref="3df">df</dfn>, <em>double</em> <dfn class="local col4 decl" id="4x" title='x' data-type='double' data-ref="4x">x</dfn>)</td></tr>
+<tr><th id="164">164</th><td>{</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>    <b>if</b> ((<a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a> &lt; <var>0.0</var>)) {		<i>/* || (df &lt; 1.0) ) */</i></td></tr>
+<tr><th id="167">167</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"chdtr"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="168">168</th><td>	<b>return</b> (<a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>);</td></tr>
+<tr><th id="169">169</th><td>    }</td></tr>
+<tr><th id="170">170</th><td>    <b>return</b> (<a class="ref fn" href="../cephes.h.html#igam" title='igam' data-ref="igam">igam</a>(<span class='inlayHint'>a:&nbsp;</span><a class="local col3 ref" href="#3df" title='df' data-ref="3df">df</a> / <var>2.0</var>, <span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4x" title='x' data-ref="4x">x</a> / <var>2.0</var>));</td></tr>
+<tr><th id="171">171</th><td>}</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td><em>double</em> <dfn class="decl def fn" id="chdtri" title='chdtri' data-ref="chdtri">chdtri</dfn>(<em>double</em> <dfn class="local col5 decl" id="5df" title='df' data-type='double' data-ref="5df">df</dfn>, <em>double</em> <dfn class="local col6 decl" id="6y" title='y' data-type='double' data-ref="6y">y</dfn>)</td></tr>
+<tr><th id="176">176</th><td>{</td></tr>
+<tr><th id="177">177</th><td>    <em>double</em> <dfn class="local col7 decl" id="7x" title='x' data-type='double' data-ref="7x">x</dfn>;</td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td>    <b>if</b> ((<a class="local col6 ref" href="#6y" title='y' data-ref="6y">y</a> &lt; <var>0.0</var>) || (<a class="local col6 ref" href="#6y" title='y' data-ref="6y">y</a> &gt; <var>1.0</var>)) {	<i>/* || (df &lt; 1.0) ) */</i></td></tr>
+<tr><th id="180">180</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"chdtri"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="181">181</th><td>	<b>return</b> (<a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>);</td></tr>
+<tr><th id="182">182</th><td>    }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>    <a class="local col7 ref" href="#7x" title='x' data-ref="7x">x</a> = <a class="ref fn" href="../cephes.h.html#igamci" title='igamci' data-ref="igamci">igamci</a>(<span class='inlayHint'>a:&nbsp;</span><var>0.5</var> * <a class="local col5 ref" href="#5df" title='df' data-ref="5df">df</a>, <span class='inlayHint'>q:&nbsp;</span><a class="local col6 ref" href="#6y" title='y' data-ref="6y">y</a>);</td></tr>
+<tr><th id="185">185</th><td>    <b>return</b> (<var>2.0</var> * <a class="local col7 ref" href="#7x" title='x' data-ref="7x">x</a>);</td></tr>
+<tr><th id="186">186</th><td>}</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

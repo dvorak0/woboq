@@ -1,0 +1,361 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>timing.h source code [codebrowser/gtsam/base/timing.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::internal::AutoTicToc,gtsam::internal::TimingOutline "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/base/timing.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>base</a>/<a href='timing.h.html'>timing.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   timing.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Timing utilities</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Richard Roberts, Michael Kaess</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@date</span>    Oct 5, 2010</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td><u>#pragma once</u></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="FastMap.h.html">&lt;gtsam/base/FastMap.h&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../../build/gtsam/dllexport.h.html">&lt;gtsam/dllexport.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="../../build/gtsam/config.h.html">&lt;gtsam/config.h&gt;</a> // for GTSAM_USE_TBB</u></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><u>#<span data-ppcond="24">if</span> <a class="macro" href="../../build/gtsam/config.h.html#102" title="1" data-ref="_M/GTSAM_USE_BOOST_FEATURES">GTSAM_USE_BOOST_FEATURES</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../../../include/boost/version.hpp.html">&lt;boost/version.hpp&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#<span data-ppcond="24">else</span></u></td></tr>
+<tr><th id="27">27</th><td><u>#include &lt;chrono&gt;</u></td></tr>
+<tr><th id="28">28</th><td><u>#include &lt;ctime&gt;</u></td></tr>
+<tr><th id="29">29</th><td><u>#<span data-ppcond="24">endif</span></u></td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../../../include/c++/13/memory.html">&lt;memory&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../../../include/c++/13/cstddef.html">&lt;cstddef&gt;</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><i>// This file contains the GTSAM timing instrumentation library, a low-overhead method for</i></td></tr>
+<tr><th id="36">36</th><td><i>// learning at a medium-fine level how much time various components of an algorithm take</i></td></tr>
+<tr><th id="37">37</th><td><i>// in CPU and wall time.</i></td></tr>
+<tr><th id="38">38</th><td><i>//</i></td></tr>
+<tr><th id="39">39</th><td><i>// The output of this instrumentation is a call-tree-like printout containing statistics</i></td></tr>
+<tr><th id="40">40</th><td><i>// about each instrumented code block.  To print this output at any time, call</i></td></tr>
+<tr><th id="41">41</th><td><i>// tictoc_print() or tictoc_print_().</i></td></tr>
+<tr><th id="42">42</th><td><i>//</i></td></tr>
+<tr><th id="43">43</th><td><i>// An overall point to be aware of is that there are two versions of each function - one</i></td></tr>
+<tr><th id="44">44</th><td><i>// ending in an underscore '_' and one without the trailing underscore.  The underscore</i></td></tr>
+<tr><th id="45">45</th><td><i>// versions always are active, but the versions without an underscore are active only when</i></td></tr>
+<tr><th id="46">46</th><td><i>// GTSAM_ENABLE_TIMING is defined (automatically defined in our CMake Timing build type).</i></td></tr>
+<tr><th id="47">47</th><td><i>// GTSAM algorithms are all instrumented with the non-underscore versions, so generally</i></td></tr>
+<tr><th id="48">48</th><td><i>// you should use the underscore versions in your own code to leave out the GTSAM detail.</i></td></tr>
+<tr><th id="49">49</th><td><i>//</i></td></tr>
+<tr><th id="50">50</th><td><i>// gttic and gttoc start and stop a timed section, respectively.  gttic creates a *scoped*</i></td></tr>
+<tr><th id="51">51</th><td><i>// object - when it goes out of scope gttoc is called automatically.  Thus, you do not</i></td></tr>
+<tr><th id="52">52</th><td><i>// need to call gttoc if you are timing an entire function (see basic use examples below).</i></td></tr>
+<tr><th id="53">53</th><td><i>// However, you must be *aware* of this scoped nature - putting gttic inside of an if(...)</i></td></tr>
+<tr><th id="54">54</th><td><i>// block, for example, will only time code until the closing brace '}'.  See advanced</i></td></tr>
+<tr><th id="55">55</th><td><i>// usage below if you need to avoid this.</i></td></tr>
+<tr><th id="56">56</th><td><i>//</i></td></tr>
+<tr><th id="57">57</th><td><i>// Multiple calls nest automatically - each gttic nests under the previous gttic called</i></td></tr>
+<tr><th id="58">58</th><td><i>// for which gttoc has not been called (or the previous gttic did not go out of scope).</i></td></tr>
+<tr><th id="59">59</th><td><i>//</i></td></tr>
+<tr><th id="60">60</th><td><i>// Basic usage examples are as follows:</i></td></tr>
+<tr><th id="61">61</th><td><i>//</i></td></tr>
+<tr><th id="62">62</th><td><i>// - Timing an entire function:</i></td></tr>
+<tr><th id="63">63</th><td><i>//   void myFunction() {</i></td></tr>
+<tr><th id="64">64</th><td><i>//     gttic_(myFunction);</i></td></tr>
+<tr><th id="65">65</th><td><i>//     ........</i></td></tr>
+<tr><th id="66">66</th><td><i>//   }</i></td></tr>
+<tr><th id="67">67</th><td><i>//</i></td></tr>
+<tr><th id="68">68</th><td><i>// - Timing an entire function as well as its component parts:</i></td></tr>
+<tr><th id="69">69</th><td><i>//   void myLongFunction() {</i></td></tr>
+<tr><th id="70">70</th><td><i>//     gttic_(myLongFunction);</i></td></tr>
+<tr><th id="71">71</th><td><i>//     gttic_(step1); // Will nest under the 'myLongFunction' label</i></td></tr>
+<tr><th id="72">72</th><td><i>//     ........</i></td></tr>
+<tr><th id="73">73</th><td><i>//     gttoc_(step1);</i></td></tr>
+<tr><th id="74">74</th><td><i>//     gttic_(step2); // Will nest under the 'myLongFunction' label</i></td></tr>
+<tr><th id="75">75</th><td><i>//     ........</i></td></tr>
+<tr><th id="76">76</th><td><i>//     gttoc_(step2);</i></td></tr>
+<tr><th id="77">77</th><td><i>//     ........</i></td></tr>
+<tr><th id="78">78</th><td><i>//   }</i></td></tr>
+<tr><th id="79">79</th><td><i>//</i></td></tr>
+<tr><th id="80">80</th><td><i>// - Timing functions calling/called by other functions:</i></td></tr>
+<tr><th id="81">81</th><td><i>//   void oneStep() {</i></td></tr>
+<tr><th id="82">82</th><td><i>//     gttic_(oneStep); // Will automatically nest under the gttic label of the calling function</i></td></tr>
+<tr><th id="83">83</th><td><i>//     .......</i></td></tr>
+<tr><th id="84">84</th><td><i>//   }</i></td></tr>
+<tr><th id="85">85</th><td><i>//   void algorithm() {</i></td></tr>
+<tr><th id="86">86</th><td><i>//     gttic_(algorithm);</i></td></tr>
+<tr><th id="87">87</th><td><i>//     oneStep(); // gttic's inside this function will automatically nest inside our 'algorithm' label</i></td></tr>
+<tr><th id="88">88</th><td><i>//     twoStep(); // gttic's inside this function will automatically nest inside our 'algorithm' label</i></td></tr>
+<tr><th id="89">89</th><td><i>//   }</i></td></tr>
+<tr><th id="90">90</th><td><i>//</i></td></tr>
+<tr><th id="91">91</th><td><i>//</i></td></tr>
+<tr><th id="92">92</th><td><i>// Advanced usage:</i></td></tr>
+<tr><th id="93">93</th><td><i>//</i></td></tr>
+<tr><th id="94">94</th><td><i>// - "Finishing iterations" - to get correct min/max times for each call, you must define</i></td></tr>
+<tr><th id="95">95</th><td><i>//   in your code what constitutes an iteration.  A single sum for the min/max times is</i></td></tr>
+<tr><th id="96">96</th><td><i>//   accumulated within each iteration.  If you don't care about min/max times, you don't</i></td></tr>
+<tr><th id="97">97</th><td><i>//   need to worry about this.  For example:</i></td></tr>
+<tr><th id="98">98</th><td><i>//   void myOuterLoop() {</i></td></tr>
+<tr><th id="99">99</th><td><i>//     while(true) {</i></td></tr>
+<tr><th id="100">100</th><td><i>//       iterateMyAlgorithm();</i></td></tr>
+<tr><th id="101">101</th><td><i>//       tictoc_finishedIteration_();</i></td></tr>
+<tr><th id="102">102</th><td><i>//       tictoc_print_(); // Optional</i></td></tr>
+<tr><th id="103">103</th><td><i>//     }</i></td></tr>
+<tr><th id="104">104</th><td><i>//   }</i></td></tr>
+<tr><th id="105">105</th><td><i>//</i></td></tr>
+<tr><th id="106">106</th><td><i>// - Stopping timing a section in a different scope than it is started.  Normally, a gttoc</i></td></tr>
+<tr><th id="107">107</th><td><i>//   statement goes out of scope at end of C++ scope.  However, you can use longtic and</i></td></tr>
+<tr><th id="108">108</th><td><i>//   longtoc to start and stop timing with the specified label at any point, without regard</i></td></tr>
+<tr><th id="109">109</th><td><i>//   too scope.  Note that if you use these, it may become difficult to ensure that you</i></td></tr>
+<tr><th id="110">110</th><td><i>//   have matching gttic/gttoc statments.  You may want to consider reorganizing your timing</i></td></tr>
+<tr><th id="111">111</th><td><i>//   outline to match the scope of your code.</i></td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td><u>#<span data-ppcond="113">if</span> <a class="macro" href="../../build/gtsam/config.h.html#102" title="1" data-ref="_M/GTSAM_USE_BOOST_FEATURES">GTSAM_USE_BOOST_FEATURES</a></u></td></tr>
+<tr><th id="114">114</th><td><i>// Automatically use the new Boost timers if version is recent enough.</i></td></tr>
+<tr><th id="115">115</th><td><u>#<span data-ppcond="115">if</span> <a class="macro" href="../../../include/boost/version.hpp.html#22" title="108300" data-ref="_M/BOOST_VERSION">BOOST_VERSION</a> &gt;= 104800</u></td></tr>
+<tr><th id="116">116</th><td><u>#  <span data-ppcond="116">ifndef</span> <span class="macro" data-ref="_M/GTSAM_DISABLE_NEW_TIMERS">GTSAM_DISABLE_NEW_TIMERS</span></u></td></tr>
+<tr><th id="117">117</th><td><u>#    define <dfn class="macro" id="_M/GTSAM_USING_NEW_BOOST_TIMERS" data-ref="_M/GTSAM_USING_NEW_BOOST_TIMERS">GTSAM_USING_NEW_BOOST_TIMERS</dfn></u></td></tr>
+<tr><th id="118">118</th><td><u>#  <span data-ppcond="116">endif</span></u></td></tr>
+<tr><th id="119">119</th><td><u>#<span data-ppcond="115">endif</span></u></td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td><u>#<span data-ppcond="121">ifdef</span> <a class="macro" href="#117" data-ref="_M/GTSAM_USING_NEW_BOOST_TIMERS">GTSAM_USING_NEW_BOOST_TIMERS</a></u></td></tr>
+<tr><th id="122">122</th><td><u>#  include <a href="../../../include/boost/timer/timer.hpp.html">&lt;boost/timer/timer.hpp&gt;</a></u></td></tr>
+<tr><th id="123">123</th><td><u>#<span data-ppcond="121">else</span></u></td></tr>
+<tr><th id="124">124</th><td><u>#  include &lt;boost/timer.hpp&gt;</u></td></tr>
+<tr><th id="125">125</th><td><u>#  include &lt;gtsam/base/types.h&gt;</u></td></tr>
+<tr><th id="126">126</th><td><u>#<span data-ppcond="121">endif</span></u></td></tr>
+<tr><th id="127">127</th><td><u>#<span data-ppcond="113">endif</span></u></td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td><u>#<span data-ppcond="129">ifdef</span> <span class="macro" data-ref="_M/GTSAM_USE_TBB">GTSAM_USE_TBB</span></u></td></tr>
+<tr><th id="130">130</th><td><u>#  include &lt;tbb/tick_count.h&gt;</u></td></tr>
+<tr><th id="131">131</th><td><u>#  undef min</u></td></tr>
+<tr><th id="132">132</th><td><u>#  undef max</u></td></tr>
+<tr><th id="133">133</th><td><u>#  undef ERROR</u></td></tr>
+<tr><th id="134">134</th><td><u>#<span data-ppcond="129">endif</span></u></td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>  <b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="139">139</th><td>    <i>// Generate/retrieve a unique global ID number that will be used to look up tic/toc statements</i></td></tr>
+<tr><th id="140">140</th><td>    <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl fn" id="_ZN5gtsam8internal11getTicTocIDEPKc" title='gtsam::internal::getTicTocID' data-ref="_ZN5gtsam8internal11getTicTocIDEPKc">getTicTocID</dfn>(<em>const</em> <em>char</em> *<dfn class="local col6 decl" id="22706description" title='description' data-type='const char *' data-ref="22706description">description</dfn>);</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>    <i>// Create new TimingOutline child for gCurrentTimer, make it gCurrentTimer, and call tic method</i></td></tr>
+<tr><th id="143">143</th><td>    <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZN5gtsam8internal3ticEmPKc" title='gtsam::internal::tic' data-ref="_ZN5gtsam8internal3ticEmPKc">tic</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col7 decl" id="22707id" title='id' data-type='size_t' data-ref="22707id">id</dfn>, <em>const</em> <em>char</em> *<dfn class="local col8 decl" id="22708label" title='label' data-type='const char *' data-ref="22708label">label</dfn>);</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>    <i>// Call toc on gCurrentTimer and then set gCurrentTimer to the parent of gCurrentTimer</i></td></tr>
+<tr><th id="146">146</th><td>    <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZN5gtsam8internal3tocEmPKc" title='gtsam::internal::toc' data-ref="_ZN5gtsam8internal3tocEmPKc">toc</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col9 decl" id="22709id" title='id' data-type='size_t' data-ref="22709id">id</dfn>, <em>const</em> <em>char</em> *<dfn class="local col0 decl" id="22710label" title='label' data-type='const char *' data-ref="22710label">label</dfn>);</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">     * Timing Entry, arranged in a tree</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="151">151</th><td>    <b>class</b> <dfn class="type def" id="gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</dfn> {</td></tr>
+<tr><th id="152">152</th><td>    <b>protected</b>:</td></tr>
+<tr><th id="153">153</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::id_" title='gtsam::internal::TimingOutline::id_' data-ref="gtsam::internal::TimingOutline::id_">id_</dfn>;</td></tr>
+<tr><th id="154">154</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::t_" title='gtsam::internal::TimingOutline::t_' data-ref="gtsam::internal::TimingOutline::t_">t_</dfn>;</td></tr>
+<tr><th id="155">155</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::tWall_" title='gtsam::internal::TimingOutline::tWall_' data-ref="gtsam::internal::TimingOutline::tWall_">tWall_</dfn>;</td></tr>
+<tr><th id="156">156</th><td>      <em>double</em> <dfn class="decl field" id="gtsam::internal::TimingOutline::t2_" title='gtsam::internal::TimingOutline::t2_' data-ref="gtsam::internal::TimingOutline::t2_">t2_</dfn> ; <i class="doc">///&lt; cache the <span class="command">\f$</span><span class="verb"> \sum t_i^2 \</span>f$</i></td></tr>
+<tr><th id="157">157</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::tIt_" title='gtsam::internal::TimingOutline::tIt_' data-ref="gtsam::internal::TimingOutline::tIt_">tIt_</dfn>;</td></tr>
+<tr><th id="158">158</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::tMax_" title='gtsam::internal::TimingOutline::tMax_' data-ref="gtsam::internal::TimingOutline::tMax_">tMax_</dfn>;</td></tr>
+<tr><th id="159">159</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::tMin_" title='gtsam::internal::TimingOutline::tMin_' data-ref="gtsam::internal::TimingOutline::tMin_">tMin_</dfn>;</td></tr>
+<tr><th id="160">160</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::n_" title='gtsam::internal::TimingOutline::n_' data-ref="gtsam::internal::TimingOutline::n_">n_</dfn>;</td></tr>
+<tr><th id="161">161</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::myOrder_" title='gtsam::internal::TimingOutline::myOrder_' data-ref="gtsam::internal::TimingOutline::myOrder_">myOrder_</dfn>;</td></tr>
+<tr><th id="162">162</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::TimingOutline::lastChildOrder_" title='gtsam::internal::TimingOutline::lastChildOrder_' data-ref="gtsam::internal::TimingOutline::lastChildOrder_">lastChildOrder_</dfn>;</td></tr>
+<tr><th id="163">163</th><td>      <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="decl field" id="gtsam::internal::TimingOutline::label_" title='gtsam::internal::TimingOutline::label_' data-ref="gtsam::internal::TimingOutline::label_">label_</dfn>;</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>      <i>// Tree structure</i></td></tr>
+<tr><th id="166">166</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::weak_ptr" title='std::weak_ptr' data-ref="std::weak_ptr">weak_ptr</a>&lt;<a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a>&gt; <dfn class="decl field" id="gtsam::internal::TimingOutline::parent_" title='gtsam::internal::TimingOutline::parent_' data-ref="gtsam::internal::TimingOutline::parent_">parent_</dfn>; <i class="doc">///&lt; parent pointer</i></td></tr>
+<tr><th id="167">167</th><td>      <b>typedef</b> <a class="type" href="FastMap.h.html#gtsam::FastMap" title='gtsam::FastMap' data-ref="gtsam::FastMap">FastMap</a>&lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a>&gt; &gt; <dfn class="typedef" id="gtsam::internal::TimingOutline::ChildMap" title='gtsam::internal::TimingOutline::ChildMap' data-type='FastMap&lt;size_t, std::shared_ptr&lt;TimingOutline&gt;&gt;' data-ref="gtsam::internal::TimingOutline::ChildMap">ChildMap</dfn>;</td></tr>
+<tr><th id="168">168</th><td>      <a class="typedef" href="#gtsam::internal::TimingOutline::ChildMap" title='gtsam::internal::TimingOutline::ChildMap' data-type='FastMap&lt;size_t, std::shared_ptr&lt;TimingOutline&gt;&gt;' data-ref="gtsam::internal::TimingOutline::ChildMap">ChildMap</a> <dfn class="decl field" id="gtsam::internal::TimingOutline::children_" title='gtsam::internal::TimingOutline::children_' data-ref="gtsam::internal::TimingOutline::children_">children_</dfn>; <i class="doc">///&lt; subtrees</i></td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><i>// disable all timers if not using boost</i></td></tr>
+<tr><th id="171">171</th><td><u>#<span data-ppcond="171">if</span> <a class="macro" href="../../build/gtsam/config.h.html#102" title="1" data-ref="_M/GTSAM_USE_BOOST_FEATURES">GTSAM_USE_BOOST_FEATURES</a></u></td></tr>
+<tr><th id="172">172</th><td><u>#<span data-ppcond="172">ifdef</span> <a class="macro" href="#117" data-ref="_M/GTSAM_USING_NEW_BOOST_TIMERS">GTSAM_USING_NEW_BOOST_TIMERS</a></u></td></tr>
+<tr><th id="173">173</th><td>      <span class="namespace">boost::timer::</span><a class="type" href="../../../include/boost/timer/timer.hpp.html#boost::timer::cpu_timer" title='boost::timer::cpu_timer' data-ref="boost::timer::cpu_timer">cpu_timer</a> <dfn class="decl field" id="gtsam::internal::TimingOutline::timer_" title='gtsam::internal::TimingOutline::timer_' data-ref="gtsam::internal::TimingOutline::timer_">timer_</dfn>;</td></tr>
+<tr><th id="174">174</th><td><u>#<span data-ppcond="172">else</span></u></td></tr>
+<tr><th id="175">175</th><td>      boost::timer timer_;</td></tr>
+<tr><th id="176">176</th><td>      gtsam::ValueWithDefault&lt;<em>bool</em>,<b>false</b>&gt; timerActive_;</td></tr>
+<tr><th id="177">177</th><td><u>#<span data-ppcond="172">endif</span></u></td></tr>
+<tr><th id="178">178</th><td><u>#<span data-ppcond="178">ifdef</span> <span class="macro" data-ref="_M/GTSAM_USE_TBB">GTSAM_USE_TBB</span></u></td></tr>
+<tr><th id="179">179</th><td>      tbb::tick_count tbbTimer_;</td></tr>
+<tr><th id="180">180</th><td><u>#<span data-ppcond="178">endif</span></u></td></tr>
+<tr><th id="181">181</th><td><u>#<span data-ppcond="171">else</span></u></td></tr>
+<tr><th id="182">182</th><td>      std::chrono::time_point&lt;std::chrono::steady_clock&gt; wall_timer_start_;</td></tr>
+<tr><th id="183">183</th><td>      std::clock_t cpu_timer_start_;</td></tr>
+<tr><th id="184">184</th><td>      <em>bool</em> timer_active_ = <b>false</b>;</td></tr>
+<tr><th id="185">185</th><td><u>#<span data-ppcond="171">endif</span></u></td></tr>
+<tr><th id="186">186</th><td>      <em>void</em> <dfn class="decl fn" id="_ZN5gtsam8internal13TimingOutline3addEmm" title='gtsam::internal::TimingOutline::add' data-ref="_ZN5gtsam8internal13TimingOutline3addEmm">add</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="22711usecs" title='usecs' data-type='size_t' data-ref="22711usecs">usecs</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col2 decl" id="22712usecsWall" title='usecsWall' data-type='size_t' data-ref="22712usecsWall">usecsWall</dfn>);</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td>    <b>public</b>:</td></tr>
+<tr><th id="189">189</th><td>      <i class="doc">/// Constructor</i></td></tr>
+<tr><th id="190">190</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="decl fn" id="_ZN5gtsam8internal13TimingOutlineC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm" title='gtsam::internal::TimingOutline::TimingOutline' data-ref="_ZN5gtsam8internal13TimingOutlineC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm">TimingOutline</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col3 decl" id="22713label" title='label' data-type='const std::string &amp;' data-ref="22713label">label</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="22714myId" title='myId' data-type='size_t' data-ref="22714myId">myId</dfn>);</td></tr>
+<tr><th id="191">191</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl fn" id="_ZNK5gtsam8internal13TimingOutline4timeEv" title='gtsam::internal::TimingOutline::time' data-ref="_ZNK5gtsam8internal13TimingOutline4timeEv">time</dfn>() <em>const</em>; <i class="doc">///&lt; time taken, including children</i></td></tr>
+<tr><th id="192">192</th><td>      <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal13TimingOutline4secsEv" title='gtsam::internal::TimingOutline::secs' data-ref="_ZNK5gtsam8internal13TimingOutline4secsEv">secs</dfn>() <em>const</em> { <b>return</b> <em>double</em>(<a class="member fn" href="#_ZNK5gtsam8internal13TimingOutline4timeEv" title='gtsam::internal::TimingOutline::time' data-ref="_ZNK5gtsam8internal13TimingOutline4timeEv">time</a>()) / <var>1000000.0</var>;} <i class="doc">///&lt; time taken, in seconds, including children</i></td></tr>
+<tr><th id="193">193</th><td><u>#<span data-ppcond="193">if</span> <a class="macro" href="../../build/gtsam/config.h.html#102" title="1" data-ref="_M/GTSAM_USE_BOOST_FEATURES">GTSAM_USE_BOOST_FEATURES</a></u></td></tr>
+<tr><th id="194">194</th><td>      <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal13TimingOutline4selfEv" title='gtsam::internal::TimingOutline::self' data-ref="_ZNK5gtsam8internal13TimingOutline4selfEv">self</dfn>() <em>const</em> { <b>return</b> <em>double</em>(<a class="member field" href="#gtsam::internal::TimingOutline::t_" title='gtsam::internal::TimingOutline::t_' data-ref="gtsam::internal::TimingOutline::t_">t_</a>)     / <var>1000000.0</var>;} <i class="doc">///&lt; self time only, in seconds</i></td></tr>
+<tr><th id="195">195</th><td>      <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal13TimingOutline4wallEv" title='gtsam::internal::TimingOutline::wall' data-ref="_ZNK5gtsam8internal13TimingOutline4wallEv">wall</dfn>() <em>const</em> { <b>return</b> <em>double</em>(<a class="member field" href="#gtsam::internal::TimingOutline::tWall_" title='gtsam::internal::TimingOutline::tWall_' data-ref="gtsam::internal::TimingOutline::tWall_">tWall_</a>) / <var>1000000.0</var>;} <i class="doc">///&lt; wall time, in seconds</i></td></tr>
+<tr><th id="196">196</th><td>      <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal13TimingOutline3minEv" title='gtsam::internal::TimingOutline::min' data-ref="_ZNK5gtsam8internal13TimingOutline3minEv">min</dfn>()  <em>const</em> { <b>return</b> <em>double</em>(<a class="member field" href="#gtsam::internal::TimingOutline::tMin_" title='gtsam::internal::TimingOutline::tMin_' data-ref="gtsam::internal::TimingOutline::tMin_">tMin_</a>)  / <var>1000000.0</var>;} <i class="doc">///&lt; min time, in seconds</i></td></tr>
+<tr><th id="197">197</th><td>      <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal13TimingOutline3maxEv" title='gtsam::internal::TimingOutline::max' data-ref="_ZNK5gtsam8internal13TimingOutline3maxEv">max</dfn>()  <em>const</em> { <b>return</b> <em>double</em>(<a class="member field" href="#gtsam::internal::TimingOutline::tMax_" title='gtsam::internal::TimingOutline::tMax_' data-ref="gtsam::internal::TimingOutline::tMax_">tMax_</a>)  / <var>1000000.0</var>;} <i class="doc">///&lt; max time, in seconds</i></td></tr>
+<tr><th id="198">198</th><td>      <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal13TimingOutline4meanEv" title='gtsam::internal::TimingOutline::mean' data-ref="_ZNK5gtsam8internal13TimingOutline4meanEv">mean</dfn>() <em>const</em> { <b>return</b> <a class="member fn" href="#_ZNK5gtsam8internal13TimingOutline4selfEv" title='gtsam::internal::TimingOutline::self' data-ref="_ZNK5gtsam8internal13TimingOutline4selfEv">self</a>() / <em>double</em>(<a class="member field" href="#gtsam::internal::TimingOutline::n_" title='gtsam::internal::TimingOutline::n_' data-ref="gtsam::internal::TimingOutline::n_">n_</a>); } <i class="doc">///&lt; mean self time, in seconds</i></td></tr>
+<tr><th id="199">199</th><td><u>#<span data-ppcond="193">else</span></u></td></tr>
+<tr><th id="200">200</th><td>      <i>// make them no-ops if not using boost</i></td></tr>
+<tr><th id="201">201</th><td>      <em>double</em> self() <em>const</em> { <b>return</b> <em>double</em>(t_)     / <var>1000000.0</var>;} <i class="doc">///&lt; self time only, in seconds</i></td></tr>
+<tr><th id="202">202</th><td>      <em>double</em> wall() <em>const</em> { <b>return</b> <em>double</em>(tWall_) / <var>1000000.0</var>;} <i class="doc">///&lt; wall time, in seconds</i></td></tr>
+<tr><th id="203">203</th><td>      <em>double</em> min()  <em>const</em> { <b>return</b> <em>double</em>(tMin_)  / <var>1000000.0</var>;} <i class="doc">///&lt; min time, in seconds</i></td></tr>
+<tr><th id="204">204</th><td>      <em>double</em> max()  <em>const</em> { <b>return</b> <em>double</em>(tMax_)  / <var>1000000.0</var>;} <i class="doc">///&lt; max time, in seconds</i></td></tr>
+<tr><th id="205">205</th><td>      <em>double</em> mean() <em>const</em> { <b>return</b> n_ &gt; <var>0</var> ? self() / <em>double</em>(n_) : <var>0.0</var>; } <i class="doc">///&lt; mean self time, in seconds</i></td></tr>
+<tr><th id="206">206</th><td><u>#<span data-ppcond="193">endif</span></u></td></tr>
+<tr><th id="207">207</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam8internal13TimingOutline5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::internal::TimingOutline::print' data-ref="_ZNK5gtsam8internal13TimingOutline5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col5 decl" id="22715outline" title='outline' data-type='const std::string &amp;' data-ref="22715outline">outline</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>) <em>const</em>;</td></tr>
+<tr><th id="208">208</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam8internal13TimingOutline6print2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEd" title='gtsam::internal::TimingOutline::print2' data-ref="_ZNK5gtsam8internal13TimingOutline6print2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEd">print2</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col6 decl" id="22716outline" title='outline' data-type='const std::string &amp;' data-ref="22716outline">outline</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>, <em>const</em> <em>double</em> <dfn class="local col7 decl" id="22717parentTotal" title='parentTotal' data-type='const double' data-ref="22717parentTotal">parentTotal</dfn> = -<var>1.0</var>) <em>const</em>;</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>      <i class="doc">/**</i></td></tr>
+<tr><th id="211">211</th><td><i class="doc">       * <span class="command">@brief</span> Print the CSV header.</i></td></tr>
+<tr><th id="212">212</th><td><i class="doc">       * Order is</i></td></tr>
+<tr><th id="213">213</th><td><i class="doc">       * (CPU time, number of times, wall time, time + children in seconds, min</i></td></tr>
+<tr><th id="214">214</th><td><i class="doc">       * time, max time)</i></td></tr>
+<tr><th id="215">215</th><td><i class="doc">       *</i></td></tr>
+<tr><th id="216">216</th><td><i class="doc">       * <span class="command">@param</span> <span class="arg">addLineBreak</span> Flag indicating if a line break should be</i></td></tr>
+<tr><th id="217">217</th><td><i class="doc">       * added at the end. Only used at the top-level.</i></td></tr>
+<tr><th id="218">218</th><td><i class="doc">       */</i></td></tr>
+<tr><th id="219">219</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam8internal13TimingOutline14printCsvHeaderEb" title='gtsam::internal::TimingOutline::printCsvHeader' data-ref="_ZNK5gtsam8internal13TimingOutline14printCsvHeaderEb">printCsvHeader</dfn>(<em>bool</em> <dfn class="local col8 decl" id="22718addLineBreak" title='addLineBreak' data-type='bool' data-ref="22718addLineBreak">addLineBreak</dfn> = <b>false</b>) <em>const</em>;</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td>      <i class="doc">/**</i></td></tr>
+<tr><th id="222">222</th><td><i class="doc">       * <span class="command">@brief</span> Print the times recursively from parent to child in CSV format.</i></td></tr>
+<tr><th id="223">223</th><td><i class="doc">       * For each timing node, the output is</i></td></tr>
+<tr><th id="224">224</th><td><i class="doc">       * (CPU time, number of times, wall time, time + children in seconds, min</i></td></tr>
+<tr><th id="225">225</th><td><i class="doc">       * time, max time)</i></td></tr>
+<tr><th id="226">226</th><td><i class="doc">       *</i></td></tr>
+<tr><th id="227">227</th><td><i class="doc">       * <span class="command">@param</span> <span class="arg">addLineBreak</span> Flag indicating if a line break should be</i></td></tr>
+<tr><th id="228">228</th><td><i class="doc">       * added at the end. Only used at the top-level.</i></td></tr>
+<tr><th id="229">229</th><td><i class="doc">       */</i></td></tr>
+<tr><th id="230">230</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam8internal13TimingOutline8printCsvEb" title='gtsam::internal::TimingOutline::printCsv' data-ref="_ZNK5gtsam8internal13TimingOutline8printCsvEb">printCsv</dfn>(<em>bool</em> <dfn class="local col9 decl" id="22719addLineBreak" title='addLineBreak' data-type='bool' data-ref="22719addLineBreak">addLineBreak</dfn> = <b>false</b>) <em>const</em>;</td></tr>
+<tr><th id="231">231</th><td></td></tr>
+<tr><th id="232">232</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a>&gt;&amp;</td></tr>
+<tr><th id="233">233</th><td>        <dfn class="decl fn" id="_ZN5gtsam8internal13TimingOutline5childEmRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8weak_ptrIS1_E" title='gtsam::internal::TimingOutline::child' data-ref="_ZN5gtsam8internal13TimingOutline5childEmRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8weak_ptrIS1_E">child</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col0 decl" id="22720child" title='child' data-type='size_t' data-ref="22720child">child</dfn>, <em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col1 decl" id="22721label" title='label' data-type='const std::string &amp;' data-ref="22721label">label</dfn>, <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::weak_ptr" title='std::weak_ptr' data-ref="std::weak_ptr">weak_ptr</a>&lt;<a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a>&gt;&amp; <dfn class="local col2 decl" id="22722thisPtr" title='thisPtr' data-type='const std::weak_ptr&lt;TimingOutline&gt; &amp;' data-ref="22722thisPtr">thisPtr</dfn>);</td></tr>
+<tr><th id="234">234</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZN5gtsam8internal13TimingOutline3ticEv" title='gtsam::internal::TimingOutline::tic' data-ref="_ZN5gtsam8internal13TimingOutline3ticEv">tic</dfn>();</td></tr>
+<tr><th id="235">235</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZN5gtsam8internal13TimingOutline3tocEv" title='gtsam::internal::TimingOutline::toc' data-ref="_ZN5gtsam8internal13TimingOutline3tocEv">toc</dfn>();</td></tr>
+<tr><th id="236">236</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZN5gtsam8internal13TimingOutline17finishedIterationEv" title='gtsam::internal::TimingOutline::finishedIteration' data-ref="_ZN5gtsam8internal13TimingOutline17finishedIterationEv">finishedIteration</dfn>();</td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td>      <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <b>friend</b> <em>void</em> <a class="decl fn" href="#_ZN5gtsam8internal3tocEmPKc" title='gtsam::internal::toc' data-ref="_ZN5gtsam8internal3tocEmPKc">toc</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col3 decl" id="22723id" title='id' data-type='size_t' data-ref="22723id">id</dfn>, <em>const</em> <em>char</em> *<dfn class="local col4 decl" id="22724label" title='label' data-type='const char *' data-ref="22724label">label</dfn>);</td></tr>
+<tr><th id="239">239</th><td>    }; <i>// \TimingOutline</i></td></tr>
+<tr><th id="240">240</th><td></td></tr>
+<tr><th id="241">241</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="242">242</th><td><i class="doc">     * Small class that calls internal::tic at construction, and internol::toc when destroyed</i></td></tr>
+<tr><th id="243">243</th><td><i class="doc">     */</i></td></tr>
+<tr><th id="244">244</th><td>    <b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::internal::AutoTicToc" title='gtsam::internal::AutoTicToc' data-ref="gtsam::internal::AutoTicToc">AutoTicToc</dfn> {</td></tr>
+<tr><th id="245">245</th><td>     <b>private</b>:</td></tr>
+<tr><th id="246">246</th><td>      <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::internal::AutoTicToc::id_" title='gtsam::internal::AutoTicToc::id_' data-ref="gtsam::internal::AutoTicToc::id_">id_</dfn>;</td></tr>
+<tr><th id="247">247</th><td>      <em>const</em> <em>char</em>* <dfn class="decl field" id="gtsam::internal::AutoTicToc::label_" title='gtsam::internal::AutoTicToc::label_' data-ref="gtsam::internal::AutoTicToc::label_">label_</dfn>;</td></tr>
+<tr><th id="248">248</th><td>      <em>bool</em> <dfn class="decl field" id="gtsam::internal::AutoTicToc::isSet_" title='gtsam::internal::AutoTicToc::isSet_' data-ref="gtsam::internal::AutoTicToc::isSet_">isSet_</dfn>;</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>     <b>public</b>:</td></tr>
+<tr><th id="251">251</th><td>      <dfn class="decl def fn" id="_ZN5gtsam8internal10AutoTicTocC1EmPKc" title='gtsam::internal::AutoTicToc::AutoTicToc' data-ref="_ZN5gtsam8internal10AutoTicTocC1EmPKc">AutoTicToc</dfn>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="22725id" title='id' data-type='size_t' data-ref="22725id">id</dfn>, <em>const</em> <em>char</em>* <dfn class="local col6 decl" id="22726label" title='label' data-type='const char *' data-ref="22726label">label</dfn>)</td></tr>
+<tr><th id="252">252</th><td>          : <a class="member field" href="#gtsam::internal::AutoTicToc::id_" title='gtsam::internal::AutoTicToc::id_' data-ref="gtsam::internal::AutoTicToc::id_">id_</a>(<a class="local col5 ref" href="#22725id" title='id' data-ref="22725id">id</a>), <a class="member field" href="#gtsam::internal::AutoTicToc::label_" title='gtsam::internal::AutoTicToc::label_' data-ref="gtsam::internal::AutoTicToc::label_">label_</a>(<a class="local col6 ref" href="#22726label" title='label' data-ref="22726label">label</a>), <a class="member field" href="#gtsam::internal::AutoTicToc::isSet_" title='gtsam::internal::AutoTicToc::isSet_' data-ref="gtsam::internal::AutoTicToc::isSet_">isSet_</a>(<b>true</b>) {</td></tr>
+<tr><th id="253">253</th><td>        <a class="ref fn" href="#_ZN5gtsam8internal3ticEmPKc" title='gtsam::internal::tic' data-ref="_ZN5gtsam8internal3ticEmPKc">tic</a>(<span class='inlayHint'>id:&nbsp;</span><a class="member field" href="#gtsam::internal::AutoTicToc::id_" title='gtsam::internal::AutoTicToc::id_' data-ref="gtsam::internal::AutoTicToc::id_">id_</a>, <span class='inlayHint'>label:&nbsp;</span><a class="member field" href="#gtsam::internal::AutoTicToc::label_" title='gtsam::internal::AutoTicToc::label_' data-ref="gtsam::internal::AutoTicToc::label_">label_</a>);</td></tr>
+<tr><th id="254">254</th><td>      }</td></tr>
+<tr><th id="255">255</th><td>      <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam8internal10AutoTicToc4stopEv" title='gtsam::internal::AutoTicToc::stop' data-ref="_ZN5gtsam8internal10AutoTicToc4stopEv">stop</dfn>() {</td></tr>
+<tr><th id="256">256</th><td>        <a class="ref fn" href="#_ZN5gtsam8internal3tocEmPKc" title='gtsam::internal::toc' data-ref="_ZN5gtsam8internal3tocEmPKc">toc</a>(<span class='inlayHint'>id:&nbsp;</span><a class="member field" href="#gtsam::internal::AutoTicToc::id_" title='gtsam::internal::AutoTicToc::id_' data-ref="gtsam::internal::AutoTicToc::id_">id_</a>, <span class='inlayHint'>label:&nbsp;</span><a class="member field" href="#gtsam::internal::AutoTicToc::label_" title='gtsam::internal::AutoTicToc::label_' data-ref="gtsam::internal::AutoTicToc::label_">label_</a>);</td></tr>
+<tr><th id="257">257</th><td>        <a class="member field" href="#gtsam::internal::AutoTicToc::isSet_" title='gtsam::internal::AutoTicToc::isSet_' data-ref="gtsam::internal::AutoTicToc::isSet_">isSet_</a> = <b>false</b>;</td></tr>
+<tr><th id="258">258</th><td>      }</td></tr>
+<tr><th id="259">259</th><td>      <dfn class="decl def fn" id="_ZN5gtsam8internal10AutoTicTocD1Ev" title='gtsam::internal::AutoTicToc::~AutoTicToc' data-ref="_ZN5gtsam8internal10AutoTicTocD1Ev">~AutoTicToc</dfn>() {</td></tr>
+<tr><th id="260">260</th><td>        <b>if</b> (<a class="member field" href="#gtsam::internal::AutoTicToc::isSet_" title='gtsam::internal::AutoTicToc::isSet_' data-ref="gtsam::internal::AutoTicToc::isSet_">isSet_</a>) <a class="member fn" href="#_ZN5gtsam8internal10AutoTicToc4stopEv" title='gtsam::internal::AutoTicToc::stop' data-ref="_ZN5gtsam8internal10AutoTicToc4stopEv">stop</a>();</td></tr>
+<tr><th id="261">261</th><td>      }</td></tr>
+<tr><th id="262">262</th><td>    };</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td>    <a class="macro" href="../../build/gtsam/dllexport.h.html#55" title="extern" data-ref="_M/GTSAM_EXTERN_EXPORT">GTSAM_EXTERN_EXPORT</a> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a>&gt; <dfn class="decl" id="gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</dfn>;</td></tr>
+<tr><th id="265">265</th><td>    <a class="macro" href="../../build/gtsam/dllexport.h.html#55" title="extern" data-ref="_M/GTSAM_EXTERN_EXPORT">GTSAM_EXTERN_EXPORT</a> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::weak_ptr" title='std::weak_ptr' data-ref="std::weak_ptr">weak_ptr</a>&lt;<a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a>&gt; <dfn class="decl" id="gtsam::internal::gCurrentTimer" title='gtsam::internal::gCurrentTimer' data-ref="gtsam::internal::gCurrentTimer">gCurrentTimer</dfn>;</td></tr>
+<tr><th id="266">266</th><td>  }</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td><i>// Tic and toc functions that are always active (whether or not ENABLE_TIMING is defined)</i></td></tr>
+<tr><th id="269">269</th><td><i>// There is a trick being used here to achieve near-zero runtime overhead, in that a</i></td></tr>
+<tr><th id="270">270</th><td><i>// static variable is created for each tic/toc statement storing an integer ID, but the</i></td></tr>
+<tr><th id="271">271</th><td><i>// integer ID is only looked up by string once when the static variable is initialized</i></td></tr>
+<tr><th id="272">272</th><td><i>// as the program starts.</i></td></tr>
+<tr><th id="273">273</th><td><i></i></td></tr>
+<tr><th id="274">274</th><td><i>// tic</i></td></tr>
+<tr><th id="275">275</th><td><u>#define <dfn class="macro" id="_M/gttic_" data-ref="_M/gttic_">gttic_</dfn>(label) \</u></td></tr>
+<tr><th id="276">276</th><td><u>  static const size_t label##_id_tic = ::gtsam::internal::getTicTocID(#label); \</u></td></tr>
+<tr><th id="277">277</th><td><u>  ::gtsam::internal::AutoTicToc label##_obj(label##_id_tic, #label)</u></td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td><i>// toc</i></td></tr>
+<tr><th id="280">280</th><td><u>#define <dfn class="macro" id="_M/gttoc_" data-ref="_M/gttoc_">gttoc_</dfn>(label) \</u></td></tr>
+<tr><th id="281">281</th><td><u>  label##_obj.stop()</u></td></tr>
+<tr><th id="282">282</th><td></td></tr>
+<tr><th id="283">283</th><td><i>// tic</i></td></tr>
+<tr><th id="284">284</th><td><u>#define <dfn class="macro" id="_M/longtic_" data-ref="_M/longtic_">longtic_</dfn>(label) \</u></td></tr>
+<tr><th id="285">285</th><td><u>  static const size_t label##_id_tic = ::gtsam::internal::getTicTocID(#label); \</u></td></tr>
+<tr><th id="286">286</th><td><u>  ::gtsam::internal::ticInternal(label##_id_tic, #label)</u></td></tr>
+<tr><th id="287">287</th><td></td></tr>
+<tr><th id="288">288</th><td><i>// toc</i></td></tr>
+<tr><th id="289">289</th><td><u>#define <dfn class="macro" id="_M/longtoc_" data-ref="_M/longtoc_">longtoc_</dfn>(label) \</u></td></tr>
+<tr><th id="290">290</th><td><u>  static const size_t label##_id_toc = ::gtsam::internal::getTicTocID(#label); \</u></td></tr>
+<tr><th id="291">291</th><td><u>  ::gtsam::internal::tocInternal(label##_id_toc, #label)</u></td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td><i>// indicate iteration is finished</i></td></tr>
+<tr><th id="294">294</th><td><b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam25tictoc_finishedIteration_Ev" title='gtsam::tictoc_finishedIteration_' data-ref="_ZN5gtsam25tictoc_finishedIteration_Ev">tictoc_finishedIteration_</dfn>() {</td></tr>
+<tr><th id="295">295</th><td>  <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="#_ZN5gtsam8internal13TimingOutline17finishedIterationEv" title='gtsam::internal::TimingOutline::finishedIteration' data-ref="_ZN5gtsam8internal13TimingOutline17finishedIterationEv">finishedIteration</a>(); }</td></tr>
+<tr><th id="296">296</th><td></td></tr>
+<tr><th id="297">297</th><td><i>// print</i></td></tr>
+<tr><th id="298">298</th><td><b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam13tictoc_print_Ev" title='gtsam::tictoc_print_' data-ref="_ZN5gtsam13tictoc_print_Ev">tictoc_print_</dfn>() {</td></tr>
+<tr><th id="299">299</th><td>  <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="#_ZNK5gtsam8internal13TimingOutline5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::internal::TimingOutline::print' data-ref="_ZNK5gtsam8internal13TimingOutline5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</a>(); }</td></tr>
+<tr><th id="300">300</th><td></td></tr>
+<tr><th id="301">301</th><td><i>// print timing in CSV format</i></td></tr>
+<tr><th id="302">302</th><td><b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam16tictoc_printCsv_Eb" title='gtsam::tictoc_printCsv_' data-ref="_ZN5gtsam16tictoc_printCsv_Eb">tictoc_printCsv_</dfn>(<em>bool</em> <dfn class="local col7 decl" id="22727displayHeader" title='displayHeader' data-type='bool' data-ref="22727displayHeader">displayHeader</dfn> = <b>false</b>) {</td></tr>
+<tr><th id="303">303</th><td>  <b>if</b> (<a class="local col7 ref" href="#22727displayHeader" title='displayHeader' data-ref="22727displayHeader">displayHeader</a>) {</td></tr>
+<tr><th id="304">304</th><td>    <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="#_ZNK5gtsam8internal13TimingOutline14printCsvHeaderEb" title='gtsam::internal::TimingOutline::printCsvHeader' data-ref="_ZNK5gtsam8internal13TimingOutline14printCsvHeaderEb">printCsvHeader</a>(<span class='inlayHint'>addLineBreak:&nbsp;</span><b>true</b>);</td></tr>
+<tr><th id="305">305</th><td>  }</td></tr>
+<tr><th id="306">306</th><td>  <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="#_ZNK5gtsam8internal13TimingOutline8printCsvEb" title='gtsam::internal::TimingOutline::printCsv' data-ref="_ZNK5gtsam8internal13TimingOutline8printCsvEb">printCsv</a>(<span class='inlayHint'>addLineBreak:&nbsp;</span><b>true</b>);</td></tr>
+<tr><th id="307">307</th><td>}</td></tr>
+<tr><th id="308">308</th><td></td></tr>
+<tr><th id="309">309</th><td><i>// print mean and standard deviation</i></td></tr>
+<tr><th id="310">310</th><td><b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam14tictoc_print2_Ev" title='gtsam::tictoc_print2_' data-ref="_ZN5gtsam14tictoc_print2_Ev">tictoc_print2_</dfn>() {</td></tr>
+<tr><th id="311">311</th><td>  <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="#_ZNK5gtsam8internal13TimingOutline6print2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEd" title='gtsam::internal::TimingOutline::print2' data-ref="_ZNK5gtsam8internal13TimingOutline6print2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEd">print2</a>(); }</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td><i>// get a node by label and assign it to variable</i></td></tr>
+<tr><th id="314">314</th><td><u>#define <dfn class="macro" id="_M/tictoc_getNode" data-ref="_M/tictoc_getNode">tictoc_getNode</dfn>(variable, label) \</u></td></tr>
+<tr><th id="315">315</th><td><u>  static const size_t label##_id_getnode = ::gtsam::internal::getTicTocID(#label); \</u></td></tr>
+<tr><th id="316">316</th><td><u>  const std::shared_ptr&lt;const ::gtsam::internal::TimingOutline&gt; variable = \</u></td></tr>
+<tr><th id="317">317</th><td><u>  ::gtsam::internal::gCurrentTimer.lock()-&gt;child(label##_id_getnode, #label, ::gtsam::internal::gCurrentTimer);</u></td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td><i>// reset</i></td></tr>
+<tr><th id="320">320</th><td><b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam13tictoc_reset_Ev" title='gtsam::tictoc_reset_' data-ref="_ZN5gtsam13tictoc_reset_Ev">tictoc_reset_</dfn>() {</td></tr>
+<tr><th id="321">321</th><td>  <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a>.<a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNSt12__shared_ptr5resetEPTL0__" title='std::__shared_ptr::reset' data-ref="_ZNSt12__shared_ptr5resetEPTL0__">reset</a>(<span class='inlayHint'>p:&nbsp;</span><b>new</b> <span class="namespace">::gtsam::internal::</span><a class="type" href="#gtsam::internal::TimingOutline" title='gtsam::internal::TimingOutline' data-ref="gtsam::internal::TimingOutline">TimingOutline</a><a class="ref fn" href="#_ZN5gtsam8internal13TimingOutlineC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm" title='gtsam::internal::TimingOutline::TimingOutline' data-ref="_ZN5gtsam8internal13TimingOutlineC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm">(</a><a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"Total"</q>, <span class="namespace">::gtsam::internal::</span><a class="ref fn" href="#_ZN5gtsam8internal11getTicTocIDEPKc" title='gtsam::internal::getTicTocID' data-ref="_ZN5gtsam8internal11getTicTocIDEPKc">getTicTocID</a>(<span class='inlayHint'>description:&nbsp;</span><q>"Total"</q>)));</td></tr>
+<tr><th id="322">322</th><td>  <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gCurrentTimer" title='gtsam::internal::gCurrentTimer' data-ref="gtsam::internal::gCurrentTimer">gCurrentTimer</a> <a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt8weak_ptraSERKSt10shared_ptrITL0__E" title='std::weak_ptr::operator=' data-ref="_ZNSt8weak_ptraSERKSt10shared_ptrITL0__E">=</a> <span class="namespace">::gtsam::internal::</span><a class="ref" href="#gtsam::internal::gTimingRoot" title='gtsam::internal::gTimingRoot' data-ref="gtsam::internal::gTimingRoot">gTimingRoot</a>; }</td></tr>
+<tr><th id="323">323</th><td></td></tr>
+<tr><th id="324">324</th><td><u>#<span data-ppcond="324">ifdef</span> <span class="macro" data-ref="_M/ENABLE_TIMING">ENABLE_TIMING</span></u></td></tr>
+<tr><th id="325">325</th><td><u>#define <dfn class="macro" id="_M/gttic" data-ref="_M/gttic">gttic</dfn>(label) gttic_(label)</u></td></tr>
+<tr><th id="326">326</th><td><u>#define <dfn class="macro" id="_M/gttoc" data-ref="_M/gttoc">gttoc</dfn>(label) gttoc_(label)</u></td></tr>
+<tr><th id="327">327</th><td><u>#define <dfn class="macro" id="_M/longtic" data-ref="_M/longtic">longtic</dfn>(label) longtic_(label)</u></td></tr>
+<tr><th id="328">328</th><td><u>#define <dfn class="macro" id="_M/longtoc" data-ref="_M/longtoc">longtoc</dfn>(label) longtoc_(label)</u></td></tr>
+<tr><th id="329">329</th><td><u>#define <dfn class="macro" id="_M/tictoc_finishedIteration" data-ref="_M/tictoc_finishedIteration">tictoc_finishedIteration</dfn> tictoc_finishedIteration_</u></td></tr>
+<tr><th id="330">330</th><td><u>#define <dfn class="macro" id="_M/tictoc_print" data-ref="_M/tictoc_print">tictoc_print</dfn> tictoc_print_</u></td></tr>
+<tr><th id="331">331</th><td><u>#define <dfn class="macro" id="_M/tictoc_reset" data-ref="_M/tictoc_reset">tictoc_reset</dfn> tictoc_reset_</u></td></tr>
+<tr><th id="332">332</th><td><u>#<span data-ppcond="324">else</span></u></td></tr>
+<tr><th id="333">333</th><td><u>#define gttic(label) ((void)0)</u></td></tr>
+<tr><th id="334">334</th><td><u>#define gttoc(label) ((void)0)</u></td></tr>
+<tr><th id="335">335</th><td><u>#define longtic(label) ((void)0)</u></td></tr>
+<tr><th id="336">336</th><td><u>#define longtoc(label) ((void)0)</u></td></tr>
+<tr><th id="337">337</th><td><u>#define tictoc_finishedIteration() ((void)0)</u></td></tr>
+<tr><th id="338">338</th><td><u>#define tictoc_print() ((void)0)</u></td></tr>
+<tr><th id="339">339</th><td><u>#define tictoc_reset() ((void)0)</u></td></tr>
+<tr><th id="340">340</th><td><u>#<span data-ppcond="324">endif</span></u></td></tr>
+<tr><th id="341">341</th><td></td></tr>
+<tr><th id="342">342</th><td>}</td></tr>
+<tr><th id="343">343</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

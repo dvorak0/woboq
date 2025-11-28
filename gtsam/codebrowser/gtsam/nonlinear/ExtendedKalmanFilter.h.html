@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExtendedKalmanFilter.h source code [codebrowser/gtsam/nonlinear/ExtendedKalmanFilter.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::ExtendedKalmanFilter "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/nonlinear/ExtendedKalmanFilter.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>nonlinear</a>/<a href='ExtendedKalmanFilter.h.html'>ExtendedKalmanFilter.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   ExtendedKalmanFilter.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Class to perform generic Kalman Filtering using nonlinear factor graphs</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Stephen Williams</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span>  Chris Beall</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"></i></td></tr>
+<tr><th id="19">19</th><td><i class="doc">//<span class="command"> \callgraph</span></i></td></tr>
+<tr><th id="20">20</th><td><u>#pragma once</u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="NonlinearFactorGraph.h.html">&lt;gtsam/nonlinear/NonlinearFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="NonlinearFactor.h.html">&lt;gtsam/nonlinear/NonlinearFactor.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> * This is a generic Extended Kalman Filter class implemented using nonlinear factors. GTSAM</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc"> * basically does SRIF with Cholesky to solve the filter problem, making this an efficient,</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc"> *numerically</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> * stable Kalman Filter implementation.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> * The Kalman Filter relies on two models: a motion model that predicts the next state using</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc"> * the current state, and a measurement model that predicts the measurement value at a given</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * state. Because these two models are situation-dependent, base classes for each have been</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * provided above, from which the user must derive a class and incorporate the actual modeling</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * equations.</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * The class provides a "predict" and "update" function to perform these steps independently.</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * TODO: a "predictAndUpdate" that combines both steps for some computational savings.</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> *<span class="command"> \nosubgrouping</span></i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><b>template</b> &lt;<b>class</b> VALUE&gt;</td></tr>
+<tr><th id="45">45</th><td><b>class</b> <dfn class="type def" id="gtsam::ExtendedKalmanFilter" title='gtsam::ExtendedKalmanFilter' data-ref="gtsam::ExtendedKalmanFilter">ExtendedKalmanFilter</dfn> {</td></tr>
+<tr><th id="46">46</th><td>  <i>// Check that VALUE type is a testable Manifold</i></td></tr>
+<tr><th id="47">47</th><td>  <a class="macro" href="../base/concepts.h.html#18" title="typedef ::boost::concepts::detail::instantiate&lt; &amp;::boost::concepts::requirement_&lt;void(*)(IsTestable&lt;VALUE&gt;)&gt;::failed&gt; boost_concept_check47 __attribute__((__unused__))" data-ref="_M/GTSAM_CONCEPT_ASSERT">GTSAM_CONCEPT_ASSERT</a>(<a class="type" href="../base/Testable.h.html#gtsam::IsTestable" title='gtsam::IsTestable' data-ref="gtsam::IsTestable">IsTestable</a>&lt;VALUE&gt;);</td></tr>
+<tr><th id="48">48</th><td>  <a class="macro" href="../base/concepts.h.html#18" title="typedef ::boost::concepts::detail::instantiate&lt; &amp;::boost::concepts::requirement_&lt;void(*)(IsManifold&lt;VALUE&gt;)&gt;::failed&gt; boost_concept_check48 __attribute__((__unused__))" data-ref="_M/GTSAM_CONCEPT_ASSERT">GTSAM_CONCEPT_ASSERT</a>(<a class="type" href="../base/Manifold.h.html#gtsam::IsManifold" title='gtsam::IsManifold' data-ref="gtsam::IsManifold">IsManifold</a>&lt;VALUE&gt;);</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td> <b>public</b>:</td></tr>
+<tr><th id="51">51</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::ExtendedKalmanFilter" title='gtsam::ExtendedKalmanFilter' data-ref="gtsam::ExtendedKalmanFilter">ExtendedKalmanFilter</a>&lt;VALUE&gt; &gt; <dfn class="typedef" id="gtsam::ExtendedKalmanFilter::shared_ptr" title='gtsam::ExtendedKalmanFilter::shared_ptr' data-type='std::shared_ptr&lt;ExtendedKalmanFilter&lt;VALUE&gt;&gt;' data-ref="gtsam::ExtendedKalmanFilter::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="52">52</th><td>  <b>typedef</b> VALUE <dfn class="typedef" id="gtsam::ExtendedKalmanFilter::T" title='gtsam::ExtendedKalmanFilter::T' data-type='VALUE' data-ref="gtsam::ExtendedKalmanFilter::T">T</dfn>;</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td> <b>protected</b>:</td></tr>
+<tr><th id="55">55</th><td>  <a class="typedef" href="#gtsam::ExtendedKalmanFilter::T" title='gtsam::ExtendedKalmanFilter::T' data-type='VALUE' data-ref="gtsam::ExtendedKalmanFilter::T">T</a> <dfn class="decl field" id="gtsam::ExtendedKalmanFilter::x_" title='gtsam::ExtendedKalmanFilter::x_' data-ref="gtsam::ExtendedKalmanFilter::x_">x_</dfn>;                                     <i>// linearization point</i></td></tr>
+<tr><th id="56">56</th><td>  <a class="type" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor" title='gtsam::JacobianFactor' data-ref="gtsam::JacobianFactor">JacobianFactor</a>::<a class="typedef" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor::shared_ptr" title='gtsam::JacobianFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::JacobianFactor::shared_ptr">shared_ptr</a> <dfn class="decl field" id="gtsam::ExtendedKalmanFilter::priorFactor_" title='gtsam::ExtendedKalmanFilter::priorFactor_' data-ref="gtsam::ExtendedKalmanFilter::priorFactor_">priorFactor_</dfn>;  <i>// Gaussian density on x_</i></td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>  <em>static</em> <a class="typedef" href="#gtsam::ExtendedKalmanFilter::T" title='gtsam::ExtendedKalmanFilter::T' data-type='VALUE' data-ref="gtsam::ExtendedKalmanFilter::T">T</a> <a class="decl fn" href="ExtendedKalmanFilter-inl.h.html#_ZN5gtsam20ExtendedKalmanFilter6solve_ERKNS_19GaussianFactorGraphERKNS_6ValuesEmPSt10shared_ptrINS_14JacobianFactorEE" title='gtsam::ExtendedKalmanFilter::solve_' data-ref="_ZN5gtsam20ExtendedKalmanFilter6solve_ERKNS_19GaussianFactorGraphERKNS_6ValuesEmPSt10shared_ptrINS_14JacobianFactorEE" id="_ZN5gtsam20ExtendedKalmanFilter6solve_ERKNS_19GaussianFactorGraphERKNS_6ValuesEmPSt10shared_ptrINS_14JacobianFactorEE">solve_</a>(<em>const</em> <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>&amp; <dfn class="local col1 decl" id="1linearFactorGraph" title='linearFactorGraph' data-type='const GaussianFactorGraph &amp;' data-ref="1linearFactorGraph">linearFactorGraph</dfn>, <em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col2 decl" id="2linearizationPoints" title='linearizationPoints' data-type='const Values &amp;' data-ref="2linearizationPoints">linearizationPoints</dfn>,</td></tr>
+<tr><th id="59">59</th><td>                  <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col3 decl" id="3x" title='x' data-type='Key' data-ref="3x">x</dfn>, <a class="type" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor" title='gtsam::JacobianFactor' data-ref="gtsam::JacobianFactor">JacobianFactor</a>::<a class="typedef" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor::shared_ptr" title='gtsam::JacobianFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::JacobianFactor::shared_ptr">shared_ptr</a>* <dfn class="local col4 decl" id="4newPrior" title='newPrior' data-type='JacobianFactor::shared_ptr *' data-ref="4newPrior">newPrior</dfn>);</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td> <b>public</b>:</td></tr>
+<tr><th id="62">62</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="63">63</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td>  <a class="decl fn" href="ExtendedKalmanFilter-inl.h.html#_ZN5gtsam20ExtendedKalmanFilterC1EmT_St10shared_ptrINS_10noiseModel8GaussianEE" title='gtsam::ExtendedKalmanFilter::ExtendedKalmanFilter&lt;VALUE&gt;' data-ref="_ZN5gtsam20ExtendedKalmanFilterC1EmT_St10shared_ptrINS_10noiseModel8GaussianEE" id="_ZN5gtsam20ExtendedKalmanFilterC1EmT_St10shared_ptrINS_10noiseModel8GaussianEE">ExtendedKalmanFilter</a>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col5 decl" id="5key_initial" title='key_initial' data-type='Key' data-ref="5key_initial">key_initial</dfn>, <a class="typedef" href="#gtsam::ExtendedKalmanFilter::T" title='gtsam::ExtendedKalmanFilter::T' data-type='VALUE' data-ref="gtsam::ExtendedKalmanFilter::T">T</a> <dfn class="local col6 decl" id="6x_initial" title='x_initial' data-type='T' data-ref="6x_initial">x_initial</dfn>, <span class="namespace">noiseModel::</span><a class="type" href="../linear/NoiseModel.h.html#gtsam::noiseModel::Gaussian" title='gtsam::noiseModel::Gaussian' data-ref="gtsam::noiseModel::Gaussian">Gaussian</a>::<a class="typedef" href="../linear/NoiseModel.h.html#gtsam::noiseModel::Gaussian::shared_ptr" title='gtsam::noiseModel::Gaussian::shared_ptr' data-type='std::shared_ptr&lt;Gaussian&gt;' data-ref="gtsam::noiseModel::Gaussian::shared_ptr">shared_ptr</a> <dfn class="local col7 decl" id="7P_initial" title='P_initial' data-type='noiseModel::Gaussian::shared_ptr' data-ref="7P_initial">P_initial</dfn>);</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc"></i></td></tr>
+<tr><th id="71">71</th><td><i class="doc">  /// print</i></td></tr>
+<tr><th id="72">72</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam20ExtendedKalmanFilter5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::ExtendedKalmanFilter::print' data-ref="_ZNK5gtsam20ExtendedKalmanFilter5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col8 decl" id="8s" title='s' data-type='const std::string &amp;' data-ref="8s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>) <em>const</em> {</td></tr>
+<tr><th id="73">73</th><td>    <span class="namespace">std::</span><a class="ref" href="../../../include/c++/13/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE">&lt;&lt;</a> <a class="local col8 ref" href="#8s" title='s' data-ref="8s">s</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"\n"</q>;</td></tr>
+<tr><th id="74">74</th><td>    <a class="member field" href="#gtsam::ExtendedKalmanFilter::x_" title='gtsam::ExtendedKalmanFilter::x_' data-ref="gtsam::ExtendedKalmanFilter::x_">x_</a>.print(<a class="local col8 ref" href="#8s" title='s' data-ref="8s">s</a> <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStplRKNSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_" title='std::operator+' data-ref="_ZStplRKNSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_">+</a> <q>"x"</q>);</td></tr>
+<tr><th id="75">75</th><td>    <a class="member field" href="#gtsam::ExtendedKalmanFilter::priorFactor_" title='gtsam::ExtendedKalmanFilter::priorFactor_' data-ref="gtsam::ExtendedKalmanFilter::priorFactor_">priorFactor_</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="virtual ref fn" href="../linear/JacobianFactor.h.html#_ZNK5gtsam14JacobianFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::JacobianFactor::print' data-ref="_ZNK5gtsam14JacobianFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<span class='inlayHint'>s:&nbsp;</span><a class="local col8 ref" href="#8s" title='s' data-ref="8s">s</a> <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStplRKNSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_" title='std::operator+' data-ref="_ZStplRKNSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_">+</a> <q>"density"</q>);</td></tr>
+<tr><th id="76">76</th><td>  }</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="79">79</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Interface</span></i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   * Calculate predictive density</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   *     <span class="command">\f$</span><span class="verb"> P(x_) ~ \int  P(x_min) P(x_min, x_)\</span>f$ </i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   * The motion model should be given as a factor with key1 for <span class="command">\f$</span><span class="verb">x_min\</span>f$ and key2 for <span class="command">\f$</span><span class="verb">x_\</span>f$ </i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="87">87</th><td>  <a class="typedef" href="#gtsam::ExtendedKalmanFilter::T" title='gtsam::ExtendedKalmanFilter::T' data-type='VALUE' data-ref="gtsam::ExtendedKalmanFilter::T">T</a> <a class="decl fn" href="ExtendedKalmanFilter-inl.h.html#_ZN5gtsam20ExtendedKalmanFilter7predictERKNS_16NoiseModelFactorE" title='gtsam::ExtendedKalmanFilter::predict' data-ref="_ZN5gtsam20ExtendedKalmanFilter7predictERKNS_16NoiseModelFactorE" id="_ZN5gtsam20ExtendedKalmanFilter7predictERKNS_16NoiseModelFactorE">predict</a>(<em>const</em> <a class="type" href="NonlinearFactor.h.html#gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</a>&amp; <dfn class="local col9 decl" id="9motionFactor" title='motionFactor' data-type='const NoiseModelFactor &amp;' data-ref="9motionFactor">motionFactor</dfn>);</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">   * Calculate posterior density P(x_) ~ L(z|x) P(x)</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   * The likelihood L(z|x) should be given as a unary factor on x</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="93">93</th><td>  <a class="typedef" href="#gtsam::ExtendedKalmanFilter::T" title='gtsam::ExtendedKalmanFilter::T' data-type='VALUE' data-ref="gtsam::ExtendedKalmanFilter::T">T</a> <a class="decl fn" href="ExtendedKalmanFilter-inl.h.html#_ZN5gtsam20ExtendedKalmanFilter6updateERKNS_16NoiseModelFactorE" title='gtsam::ExtendedKalmanFilter::update' data-ref="_ZN5gtsam20ExtendedKalmanFilter6updateERKNS_16NoiseModelFactorE" id="_ZN5gtsam20ExtendedKalmanFilter6updateERKNS_16NoiseModelFactorE">update</a>(<em>const</em> <a class="type" href="NonlinearFactor.h.html#gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</a>&amp; <dfn class="local col0 decl" id="10measurementFactor" title='measurementFactor' data-type='const NoiseModelFactor &amp;' data-ref="10measurementFactor">measurementFactor</dfn>);</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>  <i class="doc">/// Return current predictive (if called after predict)/posterior (if called after update)</i></td></tr>
+<tr><th id="96">96</th><td>  <em>const</em> <a class="type" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor" title='gtsam::JacobianFactor' data-ref="gtsam::JacobianFactor">JacobianFactor</a>::<a class="typedef" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor::shared_ptr" title='gtsam::JacobianFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::JacobianFactor::shared_ptr">shared_ptr</a> <dfn class="decl def fn" id="_ZNK5gtsam20ExtendedKalmanFilter7DensityEv" title='gtsam::ExtendedKalmanFilter::Density' data-ref="_ZNK5gtsam20ExtendedKalmanFilter7DensityEv">Density</dfn>() <em>const</em> {</td></tr>
+<tr><th id="97">97</th><td>    <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E"></a><a class="member field" href="#gtsam::ExtendedKalmanFilter::priorFactor_" title='gtsam::ExtendedKalmanFilter::priorFactor_' data-ref="gtsam::ExtendedKalmanFilter::priorFactor_">priorFactor_</a>;</td></tr>
+<tr><th id="98">98</th><td>  }</td></tr>
+<tr><th id="99">99</th><td></td></tr>
+<tr><th id="100">100</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="101">101</th><td>};</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>}  <i>// namespace</i></td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td><u>#include <a href="ExtendedKalmanFilter-inl.h.html">&lt;gtsam/nonlinear/ExtendedKalmanFilter-inl.h&gt;</a></u></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/easyPoint2KalmanFilter.cpp.html'>codebrowser/examples/easyPoint2KalmanFilter.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

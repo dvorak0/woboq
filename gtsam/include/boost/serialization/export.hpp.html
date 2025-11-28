@@ -1,0 +1,242 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>export.hpp source code [include/boost/serialization/export.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::archive::detail::export_impl,boost::archive::detail::extra_detail::guid_initializer,boost::archive::detail::instantiate_function,boost::archive::detail::ptr_serialization_support "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/serialization/export.hpp'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>include</a>/<a href='..'>boost</a>/<a href='./'>serialization</a>/<a href='export.hpp.html'>export.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><u>#<span data-ppcond="1">ifndef</span> <span class="macro" data-ref="_M/BOOST_SERIALIZATION_EXPORT_HPP">BOOST_SERIALIZATION_EXPORT_HPP</span></u></td></tr>
+<tr><th id="2">2</th><td><u>#define <dfn class="macro" id="_M/BOOST_SERIALIZATION_EXPORT_HPP" data-ref="_M/BOOST_SERIALIZATION_EXPORT_HPP">BOOST_SERIALIZATION_EXPORT_HPP</dfn></u></td></tr>
+<tr><th id="3">3</th><td></td></tr>
+<tr><th id="4">4</th><td><i>// MS compatible compilers support #pragma once</i></td></tr>
+<tr><th id="5">5</th><td><u>#<span data-ppcond="5">if</span> defined(<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>)</u></td></tr>
+<tr><th id="6">6</th><td><u># pragma once</u></td></tr>
+<tr><th id="7">7</th><td><u>#<span data-ppcond="5">endif</span></u></td></tr>
+<tr><th id="8">8</th><td></td></tr>
+<tr><th id="9">9</th><td><i>/////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8</i></td></tr>
+<tr><th id="10">10</th><td><i>// export.hpp: set traits of classes to be serialized</i></td></tr>
+<tr><th id="11">11</th><td><i></i></td></tr>
+<tr><th id="12">12</th><td><i>// (C) Copyright 2002 Robert Ramey - <a href="http://www.rrsd.com">http://www.rrsd.com</a> .</i></td></tr>
+<tr><th id="13">13</th><td><i>// Use, modification and distribution is subject to the Boost Software</i></td></tr>
+<tr><th id="14">14</th><td><i>// License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at</i></td></tr>
+<tr><th id="15">15</th><td><i>// <a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="16">16</th><td><i></i></td></tr>
+<tr><th id="17">17</th><td><i>//  See <a href="http://www.boost.org">http://www.boost.org</a> for updates, documentation, and revision history.</i></td></tr>
+<tr><th id="18">18</th><td><i></i></td></tr>
+<tr><th id="19">19</th><td><i>// (C) Copyright 2006 David Abrahams - <a href="http://www.boost.org">http://www.boost.org</a>.</i></td></tr>
+<tr><th id="20">20</th><td><i>// implementation of class export functionality.  This is an alternative to</i></td></tr>
+<tr><th id="21">21</th><td><i>// "forward declaration" method to provoke instantiation of derived classes</i></td></tr>
+<tr><th id="22">22</th><td><i>// that are to be serialized through pointers.</i></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../../c++/13/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../../c++/13/cstddef.html">&lt;cstddef&gt;</a> // NULL</u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../config.hpp.html">&lt;boost/config.hpp&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../static_assert.hpp.html">&lt;boost/static_assert.hpp&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../preprocessor/stringize.hpp.html">&lt;boost/preprocessor/stringize.hpp&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../type_traits/is_polymorphic.hpp.html">&lt;boost/type_traits/is_polymorphic.hpp&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../mpl/assert.hpp.html">&lt;boost/mpl/assert.hpp&gt;</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../mpl/and.hpp.html">&lt;boost/mpl/and.hpp&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../mpl/not.hpp.html">&lt;boost/mpl/not.hpp&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../mpl/bool_fwd.hpp.html">&lt;boost/mpl/bool_fwd.hpp&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="extended_type_info.hpp.html">&lt;boost/serialization/extended_type_info.hpp&gt;</a> // for guid_defined only</u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="static_warning.hpp.html">&lt;boost/serialization/static_warning.hpp&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="assume_abstract.hpp.html">&lt;boost/serialization/assume_abstract.hpp&gt;</a></u></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="force_include.hpp.html">&lt;boost/serialization/force_include.hpp&gt;</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="singleton.hpp.html">&lt;boost/serialization/singleton.hpp&gt;</a></u></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="../archive/detail/register_archive.hpp.html">&lt;boost/archive/detail/register_archive.hpp&gt;</a></u></td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><b>namespace</b> <span class="namespace">boost</span> {</td></tr>
+<tr><th id="46">46</th><td><b>namespace</b> <span class="namespace">archive</span> {</td></tr>
+<tr><th id="47">47</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><b>class</b> <a class="type" href="../archive/detail/basic_pointer_iserializer.hpp.html#boost::archive::detail::basic_pointer_iserializer" title='boost::archive::detail::basic_pointer_iserializer' data-ref="boost::archive::detail::basic_pointer_iserializer" id="boost::archive::detail::basic_pointer_iserializer">basic_pointer_iserializer</a>;</td></tr>
+<tr><th id="50">50</th><td><b>class</b> <a class="type" href="../archive/detail/basic_pointer_oserializer.hpp.html#boost::archive::detail::basic_pointer_oserializer" title='boost::archive::detail::basic_pointer_oserializer' data-ref="boost::archive::detail::basic_pointer_oserializer" id="boost::archive::detail::basic_pointer_oserializer">basic_pointer_oserializer</a>;</td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><b>template</b>&lt;<b>class</b> Archive, <b>class</b> T&gt;</td></tr>
+<tr><th id="53">53</th><td><b>class</b> <a class="type" href="../archive/detail/iserializer.hpp.html#boost::archive::detail::pointer_iserializer" title='boost::archive::detail::pointer_iserializer' data-ref="boost::archive::detail::pointer_iserializer" id="boost::archive::detail::pointer_iserializer">pointer_iserializer</a>;</td></tr>
+<tr><th id="54">54</th><td><b>template</b>&lt;<b>class</b> Archive, <b>class</b> T&gt;</td></tr>
+<tr><th id="55">55</th><td><b>class</b> <a class="type" href="../archive/detail/oserializer.hpp.html#boost::archive::detail::pointer_oserializer" title='boost::archive::detail::pointer_oserializer' data-ref="boost::archive::detail::pointer_oserializer" id="boost::archive::detail::pointer_oserializer">pointer_oserializer</a>;</td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td><b>template</b> &lt;<b>class</b> Archive, <b>class</b> Serializable&gt;</td></tr>
+<tr><th id="58">58</th><td><b>struct</b> <dfn class="type def" id="boost::archive::detail::export_impl" title='boost::archive::detail::export_impl' data-ref="boost::archive::detail::export_impl">export_impl</dfn></td></tr>
+<tr><th id="59">59</th><td>{</td></tr>
+<tr><th id="60">60</th><td>    <em>static</em> <em>const</em> <a class="type" href="../archive/detail/basic_pointer_iserializer.hpp.html#boost::archive::detail::basic_pointer_iserializer" title='boost::archive::detail::basic_pointer_iserializer' data-ref="boost::archive::detail::basic_pointer_iserializer">basic_pointer_iserializer</a> &amp;</td></tr>
+<tr><th id="61">61</th><td>    <dfn class="decl def fn" id="_ZN5boost7archive6detail11export_impl11enable_loadEN4mpl_5bool_ILb1EEE" title='boost::archive::detail::export_impl::enable_load' data-ref="_ZN5boost7archive6detail11export_impl11enable_loadEN4mpl_5bool_ILb1EEE">enable_load</dfn>(<span class="namespace">mpl::</span>true_){</td></tr>
+<tr><th id="62">62</th><td>        <b>return</b> <span class="namespace">boost::serialization::</span><a class="type" href="singleton.hpp.html#boost::serialization::singleton" title='boost::serialization::singleton' data-ref="boost::serialization::singleton">singleton</a>&lt;</td></tr>
+<tr><th id="63">63</th><td>            <a class="type" href="../archive/detail/iserializer.hpp.html#boost::archive::detail::pointer_iserializer" title='boost::archive::detail::pointer_iserializer' data-ref="boost::archive::detail::pointer_iserializer">pointer_iserializer</a>&lt;Archive, Serializable&gt;</td></tr>
+<tr><th id="64">64</th><td>        &gt;::get_const_instance();</td></tr>
+<tr><th id="65">65</th><td>    }</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>    <em>static</em> <em>const</em> <a class="type" href="../archive/detail/basic_pointer_oserializer.hpp.html#boost::archive::detail::basic_pointer_oserializer" title='boost::archive::detail::basic_pointer_oserializer' data-ref="boost::archive::detail::basic_pointer_oserializer">basic_pointer_oserializer</a> &amp;</td></tr>
+<tr><th id="68">68</th><td>    <dfn class="decl def fn" id="_ZN5boost7archive6detail11export_impl11enable_saveEN4mpl_5bool_ILb1EEE" title='boost::archive::detail::export_impl::enable_save' data-ref="_ZN5boost7archive6detail11export_impl11enable_saveEN4mpl_5bool_ILb1EEE">enable_save</dfn>(<span class="namespace">mpl::</span>true_){</td></tr>
+<tr><th id="69">69</th><td>        <b>return</b> <span class="namespace">boost::serialization::</span><a class="type" href="singleton.hpp.html#boost::serialization::singleton" title='boost::serialization::singleton' data-ref="boost::serialization::singleton">singleton</a>&lt;</td></tr>
+<tr><th id="70">70</th><td>            <a class="type" href="../archive/detail/oserializer.hpp.html#boost::archive::detail::pointer_oserializer" title='boost::archive::detail::pointer_oserializer' data-ref="boost::archive::detail::pointer_oserializer">pointer_oserializer</a>&lt;Archive, Serializable&gt;</td></tr>
+<tr><th id="71">71</th><td>        &gt;::get_const_instance();</td></tr>
+<tr><th id="72">72</th><td>    }</td></tr>
+<tr><th id="73">73</th><td>    <b>inline</b> <em>static</em> <em>void</em> <dfn class="decl def fn" id="_ZN5boost7archive6detail11export_impl11enable_loadEN4mpl_5bool_ILb0EEE" title='boost::archive::detail::export_impl::enable_load' data-ref="_ZN5boost7archive6detail11export_impl11enable_loadEN4mpl_5bool_ILb0EEE">enable_load</dfn>(<span class="namespace">mpl::</span>false_) {}</td></tr>
+<tr><th id="74">74</th><td>    <b>inline</b> <em>static</em> <em>void</em> <dfn class="decl def fn" id="_ZN5boost7archive6detail11export_impl11enable_saveEN4mpl_5bool_ILb0EEE" title='boost::archive::detail::export_impl::enable_save' data-ref="_ZN5boost7archive6detail11export_impl11enable_saveEN4mpl_5bool_ILb0EEE">enable_save</dfn>(<span class="namespace">mpl::</span>false_) {}</td></tr>
+<tr><th id="75">75</th><td>};</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><i>// On many platforms, naming a specialization of this template is</i></td></tr>
+<tr><th id="78">78</th><td><i>// enough to cause its argument to be instantiated.</i></td></tr>
+<tr><th id="79">79</th><td><b>template</b> &lt;<em>void</em>(*)()&gt;</td></tr>
+<tr><th id="80">80</th><td><b>struct</b> <dfn class="type def" id="boost::archive::detail::instantiate_function" title='boost::archive::detail::instantiate_function' data-ref="boost::archive::detail::instantiate_function">instantiate_function</dfn> {};</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><b>template</b> &lt;<b>class</b> Archive, <b>class</b> Serializable&gt;</td></tr>
+<tr><th id="83">83</th><td><b>struct</b> <dfn class="type def" id="boost::archive::detail::ptr_serialization_support" title='boost::archive::detail::ptr_serialization_support' data-ref="boost::archive::detail::ptr_serialization_support">ptr_serialization_support</dfn></td></tr>
+<tr><th id="84">84</th><td>{</td></tr>
+<tr><th id="85">85</th><td><u># <span data-ppcond="85">if</span> defined(<span class="macro" data-ref="_M/BOOST_MSVC">BOOST_MSVC</span>) || defined(<span class="macro" data-ref="_M/__SUNPRO_CC">__SUNPRO_CC</span>)</u></td></tr>
+<tr><th id="86">86</th><td>    <b>virtual</b> BOOST_DLLEXPORT <em>void</em> instantiate() BOOST_USED;</td></tr>
+<tr><th id="87">87</th><td><u># <span data-ppcond="85">else</span></u></td></tr>
+<tr><th id="88">88</th><td>    <em>static</em> <a class="macro" href="force_include.hpp.html#52" title="" data-ref="_M/BOOST_DLLEXPORT">BOOST_DLLEXPORT</a> <em>void</em> <a class="decl fn" href="#_ZN5boost7archive6detail25ptr_serialization_support11instantiateEv" title='boost::archive::detail::ptr_serialization_support::instantiate' data-ref="_ZN5boost7archive6detail25ptr_serialization_support11instantiateEv">instantiate</a>() <a class="macro" href="force_include.hpp.html#39" title="__attribute__ ((__used__))" data-ref="_M/BOOST_USED">BOOST_USED</a>;</td></tr>
+<tr><th id="89">89</th><td>    <b>typedef</b> <a class="type" href="#boost::archive::detail::instantiate_function" title='boost::archive::detail::instantiate_function' data-ref="boost::archive::detail::instantiate_function">instantiate_function</a>&lt;</td></tr>
+<tr><th id="90">90</th><td>        &amp;ptr_serialization_support::<a class="ref fn" href="#_ZN5boost7archive6detail25ptr_serialization_support11instantiateEv" title='boost::archive::detail::ptr_serialization_support::instantiate' data-ref="_ZN5boost7archive6detail25ptr_serialization_support11instantiateEv">instantiate</a></td></tr>
+<tr><th id="91">91</th><td>    &gt; <dfn class="typedef" id="boost::archive::detail::ptr_serialization_support::x" title='boost::archive::detail::ptr_serialization_support::x' data-type='instantiate_function&lt;&amp;ptr_serialization_support&lt;Archive, Serializable&gt;::instantiate&gt;' data-ref="boost::archive::detail::ptr_serialization_support::x">x</dfn>;</td></tr>
+<tr><th id="92">92</th><td><u># <span data-ppcond="85">endif</span></u></td></tr>
+<tr><th id="93">93</th><td>};</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td><b>template</b> &lt;<b>class</b> Archive, <b>class</b> Serializable&gt;</td></tr>
+<tr><th id="96">96</th><td><a class="macro" href="force_include.hpp.html#52" title="" data-ref="_M/BOOST_DLLEXPORT">BOOST_DLLEXPORT</a> <em>void</em></td></tr>
+<tr><th id="97">97</th><td><a class="type" href="../archive/detail/register_archive.hpp.html#boost::archive::detail::ptr_serialization_support" title='boost::archive::detail::ptr_serialization_support' data-ref="boost::archive::detail::ptr_serialization_support">ptr_serialization_support</a>&lt;Archive,Serializable&gt;::<dfn class="decl def fn" id="_ZN5boost7archive6detail25ptr_serialization_support11instantiateEv" title='boost::archive::detail::ptr_serialization_support::instantiate' data-ref="_ZN5boost7archive6detail25ptr_serialization_support11instantiateEv">instantiate</dfn>()</td></tr>
+<tr><th id="98">98</th><td>{</td></tr>
+<tr><th id="99">99</th><td>    <a class="type" href="#boost::archive::detail::export_impl" title='boost::archive::detail::export_impl' data-ref="boost::archive::detail::export_impl">export_impl</a>&lt;Archive,Serializable&gt;::enable_save(</td></tr>
+<tr><th id="100">100</th><td>        <b>typename</b> Archive::is_saving()</td></tr>
+<tr><th id="101">101</th><td>    );</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <a class="type" href="#boost::archive::detail::export_impl" title='boost::archive::detail::export_impl' data-ref="boost::archive::detail::export_impl">export_impl</a>&lt;Archive,Serializable&gt;::enable_load(</td></tr>
+<tr><th id="104">104</th><td>        <b>typename</b> Archive::is_loading()</td></tr>
+<tr><th id="105">105</th><td>    );</td></tr>
+<tr><th id="106">106</th><td>}</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td><i>// Note INTENTIONAL usage of anonymous namespace in header.</i></td></tr>
+<tr><th id="109">109</th><td><i>// This was made this way so that export.hpp could be included</i></td></tr>
+<tr><th id="110">110</th><td><i>// in other headers.  This is still under study.</i></td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td><b>namespace</b> <span class="namespace">extra_detail</span> {</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="115">115</th><td><b>struct</b> <dfn class="type def" id="boost::archive::detail::extra_detail::guid_initializer" title='boost::archive::detail::extra_detail::guid_initializer' data-ref="boost::archive::detail::extra_detail::guid_initializer">guid_initializer</dfn></td></tr>
+<tr><th id="116">116</th><td>{</td></tr>
+<tr><th id="117">117</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZNK5boost7archive6detail12extra_detail16guid_initializer11export_guidEN4mpl_5bool_ILb0EEE" title='boost::archive::detail::extra_detail::guid_initializer::export_guid' data-ref="_ZNK5boost7archive6detail12extra_detail16guid_initializer11export_guidEN4mpl_5bool_ILb0EEE">export_guid</dfn>(<span class="namespace">mpl::</span>false_) <em>const</em> {</td></tr>
+<tr><th id="118">118</th><td>        <i>// generates the statically-initialized objects whose constructors</i></td></tr>
+<tr><th id="119">119</th><td><i>        // register the information allowing serialization of T objects</i></td></tr>
+<tr><th id="120">120</th><td><i>        // through pointers to their base classes.</i></td></tr>
+<tr><th id="121">121</th><td>        instantiate_ptr_serialization((T*)<var>0</var>, <var>0</var>, <a class="type" href="../archive/detail/register_archive.hpp.html#boost::archive::detail::adl_tag" title='boost::archive::detail::adl_tag' data-ref="boost::archive::detail::adl_tag">adl_tag</a><a class="ref fn" href="../archive/detail/register_archive.hpp.html#15" title='boost::archive::detail::adl_tag::adl_tag' data-ref="_ZN5boost7archive6detail7adl_tagC1Ev">(</a>));</td></tr>
+<tr><th id="122">122</th><td>    }</td></tr>
+<tr><th id="123">123</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZNK5boost7archive6detail12extra_detail16guid_initializer11export_guidEN4mpl_5bool_ILb1EEE" title='boost::archive::detail::extra_detail::guid_initializer::export_guid' data-ref="_ZNK5boost7archive6detail12extra_detail16guid_initializer11export_guidEN4mpl_5bool_ILb1EEE">export_guid</dfn>(<span class="namespace">mpl::</span>true_) <em>const</em> {</td></tr>
+<tr><th id="124">124</th><td>    }</td></tr>
+<tr><th id="125">125</th><td>    guid_initializer <em>const</em> &amp; <dfn class="decl def fn" id="_ZNK5boost7archive6detail12extra_detail16guid_initializer11export_guidEv" title='boost::archive::detail::extra_detail::guid_initializer::export_guid' data-ref="_ZNK5boost7archive6detail12extra_detail16guid_initializer11export_guidEv">export_guid</dfn>() <em>const</em> {</td></tr>
+<tr><th id="126">126</th><td>        <a class="macro" href="static_warning.hpp.html#101" title="typedef boost::serialization::BOOST_SERIALIZATION_SS&lt; sizeof( boost::serialization::static_warning_test&lt; boost::is_polymorphic&lt; T &gt;::value, 126 &gt; ) &gt; STATIC_WARNING_LINE126 __attribute__((__unused__));" data-ref="_M/BOOST_STATIC_WARNING">BOOST_STATIC_WARNING</a>(boost::<a class="type" href="../type_traits/is_polymorphic.hpp.html#boost::is_polymorphic" title='boost::is_polymorphic' data-ref="boost::is_polymorphic">is_polymorphic</a>&lt; T &gt;::value);</td></tr>
+<tr><th id="127">127</th><td>        <i>// note: exporting an abstract base class will have no effect</i></td></tr>
+<tr><th id="128">128</th><td><i>        // and cannot be used to instantitiate serialization code</i></td></tr>
+<tr><th id="129">129</th><td><i>        // (one might be using this in a DLL to instantiate code)</i></td></tr>
+<tr><th id="130">130</th><td><i>        //BOOST_STATIC_WARNING(! boost::serialization::is_abstract&lt; T &gt;::value);</i></td></tr>
+<tr><th id="131">131</th><td>        export_guid(<span class="namespace">boost::serialization::</span><a class="type" href="assume_abstract.hpp.html#boost::serialization::is_abstract" title='boost::serialization::is_abstract' data-ref="boost::serialization::is_abstract">is_abstract</a>&lt; T &gt;());</td></tr>
+<tr><th id="132">132</th><td>        <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="133">133</th><td>    }</td></tr>
+<tr><th id="134">134</th><td>};</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="137">137</th><td><b>struct</b> <dfn class="type" id="boost::archive::detail::extra_detail::init_guid" title='boost::archive::detail::extra_detail::init_guid' data-ref="boost::archive::detail::extra_detail::init_guid">init_guid</dfn>;</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>} <i>// anonymous</i></td></tr>
+<tr><th id="140">140</th><td>} <i>// namespace detail</i></td></tr>
+<tr><th id="141">141</th><td>} <i>// namespace archive</i></td></tr>
+<tr><th id="142">142</th><td>} <i>// namespace boost</i></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td><u>#define <dfn class="macro" id="_M/BOOST_CLASS_EXPORT_IMPLEMENT" data-ref="_M/BOOST_CLASS_EXPORT_IMPLEMENT">BOOST_CLASS_EXPORT_IMPLEMENT</dfn>(T)                      \</u></td></tr>
+<tr><th id="145">145</th><td><u>    namespace boost {                                        \</u></td></tr>
+<tr><th id="146">146</th><td><u>    namespace archive {                                      \</u></td></tr>
+<tr><th id="147">147</th><td><u>    namespace detail {                                       \</u></td></tr>
+<tr><th id="148">148</th><td><u>    namespace extra_detail {                                 \</u></td></tr>
+<tr><th id="149">149</th><td><u>    template&lt;&gt;                                               \</u></td></tr>
+<tr><th id="150">150</th><td><u>    struct init_guid&lt; T &gt; {                                  \</u></td></tr>
+<tr><th id="151">151</th><td><u>        static guid_initializer&lt; T &gt; const &amp; g;              \</u></td></tr>
+<tr><th id="152">152</th><td><u>    };                                                       \</u></td></tr>
+<tr><th id="153">153</th><td><u>    guid_initializer&lt; T &gt; const &amp; init_guid&lt; T &gt;::g =        \</u></td></tr>
+<tr><th id="154">154</th><td><u>        ::boost::serialization::singleton&lt;                   \</u></td></tr>
+<tr><th id="155">155</th><td><u>            guid_initializer&lt; T &gt;                            \</u></td></tr>
+<tr><th id="156">156</th><td><u>        &gt;::get_mutable_instance().export_guid();             \</u></td></tr>
+<tr><th id="157">157</th><td><u>    }}}}                                                     \</u></td></tr>
+<tr><th id="158">158</th><td><u>/**/</u></td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td><u>#define <dfn class="macro" id="_M/BOOST_CLASS_EXPORT_KEY2" data-ref="_M/BOOST_CLASS_EXPORT_KEY2">BOOST_CLASS_EXPORT_KEY2</dfn>(T, K)          \</u></td></tr>
+<tr><th id="161">161</th><td><u>namespace boost {                              \</u></td></tr>
+<tr><th id="162">162</th><td><u>namespace serialization {                      \</u></td></tr>
+<tr><th id="163">163</th><td><u>template&lt;&gt;                                     \</u></td></tr>
+<tr><th id="164">164</th><td><u>struct guid_defined&lt; T &gt; : boost::mpl::true_ {}; \</u></td></tr>
+<tr><th id="165">165</th><td><u>template&lt;&gt;                                     \</u></td></tr>
+<tr><th id="166">166</th><td><u>inline const char * guid&lt; T &gt;(){                 \</u></td></tr>
+<tr><th id="167">167</th><td><u>    return K;                                  \</u></td></tr>
+<tr><th id="168">168</th><td><u>}                                              \</u></td></tr>
+<tr><th id="169">169</th><td><u>} /* serialization */                          \</u></td></tr>
+<tr><th id="170">170</th><td><u>} /* boost */                                  \</u></td></tr>
+<tr><th id="171">171</th><td><u>/**/</u></td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td><u>#define <dfn class="macro" id="_M/BOOST_CLASS_EXPORT_KEY" data-ref="_M/BOOST_CLASS_EXPORT_KEY">BOOST_CLASS_EXPORT_KEY</dfn>(T)                                      \</u></td></tr>
+<tr><th id="174">174</th><td><u>    BOOST_CLASS_EXPORT_KEY2(T, BOOST_PP_STRINGIZE(T))                                                                  \</u></td></tr>
+<tr><th id="175">175</th><td><u>/**/</u></td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td><u>#define <dfn class="macro" id="_M/BOOST_CLASS_EXPORT_GUID" data-ref="_M/BOOST_CLASS_EXPORT_GUID">BOOST_CLASS_EXPORT_GUID</dfn>(T, K)                                  \</u></td></tr>
+<tr><th id="178">178</th><td><u>BOOST_CLASS_EXPORT_KEY2(T, K)                                          \</u></td></tr>
+<tr><th id="179">179</th><td><u>BOOST_CLASS_EXPORT_IMPLEMENT(T)                                        \</u></td></tr>
+<tr><th id="180">180</th><td><u>/**/</u></td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td><u>#<span data-ppcond="182">if</span> <a class="macro" href="../config/workaround.hpp.html#271" title="((1 + 0 == 0) &amp;&amp; (__MWERKS__ != 0) &amp;&amp; (1 % (( (__MWERKS__ != ((0x3205)-(0x3205))) ) + 1)))" data-ref="_M/BOOST_WORKAROUND">BOOST_WORKAROUND</a>(__MWERKS__, <a class="macro" href="../config/workaround.hpp.html#296" title="!= ((0x3205)-(0x3205))" data-ref="_M/BOOST_TESTED_AT">BOOST_TESTED_AT</a>(0x3205))</u></td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td><i>// CodeWarrior fails to construct static members of class templates</i></td></tr>
+<tr><th id="185">185</th><td><i>// when they are instantiated from within templates, so on that</i></td></tr>
+<tr><th id="186">186</th><td><i>// compiler we ask users to specifically register base/derived class</i></td></tr>
+<tr><th id="187">187</th><td><i>// relationships for exported classes.  On all other compilers, use of</i></td></tr>
+<tr><th id="188">188</th><td><i>// this macro is entirely optional.</i></td></tr>
+<tr><th id="189">189</th><td><u># define BOOST_SERIALIZATION_MWERKS_BASE_AND_DERIVED(Base,Derived)             \</u></td></tr>
+<tr><th id="190">190</th><td><u>namespace {                                                                    \</u></td></tr>
+<tr><th id="191">191</th><td><u>  static int BOOST_PP_CAT(boost_serialization_mwerks_init_, __LINE__) =        \</u></td></tr>
+<tr><th id="192">192</th><td><u>  (::boost::archive::detail::instantiate_ptr_serialization((Derived*)0,0), 3); \</u></td></tr>
+<tr><th id="193">193</th><td><u>  static int BOOST_PP_CAT(boost_serialization_mwerks_init2_, __LINE__) = (     \</u></td></tr>
+<tr><th id="194">194</th><td><u>      ::boost::serialization::void_cast_register((Derived*)0,(Base*)0)         \</u></td></tr>
+<tr><th id="195">195</th><td><u>    , 3);                                                                      \</u></td></tr>
+<tr><th id="196">196</th><td><u>}</u></td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td><u>#<span data-ppcond="182">else</span></u></td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td><u># define <dfn class="macro" id="_M/BOOST_SERIALIZATION_MWERKS_BASE_AND_DERIVED" data-ref="_M/BOOST_SERIALIZATION_MWERKS_BASE_AND_DERIVED">BOOST_SERIALIZATION_MWERKS_BASE_AND_DERIVED</dfn>(Base,Derived)</u></td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td><u>#<span data-ppcond="182">endif</span></u></td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td><i>// check for unnecessary export.  T isn't polymorphic so there is no</i></td></tr>
+<tr><th id="205">205</th><td><i>// need to export it.</i></td></tr>
+<tr><th id="206">206</th><td><u>#define <dfn class="macro" id="_M/BOOST_CLASS_EXPORT_CHECK" data-ref="_M/BOOST_CLASS_EXPORT_CHECK">BOOST_CLASS_EXPORT_CHECK</dfn>(T)                              \</u></td></tr>
+<tr><th id="207">207</th><td><u>    BOOST_STATIC_WARNING(                                        \</u></td></tr>
+<tr><th id="208">208</th><td><u>        boost::is_polymorphic&lt;U&gt;::value                          \</u></td></tr>
+<tr><th id="209">209</th><td><u>    );                                                           \</u></td></tr>
+<tr><th id="210">210</th><td><u>    /**/</u></td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td><i>// the default exportable class identifier is the class name</i></td></tr>
+<tr><th id="213">213</th><td><i>// the default list of archives types for which code id generated</i></td></tr>
+<tr><th id="214">214</th><td><i>// are the originally included with this serialization system</i></td></tr>
+<tr><th id="215">215</th><td><u>#define <dfn class="macro" id="_M/BOOST_CLASS_EXPORT" data-ref="_M/BOOST_CLASS_EXPORT">BOOST_CLASS_EXPORT</dfn>(T)                   \</u></td></tr>
+<tr><th id="216">216</th><td><u>    BOOST_CLASS_EXPORT_GUID(                    \</u></td></tr>
+<tr><th id="217">217</th><td><u>        T,                                      \</u></td></tr>
+<tr><th id="218">218</th><td><u>        BOOST_PP_STRINGIZE(T)                   \</u></td></tr>
+<tr><th id="219">219</th><td><u>    )                                           \</u></td></tr>
+<tr><th id="220">220</th><td><u>    /**/</u></td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td><u>#<span data-ppcond="1">endif</span> // BOOST_SERIALIZATION_EXPORT_HPP</u></td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../codebrowser/gtsam/base/tests/testSerializationBase.cpp.html'>codebrowser/gtsam/base/tests/testSerializationBase.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

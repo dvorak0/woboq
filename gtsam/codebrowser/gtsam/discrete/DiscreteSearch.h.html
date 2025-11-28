@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DiscreteSearch.h source code [codebrowser/gtsam/discrete/DiscreteSearch.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::DiscreteSearch "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/discrete/DiscreteSearch.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>discrete</a>/<a href='DiscreteSearch.h.html'>DiscreteSearch.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">DiscreteSearch.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span> Defines the DiscreteSearch class for discrete search algorithms.</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@details</span> This file contains the definition of the DiscreteSearch class, which</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * is used in discrete search algorithms to find the K best solutions.</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> * <span class="command">@date</span> January, 2025</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="DiscreteBayesNet.h.html">&lt;gtsam/discrete/DiscreteBayesNet.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="DiscreteBayesTree.h.html">&lt;gtsam/discrete/DiscreteBayesTree.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../../../include/c++/13/queue.html">&lt;queue&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> * <span class="command">@brief</span> DiscreteSearch: Search for the K best solutions.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> * This class is used to search for the K best solutions in a DiscreteBayesNet.</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc"> * This is implemented with a modified A* search algorithm that uses a priority</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * queue to manage the search nodes. That machinery is defined in the .cpp file.</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * The heuristic we use is the sum of the log-probabilities of the</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * maximum-probability assignments for each slot, for all slots to the right of</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * the current slot.</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * TODO: The heuristic could be refined by using the partial assignment in</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * search node to refine the max-probability assignment for the remaining slots.</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * This would incur more computation but will lead to fewer expansions.</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="44">44</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::DiscreteSearch" title='gtsam::DiscreteSearch' data-ref="gtsam::DiscreteSearch">DiscreteSearch</dfn> {</td></tr>
+<tr><th id="45">45</th><td> <b>public</b>:</td></tr>
+<tr><th id="46">46</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">   * We structure the search as a set of slots, each with a factor and</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc">   * a set of variable assignments that need to be chosen. In addition, each</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc">   * slot has a heuristic associated with it.</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">   * Example:</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc">   * The factors in the search problem (always parents before descendents!):</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc">   *    [P(A), P(B|A), P(C|A,B)]</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc">   * The assignments for each factor.</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">   *    [[A0,A1], [B0,B1], [C0,C1,C2]]</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">   * A lower bound on the cost-to-go after each slot, e.g.,</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">   *    [-log(max_B P(B|A)) -log(max_C P(C|A,B)), -log(max_C P(C|A,B)), 0.0]</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">   * Note that these decrease as we move from right to left.</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc">   * We keep the global lower bound as lowerBound_. In the example, it is:</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc">   *    -log(max_B P(B|A)) -log(max_C P(C|A,B)) -log(max_C P(C|A,B))</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="62">62</th><td>  <b>struct</b> <dfn class="type def" id="gtsam::DiscreteSearch::Slot" title='gtsam::DiscreteSearch::Slot' data-ref="gtsam::DiscreteSearch::Slot">Slot</dfn> {</td></tr>
+<tr><th id="63">63</th><td>    <a class="type" href="DiscreteFactor.h.html#gtsam::DiscreteFactor" title='gtsam::DiscreteFactor' data-ref="gtsam::DiscreteFactor">DiscreteFactor</a>::<a class="typedef" href="DiscreteFactor.h.html#gtsam::DiscreteFactor::shared_ptr" title='gtsam::DiscreteFactor::shared_ptr' data-type='std::shared_ptr&lt;DiscreteFactor&gt;' data-ref="gtsam::DiscreteFactor::shared_ptr">shared_ptr</a> <dfn class="decl field" id="gtsam::DiscreteSearch::Slot::factor" title='gtsam::DiscreteSearch::Slot::factor' data-ref="gtsam::DiscreteSearch::Slot::factor">factor</dfn>;</td></tr>
+<tr><th id="64">64</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="DiscreteValues.h.html#gtsam::DiscreteValues" title='gtsam::DiscreteValues' data-ref="gtsam::DiscreteValues">DiscreteValues</a>&gt; <dfn class="decl field" id="gtsam::DiscreteSearch::Slot::assignments" title='gtsam::DiscreteSearch::Slot::assignments' data-ref="gtsam::DiscreteSearch::Slot::assignments">assignments</dfn>;</td></tr>
+<tr><th id="65">65</th><td>    <em>double</em> <dfn class="decl field" id="gtsam::DiscreteSearch::Slot::heuristic" title='gtsam::DiscreteSearch::Slot::heuristic' data-ref="gtsam::DiscreteSearch::Slot::heuristic">heuristic</dfn>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>    <b>friend</b> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="decl def fn" id="_ZN5gtsamlsERSoRKNS_14DiscreteSearch4SlotE" title='gtsam::operator&lt;&lt;' data-ref="_ZN5gtsamlsERSoRKNS_14DiscreteSearch4SlotE"><b>operator</b>&lt;&lt;</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="local col1 decl" id="1os" title='os' data-type='std::ostream &amp;' data-ref="1os">os</dfn>, <em>const</em> <a class="type" href="#gtsam::DiscreteSearch::Slot" title='gtsam::DiscreteSearch::Slot' data-ref="gtsam::DiscreteSearch::Slot">Slot</a>&amp; <dfn class="local col2 decl" id="2slot" title='slot' data-type='const Slot &amp;' data-ref="2slot">slot</dfn>) {</td></tr>
+<tr><th id="68">68</th><td>      <a class="local col1 ref" href="#1os" title='os' data-ref="1os">os</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Slot with "</q> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZNSt13basic_ostreamlsEm" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEm">&lt;&lt;</a> <a class="local col2 ref" href="#2slot" title='slot' data-ref="2slot">slot</a>.<a class="ref field" href="#gtsam::DiscreteSearch::Slot::assignments" title='gtsam::DiscreteSearch::Slot::assignments' data-ref="gtsam::DiscreteSearch::Slot::assignments">assignments</a>.<a class="ref fn" href="../../../include/c++/13/bits/stl_vector.h.html#_ZNKSt6vector4sizeEv" title='std::vector::size' data-ref="_ZNKSt6vector4sizeEv">size</a>()</td></tr>
+<tr><th id="69">69</th><td>         <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" assignments, heuristic="</q> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col2 ref" href="#2slot" title='slot' data-ref="2slot">slot</a>.<a class="ref field" href="#gtsam::DiscreteSearch::Slot::heuristic" title='gtsam::DiscreteSearch::Slot::heuristic' data-ref="gtsam::DiscreteSearch::Slot::heuristic">heuristic</a>;</td></tr>
+<tr><th id="70">70</th><td>      <a class="local col1 ref" href="#1os" title='os' data-ref="1os">os</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>", factor:\n"</q> <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE">&lt;&lt;</a> <a class="local col2 ref" href="#2slot" title='slot' data-ref="2slot">slot</a>.<a class="ref field" href="#gtsam::DiscreteSearch::Slot::factor" title='gtsam::DiscreteSearch::Slot::factor' data-ref="gtsam::DiscreteSearch::Slot::factor">factor</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="virtual ref fn" href="DiscreteFactor.h.html#_ZNK5gtsam14DiscreteFactor8markdownERKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKSt3mapImSt6vectorIS7_SaIS7_EESt4lessImESaISt4pairIKmSF_EEE" title='gtsam::DiscreteFactor::markdown' data-ref="_ZNK5gtsam14DiscreteFactor8markdownERKSt8functionIFNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEmEERKSt3mapImSt6vectorIS7_SaIS7_EESt4lessImESaISt4pairIKmSF_EEE">markdown</a>() <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a> <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="71">71</th><td>      <b>return</b> <a class="local col1 ref" href="#1os" title='os' data-ref="1os">os</a>;</td></tr>
+<tr><th id="72">72</th><td>    }</td></tr>
+<tr><th id="73">73</th><td>  };</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc">   * A solution is a set of assignments, covering all the slots.</i></td></tr>
+<tr><th id="77">77</th><td><i class="doc">   * as well as an associated error = -log(probability)</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="79">79</th><td>  <b>struct</b> <dfn class="type def" id="gtsam::DiscreteSearch::Solution" title='gtsam::DiscreteSearch::Solution' data-ref="gtsam::DiscreteSearch::Solution">Solution</dfn> {</td></tr>
+<tr><th id="80">80</th><td>    <em>double</em> <dfn class="decl field" id="gtsam::DiscreteSearch::Solution::error" title='gtsam::DiscreteSearch::Solution::error' data-ref="gtsam::DiscreteSearch::Solution::error">error</dfn>;</td></tr>
+<tr><th id="81">81</th><td>    <a class="type" href="DiscreteValues.h.html#gtsam::DiscreteValues" title='gtsam::DiscreteValues' data-ref="gtsam::DiscreteValues">DiscreteValues</a> <dfn class="decl field" id="gtsam::DiscreteSearch::Solution::assignment" title='gtsam::DiscreteSearch::Solution::assignment' data-ref="gtsam::DiscreteSearch::Solution::assignment">assignment</dfn>;</td></tr>
+<tr><th id="82">82</th><td>    <dfn class="decl def fn" id="_ZN5gtsam14DiscreteSearch8SolutionC1EdRKNS_14DiscreteValuesE" title='gtsam::DiscreteSearch::Solution::Solution' data-ref="_ZN5gtsam14DiscreteSearch8SolutionC1EdRKNS_14DiscreteValuesE">Solution</dfn>(<em>double</em> <dfn class="local col3 decl" id="3err" title='err' data-type='double' data-ref="3err">err</dfn>, <em>const</em> <a class="type" href="DiscreteValues.h.html#gtsam::DiscreteValues" title='gtsam::DiscreteValues' data-ref="gtsam::DiscreteValues">DiscreteValues</a>&amp; <dfn class="local col4 decl" id="4assign" title='assign' data-type='const DiscreteValues &amp;' data-ref="4assign">assign</dfn>)</td></tr>
+<tr><th id="83">83</th><td>        : <a class="member field" href="#gtsam::DiscreteSearch::Solution::error" title='gtsam::DiscreteSearch::Solution::error' data-ref="gtsam::DiscreteSearch::Solution::error">error</a>(<a class="local col3 ref" href="#3err" title='err' data-ref="3err">err</a>), <a class="member field" href="#gtsam::DiscreteSearch::Solution::assignment" title='gtsam::DiscreteSearch::Solution::assignment' data-ref="gtsam::DiscreteSearch::Solution::assignment">assignment</a><a class="ref fn" href="DiscreteValues.h.html#34" title='gtsam::DiscreteValues::DiscreteValues' data-ref="_ZN5gtsam14DiscreteValuesC1ERKS0_">(</a><a class="local col4 ref" href="#4assign" title='assign' data-ref="4assign">assign</a>) {}</td></tr>
+<tr><th id="84">84</th><td>    <b>friend</b> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="decl def fn" id="_ZN5gtsamlsERSoRKNS_14DiscreteSearch8SolutionE" title='gtsam::operator&lt;&lt;' data-ref="_ZN5gtsamlsERSoRKNS_14DiscreteSearch8SolutionE"><b>operator</b>&lt;&lt;</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="local col5 decl" id="5os" title='os' data-type='std::ostream &amp;' data-ref="5os">os</dfn>, <em>const</em> <a class="type" href="#gtsam::DiscreteSearch::Solution" title='gtsam::DiscreteSearch::Solution' data-ref="gtsam::DiscreteSearch::Solution">Solution</a>&amp; <dfn class="local col6 decl" id="6sn" title='sn' data-type='const Solution &amp;' data-ref="6sn">sn</dfn>) {</td></tr>
+<tr><th id="85">85</th><td>      <a class="local col5 ref" href="#5os" title='os' data-ref="5os">os</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"[ error="</q> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZNSt13basic_ostreamlsEd" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEd">&lt;&lt;</a> <a class="local col6 ref" href="#6sn" title='sn' data-ref="6sn">sn</a>.<a class="ref field" href="#gtsam::DiscreteSearch::Solution::error" title='gtsam::DiscreteSearch::Solution::error' data-ref="gtsam::DiscreteSearch::Solution::error">error</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>" assignment={"</q> <a class="ref fn" href="DiscreteValues.h.html#_ZN5gtsamlsERSoRKNS_14DiscreteValuesE" title='gtsam::operator&lt;&lt;' data-ref="_ZN5gtsamlsERSoRKNS_14DiscreteValuesE">&lt;&lt;</a> <a class="local col6 ref" href="#6sn" title='sn' data-ref="6sn">sn</a>.<a class="ref field" href="#gtsam::DiscreteSearch::Solution::assignment" title='gtsam::DiscreteSearch::Solution::assignment' data-ref="gtsam::DiscreteSearch::Solution::assignment">assignment</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"}]"</q>;</td></tr>
+<tr><th id="86">86</th><td>      <b>return</b> <a class="local col5 ref" href="#5os" title='os' data-ref="5os">os</a>;</td></tr>
+<tr><th id="87">87</th><td>    }</td></tr>
+<tr><th id="88">88</th><td>  };</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td> <b>public</b>:</td></tr>
+<tr><th id="91">91</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">   * Construct from a DiscreteFactorGraph.</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">   * Internally creates either an elimination tree or a junction tree. The</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   * latter incurs more up-front computation but the search itself might be</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">   * faster. Then again, for the elimination tree, the heuristic will be more</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">   * fine-grained (more slots).</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">factorGraph</span> The factor graph to search over.</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">ordering</span> The ordering used to create etree (and maybe jtree).</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">buildJunctionTree</span> Whether to build a junction tree or not.</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="106">106</th><td>  <em>static</em> <a class="type" href="#gtsam::DiscreteSearch" title='gtsam::DiscreteSearch' data-ref="gtsam::DiscreteSearch">DiscreteSearch</a> <a class="decl fn" href="DiscreteSearch.cpp.html#_ZN5gtsam14DiscreteSearch15FromFactorGraphERKNS_19DiscreteFactorGraphERKNS_8OrderingEb" title='gtsam::DiscreteSearch::FromFactorGraph' data-ref="_ZN5gtsam14DiscreteSearch15FromFactorGraphERKNS_19DiscreteFactorGraphERKNS_8OrderingEb" id="_ZN5gtsam14DiscreteSearch15FromFactorGraphERKNS_19DiscreteFactorGraphERKNS_8OrderingEb">FromFactorGraph</a>(<em>const</em> <a class="type" href="DiscreteFactorGraph.h.html#gtsam::DiscreteFactorGraph" title='gtsam::DiscreteFactorGraph' data-ref="gtsam::DiscreteFactorGraph">DiscreteFactorGraph</a>&amp; <dfn class="local col7 decl" id="7factorGraph" title='factorGraph' data-type='const DiscreteFactorGraph &amp;' data-ref="7factorGraph">factorGraph</dfn>,</td></tr>
+<tr><th id="107">107</th><td>                                        <em>const</em> <a class="type" href="../inference/Ordering.h.html#gtsam::Ordering" title='gtsam::Ordering' data-ref="gtsam::Ordering">Ordering</a>&amp; <dfn class="local col8 decl" id="8ordering" title='ordering' data-type='const Ordering &amp;' data-ref="8ordering">ordering</dfn>,</td></tr>
+<tr><th id="108">108</th><td>                                        <em>bool</em> <dfn class="local col9 decl" id="9buildJunctionTree" title='buildJunctionTree' data-type='bool' data-ref="9buildJunctionTree">buildJunctionTree</dfn> = <b>false</b>);</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>  <i class="doc">/// Construct from a DiscreteEliminationTree.</i></td></tr>
+<tr><th id="111">111</th><td>  <a class="decl fn" href="DiscreteSearch.cpp.html#_ZN5gtsam14DiscreteSearchC1ERKNS_23DiscreteEliminationTreeE" title='gtsam::DiscreteSearch::DiscreteSearch' data-ref="_ZN5gtsam14DiscreteSearchC1ERKNS_23DiscreteEliminationTreeE" id="_ZN5gtsam14DiscreteSearchC1ERKNS_23DiscreteEliminationTreeE">DiscreteSearch</a>(<em>const</em> <a class="type" href="DiscreteEliminationTree.h.html#gtsam::DiscreteEliminationTree" title='gtsam::DiscreteEliminationTree' data-ref="gtsam::DiscreteEliminationTree">DiscreteEliminationTree</a>&amp; <dfn class="local col0 decl" id="10etree" title='etree' data-type='const DiscreteEliminationTree &amp;' data-ref="10etree">etree</dfn>);</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>  <i class="doc">/// Construct from a DiscreteJunctionTree.</i></td></tr>
+<tr><th id="114">114</th><td>  <a class="decl fn" href="DiscreteSearch.cpp.html#_ZN5gtsam14DiscreteSearchC1ERKNS_20DiscreteJunctionTreeE" title='gtsam::DiscreteSearch::DiscreteSearch' data-ref="_ZN5gtsam14DiscreteSearchC1ERKNS_20DiscreteJunctionTreeE" id="_ZN5gtsam14DiscreteSearchC1ERKNS_20DiscreteJunctionTreeE">DiscreteSearch</a>(<em>const</em> <a class="type" href="DiscreteJunctionTree.h.html#gtsam::DiscreteJunctionTree" title='gtsam::DiscreteJunctionTree' data-ref="gtsam::DiscreteJunctionTree">DiscreteJunctionTree</a>&amp; <dfn class="local col1 decl" id="11junctionTree" title='junctionTree' data-type='const DiscreteJunctionTree &amp;' data-ref="11junctionTree">junctionTree</dfn>);</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <i>//// Construct from a DiscreteBayesNet.</i></td></tr>
+<tr><th id="117">117</th><td>  <a class="decl fn" href="DiscreteSearch.cpp.html#_ZN5gtsam14DiscreteSearchC1ERKNS_16DiscreteBayesNetE" title='gtsam::DiscreteSearch::DiscreteSearch' data-ref="_ZN5gtsam14DiscreteSearchC1ERKNS_16DiscreteBayesNetE" id="_ZN5gtsam14DiscreteSearchC1ERKNS_16DiscreteBayesNetE">DiscreteSearch</a>(<em>const</em> <a class="type" href="DiscreteBayesNet.h.html#gtsam::DiscreteBayesNet" title='gtsam::DiscreteBayesNet' data-ref="gtsam::DiscreteBayesNet">DiscreteBayesNet</a>&amp; <dfn class="local col2 decl" id="12bayesNet" title='bayesNet' data-type='const DiscreteBayesNet &amp;' data-ref="12bayesNet">bayesNet</dfn>);</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>  <i class="doc">/// Construct from a DiscreteBayesTree.</i></td></tr>
+<tr><th id="120">120</th><td>  <a class="decl fn" href="DiscreteSearch.cpp.html#_ZN5gtsam14DiscreteSearchC1ERKNS_17DiscreteBayesTreeE" title='gtsam::DiscreteSearch::DiscreteSearch' data-ref="_ZN5gtsam14DiscreteSearchC1ERKNS_17DiscreteBayesTreeE" id="_ZN5gtsam14DiscreteSearchC1ERKNS_17DiscreteBayesTreeE">DiscreteSearch</a>(<em>const</em> <a class="type" href="DiscreteBayesTree.h.html#gtsam::DiscreteBayesTree" title='gtsam::DiscreteBayesTree' data-ref="gtsam::DiscreteBayesTree">DiscreteBayesTree</a>&amp; <dfn class="local col3 decl" id="13bayesTree" title='bayesTree' data-type='const DiscreteBayesTree &amp;' data-ref="13bayesTree">bayesTree</dfn>);</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>  <i class="doc">/** Print the tree to cout */</i></td></tr>
+<tr><th id="127">127</th><td>  <em>void</em> <a class="decl fn" href="DiscreteSearch.cpp.html#_ZNK5gtsam14DiscreteSearch5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::DiscreteSearch::print' data-ref="_ZNK5gtsam14DiscreteSearch5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" id="_ZNK5gtsam14DiscreteSearch5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col4 decl" id="14name" title='name' data-type='const std::string &amp;' data-ref="14name">name</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"DiscreteSearch: "</q>,</td></tr>
+<tr><th id="128">128</th><td>             <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col5 decl" id="15formatter" title='formatter' data-type='const KeyFormatter &amp;' data-ref="15formatter">formatter</dfn> = <a class="ref" href="../inference/Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em>;</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Standard API</span></i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc"></i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">  /// Return lower bound on the cost-to-go for the entire search</i></td></tr>
+<tr><th id="135">135</th><td>  <em>double</em> <dfn class="decl def fn" id="_ZNK5gtsam14DiscreteSearch10lowerBoundEv" title='gtsam::DiscreteSearch::lowerBound' data-ref="_ZNK5gtsam14DiscreteSearch10lowerBoundEv">lowerBound</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::DiscreteSearch::lowerBound_" title='gtsam::DiscreteSearch::lowerBound_' data-ref="gtsam::DiscreteSearch::lowerBound_">lowerBound_</a>; }</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>  <i class="doc">/// Read access to the slots</i></td></tr>
+<tr><th id="138">138</th><td>  <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="#gtsam::DiscreteSearch::Slot" title='gtsam::DiscreteSearch::Slot' data-ref="gtsam::DiscreteSearch::Slot">Slot</a>&gt;&amp; <dfn class="decl def fn" id="_ZNK5gtsam14DiscreteSearch5slotsEv" title='gtsam::DiscreteSearch::slots' data-ref="_ZNK5gtsam14DiscreteSearch5slotsEv">slots</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::DiscreteSearch::slots_" title='gtsam::DiscreteSearch::slots_' data-ref="gtsam::DiscreteSearch::slots_">slots_</a>; }</td></tr>
+<tr><th id="139">139</th><td></td></tr>
+<tr><th id="140">140</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">   * <span class="command">@brief</span> Search for the K best solutions.</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="143">143</th><td><i class="doc">   * This method performs a search to find the K best solutions for the given</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">   * DiscreteBayesNet. It uses a priority queue to manage the search nodes,</i></td></tr>
+<tr><th id="145">145</th><td><i class="doc">   * expanding nodes with the smallest bound first. The search continues until</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">   * all possible nodes have been expanded or pruned.</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">   * <span class="command">@return</span> A vector of the K best solutions found during the search.</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="150">150</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="#gtsam::DiscreteSearch::Solution" title='gtsam::DiscreteSearch::Solution' data-ref="gtsam::DiscreteSearch::Solution">Solution</a>&gt; <a class="decl fn" href="DiscreteSearch.cpp.html#_ZNK5gtsam14DiscreteSearch3runEm" title='gtsam::DiscreteSearch::run' data-ref="_ZNK5gtsam14DiscreteSearch3runEm" id="_ZNK5gtsam14DiscreteSearch3runEm">run</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col6 decl" id="16K" title='K' data-type='size_t' data-ref="16K">K</dfn> = <var>1</var>) <em>const</em>;</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td> <b>private</b>:</td></tr>
+<tr><th id="155">155</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc">   * Compute the cumulative lower-bound cost-to-go after each slot is filled.</i></td></tr>
+<tr><th id="157">157</th><td><i class="doc">   * <span class="command">@return</span> the estimated lower bound of the cost for *all* slots.</i></td></tr>
+<tr><th id="158">158</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="159">159</th><td>  <em>double</em> <a class="decl fn" href="DiscreteSearch.cpp.html#_ZN5gtsam14DiscreteSearch16computeHeuristicEv" title='gtsam::DiscreteSearch::computeHeuristic' data-ref="_ZN5gtsam14DiscreteSearch16computeHeuristicEv" id="_ZN5gtsam14DiscreteSearch16computeHeuristicEv">computeHeuristic</a>();</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td>  <em>double</em> <dfn class="decl field" id="gtsam::DiscreteSearch::lowerBound_" title='gtsam::DiscreteSearch::lowerBound_' data-ref="gtsam::DiscreteSearch::lowerBound_">lowerBound_</dfn>;  <i class="doc">///&lt; Lower bound on the cost-to-go for the entire search.</i></td></tr>
+<tr><th id="162">162</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="#gtsam::DiscreteSearch::Slot" title='gtsam::DiscreteSearch::Slot' data-ref="gtsam::DiscreteSearch::Slot">Slot</a>&gt; <dfn class="decl field" id="gtsam::DiscreteSearch::slots_" title='gtsam::DiscreteSearch::slots_' data-ref="gtsam::DiscreteSearch::slots_">slots_</dfn>;  <i class="doc">///&lt; The slots to fill in the search.</i></td></tr>
+<tr><th id="163">163</th><td>};</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td><b>using</b> <dfn class="typedef" id="gtsam::DiscreteSearchSolution" title='gtsam::DiscreteSearchSolution' data-type='DiscreteSearch::Solution' data-ref="gtsam::DiscreteSearchSolution">DiscreteSearchSolution</dfn> = <a class="type" href="#gtsam::DiscreteSearch" title='gtsam::DiscreteSearch' data-ref="gtsam::DiscreteSearch">DiscreteSearch</a>::<a class="type" href="#gtsam::DiscreteSearch::Solution" title='gtsam::DiscreteSearch::Solution' data-ref="gtsam::DiscreteSearch::Solution">Solution</a>;  <i>// for wrapping</i></td></tr>
+<tr><th id="166">166</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="167">167</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='DiscreteSearch.cpp.html'>codebrowser/gtsam/discrete/DiscreteSearch.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

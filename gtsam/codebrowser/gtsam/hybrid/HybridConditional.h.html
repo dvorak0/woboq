@@ -1,0 +1,284 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>HybridConditional.h source code [codebrowser/gtsam/hybrid/HybridConditional.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::HybridConditional,gtsam::traits "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/hybrid/HybridConditional.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>hybrid</a>/<a href='HybridConditional.h.html'>HybridConditional.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> *  <span class="command">@file</span> <span class="verb">HybridConditional.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> *  <span class="command">@date</span> Mar 11, 2022</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *  <span class="command">@author</span> Fan Jiang</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> *  <span class="command">@author</span> Varun Agrawal</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../discrete/DiscreteConditional.h.html">&lt;gtsam/discrete/DiscreteConditional.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="HybridFactor.h.html">&lt;gtsam/hybrid/HybridFactor.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="HybridGaussianConditional.h.html">&lt;gtsam/hybrid/HybridGaussianConditional.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="HybridGaussianFactorGraph.h.html">&lt;gtsam/hybrid/HybridGaussianFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../inference/Conditional.h.html">&lt;gtsam/inference/Conditional.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../inference/Key.h.html">&lt;gtsam/inference/Key.h&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../linear/GaussianConditional.h.html">&lt;gtsam/linear/GaussianConditional.h&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../../../include/c++/13/memory.html">&lt;memory&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../../../include/c++/13/stdexcept.html">&lt;stdexcept&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../../../include/c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../../../include/c++/13/typeinfo.html">&lt;typeinfo&gt;</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/c++/13/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * Hybrid Conditional Density</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * As a type-erased variant of:</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * - DiscreteConditional</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * - GaussianConditional</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * - HybridGaussianConditional</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> * The reason why this is important is that `Conditional&lt;T&gt;` is a CRTP class.</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * CRTP is static polymorphism such that all CRTP classes, while bearing the</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * same name, are different classes not sharing a vtable. This prevents them</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * from being contained in any container, and thus it is impossible to</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> * dynamically cast between them. A better option, as illustrated here, is</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> * treating them as an implementation detail - such that the hybrid mechanism</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc"> * does not know what is inside the HybridConditional. This prevents us from</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> * having diamond inheritances, and neutralized the need to change other</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> * components of GTSAM to make hybrid elimination work.</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * A great reference to the type-erasure pattern is Eduardo Madrid's CppCon</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> * talk (<a href="https://www.youtube.com/watch?v=s082Qmd_nHs">https://www.youtube.com/watch?v=s082Qmd_nHs</a>).</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">hybrid</span></i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="60">60</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::HybridConditional" title='gtsam::HybridConditional' data-ref="gtsam::HybridConditional">HybridConditional</dfn></td></tr>
+<tr><th id="61">61</th><td>    : <b>public</b> <a class="type" href="HybridFactor.h.html#gtsam::HybridFactor" title='gtsam::HybridFactor' data-ref="gtsam::HybridFactor">HybridFactor</a>,</td></tr>
+<tr><th id="62">62</th><td>      <b>public</b> <a class="type" href="../inference/Conditional.h.html#gtsam::Conditional" title='gtsam::Conditional' data-ref="gtsam::Conditional">Conditional</a>&lt;<a class="type" href="HybridFactor.h.html#gtsam::HybridFactor" title='gtsam::HybridFactor' data-ref="gtsam::HybridFactor">HybridFactor</a>, <a class="type" href="#gtsam::HybridConditional" title='gtsam::HybridConditional' data-ref="gtsam::HybridConditional">HybridConditional</a>&gt; {</td></tr>
+<tr><th id="63">63</th><td> <b>public</b>:</td></tr>
+<tr><th id="64">64</th><td>  <i>// typedefs needed to play nice with gtsam</i></td></tr>
+<tr><th id="65">65</th><td>  <b>typedef</b> <a class="type" href="#gtsam::HybridConditional" title='gtsam::HybridConditional' data-ref="gtsam::HybridConditional">HybridConditional</a> <dfn class="typedef" id="gtsam::HybridConditional::This" title='gtsam::HybridConditional::This' data-type='HybridConditional' data-ref="gtsam::HybridConditional::This">This</dfn>;            <i class="doc">///&lt; Typedef to this class</i></td></tr>
+<tr><th id="66">66</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::HybridConditional::This" title='gtsam::HybridConditional::This' data-type='HybridConditional' data-ref="gtsam::HybridConditional::This">This</a>&gt; <dfn class="typedef" id="gtsam::HybridConditional::shared_ptr" title='gtsam::HybridConditional::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::HybridConditional::shared_ptr">shared_ptr</dfn>;  <i class="doc">///&lt; shared_ptr to this class</i></td></tr>
+<tr><th id="67">67</th><td>  <b>typedef</b> <a class="type" href="HybridFactor.h.html#gtsam::HybridFactor" title='gtsam::HybridFactor' data-ref="gtsam::HybridFactor">HybridFactor</a> <dfn class="typedef" id="gtsam::HybridConditional::BaseFactor" title='gtsam::HybridConditional::BaseFactor' data-type='HybridFactor' data-ref="gtsam::HybridConditional::BaseFactor">BaseFactor</dfn>;  <i class="doc">///&lt; Typedef to our factor base class</i></td></tr>
+<tr><th id="68">68</th><td>  <b>typedef</b> <a class="type" href="../inference/Conditional.h.html#gtsam::Conditional" title='gtsam::Conditional' data-ref="gtsam::Conditional">Conditional</a>&lt;<a class="typedef" href="#gtsam::HybridConditional::BaseFactor" title='gtsam::HybridConditional::BaseFactor' data-type='HybridFactor' data-ref="gtsam::HybridConditional::BaseFactor">BaseFactor</a>, <a class="typedef" href="#gtsam::HybridConditional::This" title='gtsam::HybridConditional::This' data-type='HybridConditional' data-ref="gtsam::HybridConditional::This">This</a>&gt;</td></tr>
+<tr><th id="69">69</th><td>      <dfn class="typedef" id="gtsam::HybridConditional::BaseConditional" title='gtsam::HybridConditional::BaseConditional' data-type='Conditional&lt;BaseFactor, This&gt;' data-ref="gtsam::HybridConditional::BaseConditional">BaseConditional</dfn>;  <i class="doc">///&lt; Typedef to our conditional base class</i></td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td> <b>protected</b>:</td></tr>
+<tr><th id="72">72</th><td>  <i class="doc">/// Type-erased pointer to the inner type</i></td></tr>
+<tr><th id="73">73</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>&gt; <dfn class="decl field" id="gtsam::HybridConditional::inner_" title='gtsam::HybridConditional::inner_' data-ref="gtsam::HybridConditional::inner_">inner_</dfn>;</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td> <b>public</b>:</td></tr>
+<tr><th id="76">76</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="77">77</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc"></i></td></tr>
+<tr><th id="79">79</th><td><i class="doc">  /// Default constructor needed for serialization.</i></td></tr>
+<tr><th id="80">80</th><td>  <dfn class="decl def fn" id="_ZN5gtsam17HybridConditionalC1Ev" title='gtsam::HybridConditional::HybridConditional' data-ref="_ZN5gtsam17HybridConditionalC1Ev">HybridConditional</dfn>() = <b>default</b>;</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new Hybrid Conditional object</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">continuousKeys</span> Vector of keys for continuous variables.</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">discreteKeys</span> Keys and cardinalities for discrete variables.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">nFrontals</span> The number of frontal variables in the conditional.</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="89">89</th><td>  <dfn class="decl def fn" id="_ZN5gtsam17HybridConditionalC1ERKSt6vectorImSaImEERKNS_12DiscreteKeysEm" title='gtsam::HybridConditional::HybridConditional' data-ref="_ZN5gtsam17HybridConditionalC1ERKSt6vectorImSaImEERKNS_12DiscreteKeysEm">HybridConditional</dfn>(<em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col3 decl" id="143continuousKeys" title='continuousKeys' data-type='const KeyVector &amp;' data-ref="143continuousKeys">continuousKeys</dfn>,</td></tr>
+<tr><th id="90">90</th><td>                    <em>const</em> <a class="type" href="../discrete/DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a>&amp; <dfn class="local col4 decl" id="144discreteKeys" title='discreteKeys' data-type='const DiscreteKeys &amp;' data-ref="144discreteKeys">discreteKeys</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="145nFrontals" title='nFrontals' data-type='size_t' data-ref="145nFrontals">nFrontals</dfn>)</td></tr>
+<tr><th id="91">91</th><td>      : <a class="typedef" href="#gtsam::HybridConditional::BaseFactor" title='gtsam::HybridConditional::BaseFactor' data-type='HybridFactor' data-ref="gtsam::HybridConditional::BaseFactor">BaseFactor</a><a class="ref fn" href="HybridFactor.h.html#_ZN5gtsam12HybridFactorC1ERKSt6vectorImSaImEERKNS_12DiscreteKeysE" title='gtsam::HybridFactor::HybridFactor' data-ref="_ZN5gtsam12HybridFactorC1ERKSt6vectorImSaImEERKNS_12DiscreteKeysE">(</a><a class="local col3 ref" href="#143continuousKeys" title='continuousKeys' data-ref="143continuousKeys">continuousKeys</a>, <a class="local col4 ref" href="#144discreteKeys" title='discreteKeys' data-ref="144discreteKeys">discreteKeys</a>), <a class="typedef" href="#gtsam::HybridConditional::BaseConditional" title='gtsam::HybridConditional::BaseConditional' data-type='Conditional&lt;BaseFactor, This&gt;' data-ref="gtsam::HybridConditional::BaseConditional">BaseConditional</a><a class="ref fn" href="../inference/Conditional.h.html#_ZN5gtsam11ConditionalC1Em" title='gtsam::Conditional::Conditional&lt;FACTOR, DERIVEDCONDITIONAL&gt;' data-ref="_ZN5gtsam11ConditionalC1Em">(</a><a class="local col5 ref" href="#145nFrontals" title='nFrontals' data-ref="145nFrontals">nFrontals</a>) {}</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new Hybrid Conditional object</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">continuousFrontals</span> Vector of keys for continuous variables.</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">discreteFrontals</span> Keys and cardinalities for discrete variables.</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">continuousParents</span> Vector of keys for parent continuous variables.</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">discreteParents</span> Keys and cardinalities for parent discrete</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">   * variables.</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="102">102</th><td>  <dfn class="decl fn" id="_ZN5gtsam17HybridConditionalC1ERKSt6vectorImSaImEERKNS_12DiscreteKeysES5_S8_" title='gtsam::HybridConditional::HybridConditional' data-ref="_ZN5gtsam17HybridConditionalC1ERKSt6vectorImSaImEERKNS_12DiscreteKeysES5_S8_">HybridConditional</dfn>(<em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col6 decl" id="146continuousFrontals" title='continuousFrontals' data-type='const KeyVector &amp;' data-ref="146continuousFrontals">continuousFrontals</dfn>,</td></tr>
+<tr><th id="103">103</th><td>                    <em>const</em> <a class="type" href="../discrete/DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a>&amp; <dfn class="local col7 decl" id="147discreteFrontals" title='discreteFrontals' data-type='const DiscreteKeys &amp;' data-ref="147discreteFrontals">discreteFrontals</dfn>,</td></tr>
+<tr><th id="104">104</th><td>                    <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col8 decl" id="148continuousParents" title='continuousParents' data-type='const KeyVector &amp;' data-ref="148continuousParents">continuousParents</dfn>,</td></tr>
+<tr><th id="105">105</th><td>                    <em>const</em> <a class="type" href="../discrete/DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a>&amp; <dfn class="local col9 decl" id="149discreteParents" title='discreteParents' data-type='const DiscreteKeys &amp;' data-ref="149discreteParents">discreteParents</dfn>);</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="108">108</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new Hybrid Conditional object</i></td></tr>
+<tr><th id="109">109</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="110">110</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">continuousConditional</span> Conditional used to create the</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">   * HybridConditional.</i></td></tr>
+<tr><th id="112">112</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="113">113</th><td>  <dfn class="decl fn" id="_ZN5gtsam17HybridConditionalC1ERKSt10shared_ptrINS_19GaussianConditionalEE" title='gtsam::HybridConditional::HybridConditional' data-ref="_ZN5gtsam17HybridConditionalC1ERKSt10shared_ptrINS_19GaussianConditionalEE">HybridConditional</dfn>(</td></tr>
+<tr><th id="114">114</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../linear/GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional">GaussianConditional</a>&gt;&amp; <dfn class="local col0 decl" id="150continuousConditional" title='continuousConditional' data-type='const std::shared_ptr&lt;GaussianConditional&gt; &amp;' data-ref="150continuousConditional">continuousConditional</dfn>);</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new Hybrid Conditional object</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">discreteConditional</span> Conditional used to create the</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">   * HybridConditional.</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="122">122</th><td>  <dfn class="decl fn" id="_ZN5gtsam17HybridConditionalC1ERKSt10shared_ptrINS_19DiscreteConditionalEE" title='gtsam::HybridConditional::HybridConditional' data-ref="_ZN5gtsam17HybridConditionalC1ERKSt10shared_ptrINS_19DiscreteConditionalEE">HybridConditional</dfn>(</td></tr>
+<tr><th id="123">123</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../discrete/DiscreteConditional.h.html#gtsam::DiscreteConditional" title='gtsam::DiscreteConditional' data-ref="gtsam::DiscreteConditional">DiscreteConditional</a>&gt;&amp; <dfn class="local col1 decl" id="151discreteConditional" title='discreteConditional' data-type='const std::shared_ptr&lt;DiscreteConditional&gt; &amp;' data-ref="151discreteConditional">discreteConditional</dfn>);</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new Hybrid Conditional object</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">hybridGaussianCond</span> Hybrid Gaussian Conditional used to create the</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">   * HybridConditional.</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="131">131</th><td>  <dfn class="decl fn" id="_ZN5gtsam17HybridConditionalC1ERKSt10shared_ptrINS_25HybridGaussianConditionalEE" title='gtsam::HybridConditional::HybridConditional' data-ref="_ZN5gtsam17HybridConditionalC1ERKSt10shared_ptrINS_25HybridGaussianConditionalEE">HybridConditional</dfn>(</td></tr>
+<tr><th id="132">132</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="HybridGaussianConditional.h.html#gtsam::HybridGaussianConditional" title='gtsam::HybridGaussianConditional' data-ref="gtsam::HybridGaussianConditional">HybridGaussianConditional</a>&gt;&amp; <dfn class="local col2 decl" id="152hybridGaussianCond" title='hybridGaussianCond' data-type='const std::shared_ptr&lt;HybridGaussianConditional&gt; &amp;' data-ref="152hybridGaussianCond">hybridGaussianCond</dfn>);</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc"></i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">  /// GTSAM-style print</i></td></tr>
+<tr><th id="139">139</th><td>  <em>void</em> <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::HybridConditional::print' data-ref="_ZNK5gtsam17HybridConditional5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</dfn>(</td></tr>
+<tr><th id="140">140</th><td>      <em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col3 decl" id="153s" title='s' data-type='const std::string &amp;' data-ref="153s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"Hybrid Conditional: "</q>,</td></tr>
+<tr><th id="141">141</th><td>      <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col4 decl" id="154formatter" title='formatter' data-type='const KeyFormatter &amp;' data-ref="154formatter">formatter</dfn> = <a class="ref" href="../inference/Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em> override;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <i class="doc">/// GTSAM-style equals</i></td></tr>
+<tr><th id="144">144</th><td>  <em>bool</em> <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional6equalsERKNS_12HybridFactorEd" title='gtsam::HybridConditional::equals' data-ref="_ZNK5gtsam17HybridConditional6equalsERKNS_12HybridFactorEd">equals</dfn>(<em>const</em> <a class="type" href="HybridFactor.h.html#gtsam::HybridFactor" title='gtsam::HybridFactor' data-ref="gtsam::HybridFactor">HybridFactor</a>&amp; <dfn class="local col5 decl" id="155other" title='other' data-type='const HybridFactor &amp;' data-ref="155other">other</dfn>, <em>double</em> <dfn class="local col6 decl" id="156tol" title='tol' data-type='double' data-ref="156tol">tol</dfn> = <var>1e-9</var>) <em>const</em> override;</td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Standard Interface</span></i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">   * <span class="command">@brief</span> Return HybridConditional as a HybridGaussianConditional</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">   * <span class="command">@return</span> nullptr if not a conditional</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">   * <span class="command">@return</span> HybridGaussianConditional::shared_ptr otherwise</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="155">155</th><td>  <a class="type" href="HybridGaussianConditional.h.html#gtsam::HybridGaussianConditional" title='gtsam::HybridGaussianConditional' data-ref="gtsam::HybridGaussianConditional">HybridGaussianConditional</a>::<a class="typedef" href="HybridGaussianConditional.h.html#gtsam::HybridGaussianConditional::shared_ptr" title='gtsam::HybridGaussianConditional::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::HybridGaussianConditional::shared_ptr">shared_ptr</a> <dfn class="decl def fn" id="_ZNK5gtsam17HybridConditional8asHybridEv" title='gtsam::HybridConditional::asHybrid' data-ref="_ZNK5gtsam17HybridConditional8asHybridEv">asHybrid</dfn>() <em>const</em> {</td></tr>
+<tr><th id="156">156</th><td>    <b>if</b> (!<a class="member fn" href="HybridFactor.h.html#_ZNK5gtsam12HybridFactor8isHybridEv" title='gtsam::HybridFactor::isHybrid' data-ref="_ZNK5gtsam12HybridFactor8isHybridEv">isHybrid</a>()) <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1EDn" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1EDn"></a><b>nullptr</b>;</td></tr>
+<tr><th id="157">157</th><td>    <b>return</b> <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZSt19static_pointer_castRKSt10shared_ptrIT0_E" title='std::static_pointer_cast' data-ref="_ZSt19static_pointer_castRKSt10shared_ptrIT0_E">static_pointer_cast</a>&lt;<a class="type" href="HybridGaussianConditional.h.html#gtsam::HybridGaussianConditional" title='gtsam::HybridGaussianConditional' data-ref="gtsam::HybridGaussianConditional">HybridGaussianConditional</a>&gt;(<span class='inlayHint'>r:&nbsp;</span><a class="member field" href="#gtsam::HybridConditional::inner_" title='gtsam::HybridConditional::inner_' data-ref="gtsam::HybridConditional::inner_">inner_</a>);</td></tr>
+<tr><th id="158">158</th><td>  }</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   * <span class="command">@brief</span> Return HybridConditional as a GaussianConditional</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   * <span class="command">@return</span> nullptr if not a GaussianConditional</i></td></tr>
+<tr><th id="163">163</th><td><i class="doc">   * <span class="command">@return</span> GaussianConditional::shared_ptr otherwise</i></td></tr>
+<tr><th id="164">164</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="165">165</th><td>  <a class="type" href="../linear/GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional">GaussianConditional</a>::<a class="typedef" href="../linear/GaussianConditional.h.html#gtsam::GaussianConditional::shared_ptr" title='gtsam::GaussianConditional::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::GaussianConditional::shared_ptr">shared_ptr</a> <dfn class="decl def fn" id="_ZNK5gtsam17HybridConditional10asGaussianEv" title='gtsam::HybridConditional::asGaussian' data-ref="_ZNK5gtsam17HybridConditional10asGaussianEv">asGaussian</dfn>() <em>const</em> {</td></tr>
+<tr><th id="166">166</th><td>    <b>if</b> (!<a class="member fn" href="HybridFactor.h.html#_ZNK5gtsam12HybridFactor12isContinuousEv" title='gtsam::HybridFactor::isContinuous' data-ref="_ZNK5gtsam12HybridFactor12isContinuousEv">isContinuous</a>()) <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1EDn" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1EDn"></a><b>nullptr</b>;</td></tr>
+<tr><th id="167">167</th><td>    <b>return</b> <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZSt19static_pointer_castRKSt10shared_ptrIT0_E" title='std::static_pointer_cast' data-ref="_ZSt19static_pointer_castRKSt10shared_ptrIT0_E">static_pointer_cast</a>&lt;<a class="type" href="../linear/GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional">GaussianConditional</a>&gt;(<span class='inlayHint'>r:&nbsp;</span><a class="member field" href="#gtsam::HybridConditional::inner_" title='gtsam::HybridConditional::inner_' data-ref="gtsam::HybridConditional::inner_">inner_</a>);</td></tr>
+<tr><th id="168">168</th><td>  }</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">   * <span class="command">@brief</span> Return conditional as a DiscreteConditional or specified type T.</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">   * <span class="command">@return</span> nullptr if not a DiscreteConditional</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">   * <span class="command">@return</span> DiscreteConditional::shared_ptr</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="175">175</th><td>  <b>template</b> &lt;<b>typename</b> T = <a class="type" href="../discrete/DiscreteConditional.h.html#gtsam::DiscreteConditional" title='gtsam::DiscreteConditional' data-ref="gtsam::DiscreteConditional">DiscreteConditional</a>&gt;</td></tr>
+<tr><th id="176">176</th><td>  <b>typename</b> T::shared_ptr <dfn class="decl def fn" id="_ZNK5gtsam17HybridConditional10asDiscreteEv" title='gtsam::HybridConditional::asDiscrete' data-ref="_ZNK5gtsam17HybridConditional10asDiscreteEv">asDiscrete</dfn>() <em>const</em> {</td></tr>
+<tr><th id="177">177</th><td>    <b>if</b> (!<a class="member fn" href="HybridFactor.h.html#_ZNK5gtsam12HybridFactor10isDiscreteEv" title='gtsam::HybridFactor::isDiscrete' data-ref="_ZNK5gtsam12HybridFactor10isDiscreteEv">isDiscrete</a>()) <b>return</b> <b>nullptr</b>;</td></tr>
+<tr><th id="178">178</th><td>    <b>return</b> <span class="namespace">std::</span>static_pointer_cast&lt;T&gt;(<a class="member field" href="#gtsam::HybridConditional::inner_" title='gtsam::HybridConditional::inner_' data-ref="gtsam::HybridConditional::inner_">inner_</a>);</td></tr>
+<tr><th id="179">179</th><td>  }</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>  <i class="doc">/// Get the type-erased pointer to the inner type</i></td></tr>
+<tr><th id="182">182</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>&gt; <dfn class="decl def fn" id="_ZNK5gtsam17HybridConditional5innerEv" title='gtsam::HybridConditional::inner' data-ref="_ZNK5gtsam17HybridConditional5innerEv">inner</dfn>() <em>const</em> { <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E"></a><a class="member field" href="#gtsam::HybridConditional::inner_" title='gtsam::HybridConditional::inner_' data-ref="gtsam::HybridConditional::inner_">inner_</a>; }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>  <i class="doc">/// Return the error of the underlying conditional.</i></td></tr>
+<tr><th id="185">185</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional5errorERKNS_12HybridValuesE" title='gtsam::HybridConditional::error' data-ref="_ZNK5gtsam17HybridConditional5errorERKNS_12HybridValuesE">error</dfn>(<em>const</em> <a class="type" href="HybridValues.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col7 decl" id="157hybridValues" title='hybridValues' data-type='const HybridValues &amp;' data-ref="157hybridValues">hybridValues</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="186">186</th><td></td></tr>
+<tr><th id="187">187</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="188">188</th><td><i class="doc">   * <span class="command">@brief</span> Compute error of the HybridConditional as a tree.</i></td></tr>
+<tr><th id="189">189</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="190">190</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">continuousValues</span> The continuous VectorValues.</i></td></tr>
+<tr><th id="191">191</th><td><i class="doc">   * <span class="command">@return</span> AlgebraicDecisionTree&lt;Key&gt; A decision tree with the same keys</i></td></tr>
+<tr><th id="192">192</th><td><i class="doc">   * as the conditionals involved, and leaf values as the error.</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="194">194</th><td>  <a class="type" href="../discrete/AlgebraicDecisionTree.h.html#gtsam::AlgebraicDecisionTree" title='gtsam::AlgebraicDecisionTree' data-ref="gtsam::AlgebraicDecisionTree">AlgebraicDecisionTree</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt; <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional9errorTreeERKNS_12VectorValuesE" title='gtsam::HybridConditional::errorTree' data-ref="_ZNK5gtsam17HybridConditional9errorTreeERKNS_12VectorValuesE">errorTree</dfn>(</td></tr>
+<tr><th id="195">195</th><td>      <em>const</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a>&amp; <dfn class="local col8 decl" id="158continuousValues" title='continuousValues' data-type='const VectorValues &amp;' data-ref="158continuousValues">continuousValues</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>  <i class="doc">/// Return the log-probability (or density) of the underlying conditional.</i></td></tr>
+<tr><th id="198">198</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional14logProbabilityERKNS_12HybridValuesE" title='gtsam::HybridConditional::logProbability' data-ref="_ZNK5gtsam17HybridConditional14logProbabilityERKNS_12HybridValuesE">logProbability</dfn>(<em>const</em> <a class="type" href="HybridValues.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col9 decl" id="159values" title='values' data-type='const HybridValues &amp;' data-ref="159values">values</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="201">201</th><td><i class="doc">   * Return the negative log of the normalization constant.</i></td></tr>
+<tr><th id="202">202</th><td><i class="doc">   * This shows up in the error as -(error(x) + negLogConstant)</i></td></tr>
+<tr><th id="203">203</th><td><i class="doc">   * Note this is 0.0 for discrete and hybrid conditionals, but depends</i></td></tr>
+<tr><th id="204">204</th><td><i class="doc">   * on the continuous parameters for Gaussian conditionals.</i></td></tr>
+<tr><th id="205">205</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="206">206</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional14negLogConstantEv" title='gtsam::HybridConditional::negLogConstant' data-ref="_ZNK5gtsam17HybridConditional14negLogConstantEv">negLogConstant</dfn>() <em>const</em> override;</td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td>  <i class="doc">/// Return the probability (or density) of the underlying conditional.</i></td></tr>
+<tr><th id="209">209</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional8evaluateERKNS_12HybridValuesE" title='gtsam::HybridConditional::evaluate' data-ref="_ZNK5gtsam17HybridConditional8evaluateERKNS_12HybridValuesE">evaluate</dfn>(<em>const</em> <a class="type" href="HybridValues.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col0 decl" id="160values" title='values' data-type='const HybridValues &amp;' data-ref="160values">values</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td>  <i class="doc">/// Check if VectorValues `measurements` contains all frontal keys.</i></td></tr>
+<tr><th id="212">212</th><td>  <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam17HybridConditional10frontalsInERKNS_12VectorValuesE" title='gtsam::HybridConditional::frontalsIn' data-ref="_ZNK5gtsam17HybridConditional10frontalsInERKNS_12VectorValuesE">frontalsIn</dfn>(<em>const</em> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a>&amp; <dfn class="local col1 decl" id="161measurements" title='measurements' data-type='const VectorValues &amp;' data-ref="161measurements">measurements</dfn>) <em>const</em> {</td></tr>
+<tr><th id="213">213</th><td>    <b>for</b> (<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col2 decl" id="162key" title='key' data-type='Key' data-ref="162key">key</dfn> : <a class="member fn" href="../inference/Conditional.h.html#_ZNK5gtsam11Conditional8frontalsEv" title='gtsam::Conditional::frontals' data-ref="_ZNK5gtsam11Conditional8frontalsEv">frontals</a>()) {</td></tr>
+<tr><th id="214">214</th><td>      <b>if</b> (!<a class="local col1 ref" href="#161measurements" title='measurements' data-ref="161measurements">measurements</a>.<a class="ref fn" href="../linear/VectorValues.h.html#_ZNK5gtsam12VectorValues6existsEm" title='gtsam::VectorValues::exists' data-ref="_ZNK5gtsam12VectorValues6existsEm">exists</a>(<span class='inlayHint'>j:&nbsp;</span><a class="local col2 ref" href="#162key" title='key' data-ref="162key">key</a>)) {</td></tr>
+<tr><th id="215">215</th><td>        <b>return</b> <b>false</b>;</td></tr>
+<tr><th id="216">216</th><td>      }</td></tr>
+<tr><th id="217">217</th><td>    }</td></tr>
+<tr><th id="218">218</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="219">219</th><td>  }</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="222">222</th><td><i class="doc">   * Return a HybridConditional by choosing branches based on the given discrete</i></td></tr>
+<tr><th id="223">223</th><td><i class="doc">   * values. If all discrete parents are specified, return a HybridConditional</i></td></tr>
+<tr><th id="224">224</th><td><i class="doc">   * which is just a GaussianConditional. If this conditional is *not* a hybrid</i></td></tr>
+<tr><th id="225">225</th><td><i class="doc">   * conditional, just return that.</i></td></tr>
+<tr><th id="226">226</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="227">227</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>&gt; <dfn class="virtual decl fn" id="_ZNK5gtsam17HybridConditional8restrictERKNS_14DiscreteValuesE" title='gtsam::HybridConditional::restrict' data-ref="_ZNK5gtsam17HybridConditional8restrictERKNS_14DiscreteValuesE">restrict</dfn>(</td></tr>
+<tr><th id="228">228</th><td>      <em>const</em> <a class="type" href="../discrete/DiscreteValues.h.html#gtsam::DiscreteValues" title='gtsam::DiscreteValues' data-ref="gtsam::DiscreteValues">DiscreteValues</a>&amp; <dfn class="local col3 decl" id="163assignment" title='assignment' data-type='const DiscreteValues &amp;' data-ref="163assignment">assignment</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="231">231</th><td></td></tr>
+<tr><th id="232">232</th><td> <b>private</b>:</td></tr>
+<tr><th id="233">233</th><td><u>#<span data-ppcond="233">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="234">234</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="235">235</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="236">236</th><td>  <b>template</b> &lt;<b>class</b> Archive&gt;</td></tr>
+<tr><th id="237">237</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam17HybridConditional9serializeERT_j" title='gtsam::HybridConditional::serialize' data-ref="_ZN5gtsam17HybridConditional9serializeERT_j">serialize</dfn>(Archive&amp; <dfn class="local col4 decl" id="164ar" title='ar' data-type='Archive &amp;' data-ref="164ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="238">238</th><td>    <a class="local col4 ref" href="#164ar" title='ar' data-ref="164ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#26" title="boost::serialization::make_nvp( &quot;BaseFactor&quot;, boost::serialization::base_object&lt;BaseFactor &gt;(*this) )" data-ref="_M/BOOST_SERIALIZATION_BASE_OBJECT_NVP">BOOST_SERIALIZATION_BASE_OBJECT_NVP</a>(<a class="typedef" href="#gtsam::HybridConditional::BaseFactor" title='gtsam::HybridConditional::BaseFactor' data-type='HybridFactor' data-ref="gtsam::HybridConditional::BaseFactor">BaseFactor</a>);</td></tr>
+<tr><th id="239">239</th><td>    <a class="local col4 ref" href="#164ar" title='ar' data-ref="164ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#26" title="boost::serialization::make_nvp( &quot;BaseConditional&quot;, boost::serialization::base_object&lt;BaseConditional &gt;(*this) )" data-ref="_M/BOOST_SERIALIZATION_BASE_OBJECT_NVP">BOOST_SERIALIZATION_BASE_OBJECT_NVP</a>(<a class="typedef" href="#gtsam::HybridConditional::BaseConditional" title='gtsam::HybridConditional::BaseConditional' data-type='Conditional&lt;BaseFactor, This&gt;' data-ref="gtsam::HybridConditional::BaseConditional">BaseConditional</a>);</td></tr>
+<tr><th id="240">240</th><td>    <a class="local col4 ref" href="#164ar" title='ar' data-ref="164ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;inner_&quot;, inner_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::HybridConditional::inner_" title='gtsam::HybridConditional::inner_' data-ref="gtsam::HybridConditional::inner_">inner_</a></span>);</td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td>    <i>// register the various casts based on the type of inner_</i></td></tr>
+<tr><th id="243">243</th><td><i>    // <a href="https://www.boost.org/doc/libs/1_80_0/libs/serialization/doc/serialization.html#runtimecasting">https://www.boost.org/doc/libs/1_80_0/libs/serialization/doc/serialization.html#runtimecasting</a></i></td></tr>
+<tr><th id="244">244</th><td>    <b>if</b> (<a class="member fn" href="HybridFactor.h.html#_ZNK5gtsam12HybridFactor10isDiscreteEv" title='gtsam::HybridFactor::isDiscrete' data-ref="_ZNK5gtsam12HybridFactor10isDiscreteEv">isDiscrete</a>()) {</td></tr>
+<tr><th id="245">245</th><td>      <span class="namespace">boost::serialization::</span><a class="ref fn" href="../../../include/boost/serialization/void_cast_fwd.hpp.html#_ZN5boost13serialization18void_cast_registerEPKT_PKT0_" title='boost::serialization::void_cast_register' data-ref="_ZN5boost13serialization18void_cast_registerEPKT_PKT0_">void_cast_register</a>&lt;<a class="type" href="../discrete/DiscreteConditional.h.html#gtsam::DiscreteConditional" title='gtsam::DiscreteConditional' data-ref="gtsam::DiscreteConditional">DiscreteConditional</a>, <a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>&gt;(</td></tr>
+<tr><th id="246">246</th><td>          <span class='inlayHint'>dnull:&nbsp;</span><b>static_cast</b>&lt;<a class="type" href="../discrete/DiscreteConditional.h.html#gtsam::DiscreteConditional" title='gtsam::DiscreteConditional' data-ref="gtsam::DiscreteConditional">DiscreteConditional</a>*&gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>), <span class='inlayHint'>bnull:&nbsp;</span><b>static_cast</b>&lt;<a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>*&gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>));</td></tr>
+<tr><th id="247">247</th><td>    } <b>else</b> <b>if</b> (<a class="member fn" href="HybridFactor.h.html#_ZNK5gtsam12HybridFactor12isContinuousEv" title='gtsam::HybridFactor::isContinuous' data-ref="_ZNK5gtsam12HybridFactor12isContinuousEv">isContinuous</a>()) {</td></tr>
+<tr><th id="248">248</th><td>      <span class="namespace">boost::serialization::</span><a class="ref fn" href="../../../include/boost/serialization/void_cast_fwd.hpp.html#_ZN5boost13serialization18void_cast_registerEPKT_PKT0_" title='boost::serialization::void_cast_register' data-ref="_ZN5boost13serialization18void_cast_registerEPKT_PKT0_">void_cast_register</a>&lt;<a class="type" href="../linear/GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional">GaussianConditional</a>, <a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>&gt;(</td></tr>
+<tr><th id="249">249</th><td>          <span class='inlayHint'>dnull:&nbsp;</span><b>static_cast</b>&lt;<a class="type" href="../linear/GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional">GaussianConditional</a>*&gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>), <span class='inlayHint'>bnull:&nbsp;</span><b>static_cast</b>&lt;<a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>*&gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>));</td></tr>
+<tr><th id="250">250</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="251">251</th><td>      <span class="namespace">boost::serialization::</span><a class="ref fn" href="../../../include/boost/serialization/void_cast_fwd.hpp.html#_ZN5boost13serialization18void_cast_registerEPKT_PKT0_" title='boost::serialization::void_cast_register' data-ref="_ZN5boost13serialization18void_cast_registerEPKT_PKT0_">void_cast_register</a>&lt;<a class="type" href="HybridGaussianConditional.h.html#gtsam::HybridGaussianConditional" title='gtsam::HybridGaussianConditional' data-ref="gtsam::HybridGaussianConditional">HybridGaussianConditional</a>,</td></tr>
+<tr><th id="252">252</th><td>                                               <a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>&gt;(</td></tr>
+<tr><th id="253">253</th><td>          <span class='inlayHint'>dnull:&nbsp;</span><b>static_cast</b>&lt;<a class="type" href="HybridGaussianConditional.h.html#gtsam::HybridGaussianConditional" title='gtsam::HybridGaussianConditional' data-ref="gtsam::HybridGaussianConditional">HybridGaussianConditional</a>*&gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>),</td></tr>
+<tr><th id="254">254</th><td>          <span class='inlayHint'>bnull:&nbsp;</span><b>static_cast</b>&lt;<a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a>*&gt;(<span class="macro" title="__null" data-ref="_M/NULL">NULL</span>));</td></tr>
+<tr><th id="255">255</th><td>    }</td></tr>
+<tr><th id="256">256</th><td>  }</td></tr>
+<tr><th id="257">257</th><td><u>#<span data-ppcond="233">endif</span></u></td></tr>
+<tr><th id="258">258</th><td></td></tr>
+<tr><th id="259">259</th><td>};  <i>// HybridConditional</i></td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td><i>// traits</i></td></tr>
+<tr><th id="262">262</th><td><b>template</b> &lt;&gt;</td></tr>
+<tr><th id="263">263</th><td><b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits"><a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a></dfn>&lt;<a class="type" href="#gtsam::HybridConditional" title='gtsam::HybridConditional' data-ref="gtsam::HybridConditional">HybridConditional</a>&gt; : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::HybridConditional" title='gtsam::HybridConditional' data-ref="gtsam::HybridConditional">HybridConditional</a>&gt; {};</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="266">266</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/Hybrid_City10000.cpp.html'>codebrowser/examples/Hybrid_City10000.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

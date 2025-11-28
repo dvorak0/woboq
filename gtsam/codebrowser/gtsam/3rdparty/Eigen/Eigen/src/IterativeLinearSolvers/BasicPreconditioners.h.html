@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BasicPreconditioners.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/IterativeLinearSolvers/BasicPreconditioners.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::DiagonalPreconditioner,Eigen::IdentityPreconditioner,Eigen::LeastSquareDiagonalPreconditioner "/>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/IterativeLinearSolvers/BasicPreconditioners.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>IterativeLinearSolvers</a>/<a href='BasicPreconditioners.h.html'>BasicPreconditioners.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2011-2014 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>//</i></td></tr>
+<tr><th id="6">6</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="7">7</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="8">8</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><u>#<span data-ppcond="10">ifndef</span> <span class="macro" data-ref="_M/EIGEN_BASIC_PRECONDITIONERS_H">EIGEN_BASIC_PRECONDITIONERS_H</span></u></td></tr>
+<tr><th id="11">11</th><td><u>#define <dfn class="macro" id="_M/EIGEN_BASIC_PRECONDITIONERS_H" data-ref="_M/EIGEN_BASIC_PRECONDITIONERS_H">EIGEN_BASIC_PRECONDITIONERS_H</dfn></u></td></tr>
+<tr><th id="12">12</th><td></td></tr>
+<tr><th id="13">13</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="14">14</th><td></td></tr>
+<tr><th id="15">15</th><td><i class="doc">/** <span class="command">\ingroup</span> <span class="verb">IterativeLinearSolvers_Module</span></i></td></tr>
+<tr><th id="16">16</th><td><i class="doc">  * <span class="command">\brief</span> A preconditioner based on the digonal entries</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc">  * This class allows to approximately solve for A.x = b problems assuming A is a diagonal matrix.</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc">  * In other words, this preconditioner neglects all off diagonal entries and, in Eigen's language, solves for:</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc">    <span class="command">\code</span></i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"><span class="verb">    A.diagonal().asDiagonal() . x = b</span></i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"><span class="verb"></span>    \endcode</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc">  * <span class="command">\tparam</span> <span class="arg">_Scalar</span> the type of the scalar.</i></td></tr>
+<tr><th id="25">25</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="26">26</th><td><i class="doc">  *<span class="command"> \implsparsesolverconcept</span></i></td></tr>
+<tr><th id="27">27</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc">  * This preconditioner is suitable for both selfadjoint and general problems.</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc">  * The diagonal entries are pre-inverted and stored into a dense vector.</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc">  * <span class="command">\note</span> A variant that has yet to be implemented would attempt to preserve the norm of each column.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc">  * <span class="command">\sa</span> class LeastSquareDiagonalPreconditioner, class ConjugateGradient</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="35">35</th><td><b>template</b> &lt;<b>typename</b> _Scalar&gt;</td></tr>
+<tr><th id="36">36</th><td><b>class</b> <dfn class="type def" id="Eigen::DiagonalPreconditioner" title='Eigen::DiagonalPreconditioner' data-ref="Eigen::DiagonalPreconditioner">DiagonalPreconditioner</dfn></td></tr>
+<tr><th id="37">37</th><td>{</td></tr>
+<tr><th id="38">38</th><td>    <b>typedef</b> _Scalar <dfn class="typedef" id="Eigen::DiagonalPreconditioner::Scalar" title='Eigen::DiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::DiagonalPreconditioner::Scalar">Scalar</dfn>;</td></tr>
+<tr><th id="39">39</th><td>    <b>typedef</b> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<a class="typedef" href="#Eigen::DiagonalPreconditioner::Scalar" title='Eigen::DiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::DiagonalPreconditioner::Scalar">Scalar</a>,<a class="ref" href="../Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>,<var>1</var>&gt; <dfn class="typedef" id="Eigen::DiagonalPreconditioner::Vector" title='Eigen::DiagonalPreconditioner::Vector' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="Eigen::DiagonalPreconditioner::Vector">Vector</dfn>;</td></tr>
+<tr><th id="40">40</th><td>  <b>public</b>:</td></tr>
+<tr><th id="41">41</th><td>    <b>typedef</b> <b>typename</b> <a class="typedef" href="#Eigen::DiagonalPreconditioner::Vector" title='Eigen::DiagonalPreconditioner::Vector' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="Eigen::DiagonalPreconditioner::Vector">Vector</a>::StorageIndex <dfn class="typedef" id="Eigen::DiagonalPreconditioner::StorageIndex" title='Eigen::DiagonalPreconditioner::StorageIndex' data-type='typename Vector::StorageIndex' data-ref="Eigen::DiagonalPreconditioner::StorageIndex">StorageIndex</dfn>;</td></tr>
+<tr><th id="42">42</th><td>    <b>enum</b> {</td></tr>
+<tr><th id="43">43</th><td>      <dfn class="enum" id="Eigen::DiagonalPreconditioner::ColsAtCompileTime" title='Eigen::DiagonalPreconditioner::ColsAtCompileTime' data-ref="Eigen::DiagonalPreconditioner::ColsAtCompileTime">ColsAtCompileTime</dfn> = <a class="ref" href="../Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>,</td></tr>
+<tr><th id="44">44</th><td>      <dfn class="enum" id="Eigen::DiagonalPreconditioner::MaxColsAtCompileTime" title='Eigen::DiagonalPreconditioner::MaxColsAtCompileTime' data-ref="Eigen::DiagonalPreconditioner::MaxColsAtCompileTime">MaxColsAtCompileTime</dfn> = <a class="ref" href="../Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a></td></tr>
+<tr><th id="45">45</th><td>    };</td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td>    <dfn class="decl def fn" id="_ZN5Eigen22DiagonalPreconditionerC1Ev" title='Eigen::DiagonalPreconditioner::DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="_ZN5Eigen22DiagonalPreconditionerC1Ev">DiagonalPreconditioner</dfn>() : <a class="member field" href="#Eigen::DiagonalPreconditioner::m_isInitialized" title='Eigen::DiagonalPreconditioner::m_isInitialized' data-ref="Eigen::DiagonalPreconditioner::m_isInitialized">m_isInitialized</a>(<b>false</b>) {}</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="50">50</th><td>    <b>explicit</b> <dfn class="decl def fn" id="_ZN5Eigen22DiagonalPreconditionerC1ERKTL0__" title='Eigen::DiagonalPreconditioner::DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="_ZN5Eigen22DiagonalPreconditionerC1ERKTL0__">DiagonalPreconditioner</dfn>(<em>const</em> MatType&amp; <dfn class="local col0 decl" id="26220mat" title='mat' data-type='const MatType &amp;' data-ref="26220mat">mat</dfn>) : <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>(<a class="local col0 ref" href="#26220mat" title='mat' data-ref="26220mat">mat</a>.cols())</td></tr>
+<tr><th id="51">51</th><td>    {</td></tr>
+<tr><th id="52">52</th><td>      compute(<a class="local col0 ref" href="#26220mat" title='mat' data-ref="26220mat">mat</a>);</td></tr>
+<tr><th id="53">53</th><td>    }</td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td>    <a class="macro" href="../Core/util/Macros.h.html#785" title="constexpr" data-ref="_M/EIGEN_CONSTEXPR">EIGEN_CONSTEXPR</a> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="decl def fn" id="_ZNK5Eigen22DiagonalPreconditioner4rowsEv" title='Eigen::DiagonalPreconditioner::rows' data-ref="_ZNK5Eigen22DiagonalPreconditioner4rowsEv">rows</dfn>() <em>const</em> <a class="macro" href="../Core/util/Macros.h.html#1413" title="noexcept" data-ref="_M/EIGEN_NOEXCEPT">EIGEN_NOEXCEPT</a> { <b>return</b> <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>.size(); }</td></tr>
+<tr><th id="56">56</th><td>    <a class="macro" href="../Core/util/Macros.h.html#785" title="constexpr" data-ref="_M/EIGEN_CONSTEXPR">EIGEN_CONSTEXPR</a> <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="decl def fn" id="_ZNK5Eigen22DiagonalPreconditioner4colsEv" title='Eigen::DiagonalPreconditioner::cols' data-ref="_ZNK5Eigen22DiagonalPreconditioner4colsEv">cols</dfn>() <em>const</em> <a class="macro" href="../Core/util/Macros.h.html#1413" title="noexcept" data-ref="_M/EIGEN_NOEXCEPT">EIGEN_NOEXCEPT</a> { <b>return</b> <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>.size(); }</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="59">59</th><td>    DiagonalPreconditioner&amp; <dfn class="decl def fn" id="_ZN5Eigen22DiagonalPreconditioner14analyzePatternERKTL0__" title='Eigen::DiagonalPreconditioner::analyzePattern' data-ref="_ZN5Eigen22DiagonalPreconditioner14analyzePatternERKTL0__">analyzePattern</dfn>(<em>const</em> MatType&amp; )</td></tr>
+<tr><th id="60">60</th><td>    {</td></tr>
+<tr><th id="61">61</th><td>      <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="62">62</th><td>    }</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="65">65</th><td>    DiagonalPreconditioner&amp; <dfn class="decl def fn" id="_ZN5Eigen22DiagonalPreconditioner9factorizeERKTL0__" title='Eigen::DiagonalPreconditioner::factorize' data-ref="_ZN5Eigen22DiagonalPreconditioner9factorizeERKTL0__">factorize</dfn>(<em>const</em> MatType&amp; <dfn class="local col1 decl" id="26221mat" title='mat' data-type='const MatType &amp;' data-ref="26221mat">mat</dfn>)</td></tr>
+<tr><th id="66">66</th><td>    {</td></tr>
+<tr><th id="67">67</th><td>      <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>.resize(<a class="local col1 ref" href="#26221mat" title='mat' data-ref="26221mat">mat</a>.cols());</td></tr>
+<tr><th id="68">68</th><td>      <b>for</b>(<em>int</em> <dfn class="local col2 decl" id="26222j" title='j' data-type='int' data-ref="26222j">j</dfn>=<var>0</var>; <a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a>&lt;<a class="local col1 ref" href="#26221mat" title='mat' data-ref="26221mat">mat</a>.outerSize(); ++<a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a>)</td></tr>
+<tr><th id="69">69</th><td>      {</td></tr>
+<tr><th id="70">70</th><td>        <b>typename</b> MatType::InnerIterator <dfn class="local col3 decl" id="26223it" title='it' data-type='typename MatType::InnerIterator' data-ref="26223it">it</dfn>(<a class="local col1 ref" href="#26221mat" title='mat' data-ref="26221mat">mat</a>,<a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a>);</td></tr>
+<tr><th id="71">71</th><td>        <b>while</b>(<a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a> &amp;&amp; <a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a>.index()!=<a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a>) ++<a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a>;</td></tr>
+<tr><th id="72">72</th><td>        <b>if</b>(<a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a> &amp;&amp; <a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a>.index()==<a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a> &amp;&amp; <a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a>.value()!=<a class="typedef" href="#Eigen::DiagonalPreconditioner::Scalar" title='Eigen::DiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::DiagonalPreconditioner::Scalar">Scalar</a>(<var>0</var>))</td></tr>
+<tr><th id="73">73</th><td>          <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>(<a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a>) = <a class="typedef" href="#Eigen::DiagonalPreconditioner::Scalar" title='Eigen::DiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::DiagonalPreconditioner::Scalar">Scalar</a>(<var>1</var>)/<a class="local col3 ref" href="#26223it" title='it' data-ref="26223it">it</a>.value();</td></tr>
+<tr><th id="74">74</th><td>        <b>else</b></td></tr>
+<tr><th id="75">75</th><td>          <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>(<a class="local col2 ref" href="#26222j" title='j' data-ref="26222j">j</a>) = <a class="typedef" href="#Eigen::DiagonalPreconditioner::Scalar" title='Eigen::DiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::DiagonalPreconditioner::Scalar">Scalar</a>(<var>1</var>);</td></tr>
+<tr><th id="76">76</th><td>      }</td></tr>
+<tr><th id="77">77</th><td>      <a class="member field" href="#Eigen::DiagonalPreconditioner::m_isInitialized" title='Eigen::DiagonalPreconditioner::m_isInitialized' data-ref="Eigen::DiagonalPreconditioner::m_isInitialized">m_isInitialized</a> = <b>true</b>;</td></tr>
+<tr><th id="78">78</th><td>      <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="79">79</th><td>    }</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="82">82</th><td>    DiagonalPreconditioner&amp; <dfn class="decl def fn" id="_ZN5Eigen22DiagonalPreconditioner7computeERKTL0__" title='Eigen::DiagonalPreconditioner::compute' data-ref="_ZN5Eigen22DiagonalPreconditioner7computeERKTL0__">compute</dfn>(<em>const</em> MatType&amp; <dfn class="local col4 decl" id="26224mat" title='mat' data-type='const MatType &amp;' data-ref="26224mat">mat</dfn>)</td></tr>
+<tr><th id="83">83</th><td>    {</td></tr>
+<tr><th id="84">84</th><td>      <b>return</b> factorize(<a class="local col4 ref" href="#26224mat" title='mat' data-ref="26224mat">mat</a>);</td></tr>
+<tr><th id="85">85</th><td>    }</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>    <i class="doc">/** <span class="command">\internal</span><span class="verb"> *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="88">88</th><td><span class="verb"></span>    <b>template</b>&lt;<b>typename</b> Rhs, <b>typename</b> Dest&gt;</td></tr>
+<tr><th id="89">89</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZNK5Eigen22DiagonalPreconditioner11_solve_implERKTL0__RTL0_0_" title='Eigen::DiagonalPreconditioner::_solve_impl' data-ref="_ZNK5Eigen22DiagonalPreconditioner11_solve_implERKTL0__RTL0_0_">_solve_impl</dfn>(<em>const</em> Rhs&amp; <dfn class="local col5 decl" id="26225b" title='b' data-type='const Rhs &amp;' data-ref="26225b">b</dfn>, Dest&amp; <dfn class="local col6 decl" id="26226x" title='x' data-type='Dest &amp;' data-ref="26226x">x</dfn>) <em>const</em></td></tr>
+<tr><th id="90">90</th><td>    {</td></tr>
+<tr><th id="91">91</th><td>      <a class="local col6 ref" href="#26226x" title='x' data-ref="26226x">x</a> = <a class="member field" href="#Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</a>.array() * <a class="local col5 ref" href="#26225b" title='b' data-ref="26225b">b</a>.array() ;</td></tr>
+<tr><th id="92">92</th><td>    }</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>    <b>template</b>&lt;<b>typename</b> Rhs&gt; <b>inline</b> <em>const</em> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::Solve" title='Eigen::Solve' data-ref="Eigen::Solve">Solve</a>&lt;DiagonalPreconditioner, Rhs&gt;</td></tr>
+<tr><th id="95">95</th><td>    <dfn class="decl def fn" id="_ZNK5Eigen22DiagonalPreconditioner5solveERKNS_10MatrixBaseITL0__EE" title='Eigen::DiagonalPreconditioner::solve' data-ref="_ZNK5Eigen22DiagonalPreconditioner5solveERKNS_10MatrixBaseITL0__EE">solve</dfn>(<em>const</em> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::MatrixBase" title='Eigen::MatrixBase' data-ref="Eigen::MatrixBase">MatrixBase</a>&lt;Rhs&gt;&amp; <dfn class="local col7 decl" id="26227b" title='b' data-type='const MatrixBase&lt;Rhs&gt; &amp;' data-ref="26227b">b</dfn>) <em>const</em></td></tr>
+<tr><th id="96">96</th><td>    {</td></tr>
+<tr><th id="97">97</th><td>      <a class="macro" href="../Core/util/Macros.h.html#1037" title="" data-ref="_M/eigen_assert">eigen_assert</a>(m_isInitialized &amp;&amp; <q>"DiagonalPreconditioner is not initialized."</q>);</td></tr>
+<tr><th id="98">98</th><td>      <a class="macro" href="../Core/util/Macros.h.html#1037" title="" data-ref="_M/eigen_assert">eigen_assert</a>(m_invdiag.size()==b.rows()</td></tr>
+<tr><th id="99">99</th><td>                &amp;&amp; <q>"DiagonalPreconditioner::solve(): invalid number of rows of the right hand side matrix b"</q>);</td></tr>
+<tr><th id="100">100</th><td>      <b>return</b> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::Solve" title='Eigen::Solve' data-ref="Eigen::Solve">Solve</a>&lt;DiagonalPreconditioner, Rhs&gt;(*<b>this</b>, <a class="local col7 ref" href="#26227b" title='b' data-ref="26227b">b</a>.derived());</td></tr>
+<tr><th id="101">101</th><td>    }</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <a class="type" href="../Core/util/Constants.h.html#Eigen::ComputationInfo" title='Eigen::ComputationInfo' data-ref="Eigen::ComputationInfo">ComputationInfo</a> <dfn class="decl def fn" id="_ZN5Eigen22DiagonalPreconditioner4infoEv" title='Eigen::DiagonalPreconditioner::info' data-ref="_ZN5Eigen22DiagonalPreconditioner4infoEv">info</dfn>() { <b>return</b> <a class="enum" href="../Core/util/Constants.h.html#Eigen::Success" title='Eigen::Success' data-ref="Eigen::Success">Success</a>; }</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="106">106</th><td>    <a class="typedef" href="#Eigen::DiagonalPreconditioner::Vector" title='Eigen::DiagonalPreconditioner::Vector' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="Eigen::DiagonalPreconditioner::Vector">Vector</a> <dfn class="decl field" id="Eigen::DiagonalPreconditioner::m_invdiag" title='Eigen::DiagonalPreconditioner::m_invdiag' data-ref="Eigen::DiagonalPreconditioner::m_invdiag">m_invdiag</dfn>;</td></tr>
+<tr><th id="107">107</th><td>    <em>bool</em> <dfn class="decl field" id="Eigen::DiagonalPreconditioner::m_isInitialized" title='Eigen::DiagonalPreconditioner::m_isInitialized' data-ref="Eigen::DiagonalPreconditioner::m_isInitialized">m_isInitialized</dfn>;</td></tr>
+<tr><th id="108">108</th><td>};</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td><i class="doc">/** <span class="command">\ingroup</span> <span class="verb">IterativeLinearSolvers_Module</span></i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">  * <span class="command">\brief</span> Jacobi preconditioner for LeastSquaresConjugateGradient</i></td></tr>
+<tr><th id="112">112</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="113">113</th><td><i class="doc">  * This class allows to approximately solve for A' A x  = A' b problems assuming A' A is a diagonal matrix.</i></td></tr>
+<tr><th id="114">114</th><td><i class="doc">  * In other words, this preconditioner neglects all off diagonal entries and, in Eigen's language, solves for:</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">    <span class="command">\code</span></i></td></tr>
+<tr><th id="116">116</th><td><i class="doc"><span class="verb">    (A.adjoint() * A).diagonal().asDiagonal() * x = b</span></i></td></tr>
+<tr><th id="117">117</th><td><i class="doc"><span class="verb"></span>    \endcode</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">  * <span class="command">\tparam</span> <span class="arg">_Scalar</span> the type of the scalar.</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">  *<span class="command"> \implsparsesolverconcept</span></i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">  * The diagonal entries are pre-inverted and stored into a dense vector.</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">  * <span class="command">\sa</span> class LeastSquaresConjugateGradient, class DiagonalPreconditioner</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="127">127</th><td><b>template</b> &lt;<b>typename</b> _Scalar&gt;</td></tr>
+<tr><th id="128">128</th><td><b>class</b> <dfn class="type def" id="Eigen::LeastSquareDiagonalPreconditioner" title='Eigen::LeastSquareDiagonalPreconditioner' data-ref="Eigen::LeastSquareDiagonalPreconditioner">LeastSquareDiagonalPreconditioner</dfn> : <b>public</b> <a class="type" href="#Eigen::DiagonalPreconditioner" title='Eigen::DiagonalPreconditioner' data-ref="Eigen::DiagonalPreconditioner">DiagonalPreconditioner</a>&lt;_Scalar&gt;</td></tr>
+<tr><th id="129">129</th><td>{</td></tr>
+<tr><th id="130">130</th><td>    <b>typedef</b> _Scalar <dfn class="typedef" id="Eigen::LeastSquareDiagonalPreconditioner::Scalar" title='Eigen::LeastSquareDiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Scalar">Scalar</dfn>;</td></tr>
+<tr><th id="131">131</th><td>    <b>typedef</b> <b>typename</b> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;<a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::Scalar" title='Eigen::LeastSquareDiagonalPreconditioner::Scalar' data-type='_Scalar' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Scalar">Scalar</a>&gt;::Real <dfn class="typedef" id="Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</dfn>;</td></tr>
+<tr><th id="132">132</th><td>    <b>typedef</b> <a class="type" href="#Eigen::DiagonalPreconditioner" title='Eigen::DiagonalPreconditioner' data-ref="Eigen::DiagonalPreconditioner">DiagonalPreconditioner</a>&lt;_Scalar&gt; <dfn class="typedef" id="Eigen::LeastSquareDiagonalPreconditioner::Base" title='Eigen::LeastSquareDiagonalPreconditioner::Base' data-type='DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Base">Base</dfn>;</td></tr>
+<tr><th id="133">133</th><td>    <b>using</b> <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::Base" title='Eigen::LeastSquareDiagonalPreconditioner::Base' data-type='DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Base">Base</a>::m_invdiag;</td></tr>
+<tr><th id="134">134</th><td>  <b>public</b>:</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>    <dfn class="decl def fn" id="_ZN5Eigen33LeastSquareDiagonalPreconditionerC1Ev" title='Eigen::LeastSquareDiagonalPreconditioner::LeastSquareDiagonalPreconditioner&lt;_Scalar&gt;' data-ref="_ZN5Eigen33LeastSquareDiagonalPreconditionerC1Ev">LeastSquareDiagonalPreconditioner</dfn>() : <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::Base" title='Eigen::LeastSquareDiagonalPreconditioner::Base' data-type='DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Base">Base</a>() {}</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="139">139</th><td>    <b>explicit</b> <dfn class="decl def fn" id="_ZN5Eigen33LeastSquareDiagonalPreconditionerC1ERKTL0__" title='Eigen::LeastSquareDiagonalPreconditioner::LeastSquareDiagonalPreconditioner&lt;_Scalar&gt;' data-ref="_ZN5Eigen33LeastSquareDiagonalPreconditionerC1ERKTL0__">LeastSquareDiagonalPreconditioner</dfn>(<em>const</em> MatType&amp; <dfn class="local col8 decl" id="26228mat" title='mat' data-type='const MatType &amp;' data-ref="26228mat">mat</dfn>) : <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::Base" title='Eigen::LeastSquareDiagonalPreconditioner::Base' data-type='DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Base">Base</a>()</td></tr>
+<tr><th id="140">140</th><td>    {</td></tr>
+<tr><th id="141">141</th><td>      compute(<a class="local col8 ref" href="#26228mat" title='mat' data-ref="26228mat">mat</a>);</td></tr>
+<tr><th id="142">142</th><td>    }</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="145">145</th><td>    LeastSquareDiagonalPreconditioner&amp; <dfn class="decl def fn" id="_ZN5Eigen33LeastSquareDiagonalPreconditioner14analyzePatternERKTL0__" title='Eigen::LeastSquareDiagonalPreconditioner::analyzePattern' data-ref="_ZN5Eigen33LeastSquareDiagonalPreconditioner14analyzePatternERKTL0__">analyzePattern</dfn>(<em>const</em> MatType&amp; )</td></tr>
+<tr><th id="146">146</th><td>    {</td></tr>
+<tr><th id="147">147</th><td>      <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="148">148</th><td>    }</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="151">151</th><td>    LeastSquareDiagonalPreconditioner&amp; <dfn class="decl def fn" id="_ZN5Eigen33LeastSquareDiagonalPreconditioner9factorizeERKTL0__" title='Eigen::LeastSquareDiagonalPreconditioner::factorize' data-ref="_ZN5Eigen33LeastSquareDiagonalPreconditioner9factorizeERKTL0__">factorize</dfn>(<em>const</em> MatType&amp; <dfn class="local col9 decl" id="26229mat" title='mat' data-type='const MatType &amp;' data-ref="26229mat">mat</dfn>)</td></tr>
+<tr><th id="152">152</th><td>    {</td></tr>
+<tr><th id="153">153</th><td>      <i>// Compute the inverse squared-norm of each column of mat</i></td></tr>
+<tr><th id="154">154</th><td>      m_invdiag.resize(<a class="local col9 ref" href="#26229mat" title='mat' data-ref="26229mat">mat</a>.cols());</td></tr>
+<tr><th id="155">155</th><td>      <b>if</b>(MatType::IsRowMajor)</td></tr>
+<tr><th id="156">156</th><td>      {</td></tr>
+<tr><th id="157">157</th><td>        m_invdiag.setZero();</td></tr>
+<tr><th id="158">158</th><td>        <b>for</b>(<a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col0 decl" id="26230j" title='j' data-type='Index' data-ref="26230j">j</dfn>=<var>0</var>; <a class="local col0 ref" href="#26230j" title='j' data-ref="26230j">j</a>&lt;<a class="local col9 ref" href="#26229mat" title='mat' data-ref="26229mat">mat</a>.outerSize(); ++<a class="local col0 ref" href="#26230j" title='j' data-ref="26230j">j</a>)</td></tr>
+<tr><th id="159">159</th><td>        {</td></tr>
+<tr><th id="160">160</th><td>          <b>for</b>(<b>typename</b> MatType::InnerIterator <dfn class="local col1 decl" id="26231it" title='it' data-type='typename MatType::InnerIterator' data-ref="26231it">it</dfn>(<a class="local col9 ref" href="#26229mat" title='mat' data-ref="26229mat">mat</a>,<a class="local col0 ref" href="#26230j" title='j' data-ref="26230j">j</a>); <a class="local col1 ref" href="#26231it" title='it' data-ref="26231it">it</a>; ++<a class="local col1 ref" href="#26231it" title='it' data-ref="26231it">it</a>)</td></tr>
+<tr><th id="161">161</th><td>            m_invdiag(<a class="local col1 ref" href="#26231it" title='it' data-ref="26231it">it</a>.index()) += <span class="namespace">numext::</span>abs2(<a class="local col1 ref" href="#26231it" title='it' data-ref="26231it">it</a>.value());</td></tr>
+<tr><th id="162">162</th><td>        }</td></tr>
+<tr><th id="163">163</th><td>        <b>for</b>(<a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col2 decl" id="26232j" title='j' data-type='Index' data-ref="26232j">j</dfn>=<var>0</var>; <a class="local col2 ref" href="#26232j" title='j' data-ref="26232j">j</a>&lt;<a class="local col9 ref" href="#26229mat" title='mat' data-ref="26229mat">mat</a>.cols(); ++<a class="local col2 ref" href="#26232j" title='j' data-ref="26232j">j</a>)</td></tr>
+<tr><th id="164">164</th><td>          <b>if</b>(<span class="namespace">numext::</span>real(m_invdiag(<a class="local col2 ref" href="#26232j" title='j' data-ref="26232j">j</a>))&gt;<a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</a>(<var>0</var>))</td></tr>
+<tr><th id="165">165</th><td>            m_invdiag(<a class="local col2 ref" href="#26232j" title='j' data-ref="26232j">j</a>) = <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</a>(<var>1</var>)/<span class="namespace">numext::</span>real(m_invdiag(<a class="local col2 ref" href="#26232j" title='j' data-ref="26232j">j</a>));</td></tr>
+<tr><th id="166">166</th><td>      }</td></tr>
+<tr><th id="167">167</th><td>      <b>else</b></td></tr>
+<tr><th id="168">168</th><td>      {</td></tr>
+<tr><th id="169">169</th><td>        <b>for</b>(<a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col3 decl" id="26233j" title='j' data-type='Index' data-ref="26233j">j</dfn>=<var>0</var>; <a class="local col3 ref" href="#26233j" title='j' data-ref="26233j">j</a>&lt;<a class="local col9 ref" href="#26229mat" title='mat' data-ref="26229mat">mat</a>.outerSize(); ++<a class="local col3 ref" href="#26233j" title='j' data-ref="26233j">j</a>)</td></tr>
+<tr><th id="170">170</th><td>        {</td></tr>
+<tr><th id="171">171</th><td>          <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</a> <dfn class="local col4 decl" id="26234sum" title='sum' data-type='RealScalar' data-ref="26234sum">sum</dfn> = <a class="local col9 ref" href="#26229mat" title='mat' data-ref="26229mat">mat</a>.col(<a class="local col3 ref" href="#26233j" title='j' data-ref="26233j">j</a>).squaredNorm();</td></tr>
+<tr><th id="172">172</th><td>          <b>if</b>(<a class="local col4 ref" href="#26234sum" title='sum' data-ref="26234sum">sum</a>&gt;<a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</a>(<var>0</var>))</td></tr>
+<tr><th id="173">173</th><td>            m_invdiag(<a class="local col3 ref" href="#26233j" title='j' data-ref="26233j">j</a>) = <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</a>(<var>1</var>)/<a class="local col4 ref" href="#26234sum" title='sum' data-ref="26234sum">sum</a>;</td></tr>
+<tr><th id="174">174</th><td>          <b>else</b></td></tr>
+<tr><th id="175">175</th><td>            m_invdiag(<a class="local col3 ref" href="#26233j" title='j' data-ref="26233j">j</a>) = <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::RealScalar" title='Eigen::LeastSquareDiagonalPreconditioner::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::LeastSquareDiagonalPreconditioner::RealScalar">RealScalar</a>(<var>1</var>);</td></tr>
+<tr><th id="176">176</th><td>        }</td></tr>
+<tr><th id="177">177</th><td>      }</td></tr>
+<tr><th id="178">178</th><td>      <a class="typedef" href="#Eigen::LeastSquareDiagonalPreconditioner::Base" title='Eigen::LeastSquareDiagonalPreconditioner::Base' data-type='DiagonalPreconditioner&lt;_Scalar&gt;' data-ref="Eigen::LeastSquareDiagonalPreconditioner::Base">Base</a>::m_isInitialized = <b>true</b>;</td></tr>
+<tr><th id="179">179</th><td>      <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="180">180</th><td>    }</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>    <b>template</b>&lt;<b>typename</b> MatType&gt;</td></tr>
+<tr><th id="183">183</th><td>    LeastSquareDiagonalPreconditioner&amp; <dfn class="decl def fn" id="_ZN5Eigen33LeastSquareDiagonalPreconditioner7computeERKTL0__" title='Eigen::LeastSquareDiagonalPreconditioner::compute' data-ref="_ZN5Eigen33LeastSquareDiagonalPreconditioner7computeERKTL0__">compute</dfn>(<em>const</em> MatType&amp; <dfn class="local col5 decl" id="26235mat" title='mat' data-type='const MatType &amp;' data-ref="26235mat">mat</dfn>)</td></tr>
+<tr><th id="184">184</th><td>    {</td></tr>
+<tr><th id="185">185</th><td>      <b>return</b> factorize(<a class="local col5 ref" href="#26235mat" title='mat' data-ref="26235mat">mat</a>);</td></tr>
+<tr><th id="186">186</th><td>    }</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td>    <a class="type" href="../Core/util/Constants.h.html#Eigen::ComputationInfo" title='Eigen::ComputationInfo' data-ref="Eigen::ComputationInfo">ComputationInfo</a> <dfn class="decl def fn" id="_ZN5Eigen33LeastSquareDiagonalPreconditioner4infoEv" title='Eigen::LeastSquareDiagonalPreconditioner::info' data-ref="_ZN5Eigen33LeastSquareDiagonalPreconditioner4infoEv">info</dfn>() { <b>return</b> <a class="enum" href="../Core/util/Constants.h.html#Eigen::Success" title='Eigen::Success' data-ref="Eigen::Success">Success</a>; }</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="191">191</th><td>};</td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td><i class="doc">/** <span class="command">\ingroup</span> <span class="verb">IterativeLinearSolvers_Module</span></i></td></tr>
+<tr><th id="194">194</th><td><i class="doc">  * <span class="command">\brief</span> A naive preconditioner which approximates any matrix as the identity matrix</i></td></tr>
+<tr><th id="195">195</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="196">196</th><td><i class="doc">  *<span class="command"> \implsparsesolverconcept</span></i></td></tr>
+<tr><th id="197">197</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="198">198</th><td><i class="doc">  * <span class="command">\sa</span> class DiagonalPreconditioner</i></td></tr>
+<tr><th id="199">199</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="200">200</th><td><b>class</b> <dfn class="type def" id="Eigen::IdentityPreconditioner" title='Eigen::IdentityPreconditioner' data-ref="Eigen::IdentityPreconditioner">IdentityPreconditioner</dfn></td></tr>
+<tr><th id="201">201</th><td>{</td></tr>
+<tr><th id="202">202</th><td>  <b>public</b>:</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>    <dfn class="decl def fn" id="_ZN5Eigen22IdentityPreconditionerC1Ev" title='Eigen::IdentityPreconditioner::IdentityPreconditioner' data-ref="_ZN5Eigen22IdentityPreconditionerC1Ev">IdentityPreconditioner</dfn>() {}</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>    <b>template</b>&lt;<b>typename</b> MatrixType&gt;</td></tr>
+<tr><th id="207">207</th><td>    <b>explicit</b> <dfn class="decl def fn" id="_ZN5Eigen22IdentityPreconditionerC1ERKT_" title='Eigen::IdentityPreconditioner::IdentityPreconditioner' data-ref="_ZN5Eigen22IdentityPreconditionerC1ERKT_">IdentityPreconditioner</dfn>(<em>const</em> MatrixType&amp; ) {}</td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>    <b>template</b>&lt;<b>typename</b> MatrixType&gt;</td></tr>
+<tr><th id="210">210</th><td>    <a class="type" href="#Eigen::IdentityPreconditioner" title='Eigen::IdentityPreconditioner' data-ref="Eigen::IdentityPreconditioner">IdentityPreconditioner</a>&amp; <dfn class="decl def fn" id="_ZN5Eigen22IdentityPreconditioner14analyzePatternERKT_" title='Eigen::IdentityPreconditioner::analyzePattern' data-ref="_ZN5Eigen22IdentityPreconditioner14analyzePatternERKT_">analyzePattern</dfn>(<em>const</em> MatrixType&amp; ) { <b>return</b> *<b>this</b>; }</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>    <b>template</b>&lt;<b>typename</b> MatrixType&gt;</td></tr>
+<tr><th id="213">213</th><td>    <a class="type" href="#Eigen::IdentityPreconditioner" title='Eigen::IdentityPreconditioner' data-ref="Eigen::IdentityPreconditioner">IdentityPreconditioner</a>&amp; <dfn class="decl def fn" id="_ZN5Eigen22IdentityPreconditioner9factorizeERKT_" title='Eigen::IdentityPreconditioner::factorize' data-ref="_ZN5Eigen22IdentityPreconditioner9factorizeERKT_">factorize</dfn>(<em>const</em> MatrixType&amp; ) { <b>return</b> *<b>this</b>; }</td></tr>
+<tr><th id="214">214</th><td></td></tr>
+<tr><th id="215">215</th><td>    <b>template</b>&lt;<b>typename</b> MatrixType&gt;</td></tr>
+<tr><th id="216">216</th><td>    <a class="type" href="#Eigen::IdentityPreconditioner" title='Eigen::IdentityPreconditioner' data-ref="Eigen::IdentityPreconditioner">IdentityPreconditioner</a>&amp; <dfn class="decl def fn" id="_ZN5Eigen22IdentityPreconditioner7computeERKT_" title='Eigen::IdentityPreconditioner::compute' data-ref="_ZN5Eigen22IdentityPreconditioner7computeERKT_">compute</dfn>(<em>const</em> MatrixType&amp; ) { <b>return</b> *<b>this</b>; }</td></tr>
+<tr><th id="217">217</th><td></td></tr>
+<tr><th id="218">218</th><td>    <b>template</b>&lt;<b>typename</b> Rhs&gt;</td></tr>
+<tr><th id="219">219</th><td>    <b>inline</b> <em>const</em> Rhs&amp; <dfn class="decl def fn" id="_ZNK5Eigen22IdentityPreconditioner5solveERKT_" title='Eigen::IdentityPreconditioner::solve' data-ref="_ZNK5Eigen22IdentityPreconditioner5solveERKT_">solve</dfn>(<em>const</em> Rhs&amp; <dfn class="local col6 decl" id="26236b" title='b' data-type='const Rhs &amp;' data-ref="26236b">b</dfn>) <em>const</em> { <b>return</b> <a class="local col6 ref" href="#26236b" title='b' data-ref="26236b">b</a>; }</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td>    <a class="type" href="../Core/util/Constants.h.html#Eigen::ComputationInfo" title='Eigen::ComputationInfo' data-ref="Eigen::ComputationInfo">ComputationInfo</a> <dfn class="decl def fn" id="_ZN5Eigen22IdentityPreconditioner4infoEv" title='Eigen::IdentityPreconditioner::info' data-ref="_ZN5Eigen22IdentityPreconditioner4infoEv">info</dfn>() { <b>return</b> <a class="enum" href="../Core/util/Constants.h.html#Eigen::Success" title='Eigen::Success' data-ref="Eigen::Success">Success</a>; }</td></tr>
+<tr><th id="222">222</th><td>};</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td><u>#<span data-ppcond="10">endif</span> // EIGEN_BASIC_PRECONDITIONERS_H</u></td></tr>
+<tr><th id="227">227</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

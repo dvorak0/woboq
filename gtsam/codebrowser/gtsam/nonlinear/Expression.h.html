@@ -1,0 +1,331 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Expression.h source code [codebrowser/gtsam/nonlinear/Expression.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::BinarySumExpression,gtsam::Expression,gtsam::ScalarMultiplyExpression "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/nonlinear/Expression.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>nonlinear</a>/<a href='Expression.h.html'>Expression.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">Expression.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@date</span> September 18, 2014</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span> Paul Furgale</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@brief</span> Expressions for Block Automatic Differentiation</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#pragma once</u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="internal/JacobianMap.h.html">&lt;gtsam/nonlinear/internal/JacobianMap.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../inference/Symbol.h.html">&lt;gtsam/inference/Symbol.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../base/OptionalJacobian.h.html">&lt;gtsam/base/OptionalJacobian.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../base/VectorSpace.h.html">&lt;gtsam/base/VectorSpace.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../../../include/c++/13/map.html">&lt;map&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><i>// Forward declare tests</i></td></tr>
+<tr><th id="30">30</th><td><b>class</b> <dfn class="type" id="ExpressionFactorShallowTest" title='ExpressionFactorShallowTest' data-ref="ExpressionFactorShallowTest">ExpressionFactorShallowTest</dfn>;</td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><i>// Forward declares</i></td></tr>
+<tr><th id="35">35</th><td><b>class</b> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values" id="gtsam::Values">Values</a>;</td></tr>
+<tr><th id="36">36</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>class</b> <a class="type" href="ExpressionFactor.h.html#gtsam::ExpressionFactor" title='gtsam::ExpressionFactor' data-ref="gtsam::ExpressionFactor" id="gtsam::ExpressionFactor">ExpressionFactor</a>;</td></tr>
+<tr><th id="37">37</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>class</b> <dfn class="type" id="gtsam::ExpressionEqualityConstraint" title='gtsam::ExpressionEqualityConstraint' data-ref="gtsam::ExpressionEqualityConstraint">ExpressionEqualityConstraint</dfn>;</td></tr>
+<tr><th id="38">38</th><td><b>class</b> <dfn class="type" id="gtsam::ScalarExpressionInequalityConstraint" title='gtsam::ScalarExpressionInequalityConstraint' data-ref="gtsam::ScalarExpressionInequalityConstraint">ScalarExpressionInequalityConstraint</dfn>;</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="41">41</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>class</b> <a class="type" href="internal/ExecutionTrace.h.html#gtsam::internal::ExecutionTrace" title='gtsam::internal::ExecutionTrace' data-ref="gtsam::internal::ExecutionTrace" id="gtsam::internal::ExecutionTrace">ExecutionTrace</a>;</td></tr>
+<tr><th id="42">42</th><td><b>template</b>&lt;<b>typename</b> T&gt; <b>class</b> <a class="type" href="internal/ExpressionNode.h.html#gtsam::internal::ExpressionNode" title='gtsam::internal::ExpressionNode' data-ref="gtsam::internal::ExpressionNode" id="gtsam::internal::ExpressionNode">ExpressionNode</a>;</td></tr>
+<tr><th id="43">43</th><td>}</td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * Expression class that supports automatic differentiation</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="48">48</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="49">49</th><td><b>class</b> <dfn class="type def" id="gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</dfn> {</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><b>public</b>:</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td>  <i class="doc">/// Define type so we can apply it as a meta-function</i></td></tr>
+<tr><th id="54">54</th><td>  <b>typedef</b> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt; <dfn class="typedef" id="gtsam::Expression::type" title='gtsam::Expression::type' data-type='Expression&lt;T&gt;' data-ref="gtsam::Expression::type">type</dfn>;</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><b>protected</b>:</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>  <i>// Paul's trick shared pointer, polymorphic root of entire expression tree</i></td></tr>
+<tr><th id="59">59</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<span class="namespace">internal::</span><a class="type" href="#gtsam::internal::ExpressionNode" title='gtsam::internal::ExpressionNode' data-ref="gtsam::internal::ExpressionNode">ExpressionNode</a>&lt;T&gt; &gt; <dfn class="decl field" id="gtsam::Expression::root_" title='gtsam::Expression::root_' data-ref="gtsam::Expression::root_">root_</dfn>;</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td>  <i class="doc">/// Construct with a custom root</i></td></tr>
+<tr><th id="62">62</th><td>  <dfn class="decl def fn" id="_ZN5gtsam10ExpressionC1ERKSt10shared_ptrINS_8internal14ExpressionNodeIT_EEE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKSt10shared_ptrINS_8internal14ExpressionNodeIT_EEE">Expression</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<span class="namespace">internal::</span><a class="type" href="#gtsam::internal::ExpressionNode" title='gtsam::internal::ExpressionNode' data-ref="gtsam::internal::ExpressionNode">ExpressionNode</a>&lt;T&gt; &gt;&amp; <dfn class="local col6 decl" id="6root" title='root' data-type='const std::shared_ptr&lt;internal::ExpressionNode&lt;T&gt;&gt; &amp;' data-ref="6root">root</dfn>) : <a class="member field" href="#gtsam::Expression::root_" title='gtsam::Expression::root_' data-ref="gtsam::Expression::root_">root_</a>(<a class="local col6 ref" href="#6root" title='root' data-ref="6root">root</a>) {}</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><b>public</b>:</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>  <i>// Expressions wrap trees of functions that can evaluate their own derivatives.</i></td></tr>
+<tr><th id="67">67</th><td><i>  // The meta-functions below are useful to specify the type of those functions.</i></td></tr>
+<tr><th id="68">68</th><td><i>  // Example, a function taking a camera and a 3D point and yielding a 2D point:</i></td></tr>
+<tr><th id="69">69</th><td><i>  //   Expression&lt;Point2&gt;::BinaryFunction&lt;PinholeCamera&lt;Cal3_S2&gt;,Point3&gt;::type</i></td></tr>
+<tr><th id="70">70</th><td>  <b>template</b>&lt;<b>class</b> A1&gt;</td></tr>
+<tr><th id="71">71</th><td>  <b>struct</b> <dfn class="type def" id="gtsam::Expression::UnaryFunction" title='gtsam::Expression::UnaryFunction' data-ref="gtsam::Expression::UnaryFunction">UnaryFunction</dfn> {</td></tr>
+<tr><th id="72">72</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/std_function.h.html#std::function" title='std::function' data-ref="std::function">function</a>&lt;</td></tr>
+<tr><th id="73">73</th><td>        T(<em>const</em> A1&amp;, <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A1&gt;::type)&gt; <dfn class="typedef" id="gtsam::Expression::UnaryFunction::type" title='gtsam::Expression::UnaryFunction::type' data-type='std::function&lt;T (const A1 &amp;, typename MakeOptionalJacobian&lt;T, A1&gt;::type)&gt;' data-ref="gtsam::Expression::UnaryFunction::type">type</dfn>;</td></tr>
+<tr><th id="74">74</th><td>  };</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>  <b>template</b>&lt;<b>class</b> A1, <b>class</b> A2&gt;</td></tr>
+<tr><th id="77">77</th><td>  <b>struct</b> <dfn class="type def" id="gtsam::Expression::BinaryFunction" title='gtsam::Expression::BinaryFunction' data-ref="gtsam::Expression::BinaryFunction">BinaryFunction</dfn> {</td></tr>
+<tr><th id="78">78</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/std_function.h.html#std::function" title='std::function' data-ref="std::function">function</a>&lt;</td></tr>
+<tr><th id="79">79</th><td>        T(<em>const</em> A1&amp;, <em>const</em> A2&amp;, <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A1&gt;::type,</td></tr>
+<tr><th id="80">80</th><td>            <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A2&gt;::type)&gt; <dfn class="typedef" id="gtsam::Expression::BinaryFunction::type" title='gtsam::Expression::BinaryFunction::type' data-type='std::function&lt;T (const A1 &amp;, const A2 &amp;, typename MakeOptionalJacobian&lt;T, A1&gt;::type, typename MakeOptionalJacobian&lt;T, A2&gt;::type)&gt;' data-ref="gtsam::Expression::BinaryFunction::type">type</dfn>;</td></tr>
+<tr><th id="81">81</th><td>  };</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>  <b>template</b>&lt;<b>class</b> A1, <b>class</b> A2, <b>class</b> A3&gt;</td></tr>
+<tr><th id="84">84</th><td>  <b>struct</b> <dfn class="type def" id="gtsam::Expression::TernaryFunction" title='gtsam::Expression::TernaryFunction' data-ref="gtsam::Expression::TernaryFunction">TernaryFunction</dfn> {</td></tr>
+<tr><th id="85">85</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/std_function.h.html#std::function" title='std::function' data-ref="std::function">function</a>&lt;</td></tr>
+<tr><th id="86">86</th><td>        T(<em>const</em> A1&amp;, <em>const</em> A2&amp;, <em>const</em> A3&amp;,</td></tr>
+<tr><th id="87">87</th><td>            <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A1&gt;::type,</td></tr>
+<tr><th id="88">88</th><td>            <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A2&gt;::type,</td></tr>
+<tr><th id="89">89</th><td>            <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A3&gt;::type)&gt; <dfn class="typedef" id="gtsam::Expression::TernaryFunction::type" title='gtsam::Expression::TernaryFunction::type' data-type='std::function&lt;T (const A1 &amp;, const A2 &amp;, const A3 &amp;, typename MakeOptionalJacobian&lt;T, A1&gt;::type, typename MakeOptionalJacobian&lt;T, A2&gt;::type, typename MakeOptionalJacobian&lt;T, A3&gt;::type)&gt;' data-ref="gtsam::Expression::TernaryFunction::type">type</dfn>;</td></tr>
+<tr><th id="90">90</th><td>  };</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>  <i class="doc">/// Construct a constant expression</i></td></tr>
+<tr><th id="93">93</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ERKT_" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKT_" id="_ZN5gtsam10ExpressionC1ERKT_">Expression</a>(<em>const</em> T&amp; <dfn class="local col7 decl" id="7value" title='value' data-type='const T &amp;' data-ref="7value">value</dfn>);</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>  <i class="doc">/// Construct a leaf expression, with Key</i></td></tr>
+<tr><th id="96">96</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ERKm" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKm" id="_ZN5gtsam10ExpressionC1ERKm">Expression</a>(<em>const</em> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&amp; <dfn class="local col8 decl" id="8key" title='key' data-type='const Key &amp;' data-ref="8key">key</dfn>);</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>  <i class="doc">/// Construct a leaf expression, with Symbol</i></td></tr>
+<tr><th id="99">99</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ERKNS_6SymbolE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKNS_6SymbolE" id="_ZN5gtsam10ExpressionC1ERKNS_6SymbolE">Expression</a>(<em>const</em> <a class="type" href="../inference/Symbol.h.html#gtsam::Symbol" title='gtsam::Symbol' data-ref="gtsam::Symbol">Symbol</a>&amp; <dfn class="local col9 decl" id="9symbol" title='symbol' data-type='const Symbol &amp;' data-ref="9symbol">symbol</dfn>);</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td>  <i class="doc">/// Construct a leaf expression, creating Symbol</i></td></tr>
+<tr><th id="102">102</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1Ehm" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1Ehm" id="_ZN5gtsam10ExpressionC1Ehm">Expression</a>(<em>unsigned</em> <em>char</em> <dfn class="local col0 decl" id="10c" title='c' data-type='unsigned char' data-ref="10c">c</dfn>, <span class="namespace">std::</span>uint64_t <dfn class="local col1 decl" id="11j" title='j' data-type='std::uint64_t' data-ref="11j">j</dfn>);</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>  <i class="doc">/// Construct a unary function expression</i></td></tr>
+<tr><th id="105">105</th><td>  <b>template</b>&lt;<b>typename</b> A&gt;</td></tr>
+<tr><th id="106">106</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ENS0_13UnaryFunctionITL0__E4typeERKNS_10ExpressionIS2_EE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ENS0_13UnaryFunctionITL0__E4typeERKNS_10ExpressionIS2_EE" id="_ZN5gtsam10ExpressionC1ENS0_13UnaryFunctionITL0__E4typeERKNS_10ExpressionIS2_EE">Expression</a>(<b>typename</b> <a class="type" href="#gtsam::Expression::UnaryFunction" title='gtsam::Expression::UnaryFunction' data-ref="gtsam::Expression::UnaryFunction">UnaryFunction</a>&lt;A&gt;::type <dfn class="local col2 decl" id="12function" title='function' data-type='typename UnaryFunction&lt;A&gt;::type' data-ref="12function">function</dfn>,</td></tr>
+<tr><th id="107">107</th><td>      <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A&gt;&amp; <dfn class="local col3 decl" id="13expression" title='expression' data-type='const Expression&lt;A&gt; &amp;' data-ref="13expression">expression</dfn>);</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <i class="doc">/// Construct a binary function expression</i></td></tr>
+<tr><th id="110">110</th><td>  <b>template</b>&lt;<b>typename</b> A1, <b>typename</b> A2&gt;</td></tr>
+<tr><th id="111">111</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ENS0_14BinaryFunctionITL0__TL0_0_E4typeERKNS_10ExpressionIS2_EERKNS6_IS3_EE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ENS0_14BinaryFunctionITL0__TL0_0_E4typeERKNS_10ExpressionIS2_EERKNS6_IS3_EE" id="_ZN5gtsam10ExpressionC1ENS0_14BinaryFunctionITL0__TL0_0_E4typeERKNS_10ExpressionIS2_EERKNS6_IS3_EE">Expression</a>(<b>typename</b> <a class="type" href="#gtsam::Expression::BinaryFunction" title='gtsam::Expression::BinaryFunction' data-ref="gtsam::Expression::BinaryFunction">BinaryFunction</a>&lt;A1, A2&gt;::type <dfn class="local col4 decl" id="14function" title='function' data-type='typename BinaryFunction&lt;A1, A2&gt;::type' data-ref="14function">function</dfn>,</td></tr>
+<tr><th id="112">112</th><td>      <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A1&gt;&amp; <dfn class="local col5 decl" id="15expression1" title='expression1' data-type='const Expression&lt;A1&gt; &amp;' data-ref="15expression1">expression1</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A2&gt;&amp; <dfn class="local col6 decl" id="16expression2" title='expression2' data-type='const Expression&lt;A2&gt; &amp;' data-ref="16expression2">expression2</dfn>);</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>  <i class="doc">/// Construct a ternary function expression</i></td></tr>
+<tr><th id="115">115</th><td>  <b>template</b>&lt;<b>typename</b> A1, <b>typename</b> A2, <b>typename</b> A3&gt;</td></tr>
+<tr><th id="116">116</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ENS0_15TernaryFunctionITL0__TL0_0_TL0_1_E4typeERKNS_10ExpressionIS2_EERKNS7_IS3_EERKNS7_IS4_EE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ENS0_15TernaryFunctionITL0__TL0_0_TL0_1_E4typeERKNS_10ExpressionIS2_EERKNS7_IS3_EERKNS7_IS4_EE" id="_ZN5gtsam10ExpressionC1ENS0_15TernaryFunctionITL0__TL0_0_TL0_1_E4typeERKNS_10ExpressionIS2_EERKNS7_IS3_EERKNS7_IS4_EE">Expression</a>(<b>typename</b> <a class="type" href="#gtsam::Expression::TernaryFunction" title='gtsam::Expression::TernaryFunction' data-ref="gtsam::Expression::TernaryFunction">TernaryFunction</a>&lt;A1, A2, A3&gt;::type <dfn class="local col7 decl" id="17function" title='function' data-type='typename TernaryFunction&lt;A1, A2, A3&gt;::type' data-ref="17function">function</dfn>,</td></tr>
+<tr><th id="117">117</th><td>      <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A1&gt;&amp; <dfn class="local col8 decl" id="18expression1" title='expression1' data-type='const Expression&lt;A1&gt; &amp;' data-ref="18expression1">expression1</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A2&gt;&amp; <dfn class="local col9 decl" id="19expression2" title='expression2' data-type='const Expression&lt;A2&gt; &amp;' data-ref="19expression2">expression2</dfn>,</td></tr>
+<tr><th id="118">118</th><td>      <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A3&gt;&amp; <dfn class="local col0 decl" id="20expression3" title='expression3' data-type='const Expression&lt;A3&gt; &amp;' data-ref="20expression3">expression3</dfn>);</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>  <i class="doc">/// Construct a nullary method expression</i></td></tr>
+<tr><th id="121">121</th><td>  <b>template</b>&lt;<b>typename</b> A&gt;</td></tr>
+<tr><th id="122">122</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_NS_20MakeOptionalJacobianIS6_S2_E4typeEE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_NS_20MakeOptionalJacobianIS6_S2_E4typeEE" id="_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_NS_20MakeOptionalJacobianIS6_S2_E4typeEE">Expression</a>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A&gt;&amp; <dfn class="local col1 decl" id="21expression" title='expression' data-type='const Expression&lt;A&gt; &amp;' data-ref="21expression">expression</dfn>,</td></tr>
+<tr><th id="123">123</th><td>      T (A::*<dfn class="local col2 decl" id="22method" title='method' data-type='T (A::*)(typename MakeOptionalJacobian&lt;T, A&gt;::type) const' data-ref="22method">method</dfn>)(<b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A&gt;::type) <em>const</em>);</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>  <i class="doc">/// Construct a unary method expression</i></td></tr>
+<tr><th id="126">126</th><td>  <b>template</b>&lt;<b>typename</b> A1, <b>typename</b> A2&gt;</td></tr>
+<tr><th id="127">127</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_RKTL0_0_NS_20MakeOptionalJacobianIS6_S2_E4typeENSA_IS6_S7_E4typeEERKNS1_IS7_EE" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_RKTL0_0_NS_20MakeOptionalJacobianIS6_S2_E4typeENSA_IS6_S7_E4typeEERKNS1_IS7_EE" id="_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_RKTL0_0_NS_20MakeOptionalJacobianIS6_S2_E4typeENSA_IS6_S7_E4typeEERKNS1_IS7_EE">Expression</a>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A1&gt;&amp; <dfn class="local col3 decl" id="23expression1" title='expression1' data-type='const Expression&lt;A1&gt; &amp;' data-ref="23expression1">expression1</dfn>,</td></tr>
+<tr><th id="128">128</th><td>      T (A1::*<dfn class="local col4 decl" id="24method" title='method' data-type='T (A1::*)(const A2 &amp;, typename MakeOptionalJacobian&lt;T, A1&gt;::type, typename MakeOptionalJacobian&lt;T, A2&gt;::type) const' data-ref="24method">method</dfn>)(<em>const</em> A2&amp;, <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A1&gt;::type,</td></tr>
+<tr><th id="129">129</th><td>          <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A2&gt;::type) <em>const</em>,</td></tr>
+<tr><th id="130">130</th><td>      <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A2&gt;&amp; <dfn class="local col5 decl" id="25expression2" title='expression2' data-type='const Expression&lt;A2&gt; &amp;' data-ref="25expression2">expression2</dfn>);</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>  <i class="doc">/// Construct a binary method expression</i></td></tr>
+<tr><th id="133">133</th><td>  <b>template</b>&lt;<b>typename</b> A1, <b>typename</b> A2, <b>typename</b> A3&gt;</td></tr>
+<tr><th id="134">134</th><td>  <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_RKTL0_0_RKTL0_1_NS_20MakeOptionalJacobianIS6_S2_E4typeENSD_IS6_S7_E4typeENSD_IS6_SA_E4typeEER7046823" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_RKTL0_0_RKTL0_1_NS_20MakeOptionalJacobianIS6_S2_E4typeENSD_IS6_S7_E4typeENSD_IS6_SA_E4typeEER7046823" id="_ZN5gtsam10ExpressionC1ERKNS_10ExpressionITL0__EEMS2_KFT_RKTL0_0_RKTL0_1_NS_20MakeOptionalJacobianIS6_S2_E4typeENSD_IS6_S7_E4typeENSD_IS6_SA_E4typeEER7046823">Expression</a>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A1&gt;&amp; <dfn class="local col6 decl" id="26expression1" title='expression1' data-type='const Expression&lt;A1&gt; &amp;' data-ref="26expression1">expression1</dfn>,</td></tr>
+<tr><th id="135">135</th><td>      T (A1::*<dfn class="local col7 decl" id="27method" title='method' data-type='T (A1::*)(const A2 &amp;, const A3 &amp;, typename MakeOptionalJacobian&lt;T, A1&gt;::type, typename MakeOptionalJacobian&lt;T, A2&gt;::type, typename MakeOptionalJacobian&lt;T, A3&gt;::type) const' data-ref="27method">method</dfn>)(<em>const</em> A2&amp;, <em>const</em> A3&amp;,</td></tr>
+<tr><th id="136">136</th><td>          <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A1&gt;::type,</td></tr>
+<tr><th id="137">137</th><td>          <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A2&gt;::type,</td></tr>
+<tr><th id="138">138</th><td>          <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A3&gt;::type) <em>const</em>,</td></tr>
+<tr><th id="139">139</th><td>      <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A2&gt;&amp; <dfn class="local col8 decl" id="28expression2" title='expression2' data-type='const Expression&lt;A2&gt; &amp;' data-ref="28expression2">expression2</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A3&gt;&amp; <dfn class="local col9 decl" id="29expression3" title='expression3' data-type='const Expression&lt;A3&gt; &amp;' data-ref="29expression3">expression3</dfn>);</td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td>  <i class="doc">/// Destructor</i></td></tr>
+<tr><th id="142">142</th><td>  <b>virtual</b> <dfn class="virtual decl def fn" id="_ZN5gtsam10ExpressionD1Ev" title='gtsam::Expression::~Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionD1Ev">~Expression</dfn>() {</td></tr>
+<tr><th id="143">143</th><td>  }</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>  <i class="doc">/// Return keys that play in this expression</i></td></tr>
+<tr><th id="146">146</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_set.h.html#std::set" title='std::set' data-ref="std::set">set</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt; <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression4keysEv" title='gtsam::Expression::keys' data-ref="_ZNK5gtsam10Expression4keysEv" id="_ZNK5gtsam10Expression4keysEv">keys</a>() <em>const</em>;</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>  <i class="doc">/// Return dimensions for each argument, as a map</i></td></tr>
+<tr><th id="149">149</th><td>  <em>void</em> <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression4dimsERSt3mapImiSt4lessImESaISt4pairIKmiEEE" title='gtsam::Expression::dims' data-ref="_ZNK5gtsam10Expression4dimsERSt3mapImiSt4lessImESaISt4pairIKmiEEE" id="_ZNK5gtsam10Expression4dimsERSt3mapImiSt4lessImESaISt4pairIKmiEEE">dims</a>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <em>int</em>&gt;&amp; <dfn class="local col0 decl" id="30map" title='map' data-type='std::map&lt;Key, int&gt; &amp;' data-ref="30map">map</dfn>) <em>const</em>;</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>  <i class="doc">/// Print</i></td></tr>
+<tr><th id="152">152</th><td>  <em>void</em> <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::Expression::print' data-ref="_ZNK5gtsam10Expression5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" id="_ZNK5gtsam10Expression5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</a>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col1 decl" id="31s" title='s' data-type='const std::string &amp;' data-ref="31s">s</dfn>) <em>const</em>;</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">   * <span class="command">@brief</span> Return value and optional derivatives, reverse AD version</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc">   * Notes: this is not terribly efficient, and H should have correct size.</i></td></tr>
+<tr><th id="157">157</th><td><i class="doc">   * The order of the Jacobians is same as keys in either keys() or dims()</i></td></tr>
+<tr><th id="158">158</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="159">159</th><td>  T <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression5valueERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" title='gtsam::Expression::value' data-ref="_ZNK5gtsam10Expression5valueERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" id="_ZNK5gtsam10Expression5valueERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE">value</a>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col2 decl" id="32values" title='values' data-type='const Values &amp;' data-ref="32values">values</dfn>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;* <dfn class="local col3 decl" id="33H" title='H' data-type='std::vector&lt;Matrix&gt; *' data-ref="33H">H</dfn> = <b>nullptr</b>) <em>const</em>;</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   * An overload of the value function to accept reference to vector of matrices instead of</i></td></tr>
+<tr><th id="163">163</th><td><i class="doc">   * a pointer to vector of matrices.</i></td></tr>
+<tr><th id="164">164</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="165">165</th><td>  T <dfn class="decl def fn" id="_ZNK5gtsam10Expression5valueERKNS_6ValuesERSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" title='gtsam::Expression::value' data-ref="_ZNK5gtsam10Expression5valueERKNS_6ValuesERSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE">value</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col4 decl" id="34values" title='values' data-type='const Values &amp;' data-ref="34values">values</dfn>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;&amp; <dfn class="local col5 decl" id="35H" title='H' data-type='std::vector&lt;Matrix&gt; &amp;' data-ref="35H">H</dfn>) <em>const</em> {</td></tr>
+<tr><th id="166">166</th><td>    <b>return</b> value(<a class="local col4 ref" href="#34values" title='values' data-ref="34values">values</a>, &amp;<a class="local col5 ref" href="#35H" title='H' data-ref="35H">H</a>);</td></tr>
+<tr><th id="167">167</th><td>  }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">   *  <span class="command">@return</span> a "deep" copy of this Expression</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">   *  "deep" is in quotes because the ExpressionNode hierarchy is *not* cloned.</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">   *  The intent is for derived classes to be copied using only a Base pointer.</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="174">174</th><td>  <b>virtual</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;Expression&gt; <dfn class="virtual decl def fn" id="_ZNK5gtsam10Expression5cloneEv" title='gtsam::Expression::clone' data-ref="_ZNK5gtsam10Expression5cloneEv">clone</dfn>() <em>const</em> {</td></tr>
+<tr><th id="175">175</th><td>    <b>return</b> <span class="namespace">std::</span>make_shared&lt;Expression&gt;(*<b>this</b>);</td></tr>
+<tr><th id="176">176</th><td>  }</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td>  <i class="doc">/// Return root</i></td></tr>
+<tr><th id="179">179</th><td>  <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<span class="namespace">internal::</span><a class="type" href="#gtsam::internal::ExpressionNode" title='gtsam::internal::ExpressionNode' data-ref="gtsam::internal::ExpressionNode">ExpressionNode</a>&lt;T&gt; &gt;&amp; <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression4rootEv" title='gtsam::Expression::root' data-ref="_ZNK5gtsam10Expression4rootEv" id="_ZNK5gtsam10Expression4rootEv">root</a>() <em>const</em>;</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>  <i class="doc">/// Return size needed for memory buffer in traceExecution</i></td></tr>
+<tr><th id="182">182</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression9traceSizeEv" title='gtsam::Expression::traceSize' data-ref="_ZNK5gtsam10Expression9traceSizeEv" id="_ZNK5gtsam10Expression9traceSizeEv">traceSize</a>() <em>const</em>;</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>  <i class="doc">/// Add another expression to this expression</i></td></tr>
+<tr><th id="185">185</th><td>  <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam10ExpressionpLERKNS_10ExpressionIT_EE" title='gtsam::Expression::operator+=' data-ref="_ZN5gtsam10ExpressionpLERKNS_10ExpressionIT_EE" id="_ZN5gtsam10ExpressionpLERKNS_10ExpressionIT_EE"><b>operator</b>+=</a>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col6 decl" id="36e" title='e' data-type='const Expression&lt;T&gt; &amp;' data-ref="36e">e</dfn>);</td></tr>
+<tr><th id="186">186</th><td></td></tr>
+<tr><th id="187">187</th><td><b>protected</b>:</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>  <i class="doc">/// Default constructor, for serialization</i></td></tr>
+<tr><th id="190">190</th><td>  <dfn class="decl def fn" id="_ZN5gtsam10ExpressionC1Ev" title='gtsam::Expression::Expression&lt;T&gt;' data-ref="_ZN5gtsam10ExpressionC1Ev">Expression</dfn>() {}</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>  <i class="doc">/// Keys and dimensions in same order</i></td></tr>
+<tr><th id="193">193</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>, <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<em>int</em>&gt; &gt; <dfn class="typedef" id="gtsam::Expression::KeysAndDims" title='gtsam::Expression::KeysAndDims' data-type='std::pair&lt;KeyVector, FastVector&lt;int&gt;&gt;' data-ref="gtsam::Expression::KeysAndDims">KeysAndDims</dfn>;</td></tr>
+<tr><th id="194">194</th><td>  <a class="typedef" href="#gtsam::Expression::KeysAndDims" title='gtsam::Expression::KeysAndDims' data-type='std::pair&lt;KeyVector, FastVector&lt;int&gt;&gt;' data-ref="gtsam::Expression::KeysAndDims">KeysAndDims</a> <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression11keysAndDimsEv" title='gtsam::Expression::keysAndDims' data-ref="_ZNK5gtsam10Expression11keysAndDimsEv" id="_ZNK5gtsam10Expression11keysAndDimsEv">keysAndDims</a>() <em>const</em>;</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td>  <i class="doc">/// private version that takes keys and dimensions, returns derivatives</i></td></tr>
+<tr><th id="197">197</th><td>  T <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression19valueAndDerivativesERKNS_6ValuesERKSt6vectorImSaImEERKS4_IiSaIiEERS4_IN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaISF_EE" title='gtsam::Expression::valueAndDerivatives' data-ref="_ZNK5gtsam10Expression19valueAndDerivativesERKNS_6ValuesERKSt6vectorImSaImEERKS4_IiSaIiEERS4_IN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaISF_EE" id="_ZNK5gtsam10Expression19valueAndDerivativesERKNS_6ValuesERKSt6vectorImSaImEERKS4_IiSaIiEERS4_IN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaISF_EE">valueAndDerivatives</a>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col7 decl" id="37values" title='values' data-type='const Values &amp;' data-ref="37values">values</dfn>, <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col8 decl" id="38keys" title='keys' data-type='const KeyVector &amp;' data-ref="38keys">keys</dfn>,</td></tr>
+<tr><th id="198">198</th><td>      <em>const</em> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<em>int</em>&gt;&amp; <dfn class="local col9 decl" id="39dims" title='dims' data-type='const FastVector&lt;int&gt; &amp;' data-ref="39dims">dims</dfn>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;&amp; <dfn class="local col0 decl" id="40H" title='H' data-type='std::vector&lt;Matrix&gt; &amp;' data-ref="40H">H</dfn>) <em>const</em>;</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>  <i class="doc">/// trace execution, very unsafe</i></td></tr>
+<tr><th id="201">201</th><td>  T <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression14traceExecutionERKNS_6ValuesERNS_8internal14ExecutionTraceIT_EEPc" title='gtsam::Expression::traceExecution' data-ref="_ZNK5gtsam10Expression14traceExecutionERKNS_6ValuesERNS_8internal14ExecutionTraceIT_EEPc" id="_ZNK5gtsam10Expression14traceExecutionERKNS_6ValuesERNS_8internal14ExecutionTraceIT_EEPc">traceExecution</a>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col1 decl" id="41values" title='values' data-type='const Values &amp;' data-ref="41values">values</dfn>, <span class="namespace">internal::</span><a class="type" href="#gtsam::internal::ExecutionTrace" title='gtsam::internal::ExecutionTrace' data-ref="gtsam::internal::ExecutionTrace">ExecutionTrace</a>&lt;T&gt;&amp; <dfn class="local col2 decl" id="42trace" title='trace' data-type='internal::ExecutionTrace&lt;T&gt; &amp;' data-ref="42trace">trace</dfn>,</td></tr>
+<tr><th id="202">202</th><td>      <em>char</em>* <dfn class="local col3 decl" id="43traceStorage" title='traceStorage' data-type='char *' data-ref="43traceStorage">traceStorage</dfn>) <em>const</em>;</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>  <i class="doc">/// brief Return value and derivatives, reverse AD version</i></td></tr>
+<tr><th id="205">205</th><td>  T <a class="decl fn" href="Expression-inl.h.html#_ZNK5gtsam10Expression19valueAndJacobianMapERKNS_6ValuesERNS_8internal11JacobianMapE" title='gtsam::Expression::valueAndJacobianMap' data-ref="_ZNK5gtsam10Expression19valueAndJacobianMapERKNS_6ValuesERNS_8internal11JacobianMapE" id="_ZNK5gtsam10Expression19valueAndJacobianMapERKNS_6ValuesERNS_8internal11JacobianMapE">valueAndJacobianMap</a>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col4 decl" id="44values" title='values' data-type='const Values &amp;' data-ref="44values">values</dfn>,</td></tr>
+<tr><th id="206">206</th><td>      <span class="namespace">internal::</span><a class="type" href="internal/JacobianMap.h.html#gtsam::internal::JacobianMap" title='gtsam::internal::JacobianMap' data-ref="gtsam::internal::JacobianMap">JacobianMap</a>&amp; <dfn class="local col5 decl" id="45jacobians" title='jacobians' data-type='internal::JacobianMap &amp;' data-ref="45jacobians">jacobians</dfn>) <em>const</em>;</td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td>  <i>// be very selective on who can access these private methods:</i></td></tr>
+<tr><th id="209">209</th><td>  <b>friend</b> <b>class</b> <a class="type" href="#gtsam::ExpressionFactor" title='gtsam::ExpressionFactor' data-ref="gtsam::ExpressionFactor">ExpressionFactor</a>&lt;T&gt; ;</td></tr>
+<tr><th id="210">210</th><td>  <b>friend</b> <b>class</b> <span class="namespace">internal::</span><a class="type" href="#gtsam::internal::ExpressionNode" title='gtsam::internal::ExpressionNode' data-ref="gtsam::internal::ExpressionNode">ExpressionNode</a>&lt;T&gt;;</td></tr>
+<tr><th id="211">211</th><td>  <b>friend</b> <b>class</b> <a class="type" href="#gtsam::ExpressionEqualityConstraint" title='gtsam::ExpressionEqualityConstraint' data-ref="gtsam::ExpressionEqualityConstraint">ExpressionEqualityConstraint</a>&lt;T&gt;;</td></tr>
+<tr><th id="212">212</th><td>  <b>friend</b> <b>class</b> <a class="type" href="#gtsam::ScalarExpressionInequalityConstraint" title='gtsam::ScalarExpressionInequalityConstraint' data-ref="gtsam::ScalarExpressionInequalityConstraint">ScalarExpressionInequalityConstraint</a>;</td></tr>
+<tr><th id="213">213</th><td></td></tr>
+<tr><th id="214">214</th><td>  <i>// and add tests</i></td></tr>
+<tr><th id="215">215</th><td>  <b>friend</b> <b>class</b> ::<a class="type" href="#ExpressionFactorShallowTest" title='ExpressionFactorShallowTest' data-ref="ExpressionFactorShallowTest">ExpressionFactorShallowTest</a>;</td></tr>
+<tr><th id="216">216</th><td>};</td></tr>
+<tr><th id="217">217</th><td></td></tr>
+<tr><th id="218">218</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="219">219</th><td><i class="doc"> *  A ScalarMultiplyExpression is a specialization of Expression that multiplies with a scalar</i></td></tr>
+<tr><th id="220">220</th><td><i class="doc"> *  It optimizes the Jacobian calculation for this specific case</i></td></tr>
+<tr><th id="221">221</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="222">222</th><td><b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="223">223</th><td><b>class</b> <dfn class="type def" id="gtsam::ScalarMultiplyExpression" title='gtsam::ScalarMultiplyExpression' data-ref="gtsam::ScalarMultiplyExpression">ScalarMultiplyExpression</dfn> : <b>public</b> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt; {</td></tr>
+<tr><th id="224">224</th><td>  <i>// Check that T is a vector space</i></td></tr>
+<tr><th id="225">225</th><td>  <a class="macro" href="../base/concepts.h.html#18" title="typedef ::boost::concepts::detail::instantiate&lt; &amp;::boost::concepts::requirement_&lt;void(*)(IsVectorSpace&lt;T&gt;)&gt;::failed&gt; boost_concept_check225 __attribute__((__unused__))" data-ref="_M/GTSAM_CONCEPT_ASSERT">GTSAM_CONCEPT_ASSERT</a>(<a class="type" href="../base/VectorSpace.h.html#gtsam::IsVectorSpace" title='gtsam::IsVectorSpace' data-ref="gtsam::IsVectorSpace">IsVectorSpace</a>&lt;T&gt;);</td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td> <b>public</b>:</td></tr>
+<tr><th id="228">228</th><td>  <b>explicit</b> <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam24ScalarMultiplyExpressionC1EdRKNS_10ExpressionIT_EE" title='gtsam::ScalarMultiplyExpression::ScalarMultiplyExpression&lt;T&gt;' data-ref="_ZN5gtsam24ScalarMultiplyExpressionC1EdRKNS_10ExpressionIT_EE" id="_ZN5gtsam24ScalarMultiplyExpressionC1EdRKNS_10ExpressionIT_EE">ScalarMultiplyExpression</a>(<em>double</em> <dfn class="local col6 decl" id="46s" title='s' data-type='double' data-ref="46s">s</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col7 decl" id="47e" title='e' data-type='const Expression&lt;T&gt; &amp;' data-ref="47e">e</dfn>);</td></tr>
+<tr><th id="229">229</th><td>};</td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="232">232</th><td><i class="doc"> *  A BinarySumExpression is a specialization of Expression that adds two expressions together</i></td></tr>
+<tr><th id="233">233</th><td><i class="doc"> *  It optimizes the Jacobian calculation for this specific case</i></td></tr>
+<tr><th id="234">234</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="235">235</th><td><b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="236">236</th><td><b>class</b> <dfn class="type def" id="gtsam::BinarySumExpression" title='gtsam::BinarySumExpression' data-ref="gtsam::BinarySumExpression">BinarySumExpression</dfn> : <b>public</b> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt; {</td></tr>
+<tr><th id="237">237</th><td>  <i>// Check that T is a vector space</i></td></tr>
+<tr><th id="238">238</th><td>  <a class="macro" href="../base/concepts.h.html#18" title="typedef ::boost::concepts::detail::instantiate&lt; &amp;::boost::concepts::requirement_&lt;void(*)(IsVectorSpace&lt;T&gt;)&gt;::failed&gt; boost_concept_check238 __attribute__((__unused__))" data-ref="_M/GTSAM_CONCEPT_ASSERT">GTSAM_CONCEPT_ASSERT</a>(<a class="type" href="../base/VectorSpace.h.html#gtsam::IsVectorSpace" title='gtsam::IsVectorSpace' data-ref="gtsam::IsVectorSpace">IsVectorSpace</a>&lt;T&gt;);</td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td> <b>public</b>:</td></tr>
+<tr><th id="241">241</th><td>  <b>explicit</b> <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam19BinarySumExpressionC1ERKNS_10ExpressionIT_EES5_" title='gtsam::BinarySumExpression::BinarySumExpression&lt;T&gt;' data-ref="_ZN5gtsam19BinarySumExpressionC1ERKNS_10ExpressionIT_EES5_" id="_ZN5gtsam19BinarySumExpressionC1ERKNS_10ExpressionIT_EES5_">BinarySumExpression</a>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col8 decl" id="48e1" title='e1' data-type='const Expression&lt;T&gt; &amp;' data-ref="48e1">e1</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col9 decl" id="49e2" title='e2' data-type='const Expression&lt;T&gt; &amp;' data-ref="49e2">e2</dfn>);</td></tr>
+<tr><th id="242">242</th><td>};</td></tr>
+<tr><th id="243">243</th><td></td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="246">246</th><td><i class="doc"> * Create an expression out of a linear function f:T-&gt;A with (constant) Jacobian dTdA</i></td></tr>
+<tr><th id="247">247</th><td><i class="doc"> *  TODO(frank): create a more efficient version like ScalarMultiplyExpression. This version still</i></td></tr>
+<tr><th id="248">248</th><td><i class="doc"> *  does a malloc every linearize.</i></td></tr>
+<tr><th id="249">249</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="250">250</th><td><b>template</b> &lt;<b>typename</b> T, <b>typename</b> A&gt;</td></tr>
+<tr><th id="251">251</th><td><a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5gtsam16linearExpressionERKSt8functionIFT_T0_EERKNS_10ExpressionIS2_EERKN5Eigen6MatrixIdXsr6traitsIS1_EE9dimensionEXsr6traitsIS2_EE9dimensionEXorLN547079" title='gtsam::linearExpression' data-ref="_ZN5gtsam16linearExpressionERKSt8functionIFT_T0_EERKNS_10ExpressionIS2_EERKN5Eigen6MatrixIdXsr6traitsIS1_EE9dimensionEXsr6traitsIS2_EE9dimensionEXorLN547079">linearExpression</dfn>(</td></tr>
+<tr><th id="252">252</th><td>    <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/std_function.h.html#std::function" title='std::function' data-ref="std::function">function</a>&lt;T(A)&gt;&amp; <dfn class="local col0 decl" id="50f" title='f' data-type='const std::function&lt;T (A)&gt; &amp;' data-ref="50f">f</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;A&gt;&amp; <dfn class="local col1 decl" id="51expression" title='expression' data-type='const Expression&lt;A&gt; &amp;' data-ref="51expression">expression</dfn>,</td></tr>
+<tr><th id="253">253</th><td>    <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::dimension, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;A&gt;::dimension&gt;&amp; <dfn class="local col2 decl" id="52dTdA" title='dTdA' data-type='const Eigen::Matrix&lt;double, traits&lt;T&gt;::dimension, traits&lt;A&gt;::dimension&gt; &amp;' data-ref="52dTdA">dTdA</dfn>) {</td></tr>
+<tr><th id="254">254</th><td>  <i>// Use lambda to endow f with a linear Jacobian</i></td></tr>
+<tr><th id="255">255</th><td>  <b>typename</b> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;::<b>template</b> UnaryFunction&lt;A&gt;::type <dfn class="local col3 decl" id="53g" title='g' data-type='typename Expression&lt;T&gt;::template UnaryFunction&lt;A&gt;::type' data-ref="53g">g</dfn> =</td></tr>
+<tr><th id="256">256</th><td>      [=](<em>const</em> A&amp; <dfn class="local col4 decl" id="54value" title='value' data-type='const A &amp;' data-ref="54value">value</dfn>, <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::MakeOptionalJacobian" title='gtsam::MakeOptionalJacobian' data-ref="gtsam::MakeOptionalJacobian">MakeOptionalJacobian</a>&lt;T, A&gt;::type <dfn class="local col5 decl" id="55H" title='H' data-type='typename MakeOptionalJacobian&lt;T, A&gt;::type' data-ref="55H">H</dfn>) {</td></tr>
+<tr><th id="257">257</th><td>        <b>if</b> (<a class="local col5 ref" href="#55H" title='H' data-ref="55H">H</a>)</td></tr>
+<tr><th id="258">258</th><td>          *<a class="local col5 ref" href="#55H" title='H' data-ref="55H">H</a> &lt;&lt; <a class="local col2 ref" href="#52dTdA" title='dTdA' data-ref="52dTdA">dTdA</a>;</td></tr>
+<tr><th id="259">259</th><td>        <b>return</b> <a class="local col0 ref" href="#50f" title='f' data-ref="50f">f</a>(<a class="local col4 ref" href="#54value" title='value' data-ref="54value">value</a>);</td></tr>
+<tr><th id="260">260</th><td>      };</td></tr>
+<tr><th id="261">261</th><td>  <b>return</b> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;(<a class="local col3 ref" href="#53g" title='g' data-ref="53g">g</a>, <a class="local col1 ref" href="#51expression" title='expression' data-ref="51expression">expression</a>);</td></tr>
+<tr><th id="262">262</th><td>}</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="265">265</th><td><i class="doc"> *  Construct an expression that executes the scalar multiplication with an input expression</i></td></tr>
+<tr><th id="266">266</th><td><i class="doc"> *  The type T must be a vector space</i></td></tr>
+<tr><th id="267">267</th><td><i class="doc"> *  Example:</i></td></tr>
+<tr><th id="268">268</th><td><i class="doc"> *    Expression&lt;Point2&gt; a(0), b = 12 * a;</i></td></tr>
+<tr><th id="269">269</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="270">270</th><td><b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="271">271</th><td><a class="type" href="#gtsam::ScalarMultiplyExpression" title='gtsam::ScalarMultiplyExpression' data-ref="gtsam::ScalarMultiplyExpression">ScalarMultiplyExpression</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5gtsammlEdRKNS_10ExpressionIT_EE" title='gtsam::operator*' data-ref="_ZN5gtsammlEdRKNS_10ExpressionIT_EE"><b>operator</b>*</dfn>(<em>double</em> <dfn class="local col6 decl" id="56s" title='s' data-type='double' data-ref="56s">s</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col7 decl" id="57e" title='e' data-type='const Expression&lt;T&gt; &amp;' data-ref="57e">e</dfn>) {</td></tr>
+<tr><th id="272">272</th><td>  <b>return</b> <a class="type" href="#gtsam::ScalarMultiplyExpression" title='gtsam::ScalarMultiplyExpression' data-ref="gtsam::ScalarMultiplyExpression">ScalarMultiplyExpression</a>&lt;T&gt;(<a class="local col6 ref" href="#56s" title='s' data-ref="56s">s</a>, <a class="local col7 ref" href="#57e" title='e' data-ref="57e">e</a>);</td></tr>
+<tr><th id="273">273</th><td>}</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="276">276</th><td><i class="doc"> *  Construct an expression that sums two input expressions of the same type T</i></td></tr>
+<tr><th id="277">277</th><td><i class="doc"> *  The type T must be a vector space</i></td></tr>
+<tr><th id="278">278</th><td><i class="doc"> *  Example:</i></td></tr>
+<tr><th id="279">279</th><td><i class="doc"> *    Expression&lt;Point2&gt; a(0), b(1), c = a + b;</i></td></tr>
+<tr><th id="280">280</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="281">281</th><td><b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="282">282</th><td><a class="type" href="#gtsam::BinarySumExpression" title='gtsam::BinarySumExpression' data-ref="gtsam::BinarySumExpression">BinarySumExpression</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5gtsamplERKNS_10ExpressionIT_EES4_" title='gtsam::operator+' data-ref="_ZN5gtsamplERKNS_10ExpressionIT_EES4_"><b>operator</b>+</dfn>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col8 decl" id="58e1" title='e1' data-type='const Expression&lt;T&gt; &amp;' data-ref="58e1">e1</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col9 decl" id="59e2" title='e2' data-type='const Expression&lt;T&gt; &amp;' data-ref="59e2">e2</dfn>) {</td></tr>
+<tr><th id="283">283</th><td>  <b>return</b> <a class="type" href="#gtsam::BinarySumExpression" title='gtsam::BinarySumExpression' data-ref="gtsam::BinarySumExpression">BinarySumExpression</a>&lt;T&gt;(<a class="local col8 ref" href="#58e1" title='e1' data-ref="58e1">e1</a>, <a class="local col9 ref" href="#59e2" title='e2' data-ref="59e2">e2</a>);</td></tr>
+<tr><th id="284">284</th><td>}</td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td><i class="doc">/// Construct an expression that subtracts one expression from another</i></td></tr>
+<tr><th id="287">287</th><td><b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="288">288</th><td><a class="type" href="#gtsam::BinarySumExpression" title='gtsam::BinarySumExpression' data-ref="gtsam::BinarySumExpression">BinarySumExpression</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5gtsammiERKNS_10ExpressionIT_EES4_" title='gtsam::operator-' data-ref="_ZN5gtsammiERKNS_10ExpressionIT_EES4_"><b>operator</b>-</dfn>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col0 decl" id="60e1" title='e1' data-type='const Expression&lt;T&gt; &amp;' data-ref="60e1">e1</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col1 decl" id="61e2" title='e2' data-type='const Expression&lt;T&gt; &amp;' data-ref="61e2">e2</dfn>) {</td></tr>
+<tr><th id="289">289</th><td>  <i>// TODO(frank, abe): Implement an actual negate operator instead of multiplying by -1</i></td></tr>
+<tr><th id="290">290</th><td>  <b>return</b> <a class="local col0 ref" href="#60e1" title='e1' data-ref="60e1">e1</a> + (-<var>1.0</var>) * <a class="local col1 ref" href="#61e2" title='e2' data-ref="61e2">e2</a>;</td></tr>
+<tr><th id="291">291</th><td>}</td></tr>
+<tr><th id="292">292</th><td></td></tr>
+<tr><th id="293">293</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="294">294</th><td><i class="doc"> *  Construct a product expression, assumes T::compose(T) -&gt; T</i></td></tr>
+<tr><th id="295">295</th><td><i class="doc"> *  Example:</i></td></tr>
+<tr><th id="296">296</th><td><i class="doc"> *    Expression&lt;Point2&gt; a(0), b(1), c = a*b;</i></td></tr>
+<tr><th id="297">297</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="298">298</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="299">299</th><td><a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt; <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsammlERKNS_10ExpressionIT_EES4_" title='gtsam::operator*' data-ref="_ZN5gtsammlERKNS_10ExpressionIT_EES4_" id="_ZN5gtsammlERKNS_10ExpressionIT_EES4_"><b>operator</b>*</a>(<em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col2 decl" id="62e1" title='e1' data-type='const Expression&lt;T&gt; &amp;' data-ref="62e1">e1</dfn>, <em>const</em> <a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt;&amp; <dfn class="local col3 decl" id="63e2" title='e2' data-type='const Expression&lt;T&gt; &amp;' data-ref="63e2">e2</dfn>);</td></tr>
+<tr><th id="300">300</th><td></td></tr>
+<tr><th id="301">301</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="302">302</th><td><i class="doc"> *  Construct an array of unknown expressions with successive symbol keys</i></td></tr>
+<tr><th id="303">303</th><td><i class="doc"> *  Example:</i></td></tr>
+<tr><th id="304">304</th><td><i class="doc"> *    createUnknowns&lt;Pose2&gt;(3,'x') creates unknown expressions for x0,x1,x2</i></td></tr>
+<tr><th id="305">305</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="306">306</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="307">307</th><td><span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="#gtsam::Expression" title='gtsam::Expression' data-ref="gtsam::Expression">Expression</a>&lt;T&gt; &gt; <a class="decl fn" href="Expression-inl.h.html#_ZN5gtsam14createUnknownsEmcm" title='gtsam::createUnknowns' data-ref="_ZN5gtsam14createUnknownsEmcm" id="_ZN5gtsam14createUnknownsEmcm">createUnknowns</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="64n" title='n' data-type='size_t' data-ref="64n">n</dfn>, <em>char</em> <dfn class="local col5 decl" id="65c" title='c' data-type='char' data-ref="65c">c</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col6 decl" id="66start" title='start' data-type='size_t' data-ref="66start">start</dfn> = <var>0</var>);</td></tr>
+<tr><th id="308">308</th><td></td></tr>
+<tr><th id="309">309</th><td>} <i>// namespace gtsam</i></td></tr>
+<tr><th id="310">310</th><td></td></tr>
+<tr><th id="311">311</th><td><u>#include <a href="Expression-inl.h.html">&lt;gtsam/nonlinear/Expression-inl.h&gt;</a></u></td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/InverseKinematicsExampleExpressions.cpp.html'>codebrowser/examples/InverseKinematicsExampleExpressions.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,2 @@
+<dec f='codebrowser/gtsam/hybrid/tests/testSerializationHybrid.cpp' l='47' macro='1' type='const guid_initializer&lt;DiscreteConditional&gt; &amp;'/>
+<def f='codebrowser/gtsam/hybrid/tests/testSerializationHybrid.cpp' l='47' macro='1' type='const guid_initializer&lt;DiscreteConditional&gt; &amp;'/>

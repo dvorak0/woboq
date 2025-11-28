@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>polevl.h source code [codebrowser/gtsam/3rdparty/cephes/cephes/polevl.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/polevl.h'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='polevl.h.html'>polevl.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     polevl.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *                                                     p1evl.c</i></td></tr>
+<tr><th id="3">3</th><td><i> *</i></td></tr>
+<tr><th id="4">4</th><td><i> *     Evaluate polynomial</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> *</i></td></tr>
+<tr><th id="8">8</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="9">9</th><td><i> *</i></td></tr>
+<tr><th id="10">10</th><td><i> * int N;</i></td></tr>
+<tr><th id="11">11</th><td><i> * double x, y, coef[N+1], polevl[];</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> * y = polevl( x, coef, N );</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> * Evaluates polynomial of degree N:</i></td></tr>
+<tr><th id="20">20</th><td><i> *</i></td></tr>
+<tr><th id="21">21</th><td><i> *                     2          N</i></td></tr>
+<tr><th id="22">22</th><td><i> * y  =  C  + C x + C x  +...+ C x</i></td></tr>
+<tr><th id="23">23</th><td><i> *        0    1     2          N</i></td></tr>
+<tr><th id="24">24</th><td><i> *</i></td></tr>
+<tr><th id="25">25</th><td><i> * Coefficients are stored in reverse order:</i></td></tr>
+<tr><th id="26">26</th><td><i> *</i></td></tr>
+<tr><th id="27">27</th><td><i> * coef[0] = C  , ..., coef[N] = C  .</i></td></tr>
+<tr><th id="28">28</th><td><i> *            N                   0</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> * The function p1evl() assumes that c_N = 1.0 so that coefficent</i></td></tr>
+<tr><th id="31">31</th><td><i> * is omitted from the array.  Its calling arguments are</i></td></tr>
+<tr><th id="32">32</th><td><i> * otherwise the same as polevl().</i></td></tr>
+<tr><th id="33">33</th><td><i> *</i></td></tr>
+<tr><th id="34">34</th><td><i> *</i></td></tr>
+<tr><th id="35">35</th><td><i> * SPEED:</i></td></tr>
+<tr><th id="36">36</th><td><i> *</i></td></tr>
+<tr><th id="37">37</th><td><i> * In the interest of speed, there are no checks for out</i></td></tr>
+<tr><th id="38">38</th><td><i> * of bounds arithmetic.  This routine is used by most of</i></td></tr>
+<tr><th id="39">39</th><td><i> * the functions in the library.  Depending on available</i></td></tr>
+<tr><th id="40">40</th><td><i> * equipment features, the user may wish to rewrite the</i></td></tr>
+<tr><th id="41">41</th><td><i> * program in microcode or assembly language.</i></td></tr>
+<tr><th id="42">42</th><td><i> *</i></td></tr>
+<tr><th id="43">43</th><td><i> */</i></td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><i>/*</i></td></tr>
+<tr><th id="46">46</th><td><i> * Cephes Math Library Release 2.1:  December, 1988</i></td></tr>
+<tr><th id="47">47</th><td><i> * Copyright 1984, 1987, 1988 by Stephen L. Moshier</i></td></tr>
+<tr><th id="48">48</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="49">49</th><td><i> */</i></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><i>/* Sources:</i></td></tr>
+<tr><th id="52">52</th><td><i> * [1] Holin et. al., "Polynomial and Rational Function Evaluation",</i></td></tr>
+<tr><th id="53">53</th><td><i> *     <a href="https://www.boost.org/doc/libs/1_61_0/libs/math/doc/html/math_toolkit/roots/rational.html">https://www.boost.org/doc/libs/1_61_0/libs/math/doc/html/math_toolkit/roots/rational.html</a></i></td></tr>
+<tr><th id="54">54</th><td><i> */</i></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><i>/* Scipy changes:</i></td></tr>
+<tr><th id="57">57</th><td><i> * - 06-23-2016: add code for evaluating rational functions</i></td></tr>
+<tr><th id="58">58</th><td><i> */</i></td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><u>#<span data-ppcond="60">ifndef</span> <span class="macro" data-ref="_M/CEPHES_POLEV">CEPHES_POLEV</span></u></td></tr>
+<tr><th id="61">61</th><td><u>#define <dfn class="macro" id="_M/CEPHES_POLEV" data-ref="_M/CEPHES_POLEV">CEPHES_POLEV</dfn></u></td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td><u>#include <a href="../../../../../include/math.h.html">&lt;math.h&gt;</a></u></td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td><em>static</em> <b>inline</b> <em>double</em> <dfn class="decl def fn" id="polevl" title='polevl' data-ref="polevl">polevl</dfn>(<em>double</em> <dfn class="local col1 decl" id="1x" title='x' data-type='double' data-ref="1x">x</dfn>, <em>const</em> <em>double</em> <dfn class="local col2 decl" id="2coef" title='coef' data-type='const double *' data-ref="2coef">coef</dfn>[], <em>int</em> <dfn class="local col3 decl" id="3N" title='N' data-type='int' data-ref="3N">N</dfn>)</td></tr>
+<tr><th id="66">66</th><td>{</td></tr>
+<tr><th id="67">67</th><td>    <em>double</em> <dfn class="local col4 decl" id="4ans" title='ans' data-type='double' data-ref="4ans">ans</dfn>;</td></tr>
+<tr><th id="68">68</th><td>    <em>int</em> <dfn class="local col5 decl" id="5i" title='i' data-type='int' data-ref="5i">i</dfn>;</td></tr>
+<tr><th id="69">69</th><td>    <em>const</em> <em>double</em> *<dfn class="local col6 decl" id="6p" title='p' data-type='const double *' data-ref="6p">p</dfn>;</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td>    <a class="local col6 ref" href="#6p" title='p' data-ref="6p">p</a> = <a class="local col2 ref" href="#2coef" title='coef' data-ref="2coef">coef</a>;</td></tr>
+<tr><th id="72">72</th><td>    <a class="local col4 ref" href="#4ans" title='ans' data-ref="4ans">ans</a> = *<a class="local col6 ref" href="#6p" title='p' data-ref="6p">p</a>++;</td></tr>
+<tr><th id="73">73</th><td>    <a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a> = <a class="local col3 ref" href="#3N" title='N' data-ref="3N">N</a>;</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>    <b>do</b></td></tr>
+<tr><th id="76">76</th><td>	<a class="local col4 ref" href="#4ans" title='ans' data-ref="4ans">ans</a> = <a class="local col4 ref" href="#4ans" title='ans' data-ref="4ans">ans</a> * <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> + *<a class="local col6 ref" href="#6p" title='p' data-ref="6p">p</a>++;</td></tr>
+<tr><th id="77">77</th><td>    <b>while</b> (--<a class="local col5 ref" href="#5i" title='i' data-ref="5i">i</a>);</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>    <b>return</b> (<a class="local col4 ref" href="#4ans" title='ans' data-ref="4ans">ans</a>);</td></tr>
+<tr><th id="80">80</th><td>}</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><i>/*                                                     p1evl() */</i></td></tr>
+<tr><th id="83">83</th><td><i>/*                                          N</i></td></tr>
+<tr><th id="84">84</th><td><i> * Evaluate polynomial when coefficient of x  is 1.0.</i></td></tr>
+<tr><th id="85">85</th><td><i> * That is, C_{N} is assumed to be 1, and that coefficient</i></td></tr>
+<tr><th id="86">86</th><td><i> * is not included in the input array coef.</i></td></tr>
+<tr><th id="87">87</th><td><i> * coef must have length N and contain the polynomial coefficients</i></td></tr>
+<tr><th id="88">88</th><td><i> * stored as</i></td></tr>
+<tr><th id="89">89</th><td><i> *     coef[0] = C_{N-1}</i></td></tr>
+<tr><th id="90">90</th><td><i> *     coef[1] = C_{N-2}</i></td></tr>
+<tr><th id="91">91</th><td><i> *          ...</i></td></tr>
+<tr><th id="92">92</th><td><i> *     coef[N-2] = C_1</i></td></tr>
+<tr><th id="93">93</th><td><i> *     coef[N-1] = C_0</i></td></tr>
+<tr><th id="94">94</th><td><i> * Otherwise same as polevl.</i></td></tr>
+<tr><th id="95">95</th><td><i> */</i></td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td><em>static</em> <b>inline</b> <em>double</em> <dfn class="decl def fn" id="p1evl" title='p1evl' data-ref="p1evl">p1evl</dfn>(<em>double</em> <dfn class="local col7 decl" id="7x" title='x' data-type='double' data-ref="7x">x</dfn>, <em>const</em> <em>double</em> <dfn class="local col8 decl" id="8coef" title='coef' data-type='const double *' data-ref="8coef">coef</dfn>[], <em>int</em> <dfn class="local col9 decl" id="9N" title='N' data-type='int' data-ref="9N">N</dfn>)</td></tr>
+<tr><th id="98">98</th><td>{</td></tr>
+<tr><th id="99">99</th><td>    <em>double</em> <dfn class="local col0 decl" id="10ans" title='ans' data-type='double' data-ref="10ans">ans</dfn>;</td></tr>
+<tr><th id="100">100</th><td>    <em>const</em> <em>double</em> *<dfn class="local col1 decl" id="11p" title='p' data-type='const double *' data-ref="11p">p</dfn>;</td></tr>
+<tr><th id="101">101</th><td>    <em>int</em> <dfn class="local col2 decl" id="12i" title='i' data-type='int' data-ref="12i">i</dfn>;</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <a class="local col1 ref" href="#11p" title='p' data-ref="11p">p</a> = <a class="local col8 ref" href="#8coef" title='coef' data-ref="8coef">coef</a>;</td></tr>
+<tr><th id="104">104</th><td>    <a class="local col0 ref" href="#10ans" title='ans' data-ref="10ans">ans</a> = <a class="local col7 ref" href="#7x" title='x' data-ref="7x">x</a> + *<a class="local col1 ref" href="#11p" title='p' data-ref="11p">p</a>++;</td></tr>
+<tr><th id="105">105</th><td>    <a class="local col2 ref" href="#12i" title='i' data-ref="12i">i</a> = <a class="local col9 ref" href="#9N" title='N' data-ref="9N">N</a> - <var>1</var>;</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>    <b>do</b></td></tr>
+<tr><th id="108">108</th><td>	<a class="local col0 ref" href="#10ans" title='ans' data-ref="10ans">ans</a> = <a class="local col0 ref" href="#10ans" title='ans' data-ref="10ans">ans</a> * <a class="local col7 ref" href="#7x" title='x' data-ref="7x">x</a> + *<a class="local col1 ref" href="#11p" title='p' data-ref="11p">p</a>++;</td></tr>
+<tr><th id="109">109</th><td>    <b>while</b> (--<a class="local col2 ref" href="#12i" title='i' data-ref="12i">i</a>);</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>    <b>return</b> (<a class="local col0 ref" href="#10ans" title='ans' data-ref="10ans">ans</a>);</td></tr>
+<tr><th id="112">112</th><td>}</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><i>/* Evaluate a rational function. See [1]. */</i></td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><em>static</em> <b>inline</b> <em>double</em> <dfn class="decl def fn" id="ratevl" title='ratevl' data-ref="ratevl">ratevl</dfn>(<em>double</em> <dfn class="local col3 decl" id="13x" title='x' data-type='double' data-ref="13x">x</dfn>, <em>const</em> <em>double</em> <dfn class="local col4 decl" id="14num" title='num' data-type='const double *' data-ref="14num">num</dfn>[], <em>int</em> <dfn class="local col5 decl" id="15M" title='M' data-type='int' data-ref="15M">M</dfn>,</td></tr>
+<tr><th id="117">117</th><td>                                          <em>const</em> <em>double</em> <dfn class="local col6 decl" id="16denom" title='denom' data-type='const double *' data-ref="16denom">denom</dfn>[], <em>int</em> <dfn class="local col7 decl" id="17N" title='N' data-type='int' data-ref="17N">N</dfn>)</td></tr>
+<tr><th id="118">118</th><td>{</td></tr>
+<tr><th id="119">119</th><td>    <em>int</em> <dfn class="local col8 decl" id="18i" title='i' data-type='int' data-ref="18i">i</dfn>, <dfn class="local col9 decl" id="19dir" title='dir' data-type='int' data-ref="19dir">dir</dfn>;</td></tr>
+<tr><th id="120">120</th><td>    <em>double</em> <dfn class="local col0 decl" id="20y" title='y' data-type='double' data-ref="20y">y</dfn>, <dfn class="local col1 decl" id="21num_ans" title='num_ans' data-type='double' data-ref="21num_ans">num_ans</dfn>, <dfn class="local col2 decl" id="22denom_ans" title='denom_ans' data-type='double' data-ref="22denom_ans">denom_ans</dfn>;</td></tr>
+<tr><th id="121">121</th><td>    <em>double</em> <dfn class="local col3 decl" id="23absx" title='absx' data-type='double' data-ref="23absx">absx</dfn> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col3 ref" href="#13x" title='x' data-ref="13x">x</a>);</td></tr>
+<tr><th id="122">122</th><td>    <em>const</em> <em>double</em> *<dfn class="local col4 decl" id="24p" title='p' data-type='const double *' data-ref="24p">p</dfn>;</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td>    <b>if</b> (<a class="local col3 ref" href="#23absx" title='absx' data-ref="23absx">absx</a> &gt; <var>1</var>) {</td></tr>
+<tr><th id="125">125</th><td>	<i>/* Evaluate as a polynomial in 1/x. */</i></td></tr>
+<tr><th id="126">126</th><td>	<a class="local col9 ref" href="#19dir" title='dir' data-ref="19dir">dir</a> = -<var>1</var>;</td></tr>
+<tr><th id="127">127</th><td>	<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> = <a class="local col4 ref" href="#14num" title='num' data-ref="14num">num</a> + <a class="local col5 ref" href="#15M" title='M' data-ref="15M">M</a>;</td></tr>
+<tr><th id="128">128</th><td>	<a class="local col0 ref" href="#20y" title='y' data-ref="20y">y</a> = <var>1</var> / <a class="local col3 ref" href="#13x" title='x' data-ref="13x">x</a>;</td></tr>
+<tr><th id="129">129</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="130">130</th><td>	<a class="local col9 ref" href="#19dir" title='dir' data-ref="19dir">dir</a> = <var>1</var>;</td></tr>
+<tr><th id="131">131</th><td>	<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> = <a class="local col4 ref" href="#14num" title='num' data-ref="14num">num</a>;</td></tr>
+<tr><th id="132">132</th><td>	<a class="local col0 ref" href="#20y" title='y' data-ref="20y">y</a> = <a class="local col3 ref" href="#13x" title='x' data-ref="13x">x</a>;</td></tr>
+<tr><th id="133">133</th><td>    }</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>    <i>/* Evaluate the numerator */</i></td></tr>
+<tr><th id="136">136</th><td>    <a class="local col1 ref" href="#21num_ans" title='num_ans' data-ref="21num_ans">num_ans</a> = *<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a>;</td></tr>
+<tr><th id="137">137</th><td>    <a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> += <a class="local col9 ref" href="#19dir" title='dir' data-ref="19dir">dir</a>;</td></tr>
+<tr><th id="138">138</th><td>    <b>for</b> (<a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a> = <var>1</var>; <a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a> &lt;= <a class="local col5 ref" href="#15M" title='M' data-ref="15M">M</a>; <a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a>++) {</td></tr>
+<tr><th id="139">139</th><td>	<a class="local col1 ref" href="#21num_ans" title='num_ans' data-ref="21num_ans">num_ans</a> = <a class="local col1 ref" href="#21num_ans" title='num_ans' data-ref="21num_ans">num_ans</a> * <a class="local col0 ref" href="#20y" title='y' data-ref="20y">y</a> + *<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a>;</td></tr>
+<tr><th id="140">140</th><td>	<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> += <a class="local col9 ref" href="#19dir" title='dir' data-ref="19dir">dir</a>;</td></tr>
+<tr><th id="141">141</th><td>    }</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>    <i>/* Evaluate the denominator */</i></td></tr>
+<tr><th id="144">144</th><td>    <b>if</b> (<a class="local col3 ref" href="#23absx" title='absx' data-ref="23absx">absx</a> &gt; <var>1</var>) {</td></tr>
+<tr><th id="145">145</th><td>	<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> = <a class="local col6 ref" href="#16denom" title='denom' data-ref="16denom">denom</a> + <a class="local col7 ref" href="#17N" title='N' data-ref="17N">N</a>;</td></tr>
+<tr><th id="146">146</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="147">147</th><td>	<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> = <a class="local col6 ref" href="#16denom" title='denom' data-ref="16denom">denom</a>;</td></tr>
+<tr><th id="148">148</th><td>    }</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td>    <a class="local col2 ref" href="#22denom_ans" title='denom_ans' data-ref="22denom_ans">denom_ans</a> = *<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a>;</td></tr>
+<tr><th id="151">151</th><td>    <a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> += <a class="local col9 ref" href="#19dir" title='dir' data-ref="19dir">dir</a>;</td></tr>
+<tr><th id="152">152</th><td>    <b>for</b> (<a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a> = <var>1</var>; <a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a> &lt;= <a class="local col7 ref" href="#17N" title='N' data-ref="17N">N</a>; <a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a>++) {</td></tr>
+<tr><th id="153">153</th><td>	<a class="local col2 ref" href="#22denom_ans" title='denom_ans' data-ref="22denom_ans">denom_ans</a> = <a class="local col2 ref" href="#22denom_ans" title='denom_ans' data-ref="22denom_ans">denom_ans</a> * <a class="local col0 ref" href="#20y" title='y' data-ref="20y">y</a> + *<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a>;</td></tr>
+<tr><th id="154">154</th><td>	<a class="local col4 ref" href="#24p" title='p' data-ref="24p">p</a> += <a class="local col9 ref" href="#19dir" title='dir' data-ref="19dir">dir</a>;</td></tr>
+<tr><th id="155">155</th><td>    }</td></tr>
+<tr><th id="156">156</th><td></td></tr>
+<tr><th id="157">157</th><td>    <b>if</b> (<a class="local col3 ref" href="#23absx" title='absx' data-ref="23absx">absx</a> &gt; <var>1</var>) {</td></tr>
+<tr><th id="158">158</th><td>	<a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a> = <a class="local col7 ref" href="#17N" title='N' data-ref="17N">N</a> - <a class="local col5 ref" href="#15M" title='M' data-ref="15M">M</a>;</td></tr>
+<tr><th id="159">159</th><td>	<b>return</b> <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col3 ref" href="#13x" title='x' data-ref="13x">x</a>, <span class='inlayHint'>y:&nbsp;</span><a class="local col8 ref" href="#18i" title='i' data-ref="18i">i</a>) * <a class="local col1 ref" href="#21num_ans" title='num_ans' data-ref="21num_ans">num_ans</a> / <a class="local col2 ref" href="#22denom_ans" title='denom_ans' data-ref="22denom_ans">denom_ans</a>;</td></tr>
+<tr><th id="160">160</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="161">161</th><td>	<b>return</b> <a class="local col1 ref" href="#21num_ans" title='num_ans' data-ref="21num_ans">num_ans</a> / <a class="local col2 ref" href="#22denom_ans" title='denom_ans' data-ref="22denom_ans">denom_ans</a>;</td></tr>
+<tr><th id="162">162</th><td>    }</td></tr>
+<tr><th id="163">163</th><td>}</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td><u>#<span data-ppcond="60">endif</span></u></td></tr>
+<tr><th id="166">166</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='airy.c.html'>codebrowser/gtsam/3rdparty/cephes/cephes/airy.c</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

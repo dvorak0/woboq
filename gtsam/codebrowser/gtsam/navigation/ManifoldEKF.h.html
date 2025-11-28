@@ -1,0 +1,312 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ManifoldEKF.h source code [codebrowser/gtsam/navigation/ManifoldEKF.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::ManifoldEKF "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/navigation/ManifoldEKF.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>navigation</a>/<a href='ManifoldEKF.h.html'>ManifoldEKF.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   ManifoldEKF.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Extended Kalman Filter base class on a generic manifold M</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * This file defines the ManifoldEKF class template for performing prediction</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * and update steps of an Extended Kalman Filter on states residing in a</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> * differentiable manifold. It relies on the manifold's retract and</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> * localCoordinates operations.</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"> * <span class="command">@date</span>    April 24, 2025</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"> * <span class="command">@authors</span> Scott Baker, Matt Kielo, Frank Dellaert</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><u>#pragma once</u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../base/Manifold.h.html">&lt;gtsam/base/Manifold.h&gt;</a>  // Include for traits and IsManifold</u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../base/Matrix.h.html">&lt;gtsam/base/Matrix.h&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../base/OptionalJacobian.h.html">&lt;gtsam/base/OptionalJacobian.h&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../base/Vector.h.html">&lt;gtsam/base/Vector.h&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../3rdparty/Eigen/Eigen/Dense.html">&lt;Eigen/Dense&gt;</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/c++/13/stdexcept.html">&lt;stdexcept&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * <span class="command">@class</span> <span class="verb" data-ref="gtsam::ManifoldEKF">ManifoldEKF</span></i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * <span class="command">@brief</span> Extended Kalman Filter on a generic manifold M</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * <span class="command">@tparam</span> <span class="arg">M</span>  Manifold type (must satisfy Manifold concept).</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> * This filter maintains a state X in the manifold M and covariance P in the</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * tangent space at X.</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * Prediction requires providing the predicted next state and the state</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * transition Jacobian F. Updates apply a measurement function h and correct the</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> * state using the tangent space error.</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc"> * **Handling Static and Dynamic Dimensions:**</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc"> * The filter supports manifolds M with either a compile-time fixed dimension or</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> * a runtime dynamic dimension. This is determined by</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> * `gtsam::traits&lt;M&gt;::dimension`.</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * - If `dimension` is an integer (e.g., 3, 6), it's a fixed-size manifold.</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> * - If `dimension` is `Eigen::Dynamic`, it's a dynamically-sized manifold. In</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> * this case, `gtsam::traits&lt;M&gt;::GetDimension(const M&amp;)` must be available to</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> * retrieve the actual dimension at runtime. The internal protected member `n_`</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> * stores this runtime dimension. Covariance matrices (e.g., `P_`, method</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"> * argument `Q`) and Jacobians (e.g., method argument `F`) are typed using</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> * `Covariance` and `Jacobian` typedefs, which are specializations of</i></td></tr>
+<tr><th id="62">62</th><td><i class="doc"> * `Eigen::Matrix&lt;double, Dim, Dim&gt;`, where `Dim` is `traits&lt;M&gt;::dimension`.</i></td></tr>
+<tr><th id="63">63</th><td><i class="doc"> * For dynamically-sized manifolds (`Dim == Eigen::Dynamic`), these Eigen types</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc"> * represent dynamically-sized matrices.</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="66">66</th><td><b>template</b> &lt;<b>typename</b> M&gt;</td></tr>
+<tr><th id="67">67</th><td><b>class</b> <dfn class="type def" id="gtsam::ManifoldEKF" title='gtsam::ManifoldEKF' data-ref="gtsam::ManifoldEKF">ManifoldEKF</dfn> {</td></tr>
+<tr><th id="68">68</th><td> <b>public</b>:</td></tr>
+<tr><th id="69">69</th><td>  <i class="doc">/// Compile-time dimension of the manifold M.</i></td></tr>
+<tr><th id="70">70</th><td>  <em>static</em> <b>constexpr</b> <em>int</em> <dfn class="decl def" id="gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</dfn> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;M&gt;::dimension;</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i class="doc">/// Tangent vector type for the manifold M.</i></td></tr>
+<tr><th id="73">73</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ManifoldEKF::TangentVector" title='gtsam::ManifoldEKF::TangentVector' data-type='typename traits&lt;M&gt;::TangentVector' data-ref="gtsam::ManifoldEKF::TangentVector">TangentVector</dfn> = <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;M&gt;::TangentVector;</td></tr>
+<tr><th id="74">74</th><td>  <i class="doc">/// Covariance matrix type (P, Q).</i></td></tr>
+<tr><th id="75">75</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ManifoldEKF::Covariance" title='gtsam::ManifoldEKF::Covariance' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Covariance">Covariance</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="ref" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>, <a class="ref" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>&gt;;</td></tr>
+<tr><th id="76">76</th><td>  <i class="doc">/// State transition Jacobian type (F).</i></td></tr>
+<tr><th id="77">77</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::ManifoldEKF::Jacobian" title='gtsam::ManifoldEKF::Jacobian' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Jacobian">Jacobian</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="ref" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>, <a class="ref" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>&gt;;</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">   * Constructor: initialize with state and covariance.</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">X0</span> Initial state on manifold M.</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">P0</span> Initial covariance in the tangent space at X0</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="84">84</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11ManifoldEKFC1ERKT_RKN5Eigen6MatrixIdL_ZNS0_3DimEEL_ZNS0_3DimEEXorLNS4_14StorageOptionsE0EquaaeqL_ZNS0_3DimEELi1EneL_ZNS0_3DimEELi1ELS6_1Equ4889452" title='gtsam::ManifoldEKF::ManifoldEKF&lt;M&gt;' data-ref="_ZN5gtsam11ManifoldEKFC1ERKT_RKN5Eigen6MatrixIdL_ZNS0_3DimEEL_ZNS0_3DimEEXorLNS4_14StorageOptionsE0EquaaeqL_ZNS0_3DimEELi1EneL_ZNS0_3DimEELi1ELS6_1Equ4889452">ManifoldEKF</dfn>(<em>const</em> M&amp; <dfn class="local col1 decl" id="1X0" title='X0' data-type='const M &amp;' data-ref="1X0">X0</dfn>, <em>const</em> <a class="typedef" href="#gtsam::ManifoldEKF::Covariance" title='gtsam::ManifoldEKF::Covariance' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Covariance">Covariance</a>&amp; <dfn class="local col2 decl" id="2P0" title='P0' data-type='const Covariance &amp;' data-ref="2P0">P0</dfn>) : <a class="member field" href="#gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</a>(<a class="local col1 ref" href="#1X0" title='X0' data-ref="1X0">X0</a>) {</td></tr>
+<tr><th id="85">85</th><td>    <b>static_assert</b>(<a class="type" href="../base/Manifold.h.html#gtsam::IsManifold" title='gtsam::IsManifold' data-ref="gtsam::IsManifold">IsManifold</a>&lt;M&gt;::value,</td></tr>
+<tr><th id="86">86</th><td>                  <q>"Template parameter M must be a GTSAM Manifold."</q>);</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td>    <b>if</b> <b>constexpr</b> (<a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="89">89</th><td>      <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;M&gt;::GetDimension(<a class="local col1 ref" href="#1X0" title='X0' data-ref="1X0">X0</a>);</td></tr>
+<tr><th id="90">90</th><td>      <i>// Validate dimensions of initial covariance P0.</i></td></tr>
+<tr><th id="91">91</th><td>      <b>if</b> (<a class="local col2 ref" href="#2P0" title='P0' data-ref="2P0">P0</a>.rows() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> || <a class="local col2 ref" href="#2P0" title='P0' data-ref="2P0">P0</a>.cols() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) {</td></tr>
+<tr><th id="92">92</th><td>        <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a>(</td></tr>
+<tr><th id="93">93</th><td>            <q>"ManifoldEKF: Initial covariance P0 dimensions ("</q> +</td></tr>
+<tr><th id="94">94</th><td>            <span class="namespace">std::</span>to_string(<a class="local col2 ref" href="#2P0" title='P0' data-ref="2P0">P0</a>.rows()) + <q>"x"</q> + <span class="namespace">std::</span>to_string(<a class="local col2 ref" href="#2P0" title='P0' data-ref="2P0">P0</a>.cols()) +</td></tr>
+<tr><th id="95">95</th><td>            <q>") do not match state's tangent space dimension ("</q> +</td></tr>
+<tr><th id="96">96</th><td>            <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx119to_stringEi" title='std::to_string' data-ref="_ZNSt7__cxx119to_stringEi">to_string</a>(<span class='inlayHint'>val:&nbsp;</span><a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) + <q>")."</q>);</td></tr>
+<tr><th id="97">97</th><td>      }</td></tr>
+<tr><th id="98">98</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="99">99</th><td>      <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> = <a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>;</td></tr>
+<tr><th id="100">100</th><td>    }</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> = <a class="local col2 ref" href="#2P0" title='P0' data-ref="2P0">P0</a>;</td></tr>
+<tr><th id="103">103</th><td>  }</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>  <b>virtual</b> <dfn class="virtual decl def fn" id="_ZN5gtsam11ManifoldEKFD1Ev" title='gtsam::ManifoldEKF::~ManifoldEKF&lt;M&gt;' data-ref="_ZN5gtsam11ManifoldEKFD1Ev">~ManifoldEKF</dfn>() = <b>default</b>;</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>  <i class="doc">/// <span class="command">@return</span> current state estimate on manifold M.</i></td></tr>
+<tr><th id="108">108</th><td>  <em>const</em> M&amp; <dfn class="decl def fn" id="_ZNK5gtsam11ManifoldEKF5stateEv" title='gtsam::ManifoldEKF::state' data-ref="_ZNK5gtsam11ManifoldEKF5stateEv">state</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</a>; }</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>  <i class="doc">/// <span class="command">@return</span> current covariance estimate.</i></td></tr>
+<tr><th id="111">111</th><td>  <em>const</em> <a class="typedef" href="#gtsam::ManifoldEKF::Covariance" title='gtsam::ManifoldEKF::Covariance' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Covariance">Covariance</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam11ManifoldEKF10covarianceEv" title='gtsam::ManifoldEKF::covariance' data-ref="_ZNK5gtsam11ManifoldEKF10covarianceEv">covariance</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a>; }</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>  <i class="doc">/// <span class="command">@return</span> runtime dimension of the manifold.</i></td></tr>
+<tr><th id="114">114</th><td>  <em>int</em> <dfn class="decl def fn" id="_ZNK5gtsam11ManifoldEKF9dimensionEv" title='gtsam::ManifoldEKF::dimension' data-ref="_ZNK5gtsam11ManifoldEKF9dimensionEv">dimension</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>; }</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">   * Basic predict step: Updates state and covariance given the predicted</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">   * next state and the state transition Jacobian F.</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">   *   X_{k+1} = X_next</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">   *   P_{k+1} = F P_k F^T + Q</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">   * where F = d(local(X_{k+1})) / d(local(X_k)) is the Jacobian of the</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">   * state transition in local coordinates around X_k.</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">X_next</span> The predicted state at time k+1 on manifold M.</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">F</span> The state transition Jacobian.</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">Q</span> Process noise covariance matrix.</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="128">128</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11ManifoldEKF7predictERKT_RKN5Eigen6MatrixIdL_ZNS0_3DimEEL_ZNS0_3DimEEXorLNS4_14StorageOptionsE0EquaaeqL_ZNS0_3DimEELi1EneL_ZNS0_3DimEELi1ELS8470091" title='gtsam::ManifoldEKF::predict' data-ref="_ZN5gtsam11ManifoldEKF7predictERKT_RKN5Eigen6MatrixIdL_ZNS0_3DimEEL_ZNS0_3DimEEXorLNS4_14StorageOptionsE0EquaaeqL_ZNS0_3DimEELi1EneL_ZNS0_3DimEELi1ELS8470091">predict</dfn>(<em>const</em> M&amp; <dfn class="local col3 decl" id="3X_next" title='X_next' data-type='const M &amp;' data-ref="3X_next">X_next</dfn>, <em>const</em> <a class="typedef" href="#gtsam::ManifoldEKF::Jacobian" title='gtsam::ManifoldEKF::Jacobian' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Jacobian">Jacobian</a>&amp; <dfn class="local col4 decl" id="4F" title='F' data-type='const Jacobian &amp;' data-ref="4F">F</dfn>, <em>const</em> <a class="typedef" href="#gtsam::ManifoldEKF::Covariance" title='gtsam::ManifoldEKF::Covariance' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Covariance">Covariance</a>&amp; <dfn class="local col5 decl" id="5Q" title='Q' data-type='const Covariance &amp;' data-ref="5Q">Q</dfn>) {</td></tr>
+<tr><th id="129">129</th><td>    <b>if</b> <b>constexpr</b> (<a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="130">130</th><td>      <b>if</b> (<a class="local col4 ref" href="#4F" title='F' data-ref="4F">F</a>.rows() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> || <a class="local col4 ref" href="#4F" title='F' data-ref="4F">F</a>.cols() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> || <a class="local col5 ref" href="#5Q" title='Q' data-ref="5Q">Q</a>.rows() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> ||</td></tr>
+<tr><th id="131">131</th><td>          <a class="local col5 ref" href="#5Q" title='Q' data-ref="5Q">Q</a>.cols() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) {</td></tr>
+<tr><th id="132">132</th><td>        <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a>(</td></tr>
+<tr><th id="133">133</th><td>            <q>"ManifoldEKF::predict: Dynamic F/Q dimensions must match state "</q></td></tr>
+<tr><th id="134">134</th><td>            <q>"dimension "</q> <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStplPKT_ONSt7__cxx1112basic_stringIS_T0_T1_EE" title='std::operator+' data-ref="_ZStplPKT_ONSt7__cxx1112basic_stringIS_T0_T1_EE">+</a></td></tr>
+<tr><th id="135">135</th><td>            <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx119to_stringEi" title='std::to_string' data-ref="_ZNSt7__cxx119to_stringEi">to_string</a>(<span class='inlayHint'>val:&nbsp;</span><a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStplONSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_" title='std::operator+' data-ref="_ZStplONSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_">+</a> <q>"."</q>);</td></tr>
+<tr><th id="136">136</th><td>      }</td></tr>
+<tr><th id="137">137</th><td>    }</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>    <a class="member field" href="#gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</a> = <a class="local col3 ref" href="#3X_next" title='X_next' data-ref="3X_next">X_next</a>;</td></tr>
+<tr><th id="140">140</th><td>    <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> = <a class="local col4 ref" href="#4F" title='F' data-ref="4F">F</a> * <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> * <a class="local col4 ref" href="#4F" title='F' data-ref="4F">F</a>.transpose() + <a class="local col5 ref" href="#5Q" title='Q' data-ref="5Q">Q</a>;</td></tr>
+<tr><th id="141">141</th><td>  }</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">   * Measurement update: Corrects the state and covariance using a</i></td></tr>
+<tr><th id="145">145</th><td><i class="doc">   * pre-calculated predicted measurement and its Jacobian.</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Measurement</span> Type of the measurement vector (e.g., VectorN&lt;m&gt;,</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">   * Vector).</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">prediction</span> Predicted measurement.</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">H</span> Jacobian of the measurement function h w.r.t. local(X), H =</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">   * dh/dlocal(X).</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">z</span> Observed measurement.</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">R</span> Measurement noise covariance.</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="155">155</th><td>  <b>template</b> &lt;<b>typename</b> Measurement&gt;</td></tr>
+<tr><th id="156">156</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11ManifoldEKF6updateERKTL0__RKN5Eigen6MatrixIdXsr6traitsIS1_EE9dimensionEL_ZNS0_3DimEEXorLNS4_14StorageOptionsE0Equaaeqsr6traitsIS1_EE9dimens12574485" title='gtsam::ManifoldEKF::update' data-ref="_ZN5gtsam11ManifoldEKF6updateERKTL0__RKN5Eigen6MatrixIdXsr6traitsIS1_EE9dimensionEL_ZNS0_3DimEEXorLNS4_14StorageOptionsE0Equaaeqsr6traitsIS1_EE9dimens12574485">update</dfn>(</td></tr>
+<tr><th id="157">157</th><td>      <em>const</em> Measurement&amp; <dfn class="local col6 decl" id="6prediction" title='prediction' data-type='const Measurement &amp;' data-ref="6prediction">prediction</dfn>,</td></tr>
+<tr><th id="158">158</th><td>      <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension, <a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>&gt;&amp; <dfn class="local col7 decl" id="7H" title='H' data-type='const Eigen::Matrix&lt;double, traits&lt;Measurement&gt;::dimension, Dim&gt; &amp;' data-ref="7H">H</dfn>,</td></tr>
+<tr><th id="159">159</th><td>      <em>const</em> Measurement&amp; <dfn class="local col8 decl" id="8z" title='z' data-type='const Measurement &amp;' data-ref="8z">z</dfn>,</td></tr>
+<tr><th id="160">160</th><td>      <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension,</td></tr>
+<tr><th id="161">161</th><td>                          <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension&gt;&amp; <dfn class="local col9 decl" id="9R" title='R' data-type='const Eigen::Matrix&lt;double, traits&lt;Measurement&gt;::dimension, traits&lt;Measurement&gt;::dimension&gt; &amp;' data-ref="9R">R</dfn>) {</td></tr>
+<tr><th id="162">162</th><td>    <b>static_assert</b>(<a class="type" href="../base/Manifold.h.html#gtsam::IsManifold" title='gtsam::IsManifold' data-ref="gtsam::IsManifold">IsManifold</a>&lt;Measurement&gt;::value,</td></tr>
+<tr><th id="163">163</th><td>                  <q>"Template parameter Measurement must be a GTSAM Manifold for "</q></td></tr>
+<tr><th id="164">164</th><td>                  <q>"LocalCoordinates."</q>);</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>    <em>static</em> <b>constexpr</b> <em>int</em> <dfn class="local col0 decl" id="10MeasDim" title='MeasDim' data-type='const int' data-ref="10MeasDim">MeasDim</dfn> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension;</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td>    <b>if</b> <b>constexpr</b> (<a class="local col0 ref" href="#10MeasDim" title='MeasDim' data-ref="10MeasDim">MeasDim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="169">169</th><td>      <em>int</em> <dfn class="local col1 decl" id="11m_runtime" title='m_runtime' data-type='int' data-ref="11m_runtime">m_runtime</dfn> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::GetDimension(<a class="local col8 ref" href="#8z" title='z' data-ref="8z">z</a>);</td></tr>
+<tr><th id="170">170</th><td>      <b>if</b> (<a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::GetDimension(<a class="local col6 ref" href="#6prediction" title='prediction' data-ref="6prediction">prediction</a>) != <a class="local col1 ref" href="#11m_runtime" title='m_runtime' data-ref="11m_runtime">m_runtime</a>) {</td></tr>
+<tr><th id="171">171</th><td>        <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a></td></tr>
+<tr><th id="172">172</th><td>            <q>"ManifoldEKF::update: Dynamic measurement 'prediction' and 'z' "</q></td></tr>
+<tr><th id="173">173</th><td>            <q>"have different dimensions."</q>);</td></tr>
+<tr><th id="174">174</th><td>      }</td></tr>
+<tr><th id="175">175</th><td>      <b>if</b> (<a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a>.rows() != <a class="local col1 ref" href="#11m_runtime" title='m_runtime' data-ref="11m_runtime">m_runtime</a> || <a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a>.cols() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a> || <a class="local col9 ref" href="#9R" title='R' data-ref="9R">R</a>.rows() != <a class="local col1 ref" href="#11m_runtime" title='m_runtime' data-ref="11m_runtime">m_runtime</a> ||</td></tr>
+<tr><th id="176">176</th><td>          <a class="local col9 ref" href="#9R" title='R' data-ref="9R">R</a>.cols() != <a class="local col1 ref" href="#11m_runtime" title='m_runtime' data-ref="11m_runtime">m_runtime</a>) {</td></tr>
+<tr><th id="177">177</th><td>        <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a></td></tr>
+<tr><th id="178">178</th><td>            <q>"ManifoldEKF::update: Jacobian H or Noise R dimensions mismatch "</q></td></tr>
+<tr><th id="179">179</th><td>            <q>"for dynamic measurement."</q>);</td></tr>
+<tr><th id="180">180</th><td>      }</td></tr>
+<tr><th id="181">181</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="182">182</th><td>      <b>if</b> <b>constexpr</b> (<a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="183">183</th><td>        <b>if</b> (<a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a>.cols() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) {</td></tr>
+<tr><th id="184">184</th><td>          <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a>(</td></tr>
+<tr><th id="185">185</th><td>              <q>"ManifoldEKF::update: Jacobian H columns must match state "</q></td></tr>
+<tr><th id="186">186</th><td>              <q>"dimension "</q> <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStplPKT_ONSt7__cxx1112basic_stringIS_T0_T1_EE" title='std::operator+' data-ref="_ZStplPKT_ONSt7__cxx1112basic_stringIS_T0_T1_EE">+</a></td></tr>
+<tr><th id="187">187</th><td>              <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx119to_stringEi" title='std::to_string' data-ref="_ZNSt7__cxx119to_stringEi">to_string</a>(<span class='inlayHint'>val:&nbsp;</span><a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) <a class="ref fn" href="../../../include/c++/13/bits/basic_string.h.html#_ZStplONSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_" title='std::operator+' data-ref="_ZStplONSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_">+</a> <q>"."</q>);</td></tr>
+<tr><th id="188">188</th><td>        }</td></tr>
+<tr><th id="189">189</th><td>      }</td></tr>
+<tr><th id="190">190</th><td>    }</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>    <i>// Innovation: y = z - h(x_pred). In tangent space: local(h(x_pred), z)</i></td></tr>
+<tr><th id="193">193</th><td>    <b>typename</b> <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::TangentVector <dfn class="local col2 decl" id="12innovation" title='innovation' data-type='typename traits&lt;Measurement&gt;::TangentVector' data-ref="12innovation">innovation</dfn> =</td></tr>
+<tr><th id="194">194</th><td>        <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::Local(<a class="local col6 ref" href="#6prediction" title='prediction' data-ref="6prediction">prediction</a>, <a class="local col8 ref" href="#8z" title='z' data-ref="8z">z</a>);</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td>    <i>// Innovation covariance: S = H P H^T + R</i></td></tr>
+<tr><th id="197">197</th><td><i>    // S will be Eigen::Matrix&lt;double, MeasDim, MeasDim&gt;</i></td></tr>
+<tr><th id="198">198</th><td>    <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="local col0 ref" href="#10MeasDim" title='MeasDim' data-ref="10MeasDim">MeasDim</a>, <a class="local col0 ref" href="#10MeasDim" title='MeasDim' data-ref="10MeasDim">MeasDim</a>&gt; <dfn class="local col3 decl" id="13S" title='S' data-type='Eigen::Matrix&lt;double, MeasDim, MeasDim&gt;' data-ref="13S">S</dfn> = <a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a> * <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> * <a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a>.transpose() + <a class="local col9 ref" href="#9R" title='R' data-ref="9R">R</a>;</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td>    <i>// Kalman Gain: K = P H^T S^-1</i></td></tr>
+<tr><th id="201">201</th><td><i>    // K will be Eigen::Matrix&lt;double, Dim, MeasDim&gt;</i></td></tr>
+<tr><th id="202">202</th><td>    <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a>, <a class="local col0 ref" href="#10MeasDim" title='MeasDim' data-ref="10MeasDim">MeasDim</a>&gt; <dfn class="local col4 decl" id="14K" title='K' data-type='Eigen::Matrix&lt;double, Dim, MeasDim&gt;' data-ref="14K">K</dfn> = <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> * <a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a>.transpose() * <a class="local col3 ref" href="#13S" title='S' data-ref="13S">S</a>.inverse();</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>    <i>// Correction vector in tangent space of M: delta_xi = K * innovation</i></td></tr>
+<tr><th id="205">205</th><td>    <em>const</em> <a class="typedef" href="#gtsam::ManifoldEKF::TangentVector" title='gtsam::ManifoldEKF::TangentVector' data-type='typename traits&lt;M&gt;::TangentVector' data-ref="gtsam::ManifoldEKF::TangentVector">TangentVector</a> <dfn class="local col5 decl" id="15delta_xi" title='delta_xi' data-type='const TangentVector' data-ref="15delta_xi">delta_xi</dfn> =</td></tr>
+<tr><th id="206">206</th><td>        <a class="local col4 ref" href="#14K" title='K' data-ref="14K">K</a> * <a class="local col2 ref" href="#12innovation" title='innovation' data-ref="12innovation">innovation</a>;  <i>// delta_xi is Dim x 1 (or n_ x 1 if dynamic)</i></td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td>    <i>// Update state using retract: X_new = retract(X_old, delta_xi)</i></td></tr>
+<tr><th id="209">209</th><td>    <a class="member field" href="#gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</a> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;M&gt;::Retract(<a class="member field" href="#gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</a>, <a class="local col5 ref" href="#15delta_xi" title='delta_xi' data-ref="15delta_xi">delta_xi</a>);</td></tr>
+<tr><th id="210">210</th><td></td></tr>
+<tr><th id="211">211</th><td>    <i>// Update covariance using Joseph form for numerical stability</i></td></tr>
+<tr><th id="212">212</th><td>    <a class="typedef" href="#gtsam::ManifoldEKF::Jacobian" title='gtsam::ManifoldEKF::Jacobian' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Jacobian">Jacobian</a> <dfn class="local col6 decl" id="16I_n" title='I_n' data-type='Jacobian' data-ref="16I_n">I_n</dfn>;  <i>// Eigen::Matrix&lt;double, Dim, Dim&gt;</i></td></tr>
+<tr><th id="213">213</th><td>    <b>if</b> <b>constexpr</b> (<a class="member" href="#gtsam::ManifoldEKF::Dim" title='gtsam::ManifoldEKF::Dim' data-ref="gtsam::ManifoldEKF::Dim">Dim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="214">214</th><td>      <a class="local col6 ref" href="#16I_n" title='I_n' data-ref="16I_n">I_n</a> = <a class="typedef" href="#gtsam::ManifoldEKF::Jacobian" title='gtsam::ManifoldEKF::Jacobian' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Jacobian">Jacobian</a>::Identity(<a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>, <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>);</td></tr>
+<tr><th id="215">215</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="216">216</th><td>      <a class="local col6 ref" href="#16I_n" title='I_n' data-ref="16I_n">I_n</a> = <a class="typedef" href="#gtsam::ManifoldEKF::Jacobian" title='gtsam::ManifoldEKF::Jacobian' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Jacobian">Jacobian</a>::Identity();</td></tr>
+<tr><th id="217">217</th><td>    }</td></tr>
+<tr><th id="218">218</th><td></td></tr>
+<tr><th id="219">219</th><td>    <i>// I_KH will be Eigen::Matrix&lt;double, Dim, Dim&gt;</i></td></tr>
+<tr><th id="220">220</th><td>    <a class="typedef" href="#gtsam::ManifoldEKF::Jacobian" title='gtsam::ManifoldEKF::Jacobian' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Jacobian">Jacobian</a> <dfn class="local col7 decl" id="17I_KH" title='I_KH' data-type='Jacobian' data-ref="17I_KH">I_KH</dfn> = <a class="local col6 ref" href="#16I_n" title='I_n' data-ref="16I_n">I_n</a> - <a class="local col4 ref" href="#14K" title='K' data-ref="14K">K</a> * <a class="local col7 ref" href="#7H" title='H' data-ref="7H">H</a>;</td></tr>
+<tr><th id="221">221</th><td>    <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> = <a class="local col7 ref" href="#17I_KH" title='I_KH' data-ref="17I_KH">I_KH</a> * <a class="member field" href="#gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</a> * <a class="local col7 ref" href="#17I_KH" title='I_KH' data-ref="17I_KH">I_KH</a>.transpose() + <a class="local col4 ref" href="#14K" title='K' data-ref="14K">K</a> * <a class="local col9 ref" href="#9R" title='R' data-ref="9R">R</a> * <a class="local col4 ref" href="#14K" title='K' data-ref="14K">K</a>.transpose();</td></tr>
+<tr><th id="222">222</th><td>  }</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="225">225</th><td><i class="doc">   * Measurement update: Corrects the state and covariance using a measurement</i></td></tr>
+<tr><th id="226">226</th><td><i class="doc">   * model function.</i></td></tr>
+<tr><th id="227">227</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="228">228</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Measurement</span> Type of the measurement vector.</i></td></tr>
+<tr><th id="229">229</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">MeasurementFunction</span> Functor/lambda providing measurement and its</i></td></tr>
+<tr><th id="230">230</th><td><i class="doc">   * Jacobian. Signature: `Measurement h(const M&amp; x, Jac&amp; H_jacobian)` where H =</i></td></tr>
+<tr><th id="231">231</th><td><i class="doc">   * d(h)/d(local(X)).</i></td></tr>
+<tr><th id="232">232</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">h</span> Measurement model function.</i></td></tr>
+<tr><th id="233">233</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">z</span> Observed measurement.</i></td></tr>
+<tr><th id="234">234</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">R</span> Measurement noise covariance.</i></td></tr>
+<tr><th id="235">235</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="236">236</th><td>  <b>template</b> &lt;<b>typename</b> Measurement, <b>typename</b> MeasurementFunction&gt;</td></tr>
+<tr><th id="237">237</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11ManifoldEKF6updateEOTL0_0_RKTL0__RKN5Eigen6MatrixIdXsr6traitsIS3_EE9dimensionEXsr6traitsIS3_EE9dimensionEXorLNS6_14StorageOptionsE0Equaaeqs2499645" title='gtsam::ManifoldEKF::update' data-ref="_ZN5gtsam11ManifoldEKF6updateEOTL0_0_RKTL0__RKN5Eigen6MatrixIdXsr6traitsIS3_EE9dimensionEXsr6traitsIS3_EE9dimensionEXorLNS6_14StorageOptionsE0Equaaeqs2499645">update</dfn>(MeasurementFunction&amp;&amp; <dfn class="local col8 decl" id="18h" title='h' data-type='MeasurementFunction &amp;&amp;' data-ref="18h">h</dfn>, <em>const</em> Measurement&amp; <dfn class="local col9 decl" id="19z" title='z' data-type='const Measurement &amp;' data-ref="19z">z</dfn>,</td></tr>
+<tr><th id="238">238</th><td>              <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension,</td></tr>
+<tr><th id="239">239</th><td>                                  <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension&gt;&amp; <dfn class="local col0 decl" id="20R" title='R' data-type='const Eigen::Matrix&lt;double, traits&lt;Measurement&gt;::dimension, traits&lt;Measurement&gt;::dimension&gt; &amp;' data-ref="20R">R</dfn>) {</td></tr>
+<tr><th id="240">240</th><td>    <b>static_assert</b>(<a class="type" href="../base/Manifold.h.html#gtsam::IsManifold" title='gtsam::IsManifold' data-ref="gtsam::IsManifold">IsManifold</a>&lt;Measurement&gt;::value,</td></tr>
+<tr><th id="241">241</th><td>                  <q>"Template parameter Measurement must be a GTSAM Manifold."</q>);</td></tr>
+<tr><th id="242">242</th><td></td></tr>
+<tr><th id="243">243</th><td>    <em>static</em> <b>constexpr</b> <em>int</em> <dfn class="local col1 decl" id="21MeasDim" title='MeasDim' data-type='const int' data-ref="21MeasDim">MeasDim</dfn> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::dimension;</td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td>    <em>int</em> <dfn class="local col2 decl" id="22m_runtime" title='m_runtime' data-type='int' data-ref="22m_runtime">m_runtime</dfn>;</td></tr>
+<tr><th id="246">246</th><td>    <b>if</b> <b>constexpr</b> (<a class="local col1 ref" href="#21MeasDim" title='MeasDim' data-ref="21MeasDim">MeasDim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="247">247</th><td>      <a class="local col2 ref" href="#22m_runtime" title='m_runtime' data-ref="22m_runtime">m_runtime</a> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;Measurement&gt;::GetDimension(<a class="local col9 ref" href="#19z" title='z' data-ref="19z">z</a>);</td></tr>
+<tr><th id="248">248</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="249">249</th><td>      <a class="local col2 ref" href="#22m_runtime" title='m_runtime' data-ref="22m_runtime">m_runtime</a> = <a class="local col1 ref" href="#21MeasDim" title='MeasDim' data-ref="21MeasDim">MeasDim</a>;</td></tr>
+<tr><th id="250">250</th><td>    }</td></tr>
+<tr><th id="251">251</th><td></td></tr>
+<tr><th id="252">252</th><td>    <i>// Predict measurement and get Jacobian H = dh/dlocal(X)</i></td></tr>
+<tr><th id="253">253</th><td>    <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="local col3 decl" id="23H" title='H' data-type='Matrix' data-ref="23H">H</dfn><a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKTL0__RKTL0_0_" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKTL0__RKTL0_0_">(</a><a class="local col2 ref" href="#22m_runtime" title='m_runtime' data-ref="22m_runtime">m_runtime</a>, <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>);</td></tr>
+<tr><th id="254">254</th><td>    Measurement <dfn class="local col4 decl" id="24prediction" title='prediction' data-type='Measurement' data-ref="24prediction">prediction</dfn> = <a class="local col8 ref" href="#18h" title='h' data-ref="18h">h</a>(<a class="member field" href="#gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</a>, <a class="local col3 ref" href="#23H" title='H' data-ref="23H">H</a>);</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td>    <i>// Call the other update function</i></td></tr>
+<tr><th id="257">257</th><td>    update(<a class="local col4 ref" href="#24prediction" title='prediction' data-ref="24prediction">prediction</a>, <a class="local col3 ref" href="#23H" title='H' data-ref="23H">H</a>, <a class="local col9 ref" href="#19z" title='z' data-ref="19z">z</a>, <a class="local col0 ref" href="#20R" title='R' data-ref="20R">R</a>);</td></tr>
+<tr><th id="258">258</th><td>  }</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td>  <i class="doc">/// Convenience bridge for wrappers: vector measurement update calling</i></td></tr>
+<tr><th id="261">261</th><td><i class="doc">  /// update&lt;Vector&gt;. This overload exists to avoid templates in wrappers. It</i></td></tr>
+<tr><th id="262">262</th><td><i class="doc">  /// validates sizes and forwards to the templated update with Measurement =</i></td></tr>
+<tr><th id="263">263</th><td><i class="doc">  /// gtsam::Vector (dynamic size).</i></td></tr>
+<tr><th id="264">264</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11ManifoldEKF16updateWithVectorERKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEERKNS2_IdLin1ELin1ELi0ELin1ELin1EEES5_S8_" title='gtsam::ManifoldEKF::updateWithVector' data-ref="_ZN5gtsam11ManifoldEKF16updateWithVectorERKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEERKNS2_IdLin1ELin1ELi0ELin1ELin1EEES5_S8_">updateWithVector</dfn>(<em>const</em> <span class="namespace">gtsam::</span><a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>&amp; <dfn class="local col5 decl" id="25prediction" title='prediction' data-type='const gtsam::Vector &amp;' data-ref="25prediction">prediction</dfn>, <em>const</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&amp; <dfn class="local col6 decl" id="26H" title='H' data-type='const Matrix &amp;' data-ref="26H">H</dfn>,</td></tr>
+<tr><th id="265">265</th><td>                        <em>const</em> <span class="namespace">gtsam::</span><a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>&amp; <dfn class="local col7 decl" id="27z" title='z' data-type='const gtsam::Vector &amp;' data-ref="27z">z</dfn>, <em>const</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&amp; <dfn class="local col8 decl" id="28R" title='R' data-type='const Matrix &amp;' data-ref="28R">R</dfn>) {</td></tr>
+<tr><th id="266">266</th><td>    <i>// Basic dimension checks for dynamic-sized measurement</i></td></tr>
+<tr><th id="267">267</th><td>    <em>const</em> <em>int</em> <dfn class="local col9 decl" id="29m" title='m' data-type='const int' data-ref="29m">m</dfn> = <b>static_cast</b>&lt;<em>int</em>&gt;(<a class="local col5 ref" href="#25prediction" title='prediction' data-ref="25prediction">prediction</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/EigenBase.h.html#_ZNK5Eigen9EigenBase4sizeEv" title='Eigen::EigenBase::size' data-ref="_ZNK5Eigen9EigenBase4sizeEv">size</a>());</td></tr>
+<tr><th id="268">268</th><td>    <b>if</b> (<b>static_cast</b>&lt;<em>int</em>&gt;(<a class="local col7 ref" href="#27z" title='z' data-ref="27z">z</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/EigenBase.h.html#_ZNK5Eigen9EigenBase4sizeEv" title='Eigen::EigenBase::size' data-ref="_ZNK5Eigen9EigenBase4sizeEv">size</a>()) != <a class="local col9 ref" href="#29m" title='m' data-ref="29m">m</a>) {</td></tr>
+<tr><th id="269">269</th><td>      <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a></td></tr>
+<tr><th id="270">270</th><td>          <q>"ManifoldEKF::updateWithVector: prediction and z must have same "</q></td></tr>
+<tr><th id="271">271</th><td>          <q>"length."</q>);</td></tr>
+<tr><th id="272">272</th><td>    }</td></tr>
+<tr><th id="273">273</th><td>    <b>if</b> (<a class="local col6 ref" href="#26H" title='H' data-ref="26H">H</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/PlainObjectBase.h.html#_ZNK5Eigen15PlainObjectBase4rowsEv" title='Eigen::PlainObjectBase::rows' data-ref="_ZNK5Eigen15PlainObjectBase4rowsEv">rows</a>() != <a class="local col9 ref" href="#29m" title='m' data-ref="29m">m</a> || <a class="local col6 ref" href="#26H" title='H' data-ref="26H">H</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/PlainObjectBase.h.html#_ZNK5Eigen15PlainObjectBase4colsEv" title='Eigen::PlainObjectBase::cols' data-ref="_ZNK5Eigen15PlainObjectBase4colsEv">cols</a>() != <a class="member field" href="#gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</a>) {</td></tr>
+<tr><th id="274">274</th><td>      <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a></td></tr>
+<tr><th id="275">275</th><td>          <q>"ManifoldEKF::updateWithVector: H must be m x n where m = "</q></td></tr>
+<tr><th id="276">276</th><td>          <q>"measurement size and n = state dimension."</q>);</td></tr>
+<tr><th id="277">277</th><td>    }</td></tr>
+<tr><th id="278">278</th><td>    <b>if</b> (<a class="local col8 ref" href="#28R" title='R' data-ref="28R">R</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/PlainObjectBase.h.html#_ZNK5Eigen15PlainObjectBase4rowsEv" title='Eigen::PlainObjectBase::rows' data-ref="_ZNK5Eigen15PlainObjectBase4rowsEv">rows</a>() != <a class="local col9 ref" href="#29m" title='m' data-ref="29m">m</a> || <a class="local col8 ref" href="#28R" title='R' data-ref="28R">R</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/PlainObjectBase.h.html#_ZNK5Eigen15PlainObjectBase4colsEv" title='Eigen::PlainObjectBase::cols' data-ref="_ZNK5Eigen15PlainObjectBase4colsEv">cols</a>() != <a class="local col9 ref" href="#29m" title='m' data-ref="29m">m</a>) {</td></tr>
+<tr><th id="279">279</th><td>      <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a></td></tr>
+<tr><th id="280">280</th><td>          <q>"ManifoldEKF::updateWithVector: R must be m x m where m = "</q></td></tr>
+<tr><th id="281">281</th><td>          <q>"measurement size."</q>);</td></tr>
+<tr><th id="282">282</th><td>    }</td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td>    <i>// Forward to templated update with Measurement = Vector</i></td></tr>
+<tr><th id="285">285</th><td>    <b>this</b>-&gt;<b>template</b> update&lt;<a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>&gt;(<a class="local col5 ref" href="#25prediction" title='prediction' data-ref="25prediction">prediction</a>, <a class="local col6 ref" href="#26H" title='H' data-ref="26H">H</a>, <a class="local col7 ref" href="#27z" title='z' data-ref="27z">z</a>, <a class="local col8 ref" href="#28R" title='R' data-ref="28R">R</a>);</td></tr>
+<tr><th id="286">286</th><td>  }</td></tr>
+<tr><th id="287">287</th><td></td></tr>
+<tr><th id="288">288</th><td> <b>protected</b>:</td></tr>
+<tr><th id="289">289</th><td>  M <dfn class="decl field" id="gtsam::ManifoldEKF::X_" title='gtsam::ManifoldEKF::X_' data-ref="gtsam::ManifoldEKF::X_">X_</dfn>;           <i class="doc">///&lt; Manifold state estimate.</i></td></tr>
+<tr><th id="290">290</th><td>  <a class="typedef" href="#gtsam::ManifoldEKF::Covariance" title='gtsam::ManifoldEKF::Covariance' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::ManifoldEKF::Covariance">Covariance</a> <dfn class="decl field" id="gtsam::ManifoldEKF::P_" title='gtsam::ManifoldEKF::P_' data-ref="gtsam::ManifoldEKF::P_">P_</dfn>;  <i class="doc">///&lt; Covariance (Eigen::Matrix&lt;double, Dim, Dim&gt;).</i></td></tr>
+<tr><th id="291">291</th><td>  <em>int</em> <dfn class="decl field" id="gtsam::ManifoldEKF::n_" title='gtsam::ManifoldEKF::n_' data-ref="gtsam::ManifoldEKF::n_">n_</dfn>;         <i class="doc">///&lt; Runtime tangent space dimension of M.</i></td></tr>
+<tr><th id="292">292</th><td>};</td></tr>
+<tr><th id="293">293</th><td></td></tr>
+<tr><th id="294">294</th><td>}  <i>// namespace gtsam</i></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/GEKF_Rot3Example.cpp.html'>codebrowser/examples/GEKF_Rot3Example.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

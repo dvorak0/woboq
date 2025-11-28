@@ -1,0 +1,533 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>array source code [include/c++/13/array] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="std::__array_traits,std::__is_tuple_like_impl,std::array,std::tuple_element,std::tuple_size "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/c++/13/array'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>include</a>/<a href='..'>c++</a>/<a href='./'>13</a>/<a href='array.html'>array</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// &lt;array&gt; -*- C++ -*-</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i>// Copyright (C) 2007-2023 Free Software Foundation, Inc.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// This file is part of the GNU ISO C++ Library.  This library is free</i></td></tr>
+<tr><th id="6">6</th><td><i>// software; you can redistribute it and/or modify it under the</i></td></tr>
+<tr><th id="7">7</th><td><i>// terms of the GNU General Public License as published by the</i></td></tr>
+<tr><th id="8">8</th><td><i>// Free Software Foundation; either version 3, or (at your option)</i></td></tr>
+<tr><th id="9">9</th><td><i>// any later version.</i></td></tr>
+<tr><th id="10">10</th><td><i></i></td></tr>
+<tr><th id="11">11</th><td><i>// This library is distributed in the hope that it will be useful,</i></td></tr>
+<tr><th id="12">12</th><td><i>// but WITHOUT ANY WARRANTY; without even the implied warranty of</i></td></tr>
+<tr><th id="13">13</th><td><i>// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</i></td></tr>
+<tr><th id="14">14</th><td><i>// GNU General Public License for more details.</i></td></tr>
+<tr><th id="15">15</th><td><i></i></td></tr>
+<tr><th id="16">16</th><td><i>// Under Section 7 of GPL version 3, you are granted additional</i></td></tr>
+<tr><th id="17">17</th><td><i>// permissions described in the GCC Runtime Library Exception, version</i></td></tr>
+<tr><th id="18">18</th><td><i>// 3.1, as published by the Free Software Foundation.</i></td></tr>
+<tr><th id="19">19</th><td><i></i></td></tr>
+<tr><th id="20">20</th><td><i>// You should have received a copy of the GNU General Public License and</i></td></tr>
+<tr><th id="21">21</th><td><i>// a copy of the GCC Runtime Library Exception along with this program;</i></td></tr>
+<tr><th id="22">22</th><td><i>// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see</i></td></tr>
+<tr><th id="23">23</th><td><i>// &lt;<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</i></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><i class="doc">/** <span class="command">@file</span> <span class="verb">include/array</span></i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"> *  This is a Standard C++ Library header.</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><u>#<span data-ppcond="29">ifndef</span> <span class="macro" data-ref="_M/_GLIBCXX_ARRAY">_GLIBCXX_ARRAY</span></u></td></tr>
+<tr><th id="30">30</th><td><u>#define <dfn class="macro" id="_M/_GLIBCXX_ARRAY" data-ref="_M/_GLIBCXX_ARRAY">_GLIBCXX_ARRAY</dfn> 1</u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#pragma GCC system_header</u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><u>#<span data-ppcond="34">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &lt; 201103L</u></td></tr>
+<tr><th id="35">35</th><td><u># include &lt;bits/c++0x_warning.h&gt;</u></td></tr>
+<tr><th id="36">36</th><td><u>#<span data-ppcond="34">else</span></u></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="compare.html">&lt;compare&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="initializer_list.html">&lt;initializer_list&gt;</a></u></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="bits/functexcept.h.html">&lt;bits/functexcept.h&gt;</a></u></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="bits/stl_algobase.h.html">&lt;bits/stl_algobase.h&gt;</a></u></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="bits/range_access.h.html">&lt;bits/range_access.h&gt;</a> // std::begin, std::end etc.</u></td></tr>
+<tr><th id="45">45</th><td><u>#include <a href="bits/utility.h.html">&lt;bits/utility.h&gt;</a>      // std::index_sequence, std::tuple_size</u></td></tr>
+<tr><th id="46">46</th><td><u>#include <a href="debug/assertions.h.html">&lt;debug/assertions.h&gt;</a></u></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><b>namespace</b> <span class="namespace">std</span> <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#70" title="__attribute__ ((__visibility__ (&quot;default&quot;)))" data-ref="_M/_GLIBCXX_VISIBILITY">_GLIBCXX_VISIBILITY</a>(<b>default</b>)</td></tr>
+<tr><th id="49">49</th><td>{</td></tr>
+<tr><th id="50">50</th><td><a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#393" title="" data-ref="_M/_GLIBCXX_BEGIN_NAMESPACE_VERSION">_GLIBCXX_BEGIN_NAMESPACE_VERSION</a></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="53">53</th><td>    <b>struct</b> <dfn class="type def" id="std::__array_traits" title='std::__array_traits' data-ref="std::__array_traits">__array_traits</dfn></td></tr>
+<tr><th id="54">54</th><td>    {</td></tr>
+<tr><th id="55">55</th><td>      <b>using</b> <dfn class="typedef" id="std::__array_traits::_Type" title='std::__array_traits::_Type' data-type='_Tp[_Nm]' data-ref="std::__array_traits::_Type">_Type</dfn> = _Tp[<a class="tu ref" href="#std::__array_traits::_Nm" title='std::__array_traits::_Nm' data-ref="std::__array_traits::_Nm">_Nm</a>];</td></tr>
+<tr><th id="56">56</th><td>      <b>using</b> <dfn class="typedef" id="std::__array_traits::_Is_swappable" title='std::__array_traits::_Is_swappable' data-type='__is_swappable&lt;_Tp&gt;' data-ref="std::__array_traits::_Is_swappable">_Is_swappable</dfn> = <a class="type" href="type_traits.html#std::__is_swappable" title='std::__is_swappable' data-ref="std::__is_swappable">__is_swappable</a>&lt;_Tp&gt;;</td></tr>
+<tr><th id="57">57</th><td>      <b>using</b> <dfn class="typedef" id="std::__array_traits::_Is_nothrow_swappable" title='std::__array_traits::_Is_nothrow_swappable' data-type='__is_nothrow_swappable&lt;_Tp&gt;' data-ref="std::__array_traits::_Is_nothrow_swappable">_Is_nothrow_swappable</dfn> = <a class="type" href="type_traits.html#std::__is_nothrow_swappable" title='std::__is_nothrow_swappable' data-ref="std::__is_nothrow_swappable">__is_nothrow_swappable</a>&lt;_Tp&gt;;</td></tr>
+<tr><th id="58">58</th><td>    };</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td> <b>template</b>&lt;<b>typename</b> _Tp&gt;</td></tr>
+<tr><th id="61">61</th><td>   <b>struct</b> <dfn class="type def" id="std::__array_traits" title='std::__array_traits' data-ref="std::__array_traits">__array_traits</dfn>&lt;_Tp, <var>0</var>&gt;</td></tr>
+<tr><th id="62">62</th><td>   {</td></tr>
+<tr><th id="63">63</th><td>     <i>// Empty type used instead of _Tp[0] for std::array&lt;_Tp, 0&gt;.</i></td></tr>
+<tr><th id="64">64</th><td>     <b>struct</b> <dfn class="type def" id="std::__array_traits{type-parameter-0-0,0}::_Type" title='std::__array_traits&lt;type-parameter-0-0, 0&gt;::_Type' data-ref="std::__array_traits{type-parameter-0-0,0}::_Type">_Type</dfn></td></tr>
+<tr><th id="65">65</th><td>     {</td></tr>
+<tr><th id="66">66</th><td>       <i>// Indexing is undefined.</i></td></tr>
+<tr><th id="67">67</th><td>       <b>__attribute__</b>((__always_inline__,__noreturn__))</td></tr>
+<tr><th id="68">68</th><td>       _Tp&amp; <dfn class="decl def fn" id="_ZNKSt14__array_traitsIT_Lm0EE5_TypeixEm" title='std::__array_traits&lt;type-parameter-0-0, 0&gt;::_Type::operator[]' data-ref="_ZNKSt14__array_traitsIT_Lm0EE5_TypeixEm"><b>operator</b>[]</dfn>(<a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>) <em>const</em> <b>noexcept</b> { <a class="ref fn" href="#68" title='__builtin_trap' data-ref="__builtin_trap">__builtin_trap</a>(); }</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>       <i>// Conversion to a pointer produces a null pointer.</i></td></tr>
+<tr><th id="71">71</th><td>       <b>__attribute__</b>((__always_inline__))</td></tr>
+<tr><th id="72">72</th><td>       <b>constexpr</b> <b>explicit</b> <dfn class="decl def fn" id="_ZNKSt14__array_traitsIT_Lm0EE5_TypecvPS0_Ev" title='std::__array_traits&lt;type-parameter-0-0, 0&gt;::_Type::operator type-parameter-0-0 *' data-ref="_ZNKSt14__array_traitsIT_Lm0EE5_TypecvPS0_Ev"><b>operator</b> _Tp*</dfn>() <em>const</em> <b>noexcept</b> { <b>return</b> <b>nullptr</b>; }</td></tr>
+<tr><th id="73">73</th><td>     };</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>     <b>using</b> <dfn class="typedef" id="std::__array_traits{type-parameter-0-0,0}::_Is_swappable" title='std::__array_traits&lt;type-parameter-0-0, 0&gt;::_Is_swappable' data-type='true_type' data-ref="std::__array_traits{type-parameter-0-0,0}::_Is_swappable">_Is_swappable</dfn> = <a class="typedef" href="type_traits.html#std::true_type" title='std::true_type' data-type='integral_constant&lt;bool, true&gt;' data-ref="std::true_type">true_type</a>;</td></tr>
+<tr><th id="76">76</th><td>     <b>using</b> <dfn class="typedef" id="std::__array_traits{type-parameter-0-0,0}::_Is_nothrow_swappable" title='std::__array_traits&lt;type-parameter-0-0, 0&gt;::_Is_nothrow_swappable' data-type='true_type' data-ref="std::__array_traits{type-parameter-0-0,0}::_Is_nothrow_swappable">_Is_nothrow_swappable</dfn> = <a class="typedef" href="type_traits.html#std::true_type" title='std::true_type' data-type='integral_constant&lt;bool, true&gt;' data-ref="std::true_type">true_type</a>;</td></tr>
+<tr><th id="77">77</th><td>   };</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">   *  <span class="command">@brief</span> A standard container for storing a fixed size sequence of elements.</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">   *  <span class="command">@ingroup</span> <span class="verb">sequences</span></i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   *  Meets the requirements of a <span class="tag">&lt;a href="tables.html#65"&gt;</span>container<span class="tag">&lt;/a&gt;</span>, a</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   *  <span class="tag">&lt;a href="tables.html#66"&gt;</span>reversible container<span class="tag">&lt;/a&gt;</span>, and a</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   *  <span class="tag">&lt;a href="tables.html#67"&gt;</span>sequence<span class="tag">&lt;/a&gt;</span>.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   *  Sets support random access iterators.</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">   *  <span class="command">@tparam</span>  <span class="arg">Tp</span>  Type of element. Required to be a complete type.</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   *  <span class="command">@tparam</span>  <span class="arg">Nm</span>  Number of elements.</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="93">93</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="94">94</th><td>    <b>struct</b> <dfn class="type def" id="std::array" title='std::array' data-ref="std::array">array</dfn></td></tr>
+<tr><th id="95">95</th><td>    {</td></tr>
+<tr><th id="96">96</th><td>      <b>typedef</b> _Tp 	    			      <dfn class="typedef" id="std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</dfn>;</td></tr>
+<tr><th id="97">97</th><td>      <b>typedef</b> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>*			      <dfn class="typedef" id="std::array::pointer" title='std::array::pointer' data-type='value_type *' data-ref="std::array::pointer">pointer</dfn>;</td></tr>
+<tr><th id="98">98</th><td>      <b>typedef</b> <em>const</em> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>*                       <dfn class="typedef" id="std::array::const_pointer" title='std::array::const_pointer' data-type='const value_type *' data-ref="std::array::const_pointer">const_pointer</dfn>;</td></tr>
+<tr><th id="99">99</th><td>      <b>typedef</b> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>&amp;                   	      <dfn class="typedef" id="std::array::reference" title='std::array::reference' data-type='value_type &amp;' data-ref="std::array::reference">reference</dfn>;</td></tr>
+<tr><th id="100">100</th><td>      <b>typedef</b> <em>const</em> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>&amp;             	      <dfn class="typedef" id="std::array::const_reference" title='std::array::const_reference' data-type='const value_type &amp;' data-ref="std::array::const_reference">const_reference</dfn>;</td></tr>
+<tr><th id="101">101</th><td>      <b>typedef</b> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>*          		      <dfn class="typedef" id="std::array::iterator" title='std::array::iterator' data-type='value_type *' data-ref="std::array::iterator">iterator</dfn>;</td></tr>
+<tr><th id="102">102</th><td>      <b>typedef</b> <em>const</em> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>*			      <dfn class="typedef" id="std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</dfn>;</td></tr>
+<tr><th id="103">103</th><td>      <b>typedef</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>                    	      <dfn class="typedef" id="std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</dfn>;</td></tr>
+<tr><th id="104">104</th><td>      <b>typedef</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::ptrdiff_t" title='std::ptrdiff_t' data-type='long' data-ref="std::ptrdiff_t">ptrdiff_t</a>                   	      <dfn class="typedef" id="std::array::difference_type" title='std::array::difference_type' data-type='std::ptrdiff_t' data-ref="std::array::difference_type">difference_type</dfn>;</td></tr>
+<tr><th id="105">105</th><td>      <b>typedef</b> <span class="namespace">std::</span><a class="type" href="bits/stl_iterator.h.html#std::reverse_iterator" title='std::reverse_iterator' data-ref="std::reverse_iterator">reverse_iterator</a>&lt;<a class="typedef" href="#std::array::iterator" title='std::array::iterator' data-type='value_type *' data-ref="std::array::iterator">iterator</a>&gt;	      <dfn class="typedef" id="std::array::reverse_iterator" title='std::array::reverse_iterator' data-type='std::reverse_iterator&lt;iterator&gt;' data-ref="std::array::reverse_iterator">reverse_iterator</dfn>;</td></tr>
+<tr><th id="106">106</th><td>      <b>typedef</b> <span class="namespace">std::</span><a class="type" href="bits/stl_iterator.h.html#std::reverse_iterator" title='std::reverse_iterator' data-ref="std::reverse_iterator">reverse_iterator</a>&lt;<a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a>&gt;   <dfn class="typedef" id="std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</dfn>;</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td>      <i>// Support for zero-sized arrays mandatory.</i></td></tr>
+<tr><th id="109">109</th><td>      <b>typename</b> <a class="type" href="#std::__array_traits" title='std::__array_traits' data-ref="std::__array_traits">__array_traits</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;::_Type        <dfn class="decl field" id="std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</dfn>;</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td>      <i>// No explicit construct/copy/destroy for aggregate type.</i></td></tr>
+<tr><th id="112">112</th><td><i></i></td></tr>
+<tr><th id="113">113</th><td><i>      // DR 776.</i></td></tr>
+<tr><th id="114">114</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a> <em>void</em></td></tr>
+<tr><th id="115">115</th><td>      <dfn class="decl def fn" id="_ZNSt5array4fillERKT_" title='std::array::fill' data-ref="_ZNSt5array4fillERKT_">fill</dfn>(<em>const</em> <a class="typedef" href="#std::array::value_type" title='std::array::value_type' data-type='_Tp' data-ref="std::array::value_type">value_type</a>&amp; <dfn class="local col3 decl" id="1623__u" title='__u' data-type='const value_type &amp;' data-ref="1623__u">__u</dfn>)</td></tr>
+<tr><th id="116">116</th><td>      { <span class="namespace">std::</span>fill_n(begin(), <a class="member fn" href="#_ZNKSt5array4sizeEv" title='std::array::size' data-ref="_ZNKSt5array4sizeEv">size</a>(), <a class="local col3 ref" href="#1623__u" title='__u' data-ref="1623__u">__u</a>); }</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a> <em>void</em></td></tr>
+<tr><th id="119">119</th><td>      <dfn class="decl def fn" id="_ZNSt5array4swapERSt5arrayIT_XT0_EE" title='std::array::swap' data-ref="_ZNSt5array4swapERSt5arrayIT_XT0_EE">swap</dfn>(array&amp; <dfn class="local col4 decl" id="1624__other" title='__other' data-type='array&lt;_Tp, _Nm&gt; &amp;' data-ref="1624__other">__other</dfn>)</td></tr>
+<tr><th id="120">120</th><td>      <b>noexcept</b>(<a class="type" href="#std::__array_traits" title='std::__array_traits' data-ref="std::__array_traits">__array_traits</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;::_Is_nothrow_swappable::value)</td></tr>
+<tr><th id="121">121</th><td>      { <span class="namespace">std::</span>swap_ranges(begin(), end(), <a class="local col4 ref" href="#1624__other" title='__other' data-ref="1624__other">__other</a>.begin()); }</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td>      <i>// Iterators.</i></td></tr>
+<tr><th id="124">124</th><td>      [[__gnu__::<em>__const__</em>, __nodiscard__]]</td></tr>
+<tr><th id="125">125</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::iterator" title='std::array::iterator' data-type='value_type *' data-ref="std::array::iterator">iterator</a></td></tr>
+<tr><th id="126">126</th><td>      <dfn class="decl def fn" id="_ZNSt5array5beginEv" title='std::array::begin' data-ref="_ZNSt5array5beginEv">begin</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="127">127</th><td>      { <b>return</b> <a class="typedef" href="#std::array::iterator" title='std::array::iterator' data-type='value_type *' data-ref="std::array::iterator">iterator</a>(data()); }</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="130">130</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a></td></tr>
+<tr><th id="131">131</th><td>      <dfn class="decl def fn" id="_ZNKSt5array5beginEv" title='std::array::begin' data-ref="_ZNKSt5array5beginEv">begin</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="132">132</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a>(data()); }</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td>      [[__gnu__::<em>__const__</em>, __nodiscard__]]</td></tr>
+<tr><th id="135">135</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::iterator" title='std::array::iterator' data-type='value_type *' data-ref="std::array::iterator">iterator</a></td></tr>
+<tr><th id="136">136</th><td>      <dfn class="decl def fn" id="_ZNSt5array3endEv" title='std::array::end' data-ref="_ZNSt5array3endEv">end</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="137">137</th><td>      { <b>return</b> <a class="typedef" href="#std::array::iterator" title='std::array::iterator' data-type='value_type *' data-ref="std::array::iterator">iterator</a>(data() + <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>); }</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="140">140</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a></td></tr>
+<tr><th id="141">141</th><td>      <dfn class="decl def fn" id="_ZNKSt5array3endEv" title='std::array::end' data-ref="_ZNKSt5array3endEv">end</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="142">142</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a>(data() + <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>); }</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>      [[__gnu__::<em>__const__</em>, __nodiscard__]]</td></tr>
+<tr><th id="145">145</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::reverse_iterator" title='std::array::reverse_iterator' data-type='std::reverse_iterator&lt;iterator&gt;' data-ref="std::array::reverse_iterator">reverse_iterator</a></td></tr>
+<tr><th id="146">146</th><td>      <dfn class="decl def fn" id="_ZNSt5array6rbeginEv" title='std::array::rbegin' data-ref="_ZNSt5array6rbeginEv">rbegin</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="147">147</th><td>      { <b>return</b> <a class="typedef" href="#std::array::reverse_iterator" title='std::array::reverse_iterator' data-type='std::reverse_iterator&lt;iterator&gt;' data-ref="std::array::reverse_iterator">reverse_iterator</a>(end()); }</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="150">150</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a></td></tr>
+<tr><th id="151">151</th><td>      <dfn class="decl def fn" id="_ZNKSt5array6rbeginEv" title='std::array::rbegin' data-ref="_ZNKSt5array6rbeginEv">rbegin</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="152">152</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a>(end()); }</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>      [[__gnu__::<em>__const__</em>, __nodiscard__]]</td></tr>
+<tr><th id="155">155</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::reverse_iterator" title='std::array::reverse_iterator' data-type='std::reverse_iterator&lt;iterator&gt;' data-ref="std::array::reverse_iterator">reverse_iterator</a></td></tr>
+<tr><th id="156">156</th><td>      <dfn class="decl def fn" id="_ZNSt5array4rendEv" title='std::array::rend' data-ref="_ZNSt5array4rendEv">rend</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="157">157</th><td>      { <b>return</b> <a class="typedef" href="#std::array::reverse_iterator" title='std::array::reverse_iterator' data-type='std::reverse_iterator&lt;iterator&gt;' data-ref="std::array::reverse_iterator">reverse_iterator</a>(begin()); }</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="160">160</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a></td></tr>
+<tr><th id="161">161</th><td>      <dfn class="decl def fn" id="_ZNKSt5array4rendEv" title='std::array::rend' data-ref="_ZNKSt5array4rendEv">rend</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="162">162</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a>(begin()); }</td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="165">165</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a></td></tr>
+<tr><th id="166">166</th><td>      <dfn class="decl def fn" id="_ZNKSt5array6cbeginEv" title='std::array::cbegin' data-ref="_ZNKSt5array6cbeginEv">cbegin</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="167">167</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a>(data()); }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="170">170</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a></td></tr>
+<tr><th id="171">171</th><td>      <dfn class="decl def fn" id="_ZNKSt5array4cendEv" title='std::array::cend' data-ref="_ZNKSt5array4cendEv">cend</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="172">172</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_iterator" title='std::array::const_iterator' data-type='const value_type *' data-ref="std::array::const_iterator">const_iterator</a>(data() + <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>); }</td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="175">175</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a></td></tr>
+<tr><th id="176">176</th><td>      <dfn class="decl def fn" id="_ZNKSt5array7crbeginEv" title='std::array::crbegin' data-ref="_ZNKSt5array7crbeginEv">crbegin</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="177">177</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a>(end()); }</td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="180">180</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a></td></tr>
+<tr><th id="181">181</th><td>      <dfn class="decl def fn" id="_ZNKSt5array5crendEv" title='std::array::crend' data-ref="_ZNKSt5array5crendEv">crend</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="182">182</th><td>      { <b>return</b> <a class="typedef" href="#std::array::const_reverse_iterator" title='std::array::const_reverse_iterator' data-type='std::reverse_iterator&lt;const_iterator&gt;' data-ref="std::array::const_reverse_iterator">const_reverse_iterator</a>(begin()); }</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td>      <i>// Capacity.</i></td></tr>
+<tr><th id="185">185</th><td>      [[__nodiscard__, __gnu__::<em>__const__</em>, __gnu__::__always_inline__]]</td></tr>
+<tr><th id="186">186</th><td>      <b>constexpr</b> <a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a></td></tr>
+<tr><th id="187">187</th><td>      <dfn class="decl def fn" id="_ZNKSt5array4sizeEv" title='std::array::size' data-ref="_ZNKSt5array4sizeEv">size</dfn>() <em>const</em> <b>noexcept</b> { <b>return</b> <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>; }</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>      [[__nodiscard__, __gnu__::<em>__const__</em>, __gnu__::__always_inline__]]</td></tr>
+<tr><th id="190">190</th><td>      <b>constexpr</b> <a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a></td></tr>
+<tr><th id="191">191</th><td>      <dfn class="decl def fn" id="_ZNKSt5array8max_sizeEv" title='std::array::max_size' data-ref="_ZNKSt5array8max_sizeEv">max_size</dfn>() <em>const</em> <b>noexcept</b> { <b>return</b> <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>; }</td></tr>
+<tr><th id="192">192</th><td></td></tr>
+<tr><th id="193">193</th><td>      [[__nodiscard__, __gnu__::<em>__const__</em>, __gnu__::__always_inline__]]</td></tr>
+<tr><th id="194">194</th><td>      <b>constexpr</b> <em>bool</em></td></tr>
+<tr><th id="195">195</th><td>      <dfn class="decl def fn" id="_ZNKSt5array5emptyEv" title='std::array::empty' data-ref="_ZNKSt5array5emptyEv">empty</dfn>() <em>const</em> <b>noexcept</b> { <b>return</b> <a class="member fn" href="#_ZNKSt5array4sizeEv" title='std::array::size' data-ref="_ZNKSt5array4sizeEv">size</a>() == <var>0</var>; }</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>      <i>// Element access.</i></td></tr>
+<tr><th id="198">198</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="199">199</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::reference" title='std::array::reference' data-type='value_type &amp;' data-ref="std::array::reference">reference</a></td></tr>
+<tr><th id="200">200</th><td>      <dfn class="decl def fn" id="_ZNSt5arrayixEm" title='std::array::operator[]' data-ref="_ZNSt5arrayixEm"><b>operator</b>[]</dfn>(<a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a> <dfn class="local col5 decl" id="1625__n" title='__n' data-type='size_type' data-ref="1625__n">__n</dfn>) <b>noexcept</b></td></tr>
+<tr><th id="201">201</th><td>      {</td></tr>
+<tr><th id="202">202</th><td>	<a class="macro" href="debug/assertions.h.html#37" title="" data-ref="_M/__glibcxx_requires_subscript">__glibcxx_requires_subscript</a>(__n);</td></tr>
+<tr><th id="203">203</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="local col5 ref" href="#1625__n" title='__n' data-ref="1625__n">__n</a>];</td></tr>
+<tr><th id="204">204</th><td>      }</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="207">207</th><td>      <b>constexpr</b> <a class="typedef" href="#std::array::const_reference" title='std::array::const_reference' data-type='const value_type &amp;' data-ref="std::array::const_reference">const_reference</a></td></tr>
+<tr><th id="208">208</th><td>      <dfn class="decl def fn" id="_ZNKSt5arrayixEm" title='std::array::operator[]' data-ref="_ZNKSt5arrayixEm"><b>operator</b>[]</dfn>(<a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a> <dfn class="local col6 decl" id="1626__n" title='__n' data-type='size_type' data-ref="1626__n">__n</dfn>) <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="209">209</th><td>      {</td></tr>
+<tr><th id="210">210</th><td><u>#<span data-ppcond="210">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201402L</u></td></tr>
+<tr><th id="211">211</th><td>	<a class="macro" href="debug/assertions.h.html#37" title="" data-ref="_M/__glibcxx_requires_subscript">__glibcxx_requires_subscript</a>(__n);</td></tr>
+<tr><th id="212">212</th><td><u>#<span data-ppcond="210">endif</span></u></td></tr>
+<tr><th id="213">213</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="local col6 ref" href="#1626__n" title='__n' data-ref="1626__n">__n</a>];</td></tr>
+<tr><th id="214">214</th><td>      }</td></tr>
+<tr><th id="215">215</th><td></td></tr>
+<tr><th id="216">216</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::reference" title='std::array::reference' data-type='value_type &amp;' data-ref="std::array::reference">reference</a></td></tr>
+<tr><th id="217">217</th><td>      <dfn class="decl def fn" id="_ZNSt5array2atEm" title='std::array::at' data-ref="_ZNSt5array2atEm">at</dfn>(<a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a> <dfn class="local col7 decl" id="1627__n" title='__n' data-type='size_type' data-ref="1627__n">__n</dfn>)</td></tr>
+<tr><th id="218">218</th><td>      {</td></tr>
+<tr><th id="219">219</th><td>	<b>if</b> (<a class="local col7 ref" href="#1627__n" title='__n' data-ref="1627__n">__n</a> &gt;= <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>)</td></tr>
+<tr><th id="220">220</th><td>	  <span class="namespace">std::</span><a class="ref fn" href="bits/functexcept.h.html#_ZSt24__throw_out_of_range_fmtPKcz" title='std::__throw_out_of_range_fmt' data-ref="_ZSt24__throw_out_of_range_fmtPKcz">__throw_out_of_range_fmt</a>(<a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#741" title="(&quot;array::at: __n (which is %zu) &quot; &quot;&gt;= _Nm (which is %zu)&quot;)" data-ref="_M/__N">__N</a>(<q>"array::at: __n (which is %zu) "</q></td></tr>
+<tr><th id="221">221</th><td>					    <q>"&gt;= _Nm (which is %zu)"</q>),</td></tr>
+<tr><th id="222">222</th><td>					<a class="local col7 ref" href="#1627__n" title='__n' data-ref="1627__n">__n</a>, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>);</td></tr>
+<tr><th id="223">223</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="local col7 ref" href="#1627__n" title='__n' data-ref="1627__n">__n</a>];</td></tr>
+<tr><th id="224">224</th><td>      }</td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td>      <b>constexpr</b> <a class="typedef" href="#std::array::const_reference" title='std::array::const_reference' data-type='const value_type &amp;' data-ref="std::array::const_reference">const_reference</a></td></tr>
+<tr><th id="227">227</th><td>      <dfn class="decl def fn" id="_ZNKSt5array2atEm" title='std::array::at' data-ref="_ZNKSt5array2atEm">at</dfn>(<a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a> <dfn class="local col8 decl" id="1628__n" title='__n' data-type='size_type' data-ref="1628__n">__n</dfn>) <em>const</em></td></tr>
+<tr><th id="228">228</th><td>      {</td></tr>
+<tr><th id="229">229</th><td>	<i>// Result of conditional expression must be an lvalue so use</i></td></tr>
+<tr><th id="230">230</th><td><i>	// boolean ? lvalue : (throw-expr, lvalue)</i></td></tr>
+<tr><th id="231">231</th><td>	<b>return</b> <a class="local col8 ref" href="#1628__n" title='__n' data-ref="1628__n">__n</a> &lt; <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a> ? <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="local col8 ref" href="#1628__n" title='__n' data-ref="1628__n">__n</a>]</td></tr>
+<tr><th id="232">232</th><td>	  : (<span class="namespace">std::</span><a class="ref fn" href="bits/functexcept.h.html#_ZSt24__throw_out_of_range_fmtPKcz" title='std::__throw_out_of_range_fmt' data-ref="_ZSt24__throw_out_of_range_fmtPKcz">__throw_out_of_range_fmt</a>(<a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#741" title="(&quot;array::at: __n (which is %zu) &quot; &quot;&gt;= _Nm (which is %zu)&quot;)" data-ref="_M/__N">__N</a>(<q>"array::at: __n (which is %zu) "</q></td></tr>
+<tr><th id="233">233</th><td>					       <q>"&gt;= _Nm (which is %zu)"</q>),</td></tr>
+<tr><th id="234">234</th><td>					   <a class="local col8 ref" href="#1628__n" title='__n' data-ref="1628__n">__n</a>, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>),</td></tr>
+<tr><th id="235">235</th><td>	     <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="local col8 ref" href="#1628__n" title='__n' data-ref="1628__n">__n</a>]);</td></tr>
+<tr><th id="236">236</th><td>      }</td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="239">239</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::reference" title='std::array::reference' data-type='value_type &amp;' data-ref="std::array::reference">reference</a></td></tr>
+<tr><th id="240">240</th><td>      <dfn class="decl def fn" id="_ZNSt5array5frontEv" title='std::array::front' data-ref="_ZNSt5array5frontEv">front</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="241">241</th><td>      {</td></tr>
+<tr><th id="242">242</th><td>	<a class="macro" href="debug/assertions.h.html#36" title="" data-ref="_M/__glibcxx_requires_nonempty">__glibcxx_requires_nonempty</a>();</td></tr>
+<tr><th id="243">243</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[(<a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a>)<var>0</var>];</td></tr>
+<tr><th id="244">244</th><td>      }</td></tr>
+<tr><th id="245">245</th><td></td></tr>
+<tr><th id="246">246</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="247">247</th><td>      <b>constexpr</b> <a class="typedef" href="#std::array::const_reference" title='std::array::const_reference' data-type='const value_type &amp;' data-ref="std::array::const_reference">const_reference</a></td></tr>
+<tr><th id="248">248</th><td>      <dfn class="decl def fn" id="_ZNKSt5array5frontEv" title='std::array::front' data-ref="_ZNKSt5array5frontEv">front</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="249">249</th><td>      {</td></tr>
+<tr><th id="250">250</th><td><u>#<span data-ppcond="250">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201402L</u></td></tr>
+<tr><th id="251">251</th><td>	<a class="macro" href="debug/assertions.h.html#36" title="" data-ref="_M/__glibcxx_requires_nonempty">__glibcxx_requires_nonempty</a>();</td></tr>
+<tr><th id="252">252</th><td><u>#<span data-ppcond="250">endif</span></u></td></tr>
+<tr><th id="253">253</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[(<a class="typedef" href="#std::array::size_type" title='std::array::size_type' data-type='std::size_t' data-ref="std::array::size_type">size_type</a>)<var>0</var>];</td></tr>
+<tr><th id="254">254</th><td>      }</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="257">257</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::reference" title='std::array::reference' data-type='value_type &amp;' data-ref="std::array::reference">reference</a></td></tr>
+<tr><th id="258">258</th><td>      <dfn class="decl def fn" id="_ZNSt5array4backEv" title='std::array::back' data-ref="_ZNSt5array4backEv">back</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="259">259</th><td>      {</td></tr>
+<tr><th id="260">260</th><td>	<a class="macro" href="debug/assertions.h.html#36" title="" data-ref="_M/__glibcxx_requires_nonempty">__glibcxx_requires_nonempty</a>();</td></tr>
+<tr><th id="261">261</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a> - <var>1</var>];</td></tr>
+<tr><th id="262">262</th><td>      }</td></tr>
+<tr><th id="263">263</th><td></td></tr>
+<tr><th id="264">264</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="265">265</th><td>      <b>constexpr</b> <a class="typedef" href="#std::array::const_reference" title='std::array::const_reference' data-type='const value_type &amp;' data-ref="std::array::const_reference">const_reference</a></td></tr>
+<tr><th id="266">266</th><td>      <dfn class="decl def fn" id="_ZNKSt5array4backEv" title='std::array::back' data-ref="_ZNKSt5array4backEv">back</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="267">267</th><td>      {</td></tr>
+<tr><th id="268">268</th><td><u>#<span data-ppcond="268">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201402L</u></td></tr>
+<tr><th id="269">269</th><td>	<a class="macro" href="debug/assertions.h.html#36" title="" data-ref="_M/__glibcxx_requires_nonempty">__glibcxx_requires_nonempty</a>();</td></tr>
+<tr><th id="270">270</th><td><u>#<span data-ppcond="268">endif</span></u></td></tr>
+<tr><th id="271">271</th><td>	<b>return</b> <a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>[<a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a> - <var>1</var>];</td></tr>
+<tr><th id="272">272</th><td>      }</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td>      [[__nodiscard__, __gnu__::<em>__const__</em>, __gnu__::__always_inline__]]</td></tr>
+<tr><th id="275">275</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::pointer" title='std::array::pointer' data-type='value_type *' data-ref="std::array::pointer">pointer</a></td></tr>
+<tr><th id="276">276</th><td>      <dfn class="decl def fn" id="_ZNSt5array4dataEv" title='std::array::data' data-ref="_ZNSt5array4dataEv">data</dfn>() <b>noexcept</b></td></tr>
+<tr><th id="277">277</th><td>      { <b>return</b> <b>static_cast</b>&lt;<a class="typedef" href="#std::array::pointer" title='std::array::pointer' data-type='value_type *' data-ref="std::array::pointer">pointer</a>&gt;(<a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>); }</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>      [[__nodiscard__]]</td></tr>
+<tr><th id="280">280</th><td>      <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#181" title="constexpr" data-ref="_M/_GLIBCXX17_CONSTEXPR">_GLIBCXX17_CONSTEXPR</a> <a class="typedef" href="#std::array::const_pointer" title='std::array::const_pointer' data-type='const value_type *' data-ref="std::array::const_pointer">const_pointer</a></td></tr>
+<tr><th id="281">281</th><td>      <dfn class="decl def fn" id="_ZNKSt5array4dataEv" title='std::array::data' data-ref="_ZNKSt5array4dataEv">data</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="282">282</th><td>      { <b>return</b> <b>static_cast</b>&lt;<a class="typedef" href="#std::array::const_pointer" title='std::array::const_pointer' data-type='const value_type *' data-ref="std::array::const_pointer">const_pointer</a>&gt;(<a class="member field" href="#std::array::_M_elems" title='std::array::_M_elems' data-ref="std::array::_M_elems">_M_elems</a>); }</td></tr>
+<tr><th id="283">283</th><td>    };</td></tr>
+<tr><th id="284">284</th><td></td></tr>
+<tr><th id="285">285</th><td><u>#<span data-ppcond="285">if</span> <span class="macro" title="201703L" data-ref="_M/__cpp_deduction_guides">__cpp_deduction_guides</span> &gt;= 201606</u></td></tr>
+<tr><th id="286">286</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <b>typename</b>... _Up&gt;</td></tr>
+<tr><th id="287">287</th><td>    <dfn class="tu decl fn" id="std::{deductionguideforarray}" title='std::&lt;deduction guide for array&gt;' data-type='array&lt;enable_if_t&lt;(is_same_v&lt;_Tp, _Up&gt; &amp;&amp; ...), _Tp&gt;, 1 + sizeof...(_Up)&gt; std::&lt;deduction guide for array&gt;(_Tp , _Up... )' data-ref="std::{deductionguideforarray}">array</dfn>(_Tp, _Up...)</td></tr>
+<tr><th id="288">288</th><td>      -&gt; <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;<a class="type" href="type_traits.html#std::enable_if_t" title='std::enable_if_t' data-ref="std::enable_if_t">enable_if_t</a>&lt;(is_same_v&lt;_Tp, _Up&gt; &amp;&amp; ...), _Tp&gt;,</td></tr>
+<tr><th id="289">289</th><td>	       <var>1</var> + <b>sizeof</b>...(_Up)&gt;;</td></tr>
+<tr><th id="290">290</th><td><u>#<span data-ppcond="285">endif</span></u></td></tr>
+<tr><th id="291">291</th><td></td></tr>
+<tr><th id="292">292</th><td>  <i>// Array comparisons.</i></td></tr>
+<tr><th id="293">293</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="294">294</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="295">295</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="296">296</th><td>    <b>inline</b> <em>bool</em></td></tr>
+<tr><th id="297">297</th><td>    <dfn class="decl def fn" id="_ZSteqRKSt5arrayIT_XT0_EES3_" title='std::operator==' data-ref="_ZSteqRKSt5arrayIT_XT0_EES3_"><b>operator</b>==</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col9 decl" id="1629__one" title='__one' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1629__one">__one</dfn>, <em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col0 decl" id="1630__two" title='__two' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1630__two">__two</dfn>)</td></tr>
+<tr><th id="298">298</th><td>    { <b>return</b> <span class="namespace">std::</span>equal(<a class="local col9 ref" href="#1629__one" title='__one' data-ref="1629__one">__one</a>.begin(), <a class="local col9 ref" href="#1629__one" title='__one' data-ref="1629__one">__one</a>.end(), <a class="local col0 ref" href="#1630__two" title='__two' data-ref="1630__two">__two</a>.begin()); }</td></tr>
+<tr><th id="299">299</th><td></td></tr>
+<tr><th id="300">300</th><td><u>#<span data-ppcond="300">if</span> __cpp_lib_three_way_comparison &amp;&amp; __cpp_lib_concepts</u></td></tr>
+<tr><th id="301">301</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, size_t _Nm&gt;</td></tr>
+<tr><th id="302">302</th><td>    [[nodiscard]]</td></tr>
+<tr><th id="303">303</th><td>    <b>constexpr</b> __detail::__synth3way_t&lt;_Tp&gt;</td></tr>
+<tr><th id="304">304</th><td>    <b>operator</b>&lt;=&gt;(<em>const</em> array&lt;_Tp, _Nm&gt;&amp; __a, <em>const</em> array&lt;_Tp, _Nm&gt;&amp; __b)</td></tr>
+<tr><th id="305">305</th><td>    {</td></tr>
+<tr><th id="306">306</th><td>      <b>if</b> <b>constexpr</b> (_Nm &amp;&amp; __is_memcmp_ordered&lt;_Tp&gt;::__value)</td></tr>
+<tr><th id="307">307</th><td>	<b>if</b> (!std::__is_constant_evaluated())</td></tr>
+<tr><th id="308">308</th><td>	  {</td></tr>
+<tr><th id="309">309</th><td>	    <b>constexpr</b> size_t __n = _Nm * <b>sizeof</b>(_Tp);</td></tr>
+<tr><th id="310">310</th><td>	    <b>return</b> __builtin_memcmp(__a.data(), __b.data(), __n) &lt;=&gt; <var>0</var>;</td></tr>
+<tr><th id="311">311</th><td>	  }</td></tr>
+<tr><th id="312">312</th><td></td></tr>
+<tr><th id="313">313</th><td>      <b>for</b> (size_t __i = <var>0</var>; __i &lt; _Nm; ++__i)</td></tr>
+<tr><th id="314">314</th><td>	{</td></tr>
+<tr><th id="315">315</th><td>	  <em>auto</em> __c = __detail::__synth3way(__a[__i], __b[__i]);</td></tr>
+<tr><th id="316">316</th><td>	  <b>if</b> (__c != <var>0</var>)</td></tr>
+<tr><th id="317">317</th><td>	    <b>return</b> __c;</td></tr>
+<tr><th id="318">318</th><td>	}</td></tr>
+<tr><th id="319">319</th><td>      <b>return</b> strong_ordering::equal;</td></tr>
+<tr><th id="320">320</th><td>    }</td></tr>
+<tr><th id="321">321</th><td><u>#<span data-ppcond="300">else</span></u></td></tr>
+<tr><th id="322">322</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="323">323</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="324">324</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="325">325</th><td>    <b>inline</b> <em>bool</em></td></tr>
+<tr><th id="326">326</th><td>    <dfn class="decl def fn" id="_ZStneRKSt5arrayIT_XT0_EES3_" title='std::operator!=' data-ref="_ZStneRKSt5arrayIT_XT0_EES3_"><b>operator</b>!=</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col1 decl" id="1631__one" title='__one' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1631__one">__one</dfn>, <em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col2 decl" id="1632__two" title='__two' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1632__two">__two</dfn>)</td></tr>
+<tr><th id="327">327</th><td>    { <b>return</b> !(<a class="local col1 ref" href="#1631__one" title='__one' data-ref="1631__one">__one</a> == <a class="local col2 ref" href="#1632__two" title='__two' data-ref="1632__two">__two</a>); }</td></tr>
+<tr><th id="328">328</th><td></td></tr>
+<tr><th id="329">329</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="330">330</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="331">331</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="332">332</th><td>    <b>inline</b> <em>bool</em></td></tr>
+<tr><th id="333">333</th><td>    <dfn class="decl def fn" id="_ZStltRKSt5arrayIT_XT0_EES3_" title='std::operator&lt;' data-ref="_ZStltRKSt5arrayIT_XT0_EES3_"><b>operator</b>&lt;</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col3 decl" id="1633__a" title='__a' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1633__a">__a</dfn>, <em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col4 decl" id="1634__b" title='__b' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1634__b">__b</dfn>)</td></tr>
+<tr><th id="334">334</th><td>    {</td></tr>
+<tr><th id="335">335</th><td>      <b>return</b> <span class="namespace">std::</span>lexicographical_compare(<a class="local col3 ref" href="#1633__a" title='__a' data-ref="1633__a">__a</a>.begin(), <a class="local col3 ref" href="#1633__a" title='__a' data-ref="1633__a">__a</a>.end(),</td></tr>
+<tr><th id="336">336</th><td>					  <a class="local col4 ref" href="#1634__b" title='__b' data-ref="1634__b">__b</a>.begin(), <a class="local col4 ref" href="#1634__b" title='__b' data-ref="1634__b">__b</a>.end());</td></tr>
+<tr><th id="337">337</th><td>    }</td></tr>
+<tr><th id="338">338</th><td></td></tr>
+<tr><th id="339">339</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="340">340</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="341">341</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="342">342</th><td>    <b>inline</b> <em>bool</em></td></tr>
+<tr><th id="343">343</th><td>    <dfn class="decl def fn" id="_ZStgtRKSt5arrayIT_XT0_EES3_" title='std::operator&gt;' data-ref="_ZStgtRKSt5arrayIT_XT0_EES3_"><b>operator</b>&gt;</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col5 decl" id="1635__one" title='__one' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1635__one">__one</dfn>, <em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col6 decl" id="1636__two" title='__two' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1636__two">__two</dfn>)</td></tr>
+<tr><th id="344">344</th><td>    { <b>return</b> <a class="local col6 ref" href="#1636__two" title='__two' data-ref="1636__two">__two</a> &lt; <a class="local col5 ref" href="#1635__one" title='__one' data-ref="1635__one">__one</a>; }</td></tr>
+<tr><th id="345">345</th><td></td></tr>
+<tr><th id="346">346</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="347">347</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="348">348</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="349">349</th><td>    <b>inline</b> <em>bool</em></td></tr>
+<tr><th id="350">350</th><td>    <dfn class="decl def fn" id="_ZStleRKSt5arrayIT_XT0_EES3_" title='std::operator&lt;=' data-ref="_ZStleRKSt5arrayIT_XT0_EES3_"><b>operator</b>&lt;=</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col7 decl" id="1637__one" title='__one' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1637__one">__one</dfn>, <em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col8 decl" id="1638__two" title='__two' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1638__two">__two</dfn>)</td></tr>
+<tr><th id="351">351</th><td>    { <b>return</b> !(<a class="local col7 ref" href="#1637__one" title='__one' data-ref="1637__one">__one</a> &gt; <a class="local col8 ref" href="#1638__two" title='__two' data-ref="1638__two">__two</a>); }</td></tr>
+<tr><th id="352">352</th><td></td></tr>
+<tr><th id="353">353</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="354">354</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="355">355</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="356">356</th><td>    <b>inline</b> <em>bool</em></td></tr>
+<tr><th id="357">357</th><td>    <dfn class="decl def fn" id="_ZStgeRKSt5arrayIT_XT0_EES3_" title='std::operator&gt;=' data-ref="_ZStgeRKSt5arrayIT_XT0_EES3_"><b>operator</b>&gt;=</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col9 decl" id="1639__one" title='__one' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1639__one">__one</dfn>, <em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col0 decl" id="1640__two" title='__two' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1640__two">__two</dfn>)</td></tr>
+<tr><th id="358">358</th><td>    { <b>return</b> !(<a class="local col9 ref" href="#1639__one" title='__one' data-ref="1639__one">__one</a> &lt; <a class="local col0 ref" href="#1640__two" title='__two' data-ref="1640__two">__two</a>); }</td></tr>
+<tr><th id="359">359</th><td><u>#<span data-ppcond="300">endif</span> // three_way_comparison &amp;&amp; concepts</u></td></tr>
+<tr><th id="360">360</th><td></td></tr>
+<tr><th id="361">361</th><td>  <i>// Specialized algorithms.</i></td></tr>
+<tr><th id="362">362</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="363">363</th><td>    <a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#191" title="" data-ref="_M/_GLIBCXX20_CONSTEXPR">_GLIBCXX20_CONSTEXPR</a></td></tr>
+<tr><th id="364">364</th><td>    <b>inline</b></td></tr>
+<tr><th id="365">365</th><td><u>#<span data-ppcond="365">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt; 201402L || !defined(<span class="macro" data-ref="_M/__STRICT_ANSI__">__STRICT_ANSI__</span>) // c++1z or gnu++11</u></td></tr>
+<tr><th id="366">366</th><td>    <i>// Constrained free swap overload, see p0185r1</i></td></tr>
+<tr><th id="367">367</th><td>    <a class="type" href="type_traits.html#std::__enable_if_t" title='std::__enable_if_t' data-ref="std::__enable_if_t">__enable_if_t</a>&lt;<a class="type" href="#std::__array_traits" title='std::__array_traits' data-ref="std::__array_traits">__array_traits</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;::_Is_swappable::value&gt;</td></tr>
+<tr><th id="368">368</th><td><u>#<span data-ppcond="365">else</span></u></td></tr>
+<tr><th id="369">369</th><td>    <em>void</em></td></tr>
+<tr><th id="370">370</th><td><u>#<span data-ppcond="365">endif</span></u></td></tr>
+<tr><th id="371">371</th><td>    <dfn class="decl def fn" id="_ZSt4swapRSt5arrayIT_XT0_EES2_" title='std::swap' data-ref="_ZSt4swapRSt5arrayIT_XT0_EES2_">swap</dfn>(<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col1 decl" id="1641__one" title='__one' data-type='array&lt;_Tp, _Nm&gt; &amp;' data-ref="1641__one">__one</dfn>, <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col2 decl" id="1642__two" title='__two' data-type='array&lt;_Tp, _Nm&gt; &amp;' data-ref="1642__two">__two</dfn>)</td></tr>
+<tr><th id="372">372</th><td>    <b>noexcept</b>(<b>noexcept</b>(<a class="local col1 ref" href="#1641__one" title='__one' data-ref="1641__one">__one</a>.swap(<a class="local col2 ref" href="#1642__two" title='__two' data-ref="1642__two">__two</a>)))</td></tr>
+<tr><th id="373">373</th><td>    { <a class="local col1 ref" href="#1641__one" title='__one' data-ref="1641__one">__one</a>.swap(<a class="local col2 ref" href="#1642__two" title='__two' data-ref="1642__two">__two</a>); }</td></tr>
+<tr><th id="374">374</th><td></td></tr>
+<tr><th id="375">375</th><td><u>#<span data-ppcond="375">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt; 201402L || !defined(<span class="macro" data-ref="_M/__STRICT_ANSI__">__STRICT_ANSI__</span>) // c++1z or gnu++11</u></td></tr>
+<tr><th id="376">376</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="377">377</th><td>    <a class="type" href="type_traits.html#std::__enable_if_t" title='std::__enable_if_t' data-ref="std::__enable_if_t">__enable_if_t</a>&lt;!<a class="type" href="#std::__array_traits" title='std::__array_traits' data-ref="std::__array_traits">__array_traits</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>&gt;::_Is_swappable::value&gt;</td></tr>
+<tr><th id="378">378</th><td>    <dfn class="decl def fn" id="_ZSt4swapRSt5arrayIT_XT0_EES2_" title='std::swap' data-ref="_ZSt4swapRSt5arrayIT_XT0_EES2_">swap</dfn>(<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp;, <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp;) = <b>delete</b>;</td></tr>
+<tr><th id="379">379</th><td><u>#<span data-ppcond="375">endif</span></u></td></tr>
+<tr><th id="380">380</th><td></td></tr>
+<tr><th id="381">381</th><td>  <b>template</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Int, <b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="382">382</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="383">383</th><td>    <b>constexpr</b> _Tp&amp;</td></tr>
+<tr><th id="384">384</th><td>    <dfn class="decl def fn" id="_ZSt3getRSt5arrayIT0_XT1_EE" title='std::get' data-ref="_ZSt3getRSt5arrayIT0_XT1_EE">get</dfn>(<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col3 decl" id="1643__arr" title='__arr' data-type='array&lt;_Tp, _Nm&gt; &amp;' data-ref="1643__arr">__arr</dfn>) <b>noexcept</b></td></tr>
+<tr><th id="385">385</th><td>    {</td></tr>
+<tr><th id="386">386</th><td>      <b>static_assert</b>(<a class="tu ref" href="#_Int" title='_Int' data-use='r' data-ref="_Int">_Int</a> &lt; <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>, <q>"array index is within bounds"</q>);</td></tr>
+<tr><th id="387">387</th><td>      <b>return</b> <a class="local col3 ref" href="#1643__arr" title='__arr' data-ref="1643__arr">__arr</a>._M_elems[<a class="tu ref" href="#_Int" title='_Int' data-use='a' data-ref="_Int">_Int</a>];</td></tr>
+<tr><th id="388">388</th><td>    }</td></tr>
+<tr><th id="389">389</th><td></td></tr>
+<tr><th id="390">390</th><td>  <b>template</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Int, <b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="391">391</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="392">392</th><td>    <b>constexpr</b> _Tp&amp;&amp;</td></tr>
+<tr><th id="393">393</th><td>    <dfn class="decl def fn" id="_ZSt3getOSt5arrayIT0_XT1_EE" title='std::get' data-ref="_ZSt3getOSt5arrayIT0_XT1_EE">get</dfn>(<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp;&amp; <dfn class="local col4 decl" id="1644__arr" title='__arr' data-type='array&lt;_Tp, _Nm&gt; &amp;&amp;' data-ref="1644__arr">__arr</dfn>) <b>noexcept</b></td></tr>
+<tr><th id="394">394</th><td>    {</td></tr>
+<tr><th id="395">395</th><td>      <b>static_assert</b>(<a class="tu ref" href="#_Int" title='_Int' data-use='r' data-ref="_Int">_Int</a> &lt; <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>, <q>"array index is within bounds"</q>);</td></tr>
+<tr><th id="396">396</th><td>      <b>return</b> <span class="namespace">std::</span>move(<span class="namespace">std::</span>get&lt;<a class="tu ref" href="#_Int" title='_Int' data-use='c' data-ref="_Int">_Int</a>&gt;(<a class="local col4 ref" href="#1644__arr" title='__arr' data-ref="1644__arr">__arr</a>));</td></tr>
+<tr><th id="397">397</th><td>    }</td></tr>
+<tr><th id="398">398</th><td></td></tr>
+<tr><th id="399">399</th><td>  <b>template</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Int, <b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="400">400</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="401">401</th><td>    <b>constexpr</b> <em>const</em> _Tp&amp;</td></tr>
+<tr><th id="402">402</th><td>    <dfn class="decl def fn" id="_ZSt3getRKSt5arrayIT0_XT1_EE" title='std::get' data-ref="_ZSt3getRKSt5arrayIT0_XT1_EE">get</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp; <dfn class="local col5 decl" id="1645__arr" title='__arr' data-type='const array&lt;_Tp, _Nm&gt; &amp;' data-ref="1645__arr">__arr</dfn>) <b>noexcept</b></td></tr>
+<tr><th id="403">403</th><td>    {</td></tr>
+<tr><th id="404">404</th><td>      <b>static_assert</b>(<a class="tu ref" href="#_Int" title='_Int' data-use='r' data-ref="_Int">_Int</a> &lt; <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>, <q>"array index is within bounds"</q>);</td></tr>
+<tr><th id="405">405</th><td>      <b>return</b> <a class="local col5 ref" href="#1645__arr" title='__arr' data-ref="1645__arr">__arr</a>._M_elems[<a class="tu ref" href="#_Int" title='_Int' data-use='a' data-ref="_Int">_Int</a>];</td></tr>
+<tr><th id="406">406</th><td>    }</td></tr>
+<tr><th id="407">407</th><td></td></tr>
+<tr><th id="408">408</th><td>  <b>template</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Int, <b>typename</b> _Tp, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="409">409</th><td>    [[__nodiscard__]]</td></tr>
+<tr><th id="410">410</th><td>    <b>constexpr</b> <em>const</em> _Tp&amp;&amp;</td></tr>
+<tr><th id="411">411</th><td>    <dfn class="decl def fn" id="_ZSt3getOKSt5arrayIT0_XT1_EE" title='std::get' data-ref="_ZSt3getOKSt5arrayIT0_XT1_EE">get</dfn>(<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#_Nm" title='_Nm' data-ref="_Nm">_Nm</a>&gt;&amp;&amp; <dfn class="local col6 decl" id="1646__arr" title='__arr' data-type='const array&lt;_Tp, _Nm&gt; &amp;&amp;' data-ref="1646__arr">__arr</dfn>) <b>noexcept</b></td></tr>
+<tr><th id="412">412</th><td>    {</td></tr>
+<tr><th id="413">413</th><td>      <b>static_assert</b>(<a class="tu ref" href="#_Int" title='_Int' data-use='r' data-ref="_Int">_Int</a> &lt; <a class="tu ref" href="#_Nm" title='_Nm' data-use='r' data-ref="_Nm">_Nm</a>, <q>"array index is within bounds"</q>);</td></tr>
+<tr><th id="414">414</th><td>      <b>return</b> <span class="namespace">std::</span>move(<span class="namespace">std::</span>get&lt;<a class="tu ref" href="#_Int" title='_Int' data-use='c' data-ref="_Int">_Int</a>&gt;(<a class="local col6 ref" href="#1646__arr" title='__arr' data-ref="1646__arr">__arr</a>));</td></tr>
+<tr><th id="415">415</th><td>    }</td></tr>
+<tr><th id="416">416</th><td></td></tr>
+<tr><th id="417">417</th><td><u>#<span data-ppcond="417">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 202002L &amp;&amp; <span class="macro" title="201304L" data-ref="_M/__cpp_generic_lambdas">__cpp_generic_lambdas</span> &gt;= 201707L</u></td></tr>
+<tr><th id="418">418</th><td><u>#define __cpp_lib_to_array 201907L</u></td></tr>
+<tr><th id="419">419</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, size_t _Nm&gt;</td></tr>
+<tr><th id="420">420</th><td>    [[nodiscard]]</td></tr>
+<tr><th id="421">421</th><td>    <b>constexpr</b> array&lt;remove_cv_t&lt;_Tp&gt;, _Nm&gt;</td></tr>
+<tr><th id="422">422</th><td>    to_array(_Tp (&amp;__a)[_Nm])</td></tr>
+<tr><th id="423">423</th><td>    <b>noexcept</b>(is_nothrow_constructible_v&lt;_Tp, _Tp&amp;&gt;)</td></tr>
+<tr><th id="424">424</th><td>    {</td></tr>
+<tr><th id="425">425</th><td>      <b>static_assert</b>(!is_array_v&lt;_Tp&gt;);</td></tr>
+<tr><th id="426">426</th><td>      <b>static_assert</b>(is_constructible_v&lt;_Tp, _Tp&amp;&gt;);</td></tr>
+<tr><th id="427">427</th><td>      <b>if</b> <b>constexpr</b> (is_constructible_v&lt;_Tp, _Tp&amp;&gt;)</td></tr>
+<tr><th id="428">428</th><td>	{</td></tr>
+<tr><th id="429">429</th><td>	  <b>if</b> <b>constexpr</b> (is_trivially_copyable_v&lt;_Tp&gt;</td></tr>
+<tr><th id="430">430</th><td>			  &amp;&amp; is_trivially_default_constructible_v&lt;_Tp&gt;</td></tr>
+<tr><th id="431">431</th><td>			  &amp;&amp; is_copy_assignable_v&lt;_Tp&gt;)</td></tr>
+<tr><th id="432">432</th><td>	    {</td></tr>
+<tr><th id="433">433</th><td>	      array&lt;remove_cv_t&lt;_Tp&gt;, _Nm&gt; __arr;</td></tr>
+<tr><th id="434">434</th><td>	      <b>if</b> (!__is_constant_evaluated() &amp;&amp; _Nm != <var>0</var>)</td></tr>
+<tr><th id="435">435</th><td>		__builtin_memcpy((<em>void</em>*)__arr.data(), (<em>void</em>*)__a, <b>sizeof</b>(__a));</td></tr>
+<tr><th id="436">436</th><td>	      <b>else</b></td></tr>
+<tr><th id="437">437</th><td>		<b>for</b> (size_t __i = <var>0</var>; __i &lt; _Nm; ++__i)</td></tr>
+<tr><th id="438">438</th><td>		  __arr._M_elems[__i] = __a[__i];</td></tr>
+<tr><th id="439">439</th><td>	      <b>return</b> __arr;</td></tr>
+<tr><th id="440">440</th><td>	    }</td></tr>
+<tr><th id="441">441</th><td>	  <b>else</b></td></tr>
+<tr><th id="442">442</th><td>	    <b>return</b> [&amp;__a]&lt;size_t... _Idx&gt;(index_sequence&lt;_Idx...&gt;) {</td></tr>
+<tr><th id="443">443</th><td>	      <b>return</b> array&lt;remove_cv_t&lt;_Tp&gt;, _Nm&gt;{{ __a[_Idx]... }};</td></tr>
+<tr><th id="444">444</th><td>	    }(make_index_sequence&lt;_Nm&gt;{});</td></tr>
+<tr><th id="445">445</th><td>	}</td></tr>
+<tr><th id="446">446</th><td>      <b>else</b></td></tr>
+<tr><th id="447">447</th><td>	__builtin_unreachable(); <i>// FIXME: see PR c++/91388</i></td></tr>
+<tr><th id="448">448</th><td>    }</td></tr>
+<tr><th id="449">449</th><td></td></tr>
+<tr><th id="450">450</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, size_t _Nm&gt;</td></tr>
+<tr><th id="451">451</th><td>    [[nodiscard]]</td></tr>
+<tr><th id="452">452</th><td>    <b>constexpr</b> array&lt;remove_cv_t&lt;_Tp&gt;, _Nm&gt;</td></tr>
+<tr><th id="453">453</th><td>    to_array(_Tp (&amp;&amp;__a)[_Nm])</td></tr>
+<tr><th id="454">454</th><td>    <b>noexcept</b>(is_nothrow_move_constructible_v&lt;_Tp&gt;)</td></tr>
+<tr><th id="455">455</th><td>    {</td></tr>
+<tr><th id="456">456</th><td>      <b>static_assert</b>(!is_array_v&lt;_Tp&gt;);</td></tr>
+<tr><th id="457">457</th><td>      <b>static_assert</b>(is_move_constructible_v&lt;_Tp&gt;);</td></tr>
+<tr><th id="458">458</th><td>      <b>if</b> <b>constexpr</b> (is_move_constructible_v&lt;_Tp&gt;)</td></tr>
+<tr><th id="459">459</th><td>	{</td></tr>
+<tr><th id="460">460</th><td>	  <b>if</b> <b>constexpr</b> (is_trivially_copyable_v&lt;_Tp&gt;</td></tr>
+<tr><th id="461">461</th><td>			  &amp;&amp; is_trivially_default_constructible_v&lt;_Tp&gt;</td></tr>
+<tr><th id="462">462</th><td>			  &amp;&amp; is_copy_assignable_v&lt;_Tp&gt;)</td></tr>
+<tr><th id="463">463</th><td>	    {</td></tr>
+<tr><th id="464">464</th><td>	      array&lt;remove_cv_t&lt;_Tp&gt;, _Nm&gt; __arr;</td></tr>
+<tr><th id="465">465</th><td>	      <b>if</b> (!__is_constant_evaluated() &amp;&amp; _Nm != <var>0</var>)</td></tr>
+<tr><th id="466">466</th><td>		__builtin_memcpy((<em>void</em>*)__arr.data(), (<em>void</em>*)__a, <b>sizeof</b>(__a));</td></tr>
+<tr><th id="467">467</th><td>	      <b>else</b></td></tr>
+<tr><th id="468">468</th><td>		<b>for</b> (size_t __i = <var>0</var>; __i &lt; _Nm; ++__i)</td></tr>
+<tr><th id="469">469</th><td>		  __arr._M_elems[__i] = __a[__i];</td></tr>
+<tr><th id="470">470</th><td>	      <b>return</b> __arr;</td></tr>
+<tr><th id="471">471</th><td>	    }</td></tr>
+<tr><th id="472">472</th><td>	  <b>else</b></td></tr>
+<tr><th id="473">473</th><td>	    <b>return</b> [&amp;__a]&lt;size_t... _Idx&gt;(index_sequence&lt;_Idx...&gt;) {</td></tr>
+<tr><th id="474">474</th><td>	      <b>return</b> array&lt;remove_cv_t&lt;_Tp&gt;, _Nm&gt;{{ std::move(__a[_Idx])... }};</td></tr>
+<tr><th id="475">475</th><td>	    }(make_index_sequence&lt;_Nm&gt;{});</td></tr>
+<tr><th id="476">476</th><td>	}</td></tr>
+<tr><th id="477">477</th><td>      <b>else</b></td></tr>
+<tr><th id="478">478</th><td>	__builtin_unreachable(); <i>// FIXME: see PR c++/91388</i></td></tr>
+<tr><th id="479">479</th><td>    }</td></tr>
+<tr><th id="480">480</th><td><u>#<span data-ppcond="417">endif</span> // C++20</u></td></tr>
+<tr><th id="481">481</th><td></td></tr>
+<tr><th id="482">482</th><td>  <i>// Tuple interface to class template array.</i></td></tr>
+<tr><th id="483">483</th><td><i></i></td></tr>
+<tr><th id="484">484</th><td><i>  /// Partial specialization for std::array</i></td></tr>
+<tr><th id="485">485</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="486">486</th><td>    <b>struct</b> <dfn class="type def" id="std::tuple_size" title='std::tuple_size' data-ref="std::tuple_size">tuple_size</dfn>&lt;<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#std::tuple_size{array{type-parameter-0-0,_Nm}}::_Nm" title='std::tuple_size&lt;array&lt;type-parameter-0-0, _Nm&gt;&gt;::_Nm' data-ref="std::tuple_size{array{type-parameter-0-0,_Nm}}::_Nm">_Nm</a>&gt;&gt;</td></tr>
+<tr><th id="487">487</th><td>    : <b>public</b> <a class="type" href="type_traits.html#std::integral_constant" title='std::integral_constant' data-ref="std::integral_constant">integral_constant</a>&lt;<a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>, <a class="tu ref" href="#std::tuple_size{array{type-parameter-0-0,_Nm}}::_Nm" title='std::tuple_size&lt;array&lt;type-parameter-0-0, _Nm&gt;&gt;::_Nm' data-ref="std::tuple_size{array{type-parameter-0-0,_Nm}}::_Nm">_Nm</a>&gt; { };</td></tr>
+<tr><th id="488">488</th><td></td></tr>
+<tr><th id="489">489</th><td>  <i class="doc">/// Partial specialization for std::array</i></td></tr>
+<tr><th id="490">490</th><td>  <b>template</b>&lt;<a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Ind, <b>typename</b> _Tp, <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="491">491</th><td>    <b>struct</b> <dfn class="type def" id="std::tuple_element" title='std::tuple_element' data-ref="std::tuple_element">tuple_element</dfn>&lt;<a class="tu ref" href="#std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Ind" title='std::tuple_element&lt;_Ind, array&lt;type-parameter-0-1, _Nm&gt;&gt;::_Ind' data-ref="std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Ind">_Ind</a>, <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Nm" title='std::tuple_element&lt;_Ind, array&lt;type-parameter-0-1, _Nm&gt;&gt;::_Nm' data-ref="std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Nm">_Nm</a>&gt;&gt;</td></tr>
+<tr><th id="492">492</th><td>    {</td></tr>
+<tr><th id="493">493</th><td>      <b>static_assert</b>(<a class="tu ref" href="#std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Ind" title='std::tuple_element&lt;_Ind, array&lt;type-parameter-0-1, _Nm&gt;&gt;::_Ind' data-use='r' data-ref="std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Ind">_Ind</a> &lt; <a class="tu ref" href="#std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Nm" title='std::tuple_element&lt;_Ind, array&lt;type-parameter-0-1, _Nm&gt;&gt;::_Nm' data-use='r' data-ref="std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::_Nm">_Nm</a>, <q>"array index is in range"</q>);</td></tr>
+<tr><th id="494">494</th><td>      <b>using</b> <dfn class="typedef" id="std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::type" title='std::tuple_element&lt;_Ind, array&lt;type-parameter-0-1, _Nm&gt;&gt;::type' data-type='_Tp' data-ref="std::tuple_element{_Ind,array{type-parameter-0-1,_Nm}}::type">type</dfn> = _Tp;</td></tr>
+<tr><th id="495">495</th><td>    };</td></tr>
+<tr><th id="496">496</th><td></td></tr>
+<tr><th id="497">497</th><td><u>#<span data-ppcond="497">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201703L</u></td></tr>
+<tr><th id="498">498</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="499">499</th><td>    <b>inline</b> <b>constexpr</b> <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def" id="std::tuple_size_v" title='std::tuple_size_v' data-ref="std::tuple_size_v">tuple_size_v</dfn>&lt;<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#std::_Nm" title='std::_Nm' data-ref="std::_Nm">_Nm</a>&gt;&gt; = <a class="tu ref" href="#std::_Nm" title='std::_Nm' data-ref="std::_Nm">_Nm</a>;</td></tr>
+<tr><th id="500">500</th><td></td></tr>
+<tr><th id="501">501</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="502">502</th><td>    <b>inline</b> <b>constexpr</b> <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def" id="std::tuple_size_v" title='std::tuple_size_v' data-ref="std::tuple_size_v">tuple_size_v</dfn>&lt;<em>const</em> <a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#std::_Nm" title='std::_Nm' data-ref="std::_Nm">_Nm</a>&gt;&gt; = <a class="tu ref" href="#std::_Nm" title='std::_Nm' data-ref="std::_Nm">_Nm</a>;</td></tr>
+<tr><th id="503">503</th><td><u>#<span data-ppcond="497">endif</span></u></td></tr>
+<tr><th id="504">504</th><td></td></tr>
+<tr><th id="505">505</th><td>  <b>template</b>&lt;<b>typename</b> _Tp, <a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> _Nm&gt;</td></tr>
+<tr><th id="506">506</th><td>    <b>struct</b> <dfn class="type def" id="std::__is_tuple_like_impl" title='std::__is_tuple_like_impl' data-ref="std::__is_tuple_like_impl">__is_tuple_like_impl</dfn>&lt;<a class="type" href="tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;_Tp, <a class="tu ref" href="#std::__is_tuple_like_impl{array{type-parameter-0-0,_Nm}}::_Nm" title='std::__is_tuple_like_impl&lt;array&lt;type-parameter-0-0, _Nm&gt;&gt;::_Nm' data-ref="std::__is_tuple_like_impl{array{type-parameter-0-0,_Nm}}::_Nm">_Nm</a>&gt;&gt; : <a class="typedef" href="type_traits.html#std::true_type" title='std::true_type' data-type='integral_constant&lt;bool, true&gt;' data-ref="std::true_type">true_type</a></td></tr>
+<tr><th id="507">507</th><td>    { };</td></tr>
+<tr><th id="508">508</th><td></td></tr>
+<tr><th id="509">509</th><td><a class="macro" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#394" title="" data-ref="_M/_GLIBCXX_END_NAMESPACE_VERSION">_GLIBCXX_END_NAMESPACE_VERSION</a></td></tr>
+<tr><th id="510">510</th><td>} <i>// namespace std</i></td></tr>
+<tr><th id="511">511</th><td></td></tr>
+<tr><th id="512">512</th><td><u>#<span data-ppcond="34">endif</span> // C++11</u></td></tr>
+<tr><th id="513">513</th><td></td></tr>
+<tr><th id="514">514</th><td><u>#<span data-ppcond="29">endif</span> // _GLIBCXX_ARRAY</u></td></tr>
+<tr><th id="515">515</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../codebrowser/examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>LieGroupEKF.h source code [codebrowser/gtsam/navigation/LieGroupEKF.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::LieGroupEKF "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/navigation/LieGroupEKF.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>navigation</a>/<a href='LieGroupEKF.h.html'>LieGroupEKF.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb"> LieGroupEKF.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Extended Kalman Filter derived class for Lie groups G.</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * This file defines the LieGroupEKF class template, inheriting from</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * ManifoldEKF, for performing EKF steps specifically on states residing in a</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> * Lie group. It provides predict methods with state-dependent dynamics</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> * functions. Please use the InvariantEKF class for prediction via group</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> * composition.</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"> * <span class="command">@date</span>  April 24, 2025</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"> * <span class="command">@authors</span> Scott Baker, Matt Kielo, Frank Dellaert</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><u>#pragma once</u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../base/Lie.h.html">&lt;gtsam/base/Lie.h&gt;</a>  // Include for Lie group traits and operations</u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../base/VectorSpace.h.html">&lt;gtsam/base/VectorSpace.h&gt;</a>        // Matrix traits</u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="ManifoldEKF.h.html">&lt;gtsam/navigation/ManifoldEKF.h&gt;</a>  // Include the base class</u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../3rdparty/Eigen/Eigen/Dense.html">&lt;Eigen/Dense&gt;</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/c++/13/functional.html">&lt;functional&gt;</a>  // For std::function</u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * <span class="command">@class</span> <span class="verb" data-ref="gtsam::LieGroupEKF">LieGroupEKF</span></i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * <span class="command">@brief</span> Extended Kalman Filter on a Lie group G, derived from ManifoldEKF</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * <span class="command">@tparam</span> <span class="arg">G</span> Lie group type (must satisfy LieGroup concept).</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * This filter specializes ManifoldEKF for Lie groups, offering predict methods</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> * with state-dependent dynamics functions.</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * Use the InvariantEKF class for prediction via group composition.</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * For details on how static and dynamic dimensions are handled, please refer to</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * the `ManifoldEKF` class documentation.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="50">50</th><td><b>template</b> &lt;<b>typename</b> G&gt;</td></tr>
+<tr><th id="51">51</th><td><b>class</b> <dfn class="type def" id="gtsam::LieGroupEKF" title='gtsam::LieGroupEKF' data-ref="gtsam::LieGroupEKF">LieGroupEKF</dfn> : <b>public</b> <a class="type" href="ManifoldEKF.h.html#gtsam::ManifoldEKF" title='gtsam::ManifoldEKF' data-ref="gtsam::ManifoldEKF">ManifoldEKF</a>&lt;G&gt; {</td></tr>
+<tr><th id="52">52</th><td> <b>public</b>:</td></tr>
+<tr><th id="53">53</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::LieGroupEKF::Base" title='gtsam::LieGroupEKF::Base' data-type='ManifoldEKF&lt;G&gt;' data-ref="gtsam::LieGroupEKF::Base">Base</dfn> = <a class="type" href="ManifoldEKF.h.html#gtsam::ManifoldEKF" title='gtsam::ManifoldEKF' data-ref="gtsam::ManifoldEKF">ManifoldEKF</a>&lt;G&gt;;           <i class="doc">///&lt; Base class type</i></td></tr>
+<tr><th id="54">54</th><td>  <em>static</em> <b>constexpr</b> <em>int</em> <dfn class="decl def" id="gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</dfn> = <a class="typedef" href="#gtsam::LieGroupEKF::Base" title='gtsam::LieGroupEKF::Base' data-type='ManifoldEKF&lt;G&gt;' data-ref="gtsam::LieGroupEKF::Base">Base</a>::Dim;  <i class="doc">///&lt; Compile-time dimension of G.</i></td></tr>
+<tr><th id="55">55</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::LieGroupEKF::TangentVector" title='gtsam::LieGroupEKF::TangentVector' data-type='typename Base::TangentVector' data-ref="gtsam::LieGroupEKF::TangentVector">TangentVector</dfn> =</td></tr>
+<tr><th id="56">56</th><td>      <b>typename</b> <a class="typedef" href="#gtsam::LieGroupEKF::Base" title='gtsam::LieGroupEKF::Base' data-type='ManifoldEKF&lt;G&gt;' data-ref="gtsam::LieGroupEKF::Base">Base</a>::TangentVector;  <i class="doc">///&lt; Tangent vector type for G.</i></td></tr>
+<tr><th id="57">57</th><td>  <i class="doc">/// Jacobian for group operations (Adjoint, Expmap derivatives, F).</i></td></tr>
+<tr><th id="58">58</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::LieGroupEKF::Jacobian" title='gtsam::LieGroupEKF::Jacobian' data-type='typename Base::Jacobian' data-ref="gtsam::LieGroupEKF::Jacobian">Jacobian</dfn> = <b>typename</b> <a class="typedef" href="#gtsam::LieGroupEKF::Base" title='gtsam::LieGroupEKF::Base' data-type='ManifoldEKF&lt;G&gt;' data-ref="gtsam::LieGroupEKF::Base">Base</a>::Jacobian;  <i>// Eigen::Matrix&lt;double, Dim, Dim&gt;</i></td></tr>
+<tr><th id="59">59</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::LieGroupEKF::Covariance" title='gtsam::LieGroupEKF::Covariance' data-type='typename Base::Covariance' data-ref="gtsam::LieGroupEKF::Covariance">Covariance</dfn> =</td></tr>
+<tr><th id="60">60</th><td>      <b>typename</b> <a class="typedef" href="#gtsam::LieGroupEKF::Base" title='gtsam::LieGroupEKF::Base' data-type='ManifoldEKF&lt;G&gt;' data-ref="gtsam::LieGroupEKF::Base">Base</a>::Covariance;  <i>// Eigen::Matrix&lt;double, Dim, Dim&gt;</i></td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="63">63</th><td><i class="doc">   * Constructor: initialize with state and covariance.</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">X0</span> Initial state on Lie group G.</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">P0</span> Initial covariance in the tangent space at X0.</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="67">67</th><td>  <dfn class="decl def fn" id="_ZN5gtsam11LieGroupEKFC1ERKT_RKNS_11ManifoldEKFIS1_E10CovarianceE" title='gtsam::LieGroupEKF::LieGroupEKF&lt;G&gt;' data-ref="_ZN5gtsam11LieGroupEKFC1ERKT_RKNS_11ManifoldEKFIS1_E10CovarianceE">LieGroupEKF</dfn>(<em>const</em> G&amp; <dfn class="local col0 decl" id="30X0" title='X0' data-type='const G &amp;' data-ref="30X0">X0</dfn>, <em>const</em> <a class="typedef" href="#gtsam::LieGroupEKF::Covariance" title='gtsam::LieGroupEKF::Covariance' data-type='typename Base::Covariance' data-ref="gtsam::LieGroupEKF::Covariance">Covariance</a>&amp; <dfn class="local col1 decl" id="31P0" title='P0' data-type='const Covariance &amp;' data-ref="31P0">P0</dfn>) : <a class="typedef" href="#gtsam::LieGroupEKF::Base" title='gtsam::LieGroupEKF::Base' data-type='ManifoldEKF&lt;G&gt;' data-ref="gtsam::LieGroupEKF::Base">Base</a>(<a class="local col0 ref" href="#30X0" title='X0' data-ref="30X0">X0</a>, <a class="local col1 ref" href="#31P0" title='P0' data-ref="31P0">P0</a>) {</td></tr>
+<tr><th id="68">68</th><td>    <b>static_assert</b>(<a class="type" href="../base/Lie.h.html#gtsam::IsLieGroup" title='gtsam::IsLieGroup' data-ref="gtsam::IsLieGroup">IsLieGroup</a>&lt;G&gt;::value,</td></tr>
+<tr><th id="69">69</th><td>                  <q>"Template parameter G must be a GTSAM Lie Group"</q>);</td></tr>
+<tr><th id="70">70</th><td>  }</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="73">73</th><td><i class="doc">   * SFINAE check for correctly typed state-dependent dynamics function.</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc">   * Signature: TangentVector f(const G&amp; X, OptionalJacobian&lt;Dim, Dim&gt; Df)</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc">   * Df = d(xi)/d(local(X))</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="77">77</th><td>  <b>template</b> &lt;<b>typename</b> Dynamics&gt;</td></tr>
+<tr><th id="78">78</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::LieGroupEKF::enable_if_dynamics" title='gtsam::LieGroupEKF::enable_if_dynamics' data-type='std::enable_if_t&lt;!std::is_convertible_v&lt;Dynamics, TangentVector&gt; &amp;&amp; std::is_invocable_r_v&lt;TangentVector, Dynamics, const G &amp;, OptionalJacobian&lt;Dim, Dim&gt; &amp;&gt;&gt;' data-ref="gtsam::LieGroupEKF::enable_if_dynamics">enable_if_dynamics</dfn> =</td></tr>
+<tr><th id="79">79</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if_t" title='std::enable_if_t' data-ref="std::enable_if_t">enable_if_t</a>&lt;!<span class="namespace">std::</span>is_convertible_v&lt;Dynamics, <a class="typedef" href="#gtsam::LieGroupEKF::TangentVector" title='gtsam::LieGroupEKF::TangentVector' data-type='typename Base::TangentVector' data-ref="gtsam::LieGroupEKF::TangentVector">TangentVector</a>&gt; &amp;&amp;</td></tr>
+<tr><th id="80">80</th><td>                       <span class="namespace">std::</span>is_invocable_r_v&lt;<a class="typedef" href="#gtsam::LieGroupEKF::TangentVector" title='gtsam::LieGroupEKF::TangentVector' data-type='typename Base::TangentVector' data-ref="gtsam::LieGroupEKF::TangentVector">TangentVector</a>, Dynamics, <em>const</em> G&amp;,</td></tr>
+<tr><th id="81">81</th><td>                                             <a class="type" href="../base/OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>, <a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>&gt;&amp;&gt;&gt;;</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   * Predict mean and Jacobian A with state-dependent dynamics:</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   *   xi = f(X_k, Df)           (Compute tangent vector dynamics and Jacobian</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   * Df) U = Expmap(xi * dt, Dexp) (Compute motion increment U and Expmap</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   * Jacobian Dexp) X_{k+1} = X_k * U         (Predict next state) A =</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   * Ad_{U^{-1}} + Dexp * Df * dt (Compute full state transition Jacobian)</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Dynamics</span> Functor signature: TangentVector f(const G&amp;,</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   * OptionalJacobian&lt;Dim,Dim&gt;&amp;)</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">f</span> Dynamics functor returning tangent vector xi and its Jacobian Df</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">   * w.r.t. local(X).</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">dt</span> Time step.</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">A</span> OptionalJacobian to store the computed state transition Jacobian</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">   * A.</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">   * <span class="command">@return</span> Predicted state X_{k+1}.</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="99">99</th><td>  <b>template</b> &lt;<b>typename</b> Dynamics, <b>typename</b> = <a class="type" href="#gtsam::LieGroupEKF::enable_if_dynamics" title='gtsam::LieGroupEKF::enable_if_dynamics' data-ref="gtsam::LieGroupEKF::enable_if_dynamics">enable_if_dynamics</a>&lt;Dynamics&gt;&gt;</td></tr>
+<tr><th id="100">100</th><td>  G <dfn class="decl def fn" id="_ZNK5gtsam11LieGroupEKF11predictMeanEOTL0__dNS_16OptionalJacobianIL_ZNS0_3DimEEL_ZNS0_3DimEEEE" title='gtsam::LieGroupEKF::predictMean' data-ref="_ZNK5gtsam11LieGroupEKF11predictMeanEOTL0__dNS_16OptionalJacobianIL_ZNS0_3DimEEL_ZNS0_3DimEEEE">predictMean</dfn>(Dynamics&amp;&amp; <dfn class="local col2 decl" id="32f" title='f' data-type='Dynamics &amp;&amp;' data-ref="32f">f</dfn>, <em>double</em> <dfn class="local col3 decl" id="33dt" title='dt' data-type='double' data-ref="33dt">dt</dfn>,</td></tr>
+<tr><th id="101">101</th><td>                <a class="type" href="../base/OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>, <a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>&gt; <dfn class="local col4 decl" id="34A" title='A' data-type='OptionalJacobian&lt;Dim, Dim&gt;' data-ref="34A">A</dfn> = {}) <em>const</em> {</td></tr>
+<tr><th id="102">102</th><td>    <a class="typedef" href="#gtsam::LieGroupEKF::Jacobian" title='gtsam::LieGroupEKF::Jacobian' data-type='typename Base::Jacobian' data-ref="gtsam::LieGroupEKF::Jacobian">Jacobian</a> <dfn class="local col5 decl" id="35Df" title='Df' data-type='Jacobian' data-ref="35Df">Df</dfn>, <dfn class="local col6 decl" id="36Dexp" title='Dexp' data-type='Jacobian' data-ref="36Dexp">Dexp</dfn>;  <i>// Eigen::Matrix&lt;double, Dim, Dim&gt;</i></td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>    <b>if</b> <b>constexpr</b> (<span class="namespace">std::</span>is_same_v&lt;G, <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;) {</td></tr>
+<tr><th id="105">105</th><td>      <i>// Specialize to Matrix case as its Expmap is not defined.</i></td></tr>
+<tr><th id="106">106</th><td>      <a class="typedef" href="#gtsam::LieGroupEKF::TangentVector" title='gtsam::LieGroupEKF::TangentVector' data-type='typename Base::TangentVector' data-ref="gtsam::LieGroupEKF::TangentVector">TangentVector</a> <dfn class="local col7 decl" id="37xi" title='xi' data-type='TangentVector' data-ref="37xi">xi</dfn> = <a class="local col2 ref" href="#32f" title='f' data-ref="32f">f</a>(<b>this</b>-&gt;X_, <a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a> ? &amp;<a class="local col5 ref" href="#35Df" title='Df' data-ref="35Df">Df</a> : <b>nullptr</b>);</td></tr>
+<tr><th id="107">107</th><td>      <em>const</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="local col8 decl" id="38nextX" title='nextX' data-type='const Matrix' data-ref="38nextX">nextX</dfn> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;::<a class="ref fn" href="../base/VectorSpace.h.html#_ZN5gtsam8internal13DynamicTraits7RetractERKN5Eigen6MatrixIdXT_EXT0_EXT1_EXT2_EXT3_EEERKNS3_IdLin1ELi1ELi0ELin1ELi1EEENS_16OptionalJacobianILin1ELin1EEESB_" title='gtsam::internal::DynamicTraits::Retract' data-ref="_ZN5gtsam8internal13DynamicTraits7RetractERKN5Eigen6MatrixIdXT_EXT0_EXT1_EXT2_EXT3_EEERKNS3_IdLin1ELi1ELi0ELin1ELi1EEENS_16OptionalJacobianILin1ELin1EEESB_">Retract</a>(</td></tr>
+<tr><th id="108">108</th><td>          <span class='inlayHint'>m:&nbsp;</span><b>this</b>-&gt;X_, <span class='inlayHint'>v:&nbsp;</span><a class="local col7 ref" href="#37xi" title='xi' data-ref="37xi">xi</a> * <a class="local col3 ref" href="#33dt" title='dt' data-ref="33dt">dt</a>, <span class='inlayHint'>H1:&nbsp;</span><a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a> ? &amp;<a class="local col6 ref" href="#36Dexp" title='Dexp' data-ref="36Dexp">Dexp</a> : <b>nullptr</b>);  <i>// just addition</i></td></tr>
+<tr><th id="109">109</th><td>      <b>if</b> (<a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a>) {</td></tr>
+<tr><th id="110">110</th><td>        <em>const</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="local col9 decl" id="39I_n" title='I_n' data-type='const Matrix' data-ref="39I_n">I_n</dfn> = <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>::Identity(<b>this</b>-&gt;n_, <b>this</b>-&gt;n_);</td></tr>
+<tr><th id="111">111</th><td>        *<a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a> = <a class="local col9 ref" href="#39I_n" title='I_n' data-ref="39I_n">I_n</a> + <a class="local col6 ref" href="#36Dexp" title='Dexp' data-ref="36Dexp">Dexp</a> * <a class="local col5 ref" href="#35Df" title='Df' data-ref="35Df">Df</a> * <a class="local col3 ref" href="#33dt" title='dt' data-ref="33dt">dt</a>;  <i>// AdjointMap is always identity for Matrix</i></td></tr>
+<tr><th id="112">112</th><td>      }</td></tr>
+<tr><th id="113">113</th><td>      <b>return</b> <a class="local col8 ref" href="#38nextX" title='nextX' data-ref="38nextX">nextX</a>;</td></tr>
+<tr><th id="114">114</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="115">115</th><td>      <a class="typedef" href="#gtsam::LieGroupEKF::TangentVector" title='gtsam::LieGroupEKF::TangentVector' data-type='typename Base::TangentVector' data-ref="gtsam::LieGroupEKF::TangentVector">TangentVector</a> <dfn class="local col0 decl" id="40xi" title='xi' data-type='TangentVector' data-ref="40xi">xi</dfn> =</td></tr>
+<tr><th id="116">116</th><td>          <a class="local col2 ref" href="#32f" title='f' data-ref="32f">f</a>(<b>this</b>-&gt;X_, <a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a> ? &amp;<a class="local col5 ref" href="#35Df" title='Df' data-ref="35Df">Df</a> : <b>nullptr</b>);  <i>// xi and Df = d(xi)/d(localX)</i></td></tr>
+<tr><th id="117">117</th><td>      G <dfn class="local col1 decl" id="41U" title='U' data-type='G' data-ref="41U">U</dfn> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;G&gt;::Expmap(<a class="local col0 ref" href="#40xi" title='xi' data-ref="40xi">xi</a> * <a class="local col3 ref" href="#33dt" title='dt' data-ref="33dt">dt</a>, <a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a> ? &amp;<a class="local col6 ref" href="#36Dexp" title='Dexp' data-ref="36Dexp">Dexp</a> : <b>nullptr</b>);</td></tr>
+<tr><th id="118">118</th><td>      <b>if</b> (<a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a>) {</td></tr>
+<tr><th id="119">119</th><td>        <i>// State transition Jacobian for left-invariant EKF:</i></td></tr>
+<tr><th id="120">120</th><td>        *<a class="local col4 ref" href="#34A" title='A' data-ref="34A">A</a> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;G&gt;::Inverse(<a class="local col1 ref" href="#41U" title='U' data-ref="41U">U</a>).AdjointMap() + <a class="local col6 ref" href="#36Dexp" title='Dexp' data-ref="36Dexp">Dexp</a> * <a class="local col5 ref" href="#35Df" title='Df' data-ref="35Df">Df</a> * <a class="local col3 ref" href="#33dt" title='dt' data-ref="33dt">dt</a>;</td></tr>
+<tr><th id="121">121</th><td>      }</td></tr>
+<tr><th id="122">122</th><td>      <b>return</b> <b>this</b>-&gt;X_.compose(<a class="local col1 ref" href="#41U" title='U' data-ref="41U">U</a>);</td></tr>
+<tr><th id="123">123</th><td>    }</td></tr>
+<tr><th id="124">124</th><td>  }</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">   * Predict step with state-dependent dynamics:</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">   * Uses predictMean to compute X_{k+1} and A, then updates covariance.</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">   *   X_{k+1}, A = predictMean(f, dt)</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">   *   P_{k+1} = A P_k A^T + Q</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Dynamics</span> Functor signature: TangentVector f(const G&amp;,</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">   * OptionalJacobian&lt;Dim,Dim&gt;&amp;)</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">f</span> Dynamics functor.</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">dt</span> Time step.</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">Q</span> Process noise covariance.</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="138">138</th><td>  <b>template</b> &lt;<b>typename</b> Dynamics, <b>typename</b> = <a class="type" href="#gtsam::LieGroupEKF::enable_if_dynamics" title='gtsam::LieGroupEKF::enable_if_dynamics' data-ref="gtsam::LieGroupEKF::enable_if_dynamics">enable_if_dynamics</a>&lt;Dynamics&gt;&gt;</td></tr>
+<tr><th id="139">139</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11LieGroupEKF7predictEOTL0__dRKNS_11ManifoldEKFIT_E10CovarianceE" title='gtsam::LieGroupEKF::predict' data-ref="_ZN5gtsam11LieGroupEKF7predictEOTL0__dRKNS_11ManifoldEKFIT_E10CovarianceE">predict</dfn>(Dynamics&amp;&amp; <dfn class="local col2 decl" id="42f" title='f' data-type='Dynamics &amp;&amp;' data-ref="42f">f</dfn>, <em>double</em> <dfn class="local col3 decl" id="43dt" title='dt' data-type='double' data-ref="43dt">dt</dfn>, <em>const</em> <a class="typedef" href="#gtsam::LieGroupEKF::Covariance" title='gtsam::LieGroupEKF::Covariance' data-type='typename Base::Covariance' data-ref="gtsam::LieGroupEKF::Covariance">Covariance</a>&amp; <dfn class="local col4 decl" id="44Q" title='Q' data-type='const Covariance &amp;' data-ref="44Q">Q</dfn>) {</td></tr>
+<tr><th id="140">140</th><td>    <a class="typedef" href="#gtsam::LieGroupEKF::Jacobian" title='gtsam::LieGroupEKF::Jacobian' data-type='typename Base::Jacobian' data-ref="gtsam::LieGroupEKF::Jacobian">Jacobian</a> <dfn class="local col5 decl" id="45A" title='A' data-type='Jacobian' data-ref="45A">A</dfn>;</td></tr>
+<tr><th id="141">141</th><td>    <b>if</b> <b>constexpr</b> (<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="142">142</th><td>      <a class="local col5 ref" href="#45A" title='A' data-ref="45A">A</a>.resize(<b>this</b>-&gt;n_, <b>this</b>-&gt;n_);</td></tr>
+<tr><th id="143">143</th><td>    }</td></tr>
+<tr><th id="144">144</th><td>    <b>this</b>-&gt;X_ = predictMean(<span class="namespace">std::</span>forward&lt;Dynamics&gt;(<a class="local col2 ref" href="#42f" title='f' data-ref="42f">f</a>), <a class="local col3 ref" href="#43dt" title='dt' data-ref="43dt">dt</a>, <a class="local col5 ref" href="#45A" title='A' data-ref="45A">A</a>);</td></tr>
+<tr><th id="145">145</th><td>    <b>this</b>-&gt;P_ = <a class="local col5 ref" href="#45A" title='A' data-ref="45A">A</a> * <b>this</b>-&gt;P_ * <a class="local col5 ref" href="#45A" title='A' data-ref="45A">A</a>.transpose() + <a class="local col4 ref" href="#44Q" title='Q' data-ref="44Q">Q</a>;</td></tr>
+<tr><th id="146">146</th><td>  }</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   * SFINAE check for state- and control-dependent dynamics function.</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">   * Signature: TangentVector f(const G&amp; X, const Control&amp; u,</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">   * OptionalJacobian&lt;Dim, Dim&gt; Df)</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="153">153</th><td>  <b>template</b> &lt;<b>typename</b> Control, <b>typename</b> Dynamics&gt;</td></tr>
+<tr><th id="154">154</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::LieGroupEKF::enable_if_full_dynamics" title='gtsam::LieGroupEKF::enable_if_full_dynamics' data-type='std::enable_if_t&lt;std::is_invocable_r_v&lt;TangentVector, Dynamics, const G &amp;, const Control &amp;, OptionalJacobian&lt;Dim, Dim&gt; &amp;&gt;&gt;' data-ref="gtsam::LieGroupEKF::enable_if_full_dynamics">enable_if_full_dynamics</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if_t" title='std::enable_if_t' data-ref="std::enable_if_t">enable_if_t</a>&lt;</td></tr>
+<tr><th id="155">155</th><td>      <span class="namespace">std::</span>is_invocable_r_v&lt;<a class="typedef" href="#gtsam::LieGroupEKF::TangentVector" title='gtsam::LieGroupEKF::TangentVector' data-type='typename Base::TangentVector' data-ref="gtsam::LieGroupEKF::TangentVector">TangentVector</a>, Dynamics, <em>const</em> G&amp;, <em>const</em> Control&amp;,</td></tr>
+<tr><th id="156">156</th><td>                            <a class="type" href="../base/OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>, <a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>&gt;&amp;&gt;&gt;;</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="159">159</th><td><i class="doc">   * Predict mean and Jacobian A with state and control input dynamics:</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">   * Wraps the dynamics function and calls the state-only predictMean.</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   *   xi = f(X_k, u, Df)</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="163">163</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Control</span> Control input type.</i></td></tr>
+<tr><th id="164">164</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Dynamics</span> Functor signature: TangentVector f(const G&amp;, const</i></td></tr>
+<tr><th id="165">165</th><td><i class="doc">   * Control&amp;, OptionalJacobian&lt;Dim,Dim&gt;&amp;)</i></td></tr>
+<tr><th id="166">166</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">f</span> Dynamics functor.</i></td></tr>
+<tr><th id="167">167</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">u</span> Control input.</i></td></tr>
+<tr><th id="168">168</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">dt</span> Time step.</i></td></tr>
+<tr><th id="169">169</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">A</span> Optional pointer to store the computed state transition Jacobian</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">   * A.</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">   * <span class="command">@return</span> Predicted state X_{k+1}.</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="173">173</th><td>  <b>template</b> &lt;<b>typename</b> Control, <b>typename</b> Dynamics,</td></tr>
+<tr><th id="174">174</th><td>            <b>typename</b> = <a class="type" href="#gtsam::LieGroupEKF::enable_if_full_dynamics" title='gtsam::LieGroupEKF::enable_if_full_dynamics' data-ref="gtsam::LieGroupEKF::enable_if_full_dynamics">enable_if_full_dynamics</a>&lt;Control, Dynamics&gt;&gt;</td></tr>
+<tr><th id="175">175</th><td>  G <dfn class="decl def fn" id="_ZNK5gtsam11LieGroupEKF11predictMeanEOTL0_0_RKTL0__dNS_16OptionalJacobianIL_ZNS0_3DimEEL_ZNS0_3DimEEEE" title='gtsam::LieGroupEKF::predictMean' data-ref="_ZNK5gtsam11LieGroupEKF11predictMeanEOTL0_0_RKTL0__dNS_16OptionalJacobianIL_ZNS0_3DimEEL_ZNS0_3DimEEEE">predictMean</dfn>(Dynamics&amp;&amp; <dfn class="local col6 decl" id="46f" title='f' data-type='Dynamics &amp;&amp;' data-ref="46f">f</dfn>, <em>const</em> Control&amp; <dfn class="local col7 decl" id="47u" title='u' data-type='const Control &amp;' data-ref="47u">u</dfn>, <em>double</em> <dfn class="local col8 decl" id="48dt" title='dt' data-type='double' data-ref="48dt">dt</dfn>,</td></tr>
+<tr><th id="176">176</th><td>                <a class="type" href="../base/OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>, <a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>&gt; <dfn class="local col9 decl" id="49A" title='A' data-type='OptionalJacobian&lt;Dim, Dim&gt;' data-ref="49A">A</dfn> = {}) <em>const</em> {</td></tr>
+<tr><th id="177">177</th><td>    <b>return</b> predictMean(</td></tr>
+<tr><th id="178">178</th><td>        [&amp;](<em>const</em> G&amp; <dfn class="local col0 decl" id="50X" title='X' data-type='const G &amp;' data-ref="50X">X</dfn>, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>, <a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>&gt; <dfn class="local col1 decl" id="51Df" title='Df' data-type='OptionalJacobian&lt;Dim, Dim&gt;' data-ref="51Df">Df</dfn>) { <b>return</b> <a class="local col6 ref" href="#46f" title='f' data-ref="46f">f</a>(<a class="local col0 ref" href="#50X" title='X' data-ref="50X">X</a>, <a class="local col7 ref" href="#47u" title='u' data-ref="47u">u</a>, <a class="local col1 ref" href="#51Df" title='Df' data-ref="51Df">Df</a>); },</td></tr>
+<tr><th id="179">179</th><td>        <a class="local col8 ref" href="#48dt" title='dt' data-ref="48dt">dt</a>, <a class="local col9 ref" href="#49A" title='A' data-ref="49A">A</a>);</td></tr>
+<tr><th id="180">180</th><td>  }</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="183">183</th><td><i class="doc">   * Predict step with state and control input dynamics:</i></td></tr>
+<tr><th id="184">184</th><td><i class="doc">   * Wraps the dynamics function and calls the state-only predict.</i></td></tr>
+<tr><th id="185">185</th><td><i class="doc">   *   xi = f(X_k, u, Df)</i></td></tr>
+<tr><th id="186">186</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="187">187</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Control</span> Control input type.</i></td></tr>
+<tr><th id="188">188</th><td><i class="doc">   * <span class="command">@tparam</span> <span class="arg">Dynamics</span> Functor signature: TangentVector f(const G&amp;, const</i></td></tr>
+<tr><th id="189">189</th><td><i class="doc">   * Control&amp;, OptionalJacobian&lt;Dim,Dim&gt;&amp;)</i></td></tr>
+<tr><th id="190">190</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">f</span> Dynamics functor.</i></td></tr>
+<tr><th id="191">191</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">u</span> Control input.</i></td></tr>
+<tr><th id="192">192</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">dt</span> Time step.</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">Q</span> Process noise covariance.</i></td></tr>
+<tr><th id="194">194</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="195">195</th><td>  <b>template</b> &lt;<b>typename</b> Control, <b>typename</b> Dynamics,</td></tr>
+<tr><th id="196">196</th><td>            <b>typename</b> = <a class="type" href="#gtsam::LieGroupEKF::enable_if_full_dynamics" title='gtsam::LieGroupEKF::enable_if_full_dynamics' data-ref="gtsam::LieGroupEKF::enable_if_full_dynamics">enable_if_full_dynamics</a>&lt;Control, Dynamics&gt;&gt;</td></tr>
+<tr><th id="197">197</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11LieGroupEKF7predictEOTL0_0_RKTL0__dRKNS_11ManifoldEKFIT_E10CovarianceE" title='gtsam::LieGroupEKF::predict' data-ref="_ZN5gtsam11LieGroupEKF7predictEOTL0_0_RKTL0__dRKNS_11ManifoldEKFIT_E10CovarianceE">predict</dfn>(Dynamics&amp;&amp; <dfn class="local col2 decl" id="52f" title='f' data-type='Dynamics &amp;&amp;' data-ref="52f">f</dfn>, <em>const</em> Control&amp; <dfn class="local col3 decl" id="53u" title='u' data-type='const Control &amp;' data-ref="53u">u</dfn>, <em>double</em> <dfn class="local col4 decl" id="54dt" title='dt' data-type='double' data-ref="54dt">dt</dfn>, <em>const</em> <a class="typedef" href="#gtsam::LieGroupEKF::Covariance" title='gtsam::LieGroupEKF::Covariance' data-type='typename Base::Covariance' data-ref="gtsam::LieGroupEKF::Covariance">Covariance</a>&amp; <dfn class="local col5 decl" id="55Q" title='Q' data-type='const Covariance &amp;' data-ref="55Q">Q</dfn>) {</td></tr>
+<tr><th id="198">198</th><td>    <b>return</b> predict(</td></tr>
+<tr><th id="199">199</th><td>        [&amp;](<em>const</em> G&amp; <dfn class="local col6 decl" id="56X" title='X' data-type='const G &amp;' data-ref="56X">X</dfn>, <a class="type" href="../base/OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>, <a class="member" href="#gtsam::LieGroupEKF::Dim" title='gtsam::LieGroupEKF::Dim' data-ref="gtsam::LieGroupEKF::Dim">Dim</a>&gt; <dfn class="local col7 decl" id="57Df" title='Df' data-type='OptionalJacobian&lt;Dim, Dim&gt;' data-ref="57Df">Df</dfn>) { <b>return</b> <a class="local col2 ref" href="#52f" title='f' data-ref="52f">f</a>(<a class="local col6 ref" href="#56X" title='X' data-ref="56X">X</a>, <a class="local col3 ref" href="#53u" title='u' data-ref="53u">u</a>, <a class="local col7 ref" href="#57Df" title='Df' data-ref="57Df">Df</a>); },</td></tr>
+<tr><th id="200">200</th><td>        <a class="local col4 ref" href="#54dt" title='dt' data-ref="54dt">dt</a>, <a class="local col5 ref" href="#55Q" title='Q' data-ref="55Q">Q</a>);</td></tr>
+<tr><th id="201">201</th><td>  }</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="204">204</th><td><i class="doc">   * Predict using a precomputed group increment U and its Jacobian J_UX.</i></td></tr>
+<tr><th id="205">205</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="206">206</th><td><i class="doc">   * Contract:</i></td></tr>
+<tr><th id="207">207</th><td><i class="doc">   * - Input state X_k on G with covariance P_k in local coordinates</i></td></tr>
+<tr><th id="208">208</th><td><i class="doc">   * - Precomputed increment U = U(X_k) in G</i></td></tr>
+<tr><th id="209">209</th><td><i class="doc">   * - Jacobian J_UX = d(u_left)/d(local(X)) at X_k, where u_left = Log(U)</i></td></tr>
+<tr><th id="210">210</th><td><i class="doc">   * - Process noise Q expressed in the same coordinates as u_left</i></td></tr>
+<tr><th id="211">211</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="212">212</th><td><i class="doc">   * Update performed:</i></td></tr>
+<tr><th id="213">213</th><td><i class="doc">   * - X_{k+1} = X_k ∘ U</i></td></tr>
+<tr><th id="214">214</th><td><i class="doc">   * - A = Ad_{U^{-1}} + J_UX</i></td></tr>
+<tr><th id="215">215</th><td><i class="doc">   * - P_{k+1} = A P_k A^T + Q</i></td></tr>
+<tr><th id="216">216</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="217">217</th><td><i class="doc">   * Notes:</i></td></tr>
+<tr><th id="218">218</th><td><i class="doc">   * This API is intended for custom integrators that construct U(X) directly</i></td></tr>
+<tr><th id="219">219</th><td><i class="doc">   * (e.g., second-order kinematics), which may not be expressible as an Euler</i></td></tr>
+<tr><th id="220">220</th><td><i class="doc">   * step on the tangent used by predict/predictMean.</i></td></tr>
+<tr><th id="221">221</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="222">222</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam11LieGroupEKF18predictWithComposeERKT_RKNS_11ManifoldEKFIS1_E8JacobianERKNS5_10CovarianceE" title='gtsam::LieGroupEKF::predictWithCompose' data-ref="_ZN5gtsam11LieGroupEKF18predictWithComposeERKT_RKNS_11ManifoldEKFIS1_E8JacobianERKNS5_10CovarianceE">predictWithCompose</dfn>(<em>const</em> G&amp; <dfn class="local col8 decl" id="58U" title='U' data-type='const G &amp;' data-ref="58U">U</dfn>, <em>const</em> <a class="typedef" href="#gtsam::LieGroupEKF::Jacobian" title='gtsam::LieGroupEKF::Jacobian' data-type='typename Base::Jacobian' data-ref="gtsam::LieGroupEKF::Jacobian">Jacobian</a>&amp; <dfn class="local col9 decl" id="59J_UX" title='J_UX' data-type='const Jacobian &amp;' data-ref="59J_UX">J_UX</dfn>,</td></tr>
+<tr><th id="223">223</th><td>                          <em>const</em> <a class="typedef" href="#gtsam::LieGroupEKF::Covariance" title='gtsam::LieGroupEKF::Covariance' data-type='typename Base::Covariance' data-ref="gtsam::LieGroupEKF::Covariance">Covariance</a>&amp; <dfn class="local col0 decl" id="60Q" title='Q' data-type='const Covariance &amp;' data-ref="60Q">Q</dfn>) {</td></tr>
+<tr><th id="224">224</th><td>    <a class="typedef" href="#gtsam::LieGroupEKF::Jacobian" title='gtsam::LieGroupEKF::Jacobian' data-type='typename Base::Jacobian' data-ref="gtsam::LieGroupEKF::Jacobian">Jacobian</a> <dfn class="local col1 decl" id="61A_local" title='A_local' data-type='Jacobian' data-ref="61A_local">A_local</dfn>;</td></tr>
+<tr><th id="225">225</th><td>    <b>if</b> <b>constexpr</b> (<span class="namespace">std::</span>is_same_v&lt;G, <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;) {</td></tr>
+<tr><th id="226">226</th><td>      <em>const</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="local col2 decl" id="62I_n" title='I_n' data-type='const Matrix' data-ref="62I_n">I_n</dfn> = <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>::Identity(<b>this</b>-&gt;n_, <b>this</b>-&gt;n_);</td></tr>
+<tr><th id="227">227</th><td>      <a class="local col1 ref" href="#61A_local" title='A_local' data-ref="61A_local">A_local</a> = <a class="local col2 ref" href="#62I_n" title='I_n' data-ref="62I_n">I_n</a> + <a class="local col9 ref" href="#59J_UX" title='J_UX' data-ref="59J_UX">J_UX</a>;</td></tr>
+<tr><th id="228">228</th><td>      <b>this</b>-&gt;X_ = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;::<a class="ref fn" href="../base/VectorSpace.h.html#_ZN5gtsam8internal13DynamicTraits7RetractERKN5Eigen6MatrixIdXT_EXT0_EXT1_EXT2_EXT3_EEERKNS3_IdLin1ELi1ELi0ELin1ELi1EEENS_16OptionalJacobianILin1ELin1EEESB_" title='gtsam::internal::DynamicTraits::Retract' data-ref="_ZN5gtsam8internal13DynamicTraits7RetractERKN5Eigen6MatrixIdXT_EXT0_EXT1_EXT2_EXT3_EEERKNS3_IdLin1ELi1ELi0ELin1ELi1EEENS_16OptionalJacobianILin1ELin1EEESB_">Retract</a>(<span class='inlayHint'>m:&nbsp;</span><b>this</b>-&gt;X_, <span class='inlayHint'>v:&nbsp;</span><a class="local col8 ref" href="#58U" title='U' data-ref="58U">U</a>);</td></tr>
+<tr><th id="229">229</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="230">230</th><td>      <a class="local col1 ref" href="#61A_local" title='A_local' data-ref="61A_local">A_local</a> = <a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;G&gt;::Inverse(<a class="local col8 ref" href="#58U" title='U' data-ref="58U">U</a>).AdjointMap() + <a class="local col9 ref" href="#59J_UX" title='J_UX' data-ref="59J_UX">J_UX</a>;</td></tr>
+<tr><th id="231">231</th><td>      <b>this</b>-&gt;X_ = <b>this</b>-&gt;X_.compose(<a class="local col8 ref" href="#58U" title='U' data-ref="58U">U</a>);</td></tr>
+<tr><th id="232">232</th><td>    }</td></tr>
+<tr><th id="233">233</th><td>    <b>this</b>-&gt;P_ = <a class="local col1 ref" href="#61A_local" title='A_local' data-ref="61A_local">A_local</a> * <b>this</b>-&gt;P_ * <a class="local col1 ref" href="#61A_local" title='A_local' data-ref="61A_local">A_local</a>.transpose() + <a class="local col0 ref" href="#60Q" title='Q' data-ref="60Q">Q</a>;</td></tr>
+<tr><th id="234">234</th><td>  }</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>};  <i>// LieGroupEKF</i></td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td>}  <i>// namespace gtsam</i></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/GEKF_Rot3Example.cpp.html'>codebrowser/examples/GEKF_Rot3Example.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

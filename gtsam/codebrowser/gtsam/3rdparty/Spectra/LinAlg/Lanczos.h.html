@@ -1,0 +1,238 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Lanczos.h source code [codebrowser/gtsam/3rdparty/Spectra/LinAlg/Lanczos.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Spectra::Lanczos "/>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Spectra/LinAlg/Lanczos.h'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>Spectra</a>/<a href='./'>LinAlg</a>/<a href='Lanczos.h.html'>Lanczos.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Copyright (C) 2018-2025 Yixuan Qiu &lt;yixuan.qiu@cos.name&gt;</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="4">4</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="5">5</th><td><i>// with this file, You can obtain one at <a href="https://mozilla.org/MPL/2.0/">https://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="6">6</th><td></td></tr>
+<tr><th id="7">7</th><td><u>#<span data-ppcond="7">ifndef</span> <span class="macro" data-ref="_M/SPECTRA_LANCZOS_H">SPECTRA_LANCZOS_H</span></u></td></tr>
+<tr><th id="8">8</th><td><u>#define <dfn class="macro" id="_M/SPECTRA_LANCZOS_H" data-ref="_M/SPECTRA_LANCZOS_H">SPECTRA_LANCZOS_H</dfn></u></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><u>#include <a href="../../Eigen/Eigen/Core.html">&lt;Eigen/Core&gt;</a></u></td></tr>
+<tr><th id="11">11</th><td><u>#include <a href="../../../../../include/c++/13/cmath.html">&lt;cmath&gt;</a>      // std::sqrt</u></td></tr>
+<tr><th id="12">12</th><td><u>#include <a href="../../../../../include/c++/13/utility.html">&lt;utility&gt;</a>    // std::forward</u></td></tr>
+<tr><th id="13">13</th><td><u>#include <a href="../../../../../include/c++/13/stdexcept.html">&lt;stdexcept&gt;</a>  // std::invalid_argument</u></td></tr>
+<tr><th id="14">14</th><td></td></tr>
+<tr><th id="15">15</th><td><u>#include <a href="Arnoldi.h.html">"Arnoldi.h"</a></u></td></tr>
+<tr><th id="16">16</th><td></td></tr>
+<tr><th id="17">17</th><td><b>namespace</b> <span class="namespace">Spectra</span> {</td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><i>// Lanczos factorization A * V = V * H + f * e'</i></td></tr>
+<tr><th id="20">20</th><td><i>// A: n x n</i></td></tr>
+<tr><th id="21">21</th><td><i>// V: n x k</i></td></tr>
+<tr><th id="22">22</th><td><i>// H: k x k</i></td></tr>
+<tr><th id="23">23</th><td><i>// f: n x 1</i></td></tr>
+<tr><th id="24">24</th><td><i>// e: [0, ..., 0, 1]</i></td></tr>
+<tr><th id="25">25</th><td><i>// V and H are allocated of dimension m, so the maximum value of k is m</i></td></tr>
+<tr><th id="26">26</th><td><b>template</b> &lt;<b>typename</b> Scalar, <b>typename</b> ArnoldiOpType&gt;</td></tr>
+<tr><th id="27">27</th><td><b>class</b> <dfn class="type def" id="Spectra::Lanczos" title='Spectra::Lanczos' data-ref="Spectra::Lanczos">Lanczos</dfn> : <b>public</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;</td></tr>
+<tr><th id="28">28</th><td>{</td></tr>
+<tr><th id="29">29</th><td><b>private</b>:</td></tr>
+<tr><th id="30">30</th><td>    <i>// The real part type of the matrix element</i></td></tr>
+<tr><th id="31">31</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</dfn> = <b>typename</b> <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;Scalar&gt;::Real;</td></tr>
+<tr><th id="32">32</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</dfn> = <span class="namespace">Eigen::</span><a class="typedef" href="../../Eigen/Eigen/src/Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>;</td></tr>
+<tr><th id="33">33</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::Matrix" title='Spectra::Lanczos::Matrix' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt;' data-ref="Spectra::Lanczos::Matrix">Matrix</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;Scalar, <span class="namespace">Eigen::</span><a class="ref" href="../../Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>, <span class="namespace">Eigen::</span><a class="ref" href="../../Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>&gt;;</td></tr>
+<tr><th id="34">34</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::Vector" title='Spectra::Lanczos::Vector' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;' data-ref="Spectra::Lanczos::Vector">Vector</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;Scalar, <span class="namespace">Eigen::</span><a class="ref" href="../../Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>, <var>1</var>&gt;;</td></tr>
+<tr><th id="35">35</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::MapMat" title='Spectra::Lanczos::MapMat' data-type='Eigen::Map&lt;Matrix&gt;' data-ref="Spectra::Lanczos::MapMat">MapMat</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Map" title='Eigen::Map' data-ref="Eigen::Map">Map</a>&lt;<a class="typedef" href="#Spectra::Lanczos::Matrix" title='Spectra::Lanczos::Matrix' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt;' data-ref="Spectra::Lanczos::Matrix">Matrix</a>&gt;;</td></tr>
+<tr><th id="36">36</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::MapVec" title='Spectra::Lanczos::MapVec' data-type='Eigen::Map&lt;Vector&gt;' data-ref="Spectra::Lanczos::MapVec">MapVec</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Map" title='Eigen::Map' data-ref="Eigen::Map">Map</a>&lt;<a class="typedef" href="#Spectra::Lanczos::Vector" title='Spectra::Lanczos::Vector' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;' data-ref="Spectra::Lanczos::Vector">Vector</a>&gt;;</td></tr>
+<tr><th id="37">37</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::MapConstMat" title='Spectra::Lanczos::MapConstMat' data-type='Eigen::Map&lt;const Matrix&gt;' data-ref="Spectra::Lanczos::MapConstMat">MapConstMat</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Map" title='Eigen::Map' data-ref="Eigen::Map">Map</a>&lt;<em>const</em> <a class="typedef" href="#Spectra::Lanczos::Matrix" title='Spectra::Lanczos::Matrix' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, Eigen::Dynamic&gt;' data-ref="Spectra::Lanczos::Matrix">Matrix</a>&gt;;</td></tr>
+<tr><th id="38">38</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::Lanczos::RealMatrix" title='Spectra::Lanczos::RealMatrix' data-type='Eigen::Matrix&lt;RealScalar, Eigen::Dynamic, Eigen::Dynamic&gt;' data-ref="Spectra::Lanczos::RealMatrix">RealMatrix</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../../Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a>, <span class="namespace">Eigen::</span><a class="ref" href="../../Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>, <span class="namespace">Eigen::</span><a class="ref" href="../../Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>&gt;;</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_op;</td></tr>
+<tr><th id="41">41</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_n;</td></tr>
+<tr><th id="42">42</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_m;</td></tr>
+<tr><th id="43">43</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_k;</td></tr>
+<tr><th id="44">44</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_fac_V;</td></tr>
+<tr><th id="45">45</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_fac_H;</td></tr>
+<tr><th id="46">46</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_fac_f;</td></tr>
+<tr><th id="47">47</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_beta;</td></tr>
+<tr><th id="48">48</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_near_0;</td></tr>
+<tr><th id="49">49</th><td>    <b>using</b> <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;::m_eps;</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><b>public</b>:</td></tr>
+<tr><th id="52">52</th><td>    <i>// Forward parameter `op` to the constructor of Arnoldi</i></td></tr>
+<tr><th id="53">53</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="54">54</th><td>    <dfn class="decl def fn" id="_ZN7Spectra7LanczosC1EOTL0__l" title='Spectra::Lanczos::Lanczos&lt;Scalar, ArnoldiOpType&gt;' data-ref="_ZN7Spectra7LanczosC1EOTL0__l">Lanczos</dfn>(T&amp;&amp; <dfn class="local col6 decl" id="396op" title='op' data-type='T &amp;&amp;' data-ref="396op">op</dfn>, <a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a> <dfn class="local col7 decl" id="397m" title='m' data-type='Index' data-ref="397m">m</dfn>) :</td></tr>
+<tr><th id="55">55</th><td>        <a class="type" href="Arnoldi.h.html#Spectra::Arnoldi" title='Spectra::Arnoldi' data-ref="Spectra::Arnoldi">Arnoldi</a>&lt;Scalar, ArnoldiOpType&gt;(<span class="namespace">std::</span>forward&lt;T&gt;(<a class="local col6 ref" href="#396op" title='op' data-ref="396op">op</a>), <a class="local col7 ref" href="#397m" title='m' data-ref="397m">m</a>)</td></tr>
+<tr><th id="56">56</th><td>    {}</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>    <i>// Lanczos factorization starting from step-k</i></td></tr>
+<tr><th id="59">59</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZN7Spectra7Lanczos14factorize_fromEllRl" title='Spectra::Lanczos::factorize_from' data-ref="_ZN7Spectra7Lanczos14factorize_fromEllRl">factorize_from</dfn>(<a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a> <dfn class="local col8 decl" id="398from_k" title='from_k' data-type='Index' data-ref="398from_k">from_k</dfn>, <a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a> <dfn class="local col9 decl" id="399to_m" title='to_m' data-type='Index' data-ref="399to_m">to_m</dfn>, <a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a>&amp; <dfn class="local col0 decl" id="400op_counter" title='op_counter' data-type='Index &amp;' data-ref="400op_counter">op_counter</dfn>) override</td></tr>
+<tr><th id="60">60</th><td>    {</td></tr>
+<tr><th id="61">61</th><td>        <b>using</b> <span class="namespace">std::</span>abs;</td></tr>
+<tr><th id="62">62</th><td>        <b>using</b> <span class="namespace">std::</span>sqrt;</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>        <b>if</b> (<a class="local col9 ref" href="#399to_m" title='to_m' data-ref="399to_m">to_m</a> &lt;= <a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>)</td></tr>
+<tr><th id="65">65</th><td>            <b>return</b>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>        <b>if</b> (<a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a> &gt; m_k)</td></tr>
+<tr><th id="68">68</th><td>        {</td></tr>
+<tr><th id="69">69</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a> <dfn class="local col1 decl" id="401msg" title='msg' data-type='std::string' data-ref="401msg">msg</dfn> = <q>"Lanczos: from_k (= "</q> <a class="ref fn" href="../../../../../include/c++/13/bits/basic_string.h.html#_ZStplPKT_ONSt7__cxx1112basic_stringIS_T0_T1_EE" title='std::operator+' data-ref="_ZStplPKT_ONSt7__cxx1112basic_stringIS_T0_T1_EE">+</a> <span class="namespace">std::</span><a class="ref fn" href="../../../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx119to_stringEl" title='std::to_string' data-ref="_ZNSt7__cxx119to_stringEl">to_string</a>(<span class='inlayHint'>val:&nbsp;</span><a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>) <a class="ref fn" href="../../../../../include/c++/13/bits/basic_string.h.html#_ZStplONSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_" title='std::operator+' data-ref="_ZStplONSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_">+</a></td></tr>
+<tr><th id="70">70</th><td>                <q>") is larger than the current subspace dimension (= "</q> + <span class="namespace">std::</span>to_string(m_k) + <q>")"</q>;</td></tr>
+<tr><th id="71">71</th><td>            <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">(</a><a class="local col1 ref" href="#401msg" title='msg' data-ref="401msg">msg</a>);</td></tr>
+<tr><th id="72">72</th><td>        }</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>        <em>const</em> <a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a> <dfn class="local col2 decl" id="402beta_thresh" title='beta_thresh' data-type='const RealScalar' data-ref="402beta_thresh">beta_thresh</dfn> = m_eps * sqrt(<a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a>(m_n));</td></tr>
+<tr><th id="75">75</th><td>        <em>const</em> <a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a> <dfn class="local col3 decl" id="403eps_sqrt" title='eps_sqrt' data-type='const RealScalar' data-ref="403eps_sqrt">eps_sqrt</dfn> = sqrt(m_eps);</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>        <i>// Pre-allocate vectors</i></td></tr>
+<tr><th id="78">78</th><td>        <a class="typedef" href="#Spectra::Lanczos::Vector" title='Spectra::Lanczos::Vector' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;' data-ref="Spectra::Lanczos::Vector">Vector</a> <dfn class="local col4 decl" id="404Vf" title='Vf' data-type='Vector' data-ref="404Vf">Vf</dfn>(<a class="local col9 ref" href="#399to_m" title='to_m' data-ref="399to_m">to_m</a>);</td></tr>
+<tr><th id="79">79</th><td>        <a class="typedef" href="#Spectra::Lanczos::Vector" title='Spectra::Lanczos::Vector' data-type='Eigen::Matrix&lt;Scalar, Eigen::Dynamic, 1&gt;' data-ref="Spectra::Lanczos::Vector">Vector</a> <dfn class="local col5 decl" id="405w" title='w' data-type='Vector' data-ref="405w">w</dfn>(m_n);</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>        <i>// Keep the upperleft k x k submatrix of H and set other elements to 0</i></td></tr>
+<tr><th id="82">82</th><td>        m_fac_H.rightCols(m_m - <a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>).setZero();</td></tr>
+<tr><th id="83">83</th><td>        m_fac_H.block(<a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>, <var>0</var>, m_m - <a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>, <a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>).setZero();</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>        <b>for</b> (<a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a> <dfn class="local col6 decl" id="406i" title='i' data-type='Index' data-ref="406i">i</dfn> = <a class="local col8 ref" href="#398from_k" title='from_k' data-ref="398from_k">from_k</a>; <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> &lt;= <a class="local col9 ref" href="#399to_m" title='to_m' data-ref="399to_m">to_m</a> - <var>1</var>; <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>++)</td></tr>
+<tr><th id="86">86</th><td>        {</td></tr>
+<tr><th id="87">87</th><td>            <i>// If beta = 0, then the next V is not full rank</i></td></tr>
+<tr><th id="88">88</th><td><i>            // We need to generate a new residual vector that is orthogonal</i></td></tr>
+<tr><th id="89">89</th><td><i>            // to the current V, which we call a restart</i></td></tr>
+<tr><th id="90">90</th><td><i>            //</i></td></tr>
+<tr><th id="91">91</th><td><i>            // A simple criterion is beta &lt; near_0, but it may be too stringent</i></td></tr>
+<tr><th id="92">92</th><td><i>            // Another heuristic is to test whether (V^H)B(f/||f||) ~= 0 when ||f|| is small,</i></td></tr>
+<tr><th id="93">93</th><td><i>            // and to reduce the computational cost, we only use the latest Vi</i></td></tr>
+<tr><th id="94">94</th><td><i></i></td></tr>
+<tr><th id="95">95</th><td><i>            // Test the first criterion</i></td></tr>
+<tr><th id="96">96</th><td>            <em>bool</em> <dfn class="local col7 decl" id="407restart" title='restart' data-type='bool' data-ref="407restart">restart</dfn> = (m_beta &lt; m_near_0);</td></tr>
+<tr><th id="97">97</th><td>            <i>// If not met, test the second criterion</i></td></tr>
+<tr><th id="98">98</th><td><i>            // v is the (i+1)-th column of V</i></td></tr>
+<tr><th id="99">99</th><td>            <a class="typedef" href="#Spectra::Lanczos::MapVec" title='Spectra::Lanczos::MapVec' data-type='Eigen::Map&lt;Vector&gt;' data-ref="Spectra::Lanczos::MapVec">MapVec</a> <dfn class="local col8 decl" id="408v" title='v' data-type='MapVec' data-ref="408v">v</dfn>(&amp;m_fac_V(<var>0</var>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>), m_n);</td></tr>
+<tr><th id="100">100</th><td>            <b>if</b> (!<a class="local col7 ref" href="#407restart" title='restart' data-ref="407restart">restart</a>)</td></tr>
+<tr><th id="101">101</th><td>            {</td></tr>
+<tr><th id="102">102</th><td>                <i>// Save v &lt;- f / ||f|| to the (i+1)-th column of V</i></td></tr>
+<tr><th id="103">103</th><td>                <a class="local col8 ref" href="#408v" title='v' data-ref="408v">v</a>.noalias() = m_fac_f / m_beta;</td></tr>
+<tr><th id="104">104</th><td>                <b>if</b> (m_beta &lt; <a class="local col3 ref" href="#403eps_sqrt" title='eps_sqrt' data-ref="403eps_sqrt">eps_sqrt</a>)</td></tr>
+<tr><th id="105">105</th><td>                {</td></tr>
+<tr><th id="106">106</th><td>                    <i>// Test (Vi^H)v</i></td></tr>
+<tr><th id="107">107</th><td>                    <em>const</em> Scalar <dfn class="local col9 decl" id="409Viv" title='Viv' data-type='const Scalar' data-ref="409Viv">Viv</dfn> = m_op.inner_product(m_fac_V.col(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>), <a class="local col8 ref" href="#408v" title='v' data-ref="408v">v</a>);</td></tr>
+<tr><th id="108">108</th><td>                    <i>// Restart V if (Vi^H)v is much larger than eps</i></td></tr>
+<tr><th id="109">109</th><td>                    <a class="local col7 ref" href="#407restart" title='restart' data-ref="407restart">restart</a> = (abs(<a class="local col9 ref" href="#409Viv" title='Viv' data-ref="409Viv">Viv</a>) &gt; <a class="local col3 ref" href="#403eps_sqrt" title='eps_sqrt' data-ref="403eps_sqrt">eps_sqrt</a>);</td></tr>
+<tr><th id="110">110</th><td>                }</td></tr>
+<tr><th id="111">111</th><td>            }</td></tr>
+<tr><th id="112">112</th><td></td></tr>
+<tr><th id="113">113</th><td>            <b>if</b> (<a class="local col7 ref" href="#407restart" title='restart' data-ref="407restart">restart</a>)</td></tr>
+<tr><th id="114">114</th><td>            {</td></tr>
+<tr><th id="115">115</th><td>                <a class="typedef" href="#Spectra::Lanczos::MapConstMat" title='Spectra::Lanczos::MapConstMat' data-type='Eigen::Map&lt;const Matrix&gt;' data-ref="Spectra::Lanczos::MapConstMat">MapConstMat</a> <dfn class="local col0 decl" id="410V" title='V' data-type='MapConstMat' data-ref="410V">V</dfn>(m_fac_V.data(), m_n, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>);  <i>// The first i columns</i></td></tr>
+<tr><th id="116">116</th><td>                <b>this</b>-&gt;expand_basis(<a class="local col0 ref" href="#410V" title='V' data-ref="410V">V</a>, <var>2</var> * <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, m_fac_f, m_beta, <a class="local col0 ref" href="#400op_counter" title='op_counter' data-ref="400op_counter">op_counter</a>);</td></tr>
+<tr><th id="117">117</th><td>                <a class="local col8 ref" href="#408v" title='v' data-ref="408v">v</a>.noalias() = m_fac_f / m_beta;</td></tr>
+<tr><th id="118">118</th><td>            }</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>            <i>// Whether there is a restart or not, right now the (i+1)-th column of V</i></td></tr>
+<tr><th id="121">121</th><td><i>            // contains f / ||f||</i></td></tr>
+<tr><th id="122">122</th><td><i></i></td></tr>
+<tr><th id="123">123</th><td><i>            // Note that H[i+1, i] equals to the unrestarted beta</i></td></tr>
+<tr><th id="124">124</th><td>            m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>) = <a class="local col7 ref" href="#407restart" title='restart' data-ref="407restart">restart</a> ? Scalar(<var>0</var>) : Scalar(m_beta);</td></tr>
+<tr><th id="125">125</th><td>            m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>) = m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>);  <i>// Due to symmetry</i></td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>            <i>// w &lt;- A * v</i></td></tr>
+<tr><th id="128">128</th><td>            m_op.perform_op(<a class="local col8 ref" href="#408v" title='v' data-ref="408v">v</a>.data(), <a class="local col5 ref" href="#405w" title='w' data-ref="405w">w</a>.data());</td></tr>
+<tr><th id="129">129</th><td>            <a class="local col0 ref" href="#400op_counter" title='op_counter' data-ref="400op_counter">op_counter</a>++;</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>            <i>// f &lt;- w - V * (V^H)Bw = w - H[i+1, i] * V{i} - H[i+1, i+1] * V{i+1}</i></td></tr>
+<tr><th id="132">132</th><td><i>            // If restarting, we know that H[i+1, i] = 0</i></td></tr>
+<tr><th id="133">133</th><td><i>            // First do w &lt;- w - H[i+1, i] * V{i}, see the discussions in Section 2.3 of</i></td></tr>
+<tr><th id="134">134</th><td><i>            // Cullum and Willoughby (2002). Lanczos Algorithms for Large Symmetric Eigenvalue Computations: Vol. 1</i></td></tr>
+<tr><th id="135">135</th><td>            <b>if</b> (!<a class="local col7 ref" href="#407restart" title='restart' data-ref="407restart">restart</a>)</td></tr>
+<tr><th id="136">136</th><td>                <a class="local col5 ref" href="#405w" title='w' data-ref="405w">w</a>.noalias() -= m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>) * m_fac_V.col(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>);</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>            <i>// H[i+1, i+1] = &lt;v, w&gt; = (v^H)Bw</i></td></tr>
+<tr><th id="139">139</th><td>            m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>) = m_op.inner_product(<a class="local col8 ref" href="#408v" title='v' data-ref="408v">v</a>, <a class="local col5 ref" href="#405w" title='w' data-ref="405w">w</a>);</td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td>            <i>// f &lt;- w - H[i+1, i+1] * V{i+1}</i></td></tr>
+<tr><th id="142">142</th><td>            m_fac_f.noalias() = <a class="local col5 ref" href="#405w" title='w' data-ref="405w">w</a> - m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>) * <a class="local col8 ref" href="#408v" title='v' data-ref="408v">v</a>;</td></tr>
+<tr><th id="143">143</th><td>            m_beta = m_op.norm(m_fac_f);</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>            <i>// f/||f|| is going to be the next column of V, so we need to test</i></td></tr>
+<tr><th id="146">146</th><td><i>            // whether (V^H)B(f/||f||) ~= 0</i></td></tr>
+<tr><th id="147">147</th><td>            <em>const</em> <a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a> <dfn class="local col1 decl" id="411i1" title='i1' data-type='const Index' data-ref="411i1">i1</dfn> = <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> + <var>1</var>;</td></tr>
+<tr><th id="148">148</th><td>            <a class="typedef" href="#Spectra::Lanczos::MapMat" title='Spectra::Lanczos::MapMat' data-type='Eigen::Map&lt;Matrix&gt;' data-ref="Spectra::Lanczos::MapMat">MapMat</a> <dfn class="local col2 decl" id="412Vs" title='Vs' data-type='MapMat' data-ref="412Vs">Vs</dfn>(m_fac_V.data(), m_n, <a class="local col1 ref" href="#411i1" title='i1' data-ref="411i1">i1</a>);  <i>// The first (i+1) columns</i></td></tr>
+<tr><th id="149">149</th><td>            m_op.adjoint_product(<a class="local col2 ref" href="#412Vs" title='Vs' data-ref="412Vs">Vs</a>, m_fac_f, <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>.head(<a class="local col1 ref" href="#411i1" title='i1' data-ref="411i1">i1</a>));</td></tr>
+<tr><th id="150">150</th><td>            <a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a> <dfn class="local col3 decl" id="413ortho_err" title='ortho_err' data-type='RealScalar' data-ref="413ortho_err">ortho_err</dfn> = <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>.head(<a class="local col1 ref" href="#411i1" title='i1' data-ref="411i1">i1</a>).cwiseAbs().maxCoeff();</td></tr>
+<tr><th id="151">151</th><td>            <i>// If not, iteratively correct the residual</i></td></tr>
+<tr><th id="152">152</th><td>            <em>int</em> <dfn class="local col4 decl" id="414count" title='count' data-type='int' data-ref="414count">count</dfn> = <var>0</var>;</td></tr>
+<tr><th id="153">153</th><td>            <b>while</b> (<a class="local col4 ref" href="#414count" title='count' data-ref="414count">count</a> &lt; <var>5</var> &amp;&amp; <a class="local col3 ref" href="#413ortho_err" title='ortho_err' data-ref="413ortho_err">ortho_err</a> &gt; m_eps * m_beta)</td></tr>
+<tr><th id="154">154</th><td>            {</td></tr>
+<tr><th id="155">155</th><td>                <i>// There is an edge case: when beta=||f|| is close to zero, f mostly consists</i></td></tr>
+<tr><th id="156">156</th><td><i>                // of noises of rounding errors, so the test [ortho_err &lt; eps * beta] is very</i></td></tr>
+<tr><th id="157">157</th><td><i>                // likely to fail. In particular, if beta=0, then the test is ensured to fail.</i></td></tr>
+<tr><th id="158">158</th><td><i>                // Hence when this happens, we force f to be zero, and then restart in the</i></td></tr>
+<tr><th id="159">159</th><td><i>                // next iteration.</i></td></tr>
+<tr><th id="160">160</th><td>                <b>if</b> (m_beta &lt; <a class="local col2 ref" href="#402beta_thresh" title='beta_thresh' data-ref="402beta_thresh">beta_thresh</a>)</td></tr>
+<tr><th id="161">161</th><td>                {</td></tr>
+<tr><th id="162">162</th><td>                    m_fac_f.setZero();</td></tr>
+<tr><th id="163">163</th><td>                    m_beta = <a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a>(<var>0</var>);</td></tr>
+<tr><th id="164">164</th><td>                    <b>break</b>;</td></tr>
+<tr><th id="165">165</th><td>                }</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>                <i>// f &lt;- f - V * Vf</i></td></tr>
+<tr><th id="168">168</th><td>                m_fac_f.noalias() -= <a class="local col2 ref" href="#412Vs" title='Vs' data-ref="412Vs">Vs</a> * <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>.head(<a class="local col1 ref" href="#411i1" title='i1' data-ref="411i1">i1</a>);</td></tr>
+<tr><th id="169">169</th><td>                <i>// h &lt;- h + Vf</i></td></tr>
+<tr><th id="170">170</th><td>                m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>) += <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>[<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>];</td></tr>
+<tr><th id="171">171</th><td>                m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>) = m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a> - <var>1</var>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>);</td></tr>
+<tr><th id="172">172</th><td>                m_fac_H(<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>, <a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>) += <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>[<a class="local col6 ref" href="#406i" title='i' data-ref="406i">i</a>];</td></tr>
+<tr><th id="173">173</th><td>                <i>// beta &lt;- ||f||</i></td></tr>
+<tr><th id="174">174</th><td>                m_beta = m_op.norm(m_fac_f);</td></tr>
+<tr><th id="175">175</th><td></td></tr>
+<tr><th id="176">176</th><td>                m_op.adjoint_product(<a class="local col2 ref" href="#412Vs" title='Vs' data-ref="412Vs">Vs</a>, m_fac_f, <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>.head(<a class="local col1 ref" href="#411i1" title='i1' data-ref="411i1">i1</a>));</td></tr>
+<tr><th id="177">177</th><td>                <a class="local col3 ref" href="#413ortho_err" title='ortho_err' data-ref="413ortho_err">ortho_err</a> = <a class="local col4 ref" href="#404Vf" title='Vf' data-ref="404Vf">Vf</a>.head(<a class="local col1 ref" href="#411i1" title='i1' data-ref="411i1">i1</a>).cwiseAbs().maxCoeff();</td></tr>
+<tr><th id="178">178</th><td>                <a class="local col4 ref" href="#414count" title='count' data-ref="414count">count</a>++;</td></tr>
+<tr><th id="179">179</th><td>            }</td></tr>
+<tr><th id="180">180</th><td>        }</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>        <i>// Indicate that this is a step-m factorization</i></td></tr>
+<tr><th id="183">183</th><td>        m_k = <a class="local col9 ref" href="#399to_m" title='to_m' data-ref="399to_m">to_m</a>;</td></tr>
+<tr><th id="184">184</th><td>    }</td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td>    <i>// Apply H -&gt; Q'HQ, where Q is from a tridiagonal QR decomposition</i></td></tr>
+<tr><th id="187">187</th><td><i>    // Function overloading here, not overriding</i></td></tr>
+<tr><th id="188">188</th><td><i>    //</i></td></tr>
+<tr><th id="189">189</th><td><i>    // Note that H is by nature a real symmetric matrix, but it may be stored</i></td></tr>
+<tr><th id="190">190</th><td><i>    // as a complex matrix (e.g. in HermEigsSolver).</i></td></tr>
+<tr><th id="191">191</th><td><i>    // Therefore, if m_fac_H has a real type (as in SymEigsSolver), then we</i></td></tr>
+<tr><th id="192">192</th><td><i>    // directly overwrite m_fac_H. Otherwise, m_fac_H has a complex type</i></td></tr>
+<tr><th id="193">193</th><td><i>    // (as in HermEigsSolver), so we first compute the real-typed result,</i></td></tr>
+<tr><th id="194">194</th><td><i>    // and then cast to the complex type. This is done in the TridiagQR class</i></td></tr>
+<tr><th id="195">195</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZN7Spectra7Lanczos10compress_HERKNS_9TridiagQRIN5Eigen9NumTraitsIT_E4RealEEE" title='Spectra::Lanczos::compress_H' data-ref="_ZN7Spectra7Lanczos10compress_HERKNS_9TridiagQRIN5Eigen9NumTraitsIT_E4RealEEE">compress_H</dfn>(<em>const</em> <a class="type" href="UpperHessenbergQR.h.html#Spectra::TridiagQR" title='Spectra::TridiagQR' data-ref="Spectra::TridiagQR">TridiagQR</a>&lt;<a class="typedef" href="#Spectra::Lanczos::RealScalar" title='Spectra::Lanczos::RealScalar' data-type='typename Eigen::NumTraits&lt;Scalar&gt;::Real' data-ref="Spectra::Lanczos::RealScalar">RealScalar</a>&gt;&amp; <dfn class="local col5 decl" id="415decomp" title='decomp' data-type='const TridiagQR&lt;RealScalar&gt; &amp;' data-ref="415decomp">decomp</dfn>)</td></tr>
+<tr><th id="196">196</th><td>    {</td></tr>
+<tr><th id="197">197</th><td>        <a class="local col5 ref" href="#415decomp" title='decomp' data-ref="415decomp">decomp</a>.matrix_QtHQ(m_fac_H);</td></tr>
+<tr><th id="198">198</th><td>        m_k--;</td></tr>
+<tr><th id="199">199</th><td>    }</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td>    <i>// In some cases we know that H has the form H = [X   e   0],</i></td></tr>
+<tr><th id="202">202</th><td><i>    //                                               [e'  s   0]</i></td></tr>
+<tr><th id="203">203</th><td><i>    //                                               [0   0   D]</i></td></tr>
+<tr><th id="204">204</th><td><i>    // where X is an irreducible tridiagonal matrix, D is a diagonal matrix,</i></td></tr>
+<tr><th id="205">205</th><td><i>    // s is a scalar, and e = (0, ..., 0, eps), eps ~= 0</i></td></tr>
+<tr><th id="206">206</th><td><i>    //</i></td></tr>
+<tr><th id="207">207</th><td><i>    // In this case we can force H[m+1, m] = H[m, m+1] = 0 and H[m+1, m+1] = s,</i></td></tr>
+<tr><th id="208">208</th><td><i>    // where m is the size of X</i></td></tr>
+<tr><th id="209">209</th><td>    <em>void</em> <dfn class="decl def fn" id="_ZN7Spectra7Lanczos9deflate_HElRKT_" title='Spectra::Lanczos::deflate_H' data-ref="_ZN7Spectra7Lanczos9deflate_HElRKT_">deflate_H</dfn>(<a class="typedef" href="#Spectra::Lanczos::Index" title='Spectra::Lanczos::Index' data-type='Eigen::Index' data-ref="Spectra::Lanczos::Index">Index</a> <dfn class="local col6 decl" id="416irr_size" title='irr_size' data-type='Index' data-ref="416irr_size">irr_size</dfn>, <em>const</em> Scalar&amp; <dfn class="local col7 decl" id="417s" title='s' data-type='const Scalar &amp;' data-ref="417s">s</dfn>)</td></tr>
+<tr><th id="210">210</th><td>    {</td></tr>
+<tr><th id="211">211</th><td>        m_fac_H(<a class="local col6 ref" href="#416irr_size" title='irr_size' data-ref="416irr_size">irr_size</a>, <a class="local col6 ref" href="#416irr_size" title='irr_size' data-ref="416irr_size">irr_size</a> - <var>1</var>) = Scalar(<var>0</var>);</td></tr>
+<tr><th id="212">212</th><td>        m_fac_H(<a class="local col6 ref" href="#416irr_size" title='irr_size' data-ref="416irr_size">irr_size</a> - <var>1</var>, <a class="local col6 ref" href="#416irr_size" title='irr_size' data-ref="416irr_size">irr_size</a>) = Scalar(<var>0</var>);</td></tr>
+<tr><th id="213">213</th><td>        m_fac_H(<a class="local col6 ref" href="#416irr_size" title='irr_size' data-ref="416irr_size">irr_size</a>, <a class="local col6 ref" href="#416irr_size" title='irr_size' data-ref="416irr_size">irr_size</a>) = <a class="local col7 ref" href="#417s" title='s' data-ref="417s">s</a>;</td></tr>
+<tr><th id="214">214</th><td>    }</td></tr>
+<tr><th id="215">215</th><td>};</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>}  <i>// namespace Spectra</i></td></tr>
+<tr><th id="218">218</th><td></td></tr>
+<tr><th id="219">219</th><td><u>#<span data-ppcond="7">endif</span>  // SPECTRA_LANCZOS_H</u></td></tr>
+<tr><th id="220">220</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../sfm/ShonanAveraging.cpp.html'>codebrowser/gtsam/sfm/ShonanAveraging.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

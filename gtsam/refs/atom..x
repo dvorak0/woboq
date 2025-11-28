@@ -1,0 +1,6 @@
+<dec f='codebrowser/gtsam/3rdparty/metis/GKlib/gk_struct.h' l='157' type='double'/>
+<offset>384</offset>
+<use f='codebrowser/gtsam/3rdparty/metis/GKlib/pdb.c' l='259' u='w' c='gk_readpdbfile'/>
+<use f='codebrowser/gtsam/3rdparty/metis/GKlib/pdb.c' l='377' u='r' c='gk_writefullatom'/>
+<use f='codebrowser/gtsam/3rdparty/metis/GKlib/pdb.c' l='398' u='r' c='gk_writebackbone'/>
+<use f='codebrowser/gtsam/3rdparty/metis/GKlib/pdb.c' l='419' u='r' c='gk_writealphacarbons'/>

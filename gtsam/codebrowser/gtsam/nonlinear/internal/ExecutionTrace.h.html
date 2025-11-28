@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ExecutionTrace.h source code [codebrowser/gtsam/nonlinear/internal/ExecutionTrace.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::internal::ExecutionTrace,gtsam::internal::UseBlockIf "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/nonlinear/internal/ExecutionTrace.h'; var root_path = '../../../..'; var data_path = '../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>codebrowser</a>/<a href='../..'>gtsam</a>/<a href='..'>nonlinear</a>/<a href='./'>internal</a>/<a href='ExecutionTrace.h.html'>ExecutionTrace.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">ExecutionTrace.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@date</span> May 11, 2015</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@brief</span> Execution trace for expressions</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../../../build/gtsam/config.h.html">&lt;gtsam/config.h&gt;</a>      // Configuration from CMake</u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="JacobianMap.h.html">&lt;gtsam/nonlinear/internal/JacobianMap.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../../inference/Key.h.html">&lt;gtsam/inference/Key.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../../base/Manifold.h.html">&lt;gtsam/base/Manifold.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../../3rdparty/Eigen/Eigen/Core.html">&lt;Eigen/Core&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../../../../include/c++/13/iostream.html">&lt;iostream&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../../../../include/c++/13/optional.html">&lt;optional&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../../../../include/c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="34">34</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><b>template</b>&lt;<em>int</em> T&gt; <b>struct</b> <a class="type" href="CallRecord.h.html#gtsam::internal::CallRecord" title='gtsam::internal::CallRecord' data-ref="gtsam::internal::CallRecord" id="gtsam::internal::CallRecord">CallRecord</a>;</td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><i class="doc">/// Storage type for the execution trace.</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">/// It enforces the proper alignment in a portable way.</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">/// Provide a traceSize() sized array of this type to traceExecution as traceStorage.</i></td></tr>
+<tr><th id="41">41</th><td><u>#<span data-ppcond="41">ifdef</span> <span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span></u></td></tr>
+<tr><th id="42">42</th><td><i>// TODO(dellaert): this might lead to trouble if Eigen decides to use 32 on Windows.</i></td></tr>
+<tr><th id="43">43</th><td><em>static</em> <em>const</em> <em>unsigned</em> TraceAlignment = <var>16</var>; <i>// 16 bytes max_align on Windows</i></td></tr>
+<tr><th id="44">44</th><td><u>#<span data-ppcond="41">else</span></u></td></tr>
+<tr><th id="45">45</th><td><em>static</em> <em>const</em> <em>unsigned</em> <dfn class="decl def" id="gtsam::internal::TraceAlignment" title='gtsam::internal::TraceAlignment' data-ref="gtsam::internal::TraceAlignment">TraceAlignment</dfn> = <var>32</var>; <i>// Alignment used by Eigen on some platforms.</i></td></tr>
+<tr><th id="46">46</th><td><u>#<span data-ppcond="41">endif</span></u></td></tr>
+<tr><th id="47">47</th><td><i>// TODO(dellaert): we *should* be able to simplify the code using the pointer arithmetic from ExecutionTraceStorage.</i></td></tr>
+<tr><th id="48">48</th><td><b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../../include/c++/13/type_traits.html#std::aligned_storage" title='std::aligned_storage' data-ref="std::aligned_storage">aligned_storage</a>&lt;<var>1</var>, <a class="ref" href="#gtsam::internal::TraceAlignment" title='gtsam::internal::TraceAlignment' data-ref="gtsam::internal::TraceAlignment">TraceAlignment</a>&gt;::<a class="type" href="../../../../include/c++/13/type_traits.html#std::aligned_storage::type" title='std::aligned_storage::type' data-ref="std::aligned_storage::type">type</a> <dfn class="typedef" id="gtsam::internal::ExecutionTraceStorage" title='gtsam::internal::ExecutionTraceStorage' data-type='std::aligned_storage&lt;1, TraceAlignment&gt;::type' data-ref="gtsam::internal::ExecutionTraceStorage">ExecutionTraceStorage</dfn>;</td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><b>template</b>&lt;<em>bool</em> UseBlock, <b>typename</b> Derived&gt;</td></tr>
+<tr><th id="51">51</th><td><b>struct</b> <dfn class="type def" id="gtsam::internal::UseBlockIf" title='gtsam::internal::UseBlockIf' data-ref="gtsam::internal::UseBlockIf">UseBlockIf</dfn> {</td></tr>
+<tr><th id="52">52</th><td>  <em>static</em> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam8internal10UseBlockIf13addToJacobianERKN5Eigen10MatrixBaseIT0_EERNS0_11JacobianMapEm" title='gtsam::internal::UseBlockIf::addToJacobian' data-ref="_ZN5gtsam8internal10UseBlockIf13addToJacobianERKN5Eigen10MatrixBaseIT0_EERNS0_11JacobianMapEm">addToJacobian</dfn>(<em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::MatrixBase" title='Eigen::MatrixBase' data-ref="Eigen::MatrixBase">MatrixBase</a>&lt;Derived&gt;&amp; <dfn class="local col7 decl" id="67dTdA" title='dTdA' data-type='const Eigen::MatrixBase&lt;Derived&gt; &amp;' data-ref="67dTdA">dTdA</dfn>,</td></tr>
+<tr><th id="53">53</th><td>      <a class="type" href="JacobianMap.h.html#gtsam::internal::JacobianMap" title='gtsam::internal::JacobianMap' data-ref="gtsam::internal::JacobianMap">JacobianMap</a>&amp; <dfn class="local col8 decl" id="68jacobians" title='jacobians' data-type='JacobianMap &amp;' data-ref="68jacobians">jacobians</dfn>, <a class="typedef" href="../../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col9 decl" id="69key" title='key' data-type='Key' data-ref="69key">key</dfn>) {</td></tr>
+<tr><th id="54">54</th><td>    <i>// block makes HUGE difference</i></td></tr>
+<tr><th id="55">55</th><td>    <a class="local col8 ref" href="#68jacobians" title='jacobians' data-ref="68jacobians">jacobians</a><a class="ref fn" href="JacobianMap.h.html#_ZN5gtsam8internal11JacobianMapclEm" title='gtsam::internal::JacobianMap::operator()' data-ref="_ZN5gtsam8internal11JacobianMapclEm">(<a class="local col9 ref" href="#69key" title='key' data-ref="69key">key</a>)</a>.block&lt;Derived::RowsAtCompileTime, Derived::ColsAtCompileTime&gt;(</td></tr>
+<tr><th id="56">56</th><td>        <var>0</var>, <var>0</var>) += <a class="local col7 ref" href="#67dTdA" title='dTdA' data-ref="67dTdA">dTdA</a>;</td></tr>
+<tr><th id="57">57</th><td>  }</td></tr>
+<tr><th id="58">58</th><td>};</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><i class="doc">/// Handle Leaf Case for Dynamic Matrix type (slower)</i></td></tr>
+<tr><th id="61">61</th><td><b>template</b>&lt;<b>typename</b> Derived&gt;</td></tr>
+<tr><th id="62">62</th><td><b>struct</b> <dfn class="type def" id="gtsam::internal::UseBlockIf" title='gtsam::internal::UseBlockIf' data-ref="gtsam::internal::UseBlockIf">UseBlockIf</dfn>&lt;<b>false</b>, Derived&gt; {</td></tr>
+<tr><th id="63">63</th><td>  <em>static</em> <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam8internal10UseBlockIfILb0ET_E13addToJacobianERKN5Eigen10MatrixBaseIS2_EERNS0_11JacobianMapEm" title='gtsam::internal::UseBlockIf&lt;false, type-parameter-0-0&gt;::addToJacobian' data-ref="_ZN5gtsam8internal10UseBlockIfILb0ET_E13addToJacobianERKN5Eigen10MatrixBaseIS2_EERNS0_11JacobianMapEm">addToJacobian</dfn>(<em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::MatrixBase" title='Eigen::MatrixBase' data-ref="Eigen::MatrixBase">MatrixBase</a>&lt;Derived&gt;&amp; <dfn class="local col0 decl" id="70dTdA" title='dTdA' data-type='const Eigen::MatrixBase&lt;Derived&gt; &amp;' data-ref="70dTdA">dTdA</dfn>,</td></tr>
+<tr><th id="64">64</th><td>      <a class="type" href="JacobianMap.h.html#gtsam::internal::JacobianMap" title='gtsam::internal::JacobianMap' data-ref="gtsam::internal::JacobianMap">JacobianMap</a>&amp; <dfn class="local col1 decl" id="71jacobians" title='jacobians' data-type='JacobianMap &amp;' data-ref="71jacobians">jacobians</dfn>, <a class="typedef" href="../../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col2 decl" id="72key" title='key' data-type='Key' data-ref="72key">key</dfn>) {</td></tr>
+<tr><th id="65">65</th><td>    <a class="local col1 ref" href="#71jacobians" title='jacobians' data-ref="71jacobians">jacobians</a><a class="ref fn" href="JacobianMap.h.html#_ZN5gtsam8internal11JacobianMapclEm" title='gtsam::internal::JacobianMap::operator()' data-ref="_ZN5gtsam8internal11JacobianMapclEm">(<a class="local col2 ref" href="#72key" title='key' data-ref="72key">key</a>)</a> += <a class="local col0 ref" href="#70dTdA" title='dTdA' data-ref="70dTdA">dTdA</a>;</td></tr>
+<tr><th id="66">66</th><td>  }</td></tr>
+<tr><th id="67">67</th><td>};</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td><i class="doc">/// Handle Leaf Case: reverse AD ends here, by writing a matrix into Jacobians</i></td></tr>
+<tr><th id="70">70</th><td><b>template</b>&lt;<b>typename</b> Derived&gt;</td></tr>
+<tr><th id="71">71</th><td><em>void</em> <dfn class="decl def fn" id="_ZN5gtsam8internal14handleLeafCaseERKN5Eigen10MatrixBaseIT_EERNS0_11JacobianMapEm" title='gtsam::internal::handleLeafCase' data-ref="_ZN5gtsam8internal14handleLeafCaseERKN5Eigen10MatrixBaseIT_EERNS0_11JacobianMapEm">handleLeafCase</dfn>(<em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::MatrixBase" title='Eigen::MatrixBase' data-ref="Eigen::MatrixBase">MatrixBase</a>&lt;Derived&gt;&amp; <dfn class="local col3 decl" id="73dTdA" title='dTdA' data-type='const Eigen::MatrixBase&lt;Derived&gt; &amp;' data-ref="73dTdA">dTdA</dfn>,</td></tr>
+<tr><th id="72">72</th><td>    <a class="type" href="JacobianMap.h.html#gtsam::internal::JacobianMap" title='gtsam::internal::JacobianMap' data-ref="gtsam::internal::JacobianMap">JacobianMap</a>&amp; <dfn class="local col4 decl" id="74jacobians" title='jacobians' data-type='JacobianMap &amp;' data-ref="74jacobians">jacobians</dfn>, <a class="typedef" href="../../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col5 decl" id="75key" title='key' data-type='Key' data-ref="75key">key</dfn>) {</td></tr>
+<tr><th id="73">73</th><td>  <a class="type" href="#gtsam::internal::UseBlockIf" title='gtsam::internal::UseBlockIf' data-ref="gtsam::internal::UseBlockIf">UseBlockIf</a>&lt;</td></tr>
+<tr><th id="74">74</th><td>      Derived::RowsAtCompileTime != <span class="namespace">Eigen::</span><a class="ref" href="../../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a></td></tr>
+<tr><th id="75">75</th><td>          &amp;&amp; Derived::ColsAtCompileTime != <span class="namespace">Eigen::</span><a class="ref" href="../../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>, Derived&gt;::addToJacobian(</td></tr>
+<tr><th id="76">76</th><td>      <a class="local col3 ref" href="#73dTdA" title='dTdA' data-ref="73dTdA">dTdA</a>, <a class="local col4 ref" href="#74jacobians" title='jacobians' data-ref="74jacobians">jacobians</a>, <a class="local col5 ref" href="#75key" title='key' data-ref="75key">key</a>);</td></tr>
+<tr><th id="77">77</th><td>}</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc"> * The ExecutionTrace class records a tree-structured expression's execution.</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc"> * The class looks a bit complicated but it is so for performance.</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc"> * It is a tagged union that obviates the need to create</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc"> * a ExecutionTrace subclass for Constants and Leaf Expressions. Instead</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc"> * the key for the leaf is stored in the space normally used to store a</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc"> * CallRecord*. Nothing is stored for a Constant.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc"> * A full execution trace of a Binary(Unary(Binary(Leaf,Constant)),Leaf) would be:</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc"> * Trace(Function) -&gt;</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc"> *   BinaryRecord with two traces in it</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc"> *     trace1(Function) -&gt;</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc"> *       UnaryRecord with one trace in it</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc"> *         trace1(Function) -&gt;</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc"> *           BinaryRecord with two traces in it</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc"> *             trace1(Leaf)</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc"> *             trace2(Constant)</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc"> *     trace2(Leaf)</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc"> * Hence, there are three Record structs, written to memory by traceExecution</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="100">100</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="101">101</th><td><b>class</b> <dfn class="type def" id="gtsam::internal::ExecutionTrace" title='gtsam::internal::ExecutionTrace' data-ref="gtsam::internal::ExecutionTrace">ExecutionTrace</dfn> {</td></tr>
+<tr><th id="102">102</th><td>  <em>static</em> <em>const</em> <em>int</em> <dfn class="decl" id="gtsam::internal::ExecutionTrace::Dim" title='gtsam::internal::ExecutionTrace::Dim' data-ref="gtsam::internal::ExecutionTrace::Dim">Dim</dfn> = <a class="type" href="../../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::dimension;</td></tr>
+<tr><th id="103">103</th><td>  <b>typedef</b> <span class="namespace">Eigen::</span><a class="type" href="../../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="ref" href="#gtsam::internal::ExecutionTrace::Dim" title='gtsam::internal::ExecutionTrace::Dim' data-ref="gtsam::internal::ExecutionTrace::Dim">Dim</a>, <a class="ref" href="#gtsam::internal::ExecutionTrace::Dim" title='gtsam::internal::ExecutionTrace::Dim' data-ref="gtsam::internal::ExecutionTrace::Dim">Dim</a>&gt; <dfn class="typedef" id="gtsam::internal::ExecutionTrace::JacobianTT" title='gtsam::internal::ExecutionTrace::JacobianTT' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::internal::ExecutionTrace::JacobianTT">JacobianTT</dfn>;</td></tr>
+<tr><th id="104">104</th><td>  <b>enum</b> {</td></tr>
+<tr><th id="105">105</th><td>    <dfn class="enum" id="gtsam::internal::ExecutionTrace::Constant" title='gtsam::internal::ExecutionTrace::Constant' data-ref="gtsam::internal::ExecutionTrace::Constant">Constant</dfn>, <dfn class="enum" id="gtsam::internal::ExecutionTrace::Leaf" title='gtsam::internal::ExecutionTrace::Leaf' data-ref="gtsam::internal::ExecutionTrace::Leaf">Leaf</dfn>, <dfn class="enum" id="gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</dfn></td></tr>
+<tr><th id="106">106</th><td>  } <dfn class="decl field" id="gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</dfn>;</td></tr>
+<tr><th id="107">107</th><td>  <b>union</b> {</td></tr>
+<tr><th id="108">108</th><td>    <a class="typedef" href="../../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl field" id="gtsam::internal::ExecutionTrace::(unnamed)::key" title='gtsam::internal::ExecutionTrace::(anonymous union)::key' data-ref="gtsam::internal::ExecutionTrace::(unnamed)::key">key</dfn>;</td></tr>
+<tr><th id="109">109</th><td>    <a class="type" href="#gtsam::internal::CallRecord" title='gtsam::internal::CallRecord' data-ref="gtsam::internal::CallRecord">CallRecord</a>&lt;<a class="member" href="#gtsam::internal::ExecutionTrace::Dim" title='gtsam::internal::ExecutionTrace::Dim' data-ref="gtsam::internal::ExecutionTrace::Dim">Dim</a>&gt;* <dfn class="decl field" id="gtsam::internal::ExecutionTrace::(unnamed)::ptr" title='gtsam::internal::ExecutionTrace::(anonymous union)::ptr' data-ref="gtsam::internal::ExecutionTrace::(unnamed)::ptr">ptr</dfn>;</td></tr>
+<tr><th id="110">110</th><td>  } <dfn class="decl field" id="gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</dfn>;</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td> <b>public</b>:</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>  <i class="doc">/// Pointer always starts out as a Constant</i></td></tr>
+<tr><th id="115">115</th><td>  <dfn class="decl def fn" id="_ZN5gtsam8internal14ExecutionTraceC1Ev" title='gtsam::internal::ExecutionTrace::ExecutionTrace&lt;T&gt;' data-ref="_ZN5gtsam8internal14ExecutionTraceC1Ev">ExecutionTrace</dfn>() :</td></tr>
+<tr><th id="116">116</th><td>      <a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a>(<a class="enum" href="#gtsam::internal::ExecutionTrace::Constant" title='gtsam::internal::ExecutionTrace::Constant' data-ref="gtsam::internal::ExecutionTrace::Constant">Constant</a>) {</td></tr>
+<tr><th id="117">117</th><td>  }</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>  <i class="doc">/// Change pointer to a Leaf Record</i></td></tr>
+<tr><th id="120">120</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam8internal14ExecutionTrace7setLeafEm" title='gtsam::internal::ExecutionTrace::setLeaf' data-ref="_ZN5gtsam8internal14ExecutionTrace7setLeafEm">setLeaf</dfn>(<a class="typedef" href="../../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col6 decl" id="76key" title='key' data-type='Key' data-ref="76key">key</dfn>) {</td></tr>
+<tr><th id="121">121</th><td>    <a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> = <a class="enum" href="#gtsam::internal::ExecutionTrace::Leaf" title='gtsam::internal::ExecutionTrace::Leaf' data-ref="gtsam::internal::ExecutionTrace::Leaf">Leaf</a>;</td></tr>
+<tr><th id="122">122</th><td>    <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.key = <a class="local col6 ref" href="#76key" title='key' data-ref="76key">key</a>;</td></tr>
+<tr><th id="123">123</th><td>  }</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>  <i class="doc">/// Take ownership of pointer to a Function Record</i></td></tr>
+<tr><th id="126">126</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam8internal14ExecutionTrace11setFunctionEPNS0_10CallRecordIL_ZNS1_3DimEEEE" title='gtsam::internal::ExecutionTrace::setFunction' data-ref="_ZN5gtsam8internal14ExecutionTrace11setFunctionEPNS0_10CallRecordIL_ZNS1_3DimEEEE">setFunction</dfn>(<a class="type" href="#gtsam::internal::CallRecord" title='gtsam::internal::CallRecord' data-ref="gtsam::internal::CallRecord">CallRecord</a>&lt;<a class="member" href="#gtsam::internal::ExecutionTrace::Dim" title='gtsam::internal::ExecutionTrace::Dim' data-ref="gtsam::internal::ExecutionTrace::Dim">Dim</a>&gt;* <dfn class="local col7 decl" id="77record" title='record' data-type='CallRecord&lt;Dim&gt; *' data-ref="77record">record</dfn>) {</td></tr>
+<tr><th id="127">127</th><td>    <a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> = <a class="enum" href="#gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</a>;</td></tr>
+<tr><th id="128">128</th><td>    <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.ptr = <a class="local col7 ref" href="#77record" title='record' data-ref="77record">record</a>;</td></tr>
+<tr><th id="129">129</th><td>  }</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>  <i class="doc">/// Print</i></td></tr>
+<tr><th id="132">132</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal14ExecutionTrace5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::internal::ExecutionTrace::print' data-ref="_ZNK5gtsam8internal14ExecutionTrace5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col8 decl" id="78indent" title='indent' data-type='const std::string &amp;' data-ref="78indent">indent</dfn> = <a class="ref fn fake" href="../../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>) <em>const</em> {</td></tr>
+<tr><th id="133">133</th><td>    <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Constant" title='gtsam::internal::ExecutionTrace::Constant' data-ref="gtsam::internal::ExecutionTrace::Constant">Constant</a>) {</td></tr>
+<tr><th id="134">134</th><td>      <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/13/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref fn" href="../../../../include/c++/13/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE">&lt;&lt;</a> <a class="local col8 ref" href="#78indent" title='indent' data-ref="78indent">indent</a> <a class="ref fn" href="../../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Constant"</q> <a class="ref fn" href="../../../../include/c++/13/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a> <span class="namespace">std::</span><a class="ref fn" href="../../../../include/c++/13/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="135">135</th><td>    } <b>else</b> <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Leaf" title='gtsam::internal::ExecutionTrace::Leaf' data-ref="gtsam::internal::ExecutionTrace::Leaf">Leaf</a>) {</td></tr>
+<tr><th id="136">136</th><td>      <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/13/iostream.html#std::cout" title='std::cout' data-ref="std::cout">cout</a> <a class="ref fn" href="../../../../include/c++/13/bits/basic_string.h.html#_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIT_T0_ERKNSt7__cxx1112basic_stringIS0_S1_T1_EE">&lt;&lt;</a> <a class="local col8 ref" href="#78indent" title='indent' data-ref="78indent">indent</a> <a class="ref fn" href="../../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Leaf, key = "</q> &lt;&lt; <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.key &lt;&lt; <span class="namespace">std::</span>endl;</td></tr>
+<tr><th id="137">137</th><td>    } <b>else</b> <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</a>) {</td></tr>
+<tr><th id="138">138</th><td>      <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.ptr-&gt;print(<a class="local col8 ref" href="#78indent" title='indent' data-ref="78indent">indent</a> <a class="ref fn" href="../../../../include/c++/13/bits/basic_string.h.html#_ZStplRKNSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_" title='std::operator+' data-ref="_ZStplRKNSt7__cxx1112basic_stringIT_T0_T1_EEPKS1_">+</a> <q>"  "</q>);</td></tr>
+<tr><th id="139">139</th><td>    }</td></tr>
+<tr><th id="140">140</th><td>  }</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>  <i class="doc">/// Return record pointer, quite unsafe, used only for testing</i></td></tr>
+<tr><th id="143">143</th><td>  <b>template</b>&lt;<b>class</b> Record&gt;</td></tr>
+<tr><th id="144">144</th><td>  <span class="namespace">std::</span><a class="type" href="../../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;Record*&gt; <dfn class="decl def fn" id="_ZN5gtsam8internal14ExecutionTrace6recordEv" title='gtsam::internal::ExecutionTrace::record' data-ref="_ZN5gtsam8internal14ExecutionTrace6recordEv">record</dfn>() {</td></tr>
+<tr><th id="145">145</th><td>    <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> != <a class="enum" href="#gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</a>) {</td></tr>
+<tr><th id="146">146</th><td>      <b>return</b> {};</td></tr>
+<tr><th id="147">147</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="148">148</th><td>      Record* <dfn class="local col9 decl" id="79p" title='p' data-type='Record *' data-ref="79p">p</dfn> = <b>dynamic_cast</b>&lt;Record*&gt;(<a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.ptr);</td></tr>
+<tr><th id="149">149</th><td>      <b>return</b> <a class="local col9 ref" href="#79p" title='p' data-ref="79p">p</a> ? <span class="namespace">std::</span><a class="type" href="../../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;Record*&gt;(<a class="local col9 ref" href="#79p" title='p' data-ref="79p">p</a>) : <span class="namespace">std::</span><a class="ref" href="../../../../include/c++/13/optional.html#std::nullopt" title='std::nullopt' data-ref="std::nullopt">nullopt</a>;</td></tr>
+<tr><th id="150">150</th><td>    }</td></tr>
+<tr><th id="151">151</th><td>  }</td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">   *  *** This is the main entry point for reverse AD, called from Expression ***</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">   * Called only once, either inserts I into Jacobians (Leaf) or starts AD (Function)</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="157">157</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal14ExecutionTrace15startReverseAD1ERNS0_11JacobianMapE" title='gtsam::internal::ExecutionTrace::startReverseAD1' data-ref="_ZNK5gtsam8internal14ExecutionTrace15startReverseAD1ERNS0_11JacobianMapE">startReverseAD1</dfn>(<a class="type" href="JacobianMap.h.html#gtsam::internal::JacobianMap" title='gtsam::internal::JacobianMap' data-ref="gtsam::internal::JacobianMap">JacobianMap</a>&amp; <dfn class="local col0 decl" id="80jacobians" title='jacobians' data-type='JacobianMap &amp;' data-ref="80jacobians">jacobians</dfn>) <em>const</em> {</td></tr>
+<tr><th id="158">158</th><td>    <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Leaf" title='gtsam::internal::ExecutionTrace::Leaf' data-ref="gtsam::internal::ExecutionTrace::Leaf">Leaf</a>) {</td></tr>
+<tr><th id="159">159</th><td>      <i>// This branch will only be called on trivial Leaf expressions, i.e. Priors</i></td></tr>
+<tr><th id="160">160</th><td>      <em>static</em> <em>const</em> <a class="typedef" href="#gtsam::internal::ExecutionTrace::JacobianTT" title='gtsam::internal::ExecutionTrace::JacobianTT' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::internal::ExecutionTrace::JacobianTT">JacobianTT</a> <dfn class="local col1 decl" id="81I" title='I' data-type='const JacobianTT' data-ref="81I">I</dfn> = <a class="typedef" href="#gtsam::internal::ExecutionTrace::JacobianTT" title='gtsam::internal::ExecutionTrace::JacobianTT' data-type='Eigen::Matrix&lt;double, Dim, Dim&gt;' data-ref="gtsam::internal::ExecutionTrace::JacobianTT">JacobianTT</a>::Identity();</td></tr>
+<tr><th id="161">161</th><td>      handleLeafCase(<a class="local col1 ref" href="#81I" title='I' data-ref="81I">I</a>, <a class="local col0 ref" href="#80jacobians" title='jacobians' data-ref="80jacobians">jacobians</a>, <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.key);</td></tr>
+<tr><th id="162">162</th><td>    } <b>else</b> <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</a>) {</td></tr>
+<tr><th id="163">163</th><td>      <i>// This is the more typical entry point, starting the AD pipeline</i></td></tr>
+<tr><th id="164">164</th><td><i>      // Inside startReverseAD2 the correctly dimensioned pipeline is chosen.</i></td></tr>
+<tr><th id="165">165</th><td>      <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.ptr-&gt;startReverseAD2(<a class="local col0 ref" href="#80jacobians" title='jacobians' data-ref="80jacobians">jacobians</a>);</td></tr>
+<tr><th id="166">166</th><td>    }</td></tr>
+<tr><th id="167">167</th><td>  }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>  <i class="doc">/// Either add to Jacobians (Leaf) or propagate (Function)</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">  // This is a crucial method in selecting the pipeline dimension: since it is templated method</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">  // it will call the templated Record method reverseAD2. Hence, at this point in the pipeline</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">  // there are as many reverseAD1 and reverseAD2 versions as there are different Jacobian sizes.</i></td></tr>
+<tr><th id="173">173</th><td>  <b>template</b>&lt;<b>typename</b> DerivedMatrix&gt;</td></tr>
+<tr><th id="174">174</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam8internal14ExecutionTrace10reverseAD1ERKN5Eigen10MatrixBaseITL0__EERNS0_11JacobianMapE" title='gtsam::internal::ExecutionTrace::reverseAD1' data-ref="_ZNK5gtsam8internal14ExecutionTrace10reverseAD1ERKN5Eigen10MatrixBaseITL0__EERNS0_11JacobianMapE">reverseAD1</dfn>(<em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::MatrixBase" title='Eigen::MatrixBase' data-ref="Eigen::MatrixBase">MatrixBase</a>&lt;DerivedMatrix&gt; &amp; <dfn class="local col2 decl" id="82dTdA" title='dTdA' data-type='const Eigen::MatrixBase&lt;DerivedMatrix&gt; &amp;' data-ref="82dTdA">dTdA</dfn>,</td></tr>
+<tr><th id="175">175</th><td>      <a class="type" href="JacobianMap.h.html#gtsam::internal::JacobianMap" title='gtsam::internal::JacobianMap' data-ref="gtsam::internal::JacobianMap">JacobianMap</a>&amp; <dfn class="local col3 decl" id="83jacobians" title='jacobians' data-type='JacobianMap &amp;' data-ref="83jacobians">jacobians</dfn>) <em>const</em> {</td></tr>
+<tr><th id="176">176</th><td>    <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Leaf" title='gtsam::internal::ExecutionTrace::Leaf' data-ref="gtsam::internal::ExecutionTrace::Leaf">Leaf</a>)</td></tr>
+<tr><th id="177">177</th><td>      handleLeafCase(<a class="local col2 ref" href="#82dTdA" title='dTdA' data-ref="82dTdA">dTdA</a>, <a class="local col3 ref" href="#83jacobians" title='jacobians' data-ref="83jacobians">jacobians</a>, <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.key);</td></tr>
+<tr><th id="178">178</th><td>    <b>else</b> <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</a>)</td></tr>
+<tr><th id="179">179</th><td>      <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.ptr-&gt;reverseAD2(<a class="local col2 ref" href="#82dTdA" title='dTdA' data-ref="82dTdA">dTdA</a>, <a class="local col3 ref" href="#83jacobians" title='jacobians' data-ref="83jacobians">jacobians</a>);</td></tr>
+<tr><th id="180">180</th><td>  }</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>  <dfn class="decl def fn" id="_ZN5gtsam8internal14ExecutionTraceD1Ev" title='gtsam::internal::ExecutionTrace::~ExecutionTrace&lt;T&gt;' data-ref="_ZN5gtsam8internal14ExecutionTraceD1Ev">~ExecutionTrace</dfn>() {</td></tr>
+<tr><th id="183">183</th><td>    <b>if</b> (<a class="member field" href="#gtsam::internal::ExecutionTrace::kind" title='gtsam::internal::ExecutionTrace::kind' data-ref="gtsam::internal::ExecutionTrace::kind">kind</a> == <a class="enum" href="#gtsam::internal::ExecutionTrace::Function" title='gtsam::internal::ExecutionTrace::Function' data-ref="gtsam::internal::ExecutionTrace::Function">Function</a>) {</td></tr>
+<tr><th id="184">184</th><td>      <a class="member field" href="#gtsam::internal::ExecutionTrace::content" title='gtsam::internal::ExecutionTrace::content' data-ref="gtsam::internal::ExecutionTrace::content">content</a>.ptr-&gt;~<a class="type" href="#gtsam::internal::CallRecord" title='gtsam::internal::CallRecord' data-ref="gtsam::internal::CallRecord">CallRecord</a>&lt;<a class="member" href="#gtsam::internal::ExecutionTrace::Dim" title='gtsam::internal::ExecutionTrace::Dim' data-ref="gtsam::internal::ExecutionTrace::Dim">Dim</a>&gt;();</td></tr>
+<tr><th id="185">185</th><td>    }</td></tr>
+<tr><th id="186">186</th><td>  }</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td>  <i class="doc">/// Define type so we can apply it as a meta-function</i></td></tr>
+<tr><th id="189">189</th><td>  <b>typedef</b> <a class="type" href="../Expression.h.html#gtsam::internal::ExecutionTrace" title='gtsam::internal::ExecutionTrace' data-ref="gtsam::internal::ExecutionTrace">ExecutionTrace</a>&lt;T&gt; <dfn class="typedef" id="gtsam::internal::ExecutionTrace::type" title='gtsam::internal::ExecutionTrace::type' data-type='ExecutionTrace&lt;T&gt;' data-ref="gtsam::internal::ExecutionTrace::type">type</dfn>;</td></tr>
+<tr><th id="190">190</th><td>};</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>} <i>// namespace internal</i></td></tr>
+<tr><th id="193">193</th><td>} <i>// namespace gtsam</i></td></tr>
+<tr><th id="194">194</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../examples/InverseKinematicsExampleExpressions.cpp.html'>codebrowser/examples/InverseKinematicsExampleExpressions.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,262 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>nested_exception.h source code [include/c++/13/bits/nested_exception.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="std::_Nested_exception,std::nested_exception "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/c++/13/bits/nested_exception.h'; var root_path = '../../../..'; var data_path = '../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>include</a>/<a href='../..'>c++</a>/<a href='..'>13</a>/<a href='./'>bits</a>/<a href='nested_exception.h.html'>nested_exception.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Nested Exception support header (nested_exception class) for -*- C++ -*-</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i>// Copyright (C) 2009-2023 Free Software Foundation, Inc.</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// This file is part of the GNU ISO C++ Library.  This library is free</i></td></tr>
+<tr><th id="6">6</th><td><i>// software; you can redistribute it and/or modify it under the</i></td></tr>
+<tr><th id="7">7</th><td><i>// terms of the GNU General Public License as published by the</i></td></tr>
+<tr><th id="8">8</th><td><i>// Free Software Foundation; either version 3, or (at your option)</i></td></tr>
+<tr><th id="9">9</th><td><i>// any later version.</i></td></tr>
+<tr><th id="10">10</th><td><i></i></td></tr>
+<tr><th id="11">11</th><td><i>// This library is distributed in the hope that it will be useful,</i></td></tr>
+<tr><th id="12">12</th><td><i>// but WITHOUT ANY WARRANTY; without even the implied warranty of</i></td></tr>
+<tr><th id="13">13</th><td><i>// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</i></td></tr>
+<tr><th id="14">14</th><td><i>// GNU General Public License for more details.</i></td></tr>
+<tr><th id="15">15</th><td><i></i></td></tr>
+<tr><th id="16">16</th><td><i>// Under Section 7 of GPL version 3, you are granted additional</i></td></tr>
+<tr><th id="17">17</th><td><i>// permissions described in the GCC Runtime Library Exception, version</i></td></tr>
+<tr><th id="18">18</th><td><i>// 3.1, as published by the Free Software Foundation.</i></td></tr>
+<tr><th id="19">19</th><td><i></i></td></tr>
+<tr><th id="20">20</th><td><i>// You should have received a copy of the GNU General Public License and</i></td></tr>
+<tr><th id="21">21</th><td><i>// a copy of the GCC Runtime Library Exception along with this program;</i></td></tr>
+<tr><th id="22">22</th><td><i>// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see</i></td></tr>
+<tr><th id="23">23</th><td><i>// &lt;<a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>&gt;.</i></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><i class="doc">/** <span class="command">@file</span> <span class="verb">bits/nested_exception.h</span></i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"> *  This is an internal header file, included by other library headers.</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"> *  Do not attempt to use it directly.<span class="command"> @headername</span>{exception}</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><u>#<span data-ppcond="30">ifndef</span> <span class="macro" data-ref="_M/_GLIBCXX_NESTED_EXCEPTION_H">_GLIBCXX_NESTED_EXCEPTION_H</span></u></td></tr>
+<tr><th id="31">31</th><td><u>#define <dfn class="macro" id="_M/_GLIBCXX_NESTED_EXCEPTION_H" data-ref="_M/_GLIBCXX_NESTED_EXCEPTION_H">_GLIBCXX_NESTED_EXCEPTION_H</dfn> 1</u></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &lt; 201103L</u></td></tr>
+<tr><th id="34">34</th><td><u># include &lt;bits/c++0x_warning.h&gt;</u></td></tr>
+<tr><th id="35">35</th><td><u>#<span data-ppcond="33">else</span></u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="move.h.html">&lt;bits/move.h&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="exception_ptr.h.html">&lt;bits/exception_ptr.h&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><b>extern</b> <q>"C++"</q> {</td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">std</span> <a class="macro" href="../../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#70" title="__attribute__ ((__visibility__ (&quot;default&quot;)))" data-ref="_M/_GLIBCXX_VISIBILITY">_GLIBCXX_VISIBILITY</a>(<b>default</b>)</td></tr>
+<tr><th id="43">43</th><td>{</td></tr>
+<tr><th id="44">44</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">   * <span class="command">@addtogroup</span> <span class="verb">exceptions</span></i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">   * @{</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td>  <i class="doc">/** Mixin class that stores the current exception.</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">   * This type can be used via `std::throw_with_nested` to store</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc">   * the current exception nested within another exception.</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc">   * <span class="command">@headerfile</span> exception</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">   * <span class="command">@since</span> C++11</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">   * <span class="command">@see</span> std::throw_with_nested</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">   * <span class="command">@ingroup</span> <span class="verb">exceptions</span></i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="59">59</th><td>  <b>class</b> <dfn class="type def" id="std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</dfn></td></tr>
+<tr><th id="60">60</th><td>  {</td></tr>
+<tr><th id="61">61</th><td>    exception_ptr <dfn class="decl field" id="std::nested_exception::_M_ptr" title='std::nested_exception::_M_ptr' data-ref="std::nested_exception::_M_ptr">_M_ptr</dfn>;</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>  <b>public</b>:</td></tr>
+<tr><th id="64">64</th><td>    <i class="doc">/// The default constructor stores the current exception (if any).</i></td></tr>
+<tr><th id="65">65</th><td>    <dfn class="decl def fn" id="_ZNSt16nested_exceptionC1Ev" title='std::nested_exception::nested_exception' data-ref="_ZNSt16nested_exceptionC1Ev">nested_exception</dfn>() <b>noexcept</b> : <a class="member field" href="#std::nested_exception::_M_ptr" title='std::nested_exception::_M_ptr' data-ref="std::nested_exception::_M_ptr">_M_ptr</a>(<a class="ref fn" href="exception_ptr.h.html#_ZSt17current_exceptionv" title='std::current_exception' data-ref="_ZSt17current_exceptionv">current_exception</a>()) { }</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>    <dfn class="decl def fn" id="_ZNSt16nested_exceptionC1ERKS_" title='std::nested_exception::nested_exception' data-ref="_ZNSt16nested_exceptionC1ERKS_">nested_exception</dfn>(<em>const</em> <a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>&amp;) <b>noexcept</b> = <b>default</b>;</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>    <a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>&amp; <dfn class="decl def fn" id="_ZNSt16nested_exceptionaSERKS_" title='std::nested_exception::operator=' data-ref="_ZNSt16nested_exceptionaSERKS_"><b>operator</b>=</dfn>(<em>const</em> <a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>&amp;) <b>noexcept</b> = <b>default</b>;</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td>    <b>virtual</b> <dfn class="virtual decl fn" id="_ZNSt16nested_exceptionD1Ev" title='std::nested_exception::~nested_exception' data-ref="_ZNSt16nested_exceptionD1Ev">~nested_exception</dfn>() <b>noexcept</b>;</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>    <i class="doc">/// Rethrow the stored exception, or terminate if none was stored.</i></td></tr>
+<tr><th id="74">74</th><td>    [[noreturn]]</td></tr>
+<tr><th id="75">75</th><td>    <em>void</em></td></tr>
+<tr><th id="76">76</th><td>    <dfn class="decl def fn" id="_ZNKSt16nested_exception14rethrow_nestedEv" title='std::nested_exception::rethrow_nested' data-ref="_ZNKSt16nested_exception14rethrow_nestedEv">rethrow_nested</dfn>() <em>const</em></td></tr>
+<tr><th id="77">77</th><td>    {</td></tr>
+<tr><th id="78">78</th><td>      <b>if</b> (<a class="ref fn fake" href="exception_ptr.h.html#_ZNKSt15__exception_ptr13exception_ptrcvbEv" title='std::__exception_ptr::exception_ptr::operator bool' data-ref="_ZNKSt15__exception_ptr13exception_ptrcvbEv"></a><a class="member field" href="#std::nested_exception::_M_ptr" title='std::nested_exception::_M_ptr' data-ref="std::nested_exception::_M_ptr">_M_ptr</a>)</td></tr>
+<tr><th id="79">79</th><td>	<a class="ref fn" href="exception_ptr.h.html#_ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE" title='std::rethrow_exception' data-ref="_ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE">rethrow_exception</a>(<a class="ref fn fake" href="exception_ptr.h.html#_ZNSt15__exception_ptr13exception_ptrC1ERKS0_" title='std::__exception_ptr::exception_ptr::exception_ptr' data-ref="_ZNSt15__exception_ptr13exception_ptrC1ERKS0_"></a><a class="member field" href="#std::nested_exception::_M_ptr" title='std::nested_exception::_M_ptr' data-ref="std::nested_exception::_M_ptr">_M_ptr</a>);</td></tr>
+<tr><th id="80">80</th><td>      <span class="namespace">std::</span><a class="ref fn" href="../exception.html#_ZSt9terminatev" title='std::terminate' data-ref="_ZSt9terminatev">terminate</a>();</td></tr>
+<tr><th id="81">81</th><td>    }</td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td>    <i class="doc">/// Access the stored exception.</i></td></tr>
+<tr><th id="84">84</th><td>    exception_ptr</td></tr>
+<tr><th id="85">85</th><td>    <dfn class="decl def fn" id="_ZNKSt16nested_exception10nested_ptrEv" title='std::nested_exception::nested_ptr' data-ref="_ZNKSt16nested_exception10nested_ptrEv">nested_ptr</dfn>() <em>const</em> <b>noexcept</b></td></tr>
+<tr><th id="86">86</th><td>    { <b>return</b> <a class="ref fn fake" href="exception_ptr.h.html#_ZNSt15__exception_ptr13exception_ptrC1ERKS0_" title='std::__exception_ptr::exception_ptr::exception_ptr' data-ref="_ZNSt15__exception_ptr13exception_ptrC1ERKS0_"></a><a class="member field" href="#std::nested_exception::_M_ptr" title='std::nested_exception::_M_ptr' data-ref="std::nested_exception::_M_ptr">_M_ptr</a>; }</td></tr>
+<tr><th id="87">87</th><td>  };</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>  <i class="doc">/// <span class="command">@cond</span> <span class="verb">undocumented</span></i></td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>  <b>template</b>&lt;<b>typename</b> _Except&gt;</td></tr>
+<tr><th id="92">92</th><td>    <b>struct</b> <dfn class="type def" id="std::_Nested_exception" title='std::_Nested_exception' data-ref="std::_Nested_exception">_Nested_exception</dfn> : <b>public</b> _Except, <b>public</b> <a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a></td></tr>
+<tr><th id="93">93</th><td>    {</td></tr>
+<tr><th id="94">94</th><td>      <b>explicit</b> <dfn class="decl def fn" id="_ZNSt17_Nested_exceptionC1ERKT_" title='std::_Nested_exception::_Nested_exception&lt;_Except&gt;' data-ref="_ZNSt17_Nested_exceptionC1ERKT_">_Nested_exception</dfn>(<em>const</em> _Except&amp; <dfn class="local col2 decl" id="32__ex" title='__ex' data-type='const _Except &amp;' data-ref="32__ex">__ex</dfn>)</td></tr>
+<tr><th id="95">95</th><td>      : _Except(<a class="local col2 ref" href="#32__ex" title='__ex' data-ref="32__ex">__ex</a>)</td></tr>
+<tr><th id="96">96</th><td>      { }</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>      <b>explicit</b> <dfn class="decl def fn" id="_ZNSt17_Nested_exceptionC1EOT_" title='std::_Nested_exception::_Nested_exception&lt;_Except&gt;' data-ref="_ZNSt17_Nested_exceptionC1EOT_">_Nested_exception</dfn>(_Except&amp;&amp; <dfn class="local col3 decl" id="33__ex" title='__ex' data-type='_Except &amp;&amp;' data-ref="33__ex">__ex</dfn>)</td></tr>
+<tr><th id="99">99</th><td>      : _Except(<b>static_cast</b>&lt;_Except&amp;&amp;&gt;(<a class="local col3 ref" href="#33__ex" title='__ex' data-ref="33__ex">__ex</a>))</td></tr>
+<tr><th id="100">100</th><td>      { }</td></tr>
+<tr><th id="101">101</th><td>    };</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td><u>#<span data-ppcond="103">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &lt; 201703L || ! defined <span class="macro" data-ref="_M/__cpp_if_constexpr">__cpp_if_constexpr</span></u></td></tr>
+<tr><th id="104">104</th><td>  <i>// [except.nested]/8</i></td></tr>
+<tr><th id="105">105</th><td><i>  // Throw an exception of unspecified type that is publicly derived from</i></td></tr>
+<tr><th id="106">106</th><td><i>  // both remove_reference_t&lt;_Tp&gt; and nested_exception.</i></td></tr>
+<tr><th id="107">107</th><td>  <b>template</b>&lt;<b>typename</b> _Tp&gt;</td></tr>
+<tr><th id="108">108</th><td>    [[noreturn]]</td></tr>
+<tr><th id="109">109</th><td>    <b>inline</b> <em>void</em></td></tr>
+<tr><th id="110">110</th><td>    __throw_with_nested_impl(_Tp&amp;&amp; __t, true_type)</td></tr>
+<tr><th id="111">111</th><td>    {</td></tr>
+<tr><th id="112">112</th><td>      <b>throw</b> _Nested_exception&lt;__remove_cvref_t&lt;_Tp&gt;&gt;{std::forward&lt;_Tp&gt;(__t)};</td></tr>
+<tr><th id="113">113</th><td>    }</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>  <b>template</b>&lt;<b>typename</b> _Tp&gt;</td></tr>
+<tr><th id="116">116</th><td>    [[noreturn]]</td></tr>
+<tr><th id="117">117</th><td>    <b>inline</b> <em>void</em></td></tr>
+<tr><th id="118">118</th><td>    __throw_with_nested_impl(_Tp&amp;&amp; __t, false_type)</td></tr>
+<tr><th id="119">119</th><td>    { <b>throw</b> std::forward&lt;_Tp&gt;(__t); }</td></tr>
+<tr><th id="120">120</th><td><u>#<span data-ppcond="103">endif</span></u></td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>  <i class="doc">/// <span class="command">@endcond</span></i></td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td>  <i class="doc">/** Throw an exception that also stores the currently active exception.</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">   * If `_Tp` is derived from `std::nested_exception` or is not usable</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">   * as a base-class, throws a copy of `__t`.</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">   * Otherwise, throws an object of an implementation-defined type derived</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">   * from both `_Tp` and `std::nested_exception`, containing a copy of `__t`</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">   * and the result of `std::current_exception()`.</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">   * In other words, throws the argument as a new exception that contains</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">   * the currently active exception nested within it. This is intended for</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">   * use in a catch handler to replace the caught exception with a different</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">   * type, while still preserving the original exception. When the new</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">   * exception is caught, the nested exception can be rethrown by using</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">   * `std::rethrow_if_nested`.</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">   * This can be used at API boundaries, for example to catch a library's</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">   * internal exception type and rethrow it nested with a `std::runtime_error`,</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">   * or vice versa.</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="143">143</th><td><i class="doc">   * <span class="command">@since</span> C++11</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="145">145</th><td>  <b>template</b>&lt;<b>typename</b> _Tp&gt;</td></tr>
+<tr><th id="146">146</th><td>    [[noreturn]]</td></tr>
+<tr><th id="147">147</th><td>    <b>inline</b> <em>void</em></td></tr>
+<tr><th id="148">148</th><td>    <dfn class="decl def fn" id="_ZSt17throw_with_nestedOT_" title='std::throw_with_nested' data-ref="_ZSt17throw_with_nestedOT_">throw_with_nested</dfn>(_Tp&amp;&amp; <dfn class="local col4 decl" id="34__t" title='__t' data-type='_Tp &amp;&amp;' data-ref="34__t">__t</dfn>)</td></tr>
+<tr><th id="149">149</th><td>    {</td></tr>
+<tr><th id="150">150</th><td>      <b>using</b> <dfn class="local col5 typedef" id="35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</dfn> = <b>typename</b> <a class="type" href="../type_traits.html#std::decay" title='std::decay' data-ref="std::decay">decay</a>&lt;_Tp&gt;::type;</td></tr>
+<tr><th id="151">151</th><td>      <b>using</b> <dfn class="local col6 typedef" id="36_CopyConstructible" title='_CopyConstructible' data-type='__and_&lt;is_copy_constructible&lt;_Up&gt;, is_move_constructible&lt;_Up&gt;&gt;' data-ref="36_CopyConstructible">_CopyConstructible</dfn></td></tr>
+<tr><th id="152">152</th><td>	= <a class="type" href="../type_traits.html#std::__and_" title='std::__and_' data-ref="std::__and_">__and_</a>&lt;<a class="type" href="../type_traits.html#std::is_copy_constructible" title='std::is_copy_constructible' data-ref="std::is_copy_constructible">is_copy_constructible</a>&lt;<a class="local col5 typedef" href="#35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</a>&gt;, <a class="type" href="../type_traits.html#std::is_move_constructible" title='std::is_move_constructible' data-ref="std::is_move_constructible">is_move_constructible</a>&lt;<a class="local col5 typedef" href="#35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</a>&gt;&gt;;</td></tr>
+<tr><th id="153">153</th><td>      <b>static_assert</b>(<a class="local col6 typedef" href="#36_CopyConstructible" title='_CopyConstructible' data-type='__and_&lt;is_copy_constructible&lt;_Up&gt;, is_move_constructible&lt;_Up&gt;&gt;' data-ref="36_CopyConstructible">_CopyConstructible</a>::value,</td></tr>
+<tr><th id="154">154</th><td>	  <q>"throw_with_nested argument must be CopyConstructible"</q>);</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td><u>#<span data-ppcond="156">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &gt;= 201703L &amp;&amp; <span class="macro" title="201606L" data-ref="_M/__cpp_if_constexpr">__cpp_if_constexpr</span></u></td></tr>
+<tr><th id="157">157</th><td>      <b>if</b> <b>constexpr</b> (is_class_v&lt;<a class="local col5 typedef" href="#35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</a>&gt;)</td></tr>
+<tr><th id="158">158</th><td>	<b>if</b> <b>constexpr</b> (!is_final_v&lt;<a class="local col5 typedef" href="#35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</a>&gt;)</td></tr>
+<tr><th id="159">159</th><td>	  <b>if</b> <b>constexpr</b> (!is_base_of_v&lt;<a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>, <a class="local col5 typedef" href="#35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</a>&gt;)</td></tr>
+<tr><th id="160">160</th><td>	    <b>throw</b> <a class="type" href="#std::_Nested_exception" title='std::_Nested_exception' data-ref="std::_Nested_exception">_Nested_exception</a>&lt;<a class="local col5 typedef" href="#35_Up" title='_Up' data-type='typename decay&lt;_Tp&gt;::type' data-ref="35_Up">_Up</a>&gt;{<span class="namespace">std::</span>forward&lt;_Tp&gt;(<a class="local col4 ref" href="#34__t" title='__t' data-ref="34__t">__t</a>)};</td></tr>
+<tr><th id="161">161</th><td>      <b>throw</b> <span class="namespace">std::</span>forward&lt;_Tp&gt;(<a class="local col4 ref" href="#34__t" title='__t' data-ref="34__t">__t</a>);</td></tr>
+<tr><th id="162">162</th><td><u>#<span data-ppcond="156">else</span></u></td></tr>
+<tr><th id="163">163</th><td>      <b>using</b> __nest = __and_&lt;is_class&lt;_Up&gt;, __bool_constant&lt;!<b>__is_final</b>(_Up)&gt;,</td></tr>
+<tr><th id="164">164</th><td>			    __not_&lt;is_base_of&lt;nested_exception, _Up&gt;&gt;&gt;;</td></tr>
+<tr><th id="165">165</th><td>      std::__throw_with_nested_impl(std::forward&lt;_Tp&gt;(__t), __nest{});</td></tr>
+<tr><th id="166">166</th><td><u>#<span data-ppcond="156">endif</span></u></td></tr>
+<tr><th id="167">167</th><td>    }</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td><u>#<span data-ppcond="169">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &lt; 201703L || ! defined <span class="macro" data-ref="_M/__cpp_if_constexpr">__cpp_if_constexpr</span></u></td></tr>
+<tr><th id="170">170</th><td>  <i class="doc">/// <span class="command">@cond</span> <span class="verb">undocumented</span></i></td></tr>
+<tr><th id="171">171</th><td><i class="doc"></i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">  // Attempt dynamic_cast to nested_exception and call rethrow_nested().</i></td></tr>
+<tr><th id="173">173</th><td>  <b>template</b>&lt;<b>typename</b> _Ex&gt;</td></tr>
+<tr><th id="174">174</th><td>    <b>inline</b> <em>void</em></td></tr>
+<tr><th id="175">175</th><td>    __rethrow_if_nested_impl(<em>const</em> _Ex* __ptr, true_type)</td></tr>
+<tr><th id="176">176</th><td>    {</td></tr>
+<tr><th id="177">177</th><td>      <b>if</b> (<em>auto</em> __ne_ptr = <b>dynamic_cast</b>&lt;<em>const</em> nested_exception*&gt;(__ptr))</td></tr>
+<tr><th id="178">178</th><td>	__ne_ptr-&gt;rethrow_nested();</td></tr>
+<tr><th id="179">179</th><td>    }</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>  <i>// Otherwise, no effects.</i></td></tr>
+<tr><th id="182">182</th><td>  <b>inline</b> <em>void</em></td></tr>
+<tr><th id="183">183</th><td>  __rethrow_if_nested_impl(<em>const</em> <em>void</em>*, false_type)</td></tr>
+<tr><th id="184">184</th><td>  { }</td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td>  <i class="doc">/// <span class="command">@endcond</span></i></td></tr>
+<tr><th id="187">187</th><td><u>#<span data-ppcond="169">endif</span></u></td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>  <i class="doc">/** Rethrow a nested exception</i></td></tr>
+<tr><th id="190">190</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="191">191</th><td><i class="doc">   * If `__ex` contains a `std::nested_exception` object, call its</i></td></tr>
+<tr><th id="192">192</th><td><i class="doc">   * `rethrow_nested()` member to rethrow the stored exception.</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="194">194</th><td><i class="doc">   * After catching an exception thrown by a call to `std::throw_with_nested`</i></td></tr>
+<tr><th id="195">195</th><td><i class="doc">   * this function can be used to rethrow the exception that was active when</i></td></tr>
+<tr><th id="196">196</th><td><i class="doc">   * `std::throw_with_nested` was called.</i></td></tr>
+<tr><th id="197">197</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="198">198</th><td><i class="doc">   * <span class="command">@since</span> C++11</i></td></tr>
+<tr><th id="199">199</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="200">200</th><td><i class="doc">  // _GLIBCXX_RESOLVE_LIB_DEFECTS</i></td></tr>
+<tr><th id="201">201</th><td><i class="doc">  // 2484. rethrow_if_nested() is doubly unimplementable</i></td></tr>
+<tr><th id="202">202</th><td><i class="doc">  // 2784. Resolution to LWG 2484 is missing "otherwise, no effects" and [...]</i></td></tr>
+<tr><th id="203">203</th><td>  <b>template</b>&lt;<b>typename</b> _Ex&gt;</td></tr>
+<tr><th id="204">204</th><td><u># <span data-ppcond="204">if</span> ! <span class="macro" title="199711L" data-ref="_M/__cpp_rtti">__cpp_rtti</span></u></td></tr>
+<tr><th id="205">205</th><td>    [[__gnu__::__always_inline__]]</td></tr>
+<tr><th id="206">206</th><td><u>#<span data-ppcond="204">endif</span></u></td></tr>
+<tr><th id="207">207</th><td>    <b>inline</b> <em>void</em></td></tr>
+<tr><th id="208">208</th><td>    <dfn class="decl def fn" id="_ZSt17rethrow_if_nestedRKT_" title='std::rethrow_if_nested' data-ref="_ZSt17rethrow_if_nestedRKT_">rethrow_if_nested</dfn>(<em>const</em> _Ex&amp; <dfn class="local col7 decl" id="37__ex" title='__ex' data-type='const _Ex &amp;' data-ref="37__ex">__ex</dfn>)</td></tr>
+<tr><th id="209">209</th><td>    {</td></tr>
+<tr><th id="210">210</th><td>      <em>const</em> _Ex* <dfn class="local col8 decl" id="38__ptr" title='__ptr' data-type='const _Ex *' data-ref="38__ptr">__ptr</dfn> = <a class="ref fn" href="move.h.html#52" title='__builtin_addressof' data-ref="__builtin_addressof">__builtin_addressof</a>(<span class='refarg'><a class="local col7 ref" href="#37__ex" title='__ex' data-ref="37__ex">__ex</a></span>);</td></tr>
+<tr><th id="211">211</th><td><u>#<span data-ppcond="211">if</span> <span class="macro" title="201703L" data-ref="_M/__cplusplus">__cplusplus</span> &lt; 201703L || ! defined <span class="macro" data-ref="_M/__cpp_if_constexpr">__cpp_if_constexpr</span></u></td></tr>
+<tr><th id="212">212</th><td><u># if __cpp_rtti</u></td></tr>
+<tr><th id="213">213</th><td>      <b>using</b> __cast = __and_&lt;is_polymorphic&lt;_Ex&gt;,</td></tr>
+<tr><th id="214">214</th><td>			    __or_&lt;__not_&lt;is_base_of&lt;nested_exception, _Ex&gt;&gt;,</td></tr>
+<tr><th id="215">215</th><td>				  is_convertible&lt;_Ex*, nested_exception*&gt;&gt;&gt;;</td></tr>
+<tr><th id="216">216</th><td><u># else</u></td></tr>
+<tr><th id="217">217</th><td>      <b>using</b> __cast = __and_&lt;is_polymorphic&lt;_Ex&gt;,</td></tr>
+<tr><th id="218">218</th><td>			    is_base_of&lt;nested_exception, _Ex&gt;,</td></tr>
+<tr><th id="219">219</th><td>			    is_convertible&lt;_Ex*, nested_exception*&gt;&gt;;</td></tr>
+<tr><th id="220">220</th><td><u># endif</u></td></tr>
+<tr><th id="221">221</th><td>      std::__rethrow_if_nested_impl(__ptr, __cast{});</td></tr>
+<tr><th id="222">222</th><td><u>#<span data-ppcond="211">else</span></u></td></tr>
+<tr><th id="223">223</th><td>      <b>if</b> <b>constexpr</b> (!is_polymorphic_v&lt;_Ex&gt;)</td></tr>
+<tr><th id="224">224</th><td>	<b>return</b>;</td></tr>
+<tr><th id="225">225</th><td>      <b>else</b> <b>if</b> <b>constexpr</b> (is_base_of_v&lt;<a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>, _Ex&gt;</td></tr>
+<tr><th id="226">226</th><td>			 &amp;&amp; !is_convertible_v&lt;_Ex*, <a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>*&gt;)</td></tr>
+<tr><th id="227">227</th><td>	<b>return</b>; <i>// nested_exception base class is inaccessible or ambiguous.</i></td></tr>
+<tr><th id="228">228</th><td><u># <span data-ppcond="228">if</span> ! <span class="macro" title="199711L" data-ref="_M/__cpp_rtti">__cpp_rtti</span></u></td></tr>
+<tr><th id="229">229</th><td>      <b>else</b> <b>if</b> <b>constexpr</b> (!is_base_of_v&lt;nested_exception, _Ex&gt;)</td></tr>
+<tr><th id="230">230</th><td>	<b>return</b>; <i>// Cannot do polymorphic casts without RTTI.</i></td></tr>
+<tr><th id="231">231</th><td><u># <span data-ppcond="228">endif</span></u></td></tr>
+<tr><th id="232">232</th><td>      <b>else</b> <b>if</b> (<em>auto</em> <dfn class="local col9 decl" id="39__ne_ptr" title='__ne_ptr' data-type='const nested_exception *' data-ref="39__ne_ptr"><a class="local col9 ref" href="#39__ne_ptr" title='__ne_ptr' data-ref="39__ne_ptr">__ne_ptr</a></dfn> = <b>dynamic_cast</b>&lt;<em>const</em> <a class="type" href="#std::nested_exception" title='std::nested_exception' data-ref="std::nested_exception">nested_exception</a>*&gt;(<a class="local col8 ref" href="#38__ptr" title='__ptr' data-ref="38__ptr">__ptr</a>))</td></tr>
+<tr><th id="233">233</th><td>	<a class="local col9 ref" href="#39__ne_ptr" title='__ne_ptr' data-ref="39__ne_ptr">__ne_ptr</a>-&gt;<a class="ref fn" href="#_ZNKSt16nested_exception14rethrow_nestedEv" title='std::nested_exception::rethrow_nested' data-ref="_ZNKSt16nested_exception14rethrow_nestedEv">rethrow_nested</a>();</td></tr>
+<tr><th id="234">234</th><td><u>#<span data-ppcond="211">endif</span></u></td></tr>
+<tr><th id="235">235</th><td>    }</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+<tr><th id="237">237</th><td>  <i class="doc">/// @} group exceptions</i></td></tr>
+<tr><th id="238">238</th><td>} <i>// namespace std</i></td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td>} <i>// extern "C++"</i></td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td><u>#<span data-ppcond="33">endif</span> // C++11</u></td></tr>
+<tr><th id="243">243</th><td><u>#<span data-ppcond="30">endif</span> // _GLIBCXX_NESTED_EXCEPTION_H</u></td></tr>
+<tr><th id="244">244</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../codebrowser/CppUnitLite/TestRegistry.cpp.html'>codebrowser/CppUnitLite/TestRegistry.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

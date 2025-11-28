@@ -1,0 +1,294 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>sici.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/sici.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/sici.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='sici.c.html'>sici.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     sici.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Sine and cosine integrals</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, Ci, Si, sici();</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * sici( x, &amp;Si, &amp;Ci );</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> * Evaluates the integrals</i></td></tr>
+<tr><th id="17">17</th><td><i> *</i></td></tr>
+<tr><th id="18">18</th><td><i> *                          x</i></td></tr>
+<tr><th id="19">19</th><td><i> *                          -</i></td></tr>
+<tr><th id="20">20</th><td><i> *                         |  cos t - 1</i></td></tr>
+<tr><th id="21">21</th><td><i> *   Ci(x) = eul + ln x +  |  --------- dt,</i></td></tr>
+<tr><th id="22">22</th><td><i> *                         |      t</i></td></tr>
+<tr><th id="23">23</th><td><i> *                        -</i></td></tr>
+<tr><th id="24">24</th><td><i> *                         0</i></td></tr>
+<tr><th id="25">25</th><td><i> *             x</i></td></tr>
+<tr><th id="26">26</th><td><i> *             -</i></td></tr>
+<tr><th id="27">27</th><td><i> *            |  sin t</i></td></tr>
+<tr><th id="28">28</th><td><i> *   Si(x) =  |  ----- dt</i></td></tr>
+<tr><th id="29">29</th><td><i> *            |    t</i></td></tr>
+<tr><th id="30">30</th><td><i> *           -</i></td></tr>
+<tr><th id="31">31</th><td><i> *            0</i></td></tr>
+<tr><th id="32">32</th><td><i> *</i></td></tr>
+<tr><th id="33">33</th><td><i> * where eul = 0.57721566490153286061 is Euler's constant.</i></td></tr>
+<tr><th id="34">34</th><td><i> * The integrals are approximated by rational functions.</i></td></tr>
+<tr><th id="35">35</th><td><i> * For x &gt; 8 auxiliary functions f(x) and g(x) are employed</i></td></tr>
+<tr><th id="36">36</th><td><i> * such that</i></td></tr>
+<tr><th id="37">37</th><td><i> *</i></td></tr>
+<tr><th id="38">38</th><td><i> * Ci(x) = f(x) sin(x) - g(x) cos(x)</i></td></tr>
+<tr><th id="39">39</th><td><i> * Si(x) = pi/2 - f(x) cos(x) - g(x) sin(x)</i></td></tr>
+<tr><th id="40">40</th><td><i> *</i></td></tr>
+<tr><th id="41">41</th><td><i> *</i></td></tr>
+<tr><th id="42">42</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="43">43</th><td><i> *    Test interval = [0,50].</i></td></tr>
+<tr><th id="44">44</th><td><i> * Absolute error, except relative when &gt; 1:</i></td></tr>
+<tr><th id="45">45</th><td><i> * arithmetic   function   # trials      peak         rms</i></td></tr>
+<tr><th id="46">46</th><td><i> *    IEEE        Si        30000       4.4e-16     7.3e-17</i></td></tr>
+<tr><th id="47">47</th><td><i> *    IEEE        Ci        30000       6.9e-16     5.1e-17</i></td></tr>
+<tr><th id="48">48</th><td><i> */</i></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td><i>/*</i></td></tr>
+<tr><th id="51">51</th><td><i> * Cephes Math Library Release 2.1:  January, 1989</i></td></tr>
+<tr><th id="52">52</th><td><i> * Copyright 1984, 1987, 1989 by Stephen L. Moshier</i></td></tr>
+<tr><th id="53">53</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="54">54</th><td><i> */</i></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="SN" title='SN' data-type='double[6]' data-ref="SN">SN</dfn>[] = {</td></tr>
+<tr><th id="59">59</th><td>    -<var>8.39167827910303881427E-11</var>,</td></tr>
+<tr><th id="60">60</th><td>    <var>4.62591714427012837309E-8</var>,</td></tr>
+<tr><th id="61">61</th><td>    -<var>9.75759303843632795789E-6</var>,</td></tr>
+<tr><th id="62">62</th><td>    <var>9.76945438170435310816E-4</var>,</td></tr>
+<tr><th id="63">63</th><td>    -<var>4.13470316229406538752E-2</var>,</td></tr>
+<tr><th id="64">64</th><td>    <var>1.00000000000000000302E0</var>,</td></tr>
+<tr><th id="65">65</th><td>};</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="SD" title='SD' data-type='double[6]' data-ref="SD">SD</dfn>[] = {</td></tr>
+<tr><th id="68">68</th><td>    <var>2.03269266195951942049E-12</var>,</td></tr>
+<tr><th id="69">69</th><td>    <var>1.27997891179943299903E-9</var>,</td></tr>
+<tr><th id="70">70</th><td>    <var>4.41827842801218905784E-7</var>,</td></tr>
+<tr><th id="71">71</th><td>    <var>9.96412122043875552487E-5</var>,</td></tr>
+<tr><th id="72">72</th><td>    <var>1.42085239326149893930E-2</var>,</td></tr>
+<tr><th id="73">73</th><td>    <var>9.99999999999999996984E-1</var>,</td></tr>
+<tr><th id="74">74</th><td>};</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="CN" title='CN' data-type='double[6]' data-ref="CN">CN</dfn>[] = {</td></tr>
+<tr><th id="77">77</th><td>    <var>2.02524002389102268789E-11</var>,</td></tr>
+<tr><th id="78">78</th><td>    -<var>1.35249504915790756375E-8</var>,</td></tr>
+<tr><th id="79">79</th><td>    <var>3.59325051419993077021E-6</var>,</td></tr>
+<tr><th id="80">80</th><td>    -<var>4.74007206873407909465E-4</var>,</td></tr>
+<tr><th id="81">81</th><td>    <var>2.89159652607555242092E-2</var>,</td></tr>
+<tr><th id="82">82</th><td>    -<var>1.00000000000000000080E0</var>,</td></tr>
+<tr><th id="83">83</th><td>};</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="CD" title='CD' data-type='double[6]' data-ref="CD">CD</dfn>[] = {</td></tr>
+<tr><th id="86">86</th><td>    <var>4.07746040061880559506E-12</var>,</td></tr>
+<tr><th id="87">87</th><td>    <var>3.06780997581887812692E-9</var>,</td></tr>
+<tr><th id="88">88</th><td>    <var>1.23210355685883423679E-6</var>,</td></tr>
+<tr><th id="89">89</th><td>    <var>3.17442024775032769882E-4</var>,</td></tr>
+<tr><th id="90">90</th><td>    <var>5.10028056236446052392E-2</var>,</td></tr>
+<tr><th id="91">91</th><td>    <var>4.00000000000000000080E0</var>,</td></tr>
+<tr><th id="92">92</th><td>};</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="FN4" title='FN4' data-type='double[7]' data-ref="FN4">FN4</dfn>[] = {</td></tr>
+<tr><th id="95">95</th><td>    <var>4.23612862892216586994E0</var>,</td></tr>
+<tr><th id="96">96</th><td>    <var>5.45937717161812843388E0</var>,</td></tr>
+<tr><th id="97">97</th><td>    <var>1.62083287701538329132E0</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>1.67006611831323023771E-1</var>,</td></tr>
+<tr><th id="99">99</th><td>    <var>6.81020132472518137426E-3</var>,</td></tr>
+<tr><th id="100">100</th><td>    <var>1.08936580650328664411E-4</var>,</td></tr>
+<tr><th id="101">101</th><td>    <var>5.48900223421373614008E-7</var>,</td></tr>
+<tr><th id="102">102</th><td>};</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="FD4" title='FD4' data-type='double[7]' data-ref="FD4">FD4</dfn>[] = {</td></tr>
+<tr><th id="105">105</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="106">106</th><td>    <var>8.16496634205391016773E0</var>,</td></tr>
+<tr><th id="107">107</th><td>    <var>7.30828822505564552187E0</var>,</td></tr>
+<tr><th id="108">108</th><td>    <var>1.86792257950184183883E0</var>,</td></tr>
+<tr><th id="109">109</th><td>    <var>1.78792052963149907262E-1</var>,</td></tr>
+<tr><th id="110">110</th><td>    <var>7.01710668322789753610E-3</var>,</td></tr>
+<tr><th id="111">111</th><td>    <var>1.10034357153915731354E-4</var>,</td></tr>
+<tr><th id="112">112</th><td>    <var>5.48900252756255700982E-7</var>,</td></tr>
+<tr><th id="113">113</th><td>};</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="FN8" title='FN8' data-type='double[9]' data-ref="FN8">FN8</dfn>[] = {</td></tr>
+<tr><th id="116">116</th><td>    <var>4.55880873470465315206E-1</var>,</td></tr>
+<tr><th id="117">117</th><td>    <var>7.13715274100146711374E-1</var>,</td></tr>
+<tr><th id="118">118</th><td>    <var>1.60300158222319456320E-1</var>,</td></tr>
+<tr><th id="119">119</th><td>    <var>1.16064229408124407915E-2</var>,</td></tr>
+<tr><th id="120">120</th><td>    <var>3.49556442447859055605E-4</var>,</td></tr>
+<tr><th id="121">121</th><td>    <var>4.86215430826454749482E-6</var>,</td></tr>
+<tr><th id="122">122</th><td>    <var>3.20092790091004902806E-8</var>,</td></tr>
+<tr><th id="123">123</th><td>    <var>9.41779576128512936592E-11</var>,</td></tr>
+<tr><th id="124">124</th><td>    <var>9.70507110881952024631E-14</var>,</td></tr>
+<tr><th id="125">125</th><td>};</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="FD8" title='FD8' data-type='double[8]' data-ref="FD8">FD8</dfn>[] = {</td></tr>
+<tr><th id="128">128</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="129">129</th><td>    <var>9.17463611873684053703E-1</var>,</td></tr>
+<tr><th id="130">130</th><td>    <var>1.78685545332074536321E-1</var>,</td></tr>
+<tr><th id="131">131</th><td>    <var>1.22253594771971293032E-2</var>,</td></tr>
+<tr><th id="132">132</th><td>    <var>3.58696481881851580297E-4</var>,</td></tr>
+<tr><th id="133">133</th><td>    <var>4.92435064317881464393E-6</var>,</td></tr>
+<tr><th id="134">134</th><td>    <var>3.21956939101046018377E-8</var>,</td></tr>
+<tr><th id="135">135</th><td>    <var>9.43720590350276732376E-11</var>,</td></tr>
+<tr><th id="136">136</th><td>    <var>9.70507110881952025725E-14</var>,</td></tr>
+<tr><th id="137">137</th><td>};</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="GN4" title='GN4' data-type='double[8]' data-ref="GN4">GN4</dfn>[] = {</td></tr>
+<tr><th id="140">140</th><td>    <var>8.71001698973114191777E-2</var>,</td></tr>
+<tr><th id="141">141</th><td>    <var>6.11379109952219284151E-1</var>,</td></tr>
+<tr><th id="142">142</th><td>    <var>3.97180296392337498885E-1</var>,</td></tr>
+<tr><th id="143">143</th><td>    <var>7.48527737628469092119E-2</var>,</td></tr>
+<tr><th id="144">144</th><td>    <var>5.38868681462177273157E-3</var>,</td></tr>
+<tr><th id="145">145</th><td>    <var>1.61999794598934024525E-4</var>,</td></tr>
+<tr><th id="146">146</th><td>    <var>1.97963874140963632189E-6</var>,</td></tr>
+<tr><th id="147">147</th><td>    <var>7.82579040744090311069E-9</var>,</td></tr>
+<tr><th id="148">148</th><td>};</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="GD4" title='GD4' data-type='double[7]' data-ref="GD4">GD4</dfn>[] = {</td></tr>
+<tr><th id="151">151</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="152">152</th><td>    <var>1.64402202413355338886E0</var>,</td></tr>
+<tr><th id="153">153</th><td>    <var>6.66296701268987968381E-1</var>,</td></tr>
+<tr><th id="154">154</th><td>    <var>9.88771761277688796203E-2</var>,</td></tr>
+<tr><th id="155">155</th><td>    <var>6.22396345441768420760E-3</var>,</td></tr>
+<tr><th id="156">156</th><td>    <var>1.73221081474177119497E-4</var>,</td></tr>
+<tr><th id="157">157</th><td>    <var>2.02659182086343991969E-6</var>,</td></tr>
+<tr><th id="158">158</th><td>    <var>7.82579218933534490868E-9</var>,</td></tr>
+<tr><th id="159">159</th><td>};</td></tr>
+<tr><th id="160">160</th><td></td></tr>
+<tr><th id="161">161</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="GN8" title='GN8' data-type='double[9]' data-ref="GN8">GN8</dfn>[] = {</td></tr>
+<tr><th id="162">162</th><td>    <var>6.97359953443276214934E-1</var>,</td></tr>
+<tr><th id="163">163</th><td>    <var>3.30410979305632063225E-1</var>,</td></tr>
+<tr><th id="164">164</th><td>    <var>3.84878767649974295920E-2</var>,</td></tr>
+<tr><th id="165">165</th><td>    <var>1.71718239052347903558E-3</var>,</td></tr>
+<tr><th id="166">166</th><td>    <var>3.48941165502279436777E-5</var>,</td></tr>
+<tr><th id="167">167</th><td>    <var>3.47131167084116673800E-7</var>,</td></tr>
+<tr><th id="168">168</th><td>    <var>1.70404452782044526189E-9</var>,</td></tr>
+<tr><th id="169">169</th><td>    <var>3.85945925430276600453E-12</var>,</td></tr>
+<tr><th id="170">170</th><td>    <var>3.14040098946363334640E-15</var>,</td></tr>
+<tr><th id="171">171</th><td>};</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="GD8" title='GD8' data-type='double[9]' data-ref="GD8">GD8</dfn>[] = {</td></tr>
+<tr><th id="174">174</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="175">175</th><td>    <var>1.68548898811011640017E0</var>,</td></tr>
+<tr><th id="176">176</th><td>    <var>4.87852258695304967486E-1</var>,</td></tr>
+<tr><th id="177">177</th><td>    <var>4.67913194259625806320E-2</var>,</td></tr>
+<tr><th id="178">178</th><td>    <var>1.90284426674399523638E-3</var>,</td></tr>
+<tr><th id="179">179</th><td>    <var>3.68475504442561108162E-5</var>,</td></tr>
+<tr><th id="180">180</th><td>    <var>3.57043223443740838771E-7</var>,</td></tr>
+<tr><th id="181">181</th><td>    <var>1.72693748966316146736E-9</var>,</td></tr>
+<tr><th id="182">182</th><td>    <var>3.87830166023954706752E-12</var>,</td></tr>
+<tr><th id="183">183</th><td>    <var>3.14040098946363335242E-15</var>,</td></tr>
+<tr><th id="184">184</th><td>};</td></tr>
+<tr><th id="185">185</th><td></td></tr>
+<tr><th id="186">186</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>;</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td><em>int</em> <dfn class="decl def fn" id="sici" title='sici' data-ref="sici">sici</dfn>(<em>double</em> <dfn class="local col1 decl" id="1x" title='x' data-type='double' data-ref="1x">x</dfn>, <em>double</em> *<dfn class="local col2 decl" id="2si" title='si' data-type='double *' data-ref="2si">si</dfn>, <em>double</em> *<dfn class="local col3 decl" id="3ci" title='ci' data-type='double *' data-ref="3ci">ci</dfn>)</td></tr>
+<tr><th id="190">190</th><td>{</td></tr>
+<tr><th id="191">191</th><td>    <em>double</em> <dfn class="local col4 decl" id="4z" title='z' data-type='double' data-ref="4z">z</dfn>, <dfn class="local col5 decl" id="5c" title='c' data-type='double' data-ref="5c">c</dfn>, <dfn class="local col6 decl" id="6s" title='s' data-type='double' data-ref="6s">s</dfn>, <dfn class="local col7 decl" id="7f" title='f' data-type='double' data-ref="7f">f</dfn>, <dfn class="local col8 decl" id="8g" title='g' data-type='double' data-ref="8g">g</dfn>;</td></tr>
+<tr><th id="192">192</th><td>    <em>short</em> <dfn class="local col9 decl" id="9sign" title='sign' data-type='short' data-ref="9sign">sign</dfn>;</td></tr>
+<tr><th id="193">193</th><td></td></tr>
+<tr><th id="194">194</th><td>    <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="195">195</th><td>	<a class="local col9 ref" href="#9sign" title='sign' data-ref="9sign">sign</a> = -<var>1</var>;</td></tr>
+<tr><th id="196">196</th><td>	<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> = -<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>;</td></tr>
+<tr><th id="197">197</th><td>    }</td></tr>
+<tr><th id="198">198</th><td>    <b>else</b></td></tr>
+<tr><th id="199">199</th><td>	<a class="local col9 ref" href="#9sign" title='sign' data-ref="9sign">sign</a> = <var>0</var>;</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>    <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> == <var>0.0</var>) {</td></tr>
+<tr><th id="203">203</th><td>	*<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = <var>0.0</var>;</td></tr>
+<tr><th id="204">204</th><td>	*<a class="local col3 ref" href="#3ci" title='ci' data-ref="3ci">ci</a> = -<a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="205">205</th><td>	<b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="206">206</th><td>    }</td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>    <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &gt; <var>1.0e9</var>) {</td></tr>
+<tr><th id="210">210</th><td>	<b>if</b> (<a class="macro" href="mconf.h.html#100" title="__builtin_isinf_sign (x)" data-ref="_M/cephes_isinf">cephes_isinf</a>(<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>)) {</td></tr>
+<tr><th id="211">211</th><td>	    <b>if</b> (<a class="local col9 ref" href="#9sign" title='sign' data-ref="9sign">sign</a> == -<var>1</var>) {</td></tr>
+<tr><th id="212">212</th><td>		*<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = -<a class="macro" href="../../../../../include/math.h.html#1153" title="1.57079632679489661923" data-ref="_M/M_PI_2">M_PI_2</a>;</td></tr>
+<tr><th id="213">213</th><td>		*<a class="local col3 ref" href="#3ci" title='ci' data-ref="3ci">ci</a> = <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="214">214</th><td>	    }</td></tr>
+<tr><th id="215">215</th><td>	    <b>else</b> {</td></tr>
+<tr><th id="216">216</th><td>		*<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = <a class="macro" href="../../../../../include/math.h.html#1153" title="1.57079632679489661923" data-ref="_M/M_PI_2">M_PI_2</a>;</td></tr>
+<tr><th id="217">217</th><td>		*<a class="local col3 ref" href="#3ci" title='ci' data-ref="3ci">ci</a> = <var>0</var>;</td></tr>
+<tr><th id="218">218</th><td>	    }</td></tr>
+<tr><th id="219">219</th><td>	    <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="220">220</th><td>	}</td></tr>
+<tr><th id="221">221</th><td>	*<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = <a class="macro" href="../../../../../include/math.h.html#1153" title="1.57079632679489661923" data-ref="_M/M_PI_2">M_PI_2</a> - <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#62" title='cos' data-ref="cos">cos</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>) / <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>;</td></tr>
+<tr><th id="222">222</th><td>	*<a class="local col3 ref" href="#3ci" title='ci' data-ref="3ci">ci</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#64" title='sin' data-ref="sin">sin</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>) / <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>;</td></tr>
+<tr><th id="223">223</th><td>    }</td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>    <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &gt; <var>4.0</var>)</td></tr>
+<tr><th id="228">228</th><td>	<b>goto</b> <a class="lbl" href="#10asympt" data-ref="10asympt">asympt</a>;</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>    <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> = <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> * <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>;</td></tr>
+<tr><th id="231">231</th><td>    <a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a> = <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#SN" title='SN' data-use='r' data-ref="SN">SN</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>) / <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#SD" title='SD' data-use='r' data-ref="SD">SD</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>);</td></tr>
+<tr><th id="232">232</th><td>    <a class="local col5 ref" href="#5c" title='c' data-ref="5c">c</a> = <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#CN" title='CN' data-use='r' data-ref="CN">CN</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>) / <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#CD" title='CD' data-use='r' data-ref="CD">CD</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>);</td></tr>
+<tr><th id="233">233</th><td></td></tr>
+<tr><th id="234">234</th><td>    <b>if</b> (<a class="local col9 ref" href="#9sign" title='sign' data-ref="9sign">sign</a>)</td></tr>
+<tr><th id="235">235</th><td>	<a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a> = -<a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a>;</td></tr>
+<tr><th id="236">236</th><td>    *<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = <a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a>;</td></tr>
+<tr><th id="237">237</th><td>    *<a class="local col3 ref" href="#3ci" title='ci' data-ref="3ci">ci</a> = <a class="macro" href="mconf.h.html#128" title="0.577215664901532860606512090082402431" data-ref="_M/SCIPY_EULER">SCIPY_EULER</a> + <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#104" title='log' data-ref="log">log</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>) + <a class="local col5 ref" href="#5c" title='c' data-ref="5c">c</a>;	<i>/* real part if x &lt; 0 */</i></td></tr>
+<tr><th id="238">238</th><td>    <b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td></td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td>    <i>/* The auxiliary functions are:</i></td></tr>
+<tr><th id="243">243</th><td><i>     *</i></td></tr>
+<tr><th id="244">244</th><td><i>     *</i></td></tr>
+<tr><th id="245">245</th><td><i>     * *si = *si - M_PI_2;</i></td></tr>
+<tr><th id="246">246</th><td><i>     * c = cos(x);</i></td></tr>
+<tr><th id="247">247</th><td><i>     * s = sin(x);</i></td></tr>
+<tr><th id="248">248</th><td><i>     *</i></td></tr>
+<tr><th id="249">249</th><td><i>     * t = *ci * s - *si * c;</i></td></tr>
+<tr><th id="250">250</th><td><i>     * a = *ci * c + *si * s;</i></td></tr>
+<tr><th id="251">251</th><td><i>     *</i></td></tr>
+<tr><th id="252">252</th><td><i>     * *si = t;</i></td></tr>
+<tr><th id="253">253</th><td><i>     * *ci = -a;</i></td></tr>
+<tr><th id="254">254</th><td><i>     */</i></td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td></td></tr>
+<tr><th id="257">257</th><td>  <dfn class="lbl" id="10asympt" data-ref="10asympt">asympt</dfn>:</td></tr>
+<tr><th id="258">258</th><td></td></tr>
+<tr><th id="259">259</th><td>    <a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#64" title='sin' data-ref="sin">sin</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>);</td></tr>
+<tr><th id="260">260</th><td>    <a class="local col5 ref" href="#5c" title='c' data-ref="5c">c</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#62" title='cos' data-ref="cos">cos</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>);</td></tr>
+<tr><th id="261">261</th><td>    <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> = <var>1.0</var> / (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> * <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>);</td></tr>
+<tr><th id="262">262</th><td>    <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &lt; <var>8.0</var>) {</td></tr>
+<tr><th id="263">263</th><td>	<a class="local col7 ref" href="#7f" title='f' data-ref="7f">f</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#FN4" title='FN4' data-use='r' data-ref="FN4">FN4</a>, <span class='inlayHint'>N:&nbsp;</span><var>6</var>) / (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> * <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#FD4" title='FD4' data-use='r' data-ref="FD4">FD4</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>));</td></tr>
+<tr><th id="264">264</th><td>	<a class="local col8 ref" href="#8g" title='g' data-ref="8g">g</a> = <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#GN4" title='GN4' data-use='r' data-ref="GN4">GN4</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#GD4" title='GD4' data-use='r' data-ref="GD4">GD4</a>, <span class='inlayHint'>N:&nbsp;</span><var>7</var>);</td></tr>
+<tr><th id="265">265</th><td>    }</td></tr>
+<tr><th id="266">266</th><td>    <b>else</b> {</td></tr>
+<tr><th id="267">267</th><td>	<a class="local col7 ref" href="#7f" title='f' data-ref="7f">f</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#FN8" title='FN8' data-use='r' data-ref="FN8">FN8</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>) / (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> * <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#FD8" title='FD8' data-use='r' data-ref="FD8">FD8</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>));</td></tr>
+<tr><th id="268">268</th><td>	<a class="local col8 ref" href="#8g" title='g' data-ref="8g">g</a> = <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#GN8" title='GN8' data-use='r' data-ref="GN8">GN8</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#GD8" title='GD8' data-use='r' data-ref="GD8">GD8</a>, <span class='inlayHint'>N:&nbsp;</span><var>9</var>);</td></tr>
+<tr><th id="269">269</th><td>    }</td></tr>
+<tr><th id="270">270</th><td>    *<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = <a class="macro" href="../../../../../include/math.h.html#1153" title="1.57079632679489661923" data-ref="_M/M_PI_2">M_PI_2</a> - <a class="local col7 ref" href="#7f" title='f' data-ref="7f">f</a> * <a class="local col5 ref" href="#5c" title='c' data-ref="5c">c</a> - <a class="local col8 ref" href="#8g" title='g' data-ref="8g">g</a> * <a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a>;</td></tr>
+<tr><th id="271">271</th><td>    <b>if</b> (<a class="local col9 ref" href="#9sign" title='sign' data-ref="9sign">sign</a>)</td></tr>
+<tr><th id="272">272</th><td>	*<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a> = -(*<a class="local col2 ref" href="#2si" title='si' data-ref="2si">si</a>);</td></tr>
+<tr><th id="273">273</th><td>    *<a class="local col3 ref" href="#3ci" title='ci' data-ref="3ci">ci</a> = <a class="local col7 ref" href="#7f" title='f' data-ref="7f">f</a> * <a class="local col6 ref" href="#6s" title='s' data-ref="6s">s</a> - <a class="local col8 ref" href="#8g" title='g' data-ref="8g">g</a> * <a class="local col5 ref" href="#5c" title='c' data-ref="5c">c</a>;</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td>    <b>return</b> (<var>0</var>);</td></tr>
+<tr><th id="276">276</th><td>}</td></tr>
+<tr><th id="277">277</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

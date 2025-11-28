@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SimpleRotation.cpp source code [codebrowser/examples/SimpleRotation.cpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="main "/>
+<link rel="stylesheet" href="../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/examples/SimpleRotation.cpp'; var root_path = '../..'; var data_path = '../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='..'>codebrowser</a>/<a href='./'>examples</a>/<a href='SimpleRotation.cpp.html'>SimpleRotation.cpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">SimpleRotation.cpp</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span> This is a super-simple example of optimizing a single rotation according to a single prior</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@date</span> Jul 1, 2010</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span> Alex Cunningham</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc">   * This example will perform a relatively trivial optimization on</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc">   * a single variable with a single factor.</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"></i></td></tr>
+<tr><th id="25">25</th><td><i class="doc">// In this example, a 2D rotation will be used as the variable of interest</i></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../gtsam/geometry/Rot2.h.html">&lt;gtsam/geometry/Rot2.h&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><i>// Each variable in the system (poses) must be identified with a unique key.</i></td></tr>
+<tr><th id="29">29</th><td><i>// We can either use simple integer keys (1, 2, 3, ...) or symbols (X1, X2, L1).</i></td></tr>
+<tr><th id="30">30</th><td><i>// Here we will use symbols</i></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../gtsam/inference/Symbol.h.html">&lt;gtsam/inference/Symbol.h&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><i>// In GTSAM, measurement functions are represented as 'factors'. Several common factors</i></td></tr>
+<tr><th id="34">34</th><td><i>// have been provided with the library for solving robotics/SLAM/Bundle Adjustment problems.</i></td></tr>
+<tr><th id="35">35</th><td><i>// We will apply a simple prior on the rotation. We do so via the `addPrior` convenience</i></td></tr>
+<tr><th id="36">36</th><td><i>// method in NonlinearFactorGraph.</i></td></tr>
+<tr><th id="37">37</th><td><i></i></td></tr>
+<tr><th id="38">38</th><td><i>// When the factors are created, we will add them to a Factor Graph. As the factors we are using</i></td></tr>
+<tr><th id="39">39</th><td><i>// are nonlinear factors, we will need a Nonlinear Factor Graph.</i></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../gtsam/nonlinear/NonlinearFactorGraph.h.html">&lt;gtsam/nonlinear/NonlinearFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><i>// The nonlinear solvers within GTSAM are iterative solvers, meaning they linearize the</i></td></tr>
+<tr><th id="43">43</th><td><i>// nonlinear functions around an initial linearization point, then solve the linear system</i></td></tr>
+<tr><th id="44">44</th><td><i>// to update the linearization point. This happens repeatedly until the solver converges</i></td></tr>
+<tr><th id="45">45</th><td><i>// to a consistent set of variable values. This requires us to specify an initial guess</i></td></tr>
+<tr><th id="46">46</th><td><i>// for each variable, held in a Values container.</i></td></tr>
+<tr><th id="47">47</th><td><u>#include <a href="../gtsam/nonlinear/Values.h.html">&lt;gtsam/nonlinear/Values.h&gt;</a></u></td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><i>// Finally, once all of the factors have been added to our factor graph, we will want to</i></td></tr>
+<tr><th id="50">50</th><td><i>// solve/optimize to graph to find the best (Maximum A Posteriori) set of variable values.</i></td></tr>
+<tr><th id="51">51</th><td><i>// GTSAM includes several nonlinear optimizers to perform this step. Here we will use the</i></td></tr>
+<tr><th id="52">52</th><td><i>// standard Levenberg-Marquardt solver</i></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="../gtsam/nonlinear/LevenbergMarquardtOptimizer.h.html">&lt;gtsam/nonlinear/LevenbergMarquardtOptimizer.h&gt;</a></u></td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><b>using</b> <b>namespace</b> <span class="namespace">std</span>;</td></tr>
+<tr><th id="57">57</th><td><b>using</b> <b>namespace</b> <span class="namespace">gtsam</span>;</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td><em>const</em> <em>double</em> <dfn class="tu decl def" id="degree" title='degree' data-type='const double' data-ref="degree">degree</dfn> = <a class="macro" href="../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a> / <var>180</var>;</td></tr>
+<tr><th id="60">60</th><td></td></tr>
+<tr><th id="61">61</th><td><em>int</em> <dfn class="decl def fn" id="main" title='main' data-ref="main">main</dfn>() {</td></tr>
+<tr><th id="62">62</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="63">63</th><td><i class="doc">   *    Step 1: Create a factor to express a unary constraint</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc">   * The "prior" in this case is the measurement from a sensor,</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc">   * with a model of the noise on the measurement.</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc">   * The "Key" created here is a label used to associate parts of the</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc">   * state (stored in "RotValues") with particular factors.  They require</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">   * an index to allow for lookup, and should be unique.</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="71">71</th><td><i class="doc">   * In general, creating a factor requires:</i></td></tr>
+<tr><th id="72">72</th><td><i class="doc">   *  - A key or set of keys labeling the variables that are acted upon</i></td></tr>
+<tr><th id="73">73</th><td><i class="doc">   *  - A measurement value</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc">   *  - A measurement model with the correct dimensionality for the factor</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="76">76</th><td>  <a class="type" href="../gtsam/geometry/Rot2.h.html#gtsam::Rot2" title='gtsam::Rot2' data-ref="gtsam::Rot2">Rot2</a> <dfn class="local col1 decl" id="1prior" title='prior' data-type='Rot2' data-ref="1prior">prior</dfn> = <a class="type" href="../gtsam/geometry/Rot2.h.html#gtsam::Rot2" title='gtsam::Rot2' data-ref="gtsam::Rot2">Rot2</a>::<a class="ref fn" href="../gtsam/geometry/Rot2.h.html#_ZN5gtsam4Rot29fromAngleEd" title='gtsam::Rot2::fromAngle' data-ref="_ZN5gtsam4Rot29fromAngleEd">fromAngle</a>(<span class='inlayHint'>theta:&nbsp;</span><var>30</var> * <a class="tu ref" href="#degree" title='degree' data-use='r' data-ref="degree">degree</a>);</td></tr>
+<tr><th id="77">77</th><td>  <a class="local col1 ref" href="#1prior" title='prior' data-ref="1prior">prior</a>.<a class="ref fn" href="../gtsam/geometry/Rot2.h.html#_ZNK5gtsam4Rot25printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::Rot2::print' data-ref="_ZNK5gtsam4Rot25printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</a>(<a class="ref fn fake" href="../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><span class='inlayHint'>s:&nbsp;</span><q>"goal angle"</q>);</td></tr>
+<tr><th id="78">78</th><td>  <em>auto</em> <dfn class="local col2 decl" id="2model" title='model' data-type='shared_ptr' data-ref="2model">model</dfn> = <span class="namespace">noiseModel::</span><a class="type" href="../gtsam/linear/NoiseModel.h.html#gtsam::noiseModel::Isotropic" title='gtsam::noiseModel::Isotropic' data-ref="gtsam::noiseModel::Isotropic">Isotropic</a>::<a class="ref fn" href="../gtsam/linear/NoiseModel.h.html#_ZN5gtsam10noiseModel9Isotropic5SigmaEmdb" title='gtsam::noiseModel::Isotropic::Sigma' data-ref="_ZN5gtsam10noiseModel9Isotropic5SigmaEmdb">Sigma</a>(<span class='inlayHint'>dim:&nbsp;</span><var>1</var>, <span class='inlayHint'>sigma:&nbsp;</span><var>1</var> * <a class="tu ref" href="#degree" title='degree' data-use='r' data-ref="degree">degree</a>);</td></tr>
+<tr><th id="79">79</th><td>  <a class="type" href="../gtsam/inference/Symbol.h.html#gtsam::Symbol" title='gtsam::Symbol' data-ref="gtsam::Symbol">Symbol</a> <dfn class="local col3 decl" id="3key" title='key' data-type='Symbol' data-ref="3key">key</dfn><a class="ref fn" href="../gtsam/inference/Symbol.h.html#_ZN5gtsam6SymbolC1Ehm" title='gtsam::Symbol::Symbol' data-ref="_ZN5gtsam6SymbolC1Ehm">(</a><kbd>'x'</kbd>, <var>1</var>);</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">   *    Step 2: Create a graph container and add the factor to it</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   * Before optimizing, all factors need to be added to a Graph container,</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   * which provides the necessary top-level functionality for defining a</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   * system of constraints.</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   * In this case, there is only one factor, but in a practical scenario,</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   * many more factors would be added.</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="90">90</th><td>  <a class="type" href="../gtsam/nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <a class="ref fn fake" href="../gtsam/nonlinear/NonlinearFactorGraph.h.html#_ZN5gtsam20NonlinearFactorGraphC1Ev" title='gtsam::NonlinearFactorGraph::NonlinearFactorGraph' data-ref="_ZN5gtsam20NonlinearFactorGraphC1Ev"></a><dfn class="local col4 decl" id="4graph" title='graph' data-type='NonlinearFactorGraph' data-ref="4graph">graph</dfn>;</td></tr>
+<tr><th id="91">91</th><td>  <a class="local col4 ref" href="#4graph" title='graph' data-ref="4graph">graph</a>.<a class="ref fn" href="../gtsam/nonlinear/NonlinearFactorGraph.h.html#_ZN5gtsam20NonlinearFactorGraph8addPriorEmRKT_RKSt10shared_ptrINS_10noiseModel4BaseEE" title='gtsam::NonlinearFactorGraph::addPrior' data-ref="_ZN5gtsam20NonlinearFactorGraph8addPriorEmRKT_RKSt10shared_ptrINS_10noiseModel4BaseEE">addPrior</a>(<a class="ref fn fake" href="../gtsam/inference/Symbol.h.html#_ZNK5gtsam6SymbolcvmEv" title='gtsam::Symbol::operator unsigned long' data-ref="_ZNK5gtsam6SymbolcvmEv"></a><a class="local col3 ref" href="#3key" title='key' data-ref="3key">key</a>, <a class="local col1 ref" href="#1prior" title='prior' data-ref="1prior">prior</a>, <a class="ref fn fake" href="../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1ERKSt10shared_ptrITL0__E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1ERKSt10shared_ptrITL0__E"></a><a class="local col2 ref" href="#2model" title='model' data-ref="2model">model</a>);</td></tr>
+<tr><th id="92">92</th><td>  <a class="local col4 ref" href="#4graph" title='graph' data-ref="4graph">graph</a>.<a class="virtual ref fn" href="../gtsam/nonlinear/NonlinearFactorGraph.h.html#_ZNK5gtsam20NonlinearFactorGraph5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::NonlinearFactorGraph::print' data-ref="_ZNK5gtsam20NonlinearFactorGraph5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<a class="ref fn fake" href="../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><span class='inlayHint'>str:&nbsp;</span><q>"full graph"</q>);</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">   *    Step 3: Create an initial estimate</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">   * An initial estimate of the solution for the system is necessary to</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">   * start optimization.  This system state is the "RotValues" structure,</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   * which is similar in structure to a STL map, in that it maps</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">   * keys (the label created in step 1) to specific values.</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">   * The initial estimate provided to optimization will be used as</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc">   * a linearization point for optimization, so it is important that</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc">   * all of the variables in the graph have a corresponding value in</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">   * this structure.</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">   * The interface to all RotValues types is the same, it only depends</i></td></tr>
+<tr><th id="107">107</th><td><i class="doc">   * on the type of key used to find the appropriate value map if there</i></td></tr>
+<tr><th id="108">108</th><td><i class="doc">   * are multiple types of variables.</i></td></tr>
+<tr><th id="109">109</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="110">110</th><td>  <a class="type" href="../gtsam/nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="ref fn fake" href="../gtsam/nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev"></a><dfn class="local col5 decl" id="5initial" title='initial' data-type='Values' data-ref="5initial">initial</dfn>;</td></tr>
+<tr><th id="111">111</th><td>  <a class="local col5 ref" href="#5initial" title='initial' data-ref="5initial">initial</a>.<a class="ref fn" href="../gtsam/nonlinear/Values-inl.h.html#_ZN5gtsam6Values6insertEmRKT_" title='gtsam::Values::insert' data-ref="_ZN5gtsam6Values6insertEmRKT_">insert</a>(<a class="ref fn fake" href="../gtsam/inference/Symbol.h.html#_ZNK5gtsam6SymbolcvmEv" title='gtsam::Symbol::operator unsigned long' data-ref="_ZNK5gtsam6SymbolcvmEv"></a><span class='inlayHint'>j:&nbsp;</span><a class="local col3 ref" href="#3key" title='key' data-ref="3key">key</a>, <span class='inlayHint'>val:&nbsp;</span><a class="type" href="../gtsam/geometry/Rot2.h.html#gtsam::Rot2" title='gtsam::Rot2' data-ref="gtsam::Rot2">Rot2</a>::<a class="ref fn" href="../gtsam/geometry/Rot2.h.html#_ZN5gtsam4Rot29fromAngleEd" title='gtsam::Rot2::fromAngle' data-ref="_ZN5gtsam4Rot29fromAngleEd">fromAngle</a>(<span class='inlayHint'>theta:&nbsp;</span><var>20</var> * <a class="tu ref" href="#degree" title='degree' data-use='r' data-ref="degree">degree</a>));</td></tr>
+<tr><th id="112">112</th><td>  <a class="local col5 ref" href="#5initial" title='initial' data-ref="5initial">initial</a>.<a class="ref fn" href="../gtsam/nonlinear/Values.h.html#_ZNK5gtsam6Values5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::Values::print' data-ref="_ZNK5gtsam6Values5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<a class="ref fn fake" href="../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><span class='inlayHint'>str:&nbsp;</span><q>"initial estimate"</q>);</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">   *    Step 4: Optimize</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">   * After formulating the problem with a graph of constraints</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">   * and an initial estimate, executing optimization is as simple</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">   * as calling a general optimization function with the graph and</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">   * initial estimate.  This will yield a new RotValues structure</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">   * with the final state of the optimization.</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="122">122</th><td>  <a class="type" href="../gtsam/nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="local col6 decl" id="6result" title='result' data-type='Values' data-ref="6result">result</dfn> = <a class="ref fn fake" href="../gtsam/nonlinear/Values.h.html#_ZN5gtsam6ValuesC1ERKS0_" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1ERKS0_"></a><a class="type" href="../gtsam/nonlinear/LevenbergMarquardtOptimizer.h.html#gtsam::LevenbergMarquardtOptimizer" title='gtsam::LevenbergMarquardtOptimizer' data-ref="gtsam::LevenbergMarquardtOptimizer">LevenbergMarquardtOptimizer</a><a class="ref fn" href="../gtsam/nonlinear/LevenbergMarquardtOptimizer.h.html#_ZN5gtsam27LevenbergMarquardtOptimizerC1ERKNS_20NonlinearFactorGraphERKNS_6ValuesERKNS_24LevenbergMarquardtParamsE" title='gtsam::LevenbergMarquardtOptimizer::LevenbergMarquardtOptimizer' data-ref="_ZN5gtsam27LevenbergMarquardtOptimizerC1ERKNS_20NonlinearFactorGraphERKNS_6ValuesERKNS_24LevenbergMarquardtParamsE">(</a><a class="local col4 ref" href="#4graph" title='graph' data-ref="4graph">graph</a>, <a class="local col5 ref" href="#5initial" title='initial' data-ref="5initial">initial</a>).<a class="virtual ref fn" href="../gtsam/nonlinear/NonlinearOptimizer.h.html#_ZN5gtsam18NonlinearOptimizer8optimizeEv" title='gtsam::NonlinearOptimizer::optimize' data-ref="_ZN5gtsam18NonlinearOptimizer8optimizeEv">optimize</a>();</td></tr>
+<tr><th id="123">123</th><td>  <a class="local col6 ref" href="#6result" title='result' data-ref="6result">result</a>.<a class="ref fn" href="../gtsam/nonlinear/Values.h.html#_ZNK5gtsam6Values5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::Values::print' data-ref="_ZNK5gtsam6Values5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</a>(<a class="ref fn fake" href="../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><span class='inlayHint'>str:&nbsp;</span><q>"final result"</q>);</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>  <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="126">126</th><td>}</td></tr>
+<tr><th id="127">127</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

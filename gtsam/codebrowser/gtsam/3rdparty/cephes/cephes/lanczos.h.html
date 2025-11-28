@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>lanczos.h source code [codebrowser/gtsam/3rdparty/cephes/cephes/lanczos.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/lanczos.h'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='lanczos.h.html'>lanczos.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*  (C) Copyright John Maddock 2006.</i></td></tr>
+<tr><th id="2">2</th><td><i> *  Use, modification and distribution are subject to the</i></td></tr>
+<tr><th id="3">3</th><td><i> *  Boost Software License, Version 1.0. (See accompanying file</i></td></tr>
+<tr><th id="4">4</th><td><i> *  LICENSE_1_0.txt or copy at <a href="https://www.boost.org/LICENSE_1_0.txt">https://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="5">5</th><td><i> */</i></td></tr>
+<tr><th id="6">6</th><td></td></tr>
+<tr><th id="7">7</th><td><i>/* Both lanczos.h and lanczos.c were formed from Boost's lanczos.hpp</i></td></tr>
+<tr><th id="8">8</th><td><i> * </i></td></tr>
+<tr><th id="9">9</th><td><i> * Scipy changes:</i></td></tr>
+<tr><th id="10">10</th><td><i> * - 06-22-2016: Removed all code not related to double precision and</i></td></tr>
+<tr><th id="11">11</th><td><i> *   ported to c for use in Cephes. Note that the order of the</i></td></tr>
+<tr><th id="12">12</th><td><i> *   coefficients is reversed to match the behavior of polevl.</i></td></tr>
+<tr><th id="13">13</th><td><i> */</i></td></tr>
+<tr><th id="14">14</th><td></td></tr>
+<tr><th id="15">15</th><td><i>/*</i></td></tr>
+<tr><th id="16">16</th><td><i> * Optimal values for G for each N are taken from</i></td></tr>
+<tr><th id="17">17</th><td><i> * <a href="https://web.viu.ca/pughg/phdThesis/phdThesis.pdf,">https://web.viu.ca/pughg/phdThesis/phdThesis.pdf,</a></i></td></tr>
+<tr><th id="18">18</th><td><i> * as are the theoretical error bounds.</i></td></tr>
+<tr><th id="19">19</th><td><i> *</i></td></tr>
+<tr><th id="20">20</th><td><i> * Constants calculated using the method described by Godfrey</i></td></tr>
+<tr><th id="21">21</th><td><i> * <a href="https://my.fit.edu/~gabdo/gamma.txt">https://my.fit.edu/~gabdo/gamma.txt</a> and elaborated by Toth at</i></td></tr>
+<tr><th id="22">22</th><td><i> * <a href="https://www.rskey.org/gamma.htm">https://www.rskey.org/gamma.htm</a> using NTL::RR at 1000 bit precision.</i></td></tr>
+<tr><th id="23">23</th><td><i> */</i></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><i>/*</i></td></tr>
+<tr><th id="26">26</th><td><i> * Lanczos Coefficients for N=13 G=6.024680040776729583740234375</i></td></tr>
+<tr><th id="27">27</th><td><i> * Max experimental error (with arbitrary precision arithmetic) 1.196214e-17</i></td></tr>
+<tr><th id="28">28</th><td><i> * Generated with compiler: Microsoft Visual C++ version 8.0 on Win32 at Mar 23 2006</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> * Use for double precision.</i></td></tr>
+<tr><th id="31">31</th><td><i> */</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#<span data-ppcond="33">ifndef</span> <span class="macro" data-ref="_M/LANCZOS_H">LANCZOS_H</span></u></td></tr>
+<tr><th id="34">34</th><td><u>#define <dfn class="macro" id="_M/LANCZOS_H" data-ref="_M/LANCZOS_H">LANCZOS_H</dfn></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_num" title='lanczos_num' data-ref="lanczos_num">lanczos_num</dfn>[<var>13</var>] = {</td></tr>
+<tr><th id="38">38</th><td>    <var>2.506628274631000270164908177133837338626</var>,</td></tr>
+<tr><th id="39">39</th><td>    <var>210.8242777515793458725097339207133627117</var>,</td></tr>
+<tr><th id="40">40</th><td>    <var>8071.672002365816210638002902272250613822</var>,</td></tr>
+<tr><th id="41">41</th><td>    <var>186056.2653952234950402949897160456992822</var>,</td></tr>
+<tr><th id="42">42</th><td>    <var>2876370.628935372441225409051620849613599</var>,</td></tr>
+<tr><th id="43">43</th><td>    <var>31426415.58540019438061423162831820536287</var>,</td></tr>
+<tr><th id="44">44</th><td>    <var>248874557.8620541565114603864132294232163</var>,</td></tr>
+<tr><th id="45">45</th><td>    <var>1439720407.311721673663223072794912393972</var>,</td></tr>
+<tr><th id="46">46</th><td>    <var>6039542586.35202800506429164430729792107</var>,</td></tr>
+<tr><th id="47">47</th><td>    <var>17921034426.03720969991975575445893111267</var>,</td></tr>
+<tr><th id="48">48</th><td>    <var>35711959237.35566804944018545154716670596</var>,</td></tr>
+<tr><th id="49">49</th><td>    <var>42919803642.64909876895789904700198885093</var>,</td></tr>
+<tr><th id="50">50</th><td>    <var>23531376880.41075968857200767445163675473</var></td></tr>
+<tr><th id="51">51</th><td>};</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_denom" title='lanczos_denom' data-ref="lanczos_denom">lanczos_denom</dfn>[<var>13</var>] = {</td></tr>
+<tr><th id="54">54</th><td>    <var>1</var>,</td></tr>
+<tr><th id="55">55</th><td>    <var>66</var>,</td></tr>
+<tr><th id="56">56</th><td>    <var>1925</var>,</td></tr>
+<tr><th id="57">57</th><td>    <var>32670</var>,</td></tr>
+<tr><th id="58">58</th><td>    <var>357423</var>,</td></tr>
+<tr><th id="59">59</th><td>    <var>2637558</var>,</td></tr>
+<tr><th id="60">60</th><td>    <var>13339535</var>,</td></tr>
+<tr><th id="61">61</th><td>    <var>45995730</var>,</td></tr>
+<tr><th id="62">62</th><td>    <var>105258076</var>,</td></tr>
+<tr><th id="63">63</th><td>    <var>150917976</var>,</td></tr>
+<tr><th id="64">64</th><td>    <var>120543840</var>,</td></tr>
+<tr><th id="65">65</th><td>    <var>39916800</var>,</td></tr>
+<tr><th id="66">66</th><td>    <var>0</var></td></tr>
+<tr><th id="67">67</th><td>};</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_sum_expg_scaled_num" title='lanczos_sum_expg_scaled_num' data-ref="lanczos_sum_expg_scaled_num">lanczos_sum_expg_scaled_num</dfn>[<var>13</var>] = {</td></tr>
+<tr><th id="70">70</th><td>    <var>0.006061842346248906525783753964555936883222</var>,</td></tr>
+<tr><th id="71">71</th><td>    <var>0.5098416655656676188125178644804694509993</var>,</td></tr>
+<tr><th id="72">72</th><td>    <var>19.51992788247617482847860966235652136208</var>,</td></tr>
+<tr><th id="73">73</th><td>    <var>449.9445569063168119446858607650988409623</var>,</td></tr>
+<tr><th id="74">74</th><td>    <var>6955.999602515376140356310115515198987526</var>,</td></tr>
+<tr><th id="75">75</th><td>    <var>75999.29304014542649875303443598909137092</var>,</td></tr>
+<tr><th id="76">76</th><td>    <var>601859.6171681098786670226533699352302507</var>,</td></tr>
+<tr><th id="77">77</th><td>    <var>3481712.15498064590882071018964774556468</var>,</td></tr>
+<tr><th id="78">78</th><td>    <var>14605578.08768506808414169982791359218571</var>,</td></tr>
+<tr><th id="79">79</th><td>    <var>43338889.32467613834773723740590533316085</var>,</td></tr>
+<tr><th id="80">80</th><td>    <var>86363131.28813859145546927288977868422342</var>,</td></tr>
+<tr><th id="81">81</th><td>    <var>103794043.1163445451906271053616070238554</var>,</td></tr>
+<tr><th id="82">82</th><td>    <var>56906521.91347156388090791033559122686859</var></td></tr>
+<tr><th id="83">83</th><td>};</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_sum_expg_scaled_denom" title='lanczos_sum_expg_scaled_denom' data-ref="lanczos_sum_expg_scaled_denom">lanczos_sum_expg_scaled_denom</dfn>[<var>13</var>] = {</td></tr>
+<tr><th id="86">86</th><td>    <var>1</var>,</td></tr>
+<tr><th id="87">87</th><td>    <var>66</var>,</td></tr>
+<tr><th id="88">88</th><td>    <var>1925</var>,</td></tr>
+<tr><th id="89">89</th><td>    <var>32670</var>,</td></tr>
+<tr><th id="90">90</th><td>    <var>357423</var>,</td></tr>
+<tr><th id="91">91</th><td>    <var>2637558</var>,</td></tr>
+<tr><th id="92">92</th><td>    <var>13339535</var>,</td></tr>
+<tr><th id="93">93</th><td>    <var>45995730</var>,</td></tr>
+<tr><th id="94">94</th><td>    <var>105258076</var>,</td></tr>
+<tr><th id="95">95</th><td>    <var>150917976</var>,</td></tr>
+<tr><th id="96">96</th><td>    <var>120543840</var>,</td></tr>
+<tr><th id="97">97</th><td>    <var>39916800</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>0</var></td></tr>
+<tr><th id="99">99</th><td>};</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_sum_near_1_d" title='lanczos_sum_near_1_d' data-ref="lanczos_sum_near_1_d">lanczos_sum_near_1_d</dfn>[<var>12</var>] = {</td></tr>
+<tr><th id="102">102</th><td>    <var>0.3394643171893132535170101292240837927725e-9</var>,</td></tr>
+<tr><th id="103">103</th><td>    -<var>0.2499505151487868335680273909354071938387e-8</var>,</td></tr>
+<tr><th id="104">104</th><td>    <var>0.8690926181038057039526127422002498960172e-8</var>,</td></tr>
+<tr><th id="105">105</th><td>    -<var>0.1933117898880828348692541394841204288047e-7</var>,</td></tr>
+<tr><th id="106">106</th><td>    <var>0.3075580174791348492737947340039992829546e-7</var>,</td></tr>
+<tr><th id="107">107</th><td>    -<var>0.2752907702903126466004207345038327818713e-7</var>,</td></tr>
+<tr><th id="108">108</th><td>    -<var>0.1515973019871092388943437623825208095123e-5</var>,</td></tr>
+<tr><th id="109">109</th><td>    <var>0.004785200610085071473880915854204301886437</var>,</td></tr>
+<tr><th id="110">110</th><td>    -<var>0.1993758927614728757314233026257810172008</var>,</td></tr>
+<tr><th id="111">111</th><td>    <var>1.483082862367253753040442933770164111678</var>,</td></tr>
+<tr><th id="112">112</th><td>    -<var>3.327150580651624233553677113928873034916</var>,</td></tr>
+<tr><th id="113">113</th><td>    <var>2.208709979316623790862569924861841433016</var></td></tr>
+<tr><th id="114">114</th><td>};</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_sum_near_2_d" title='lanczos_sum_near_2_d' data-ref="lanczos_sum_near_2_d">lanczos_sum_near_2_d</dfn>[<var>12</var>] = {</td></tr>
+<tr><th id="117">117</th><td>    <var>0.1009141566987569892221439918230042368112e-8</var>,</td></tr>
+<tr><th id="118">118</th><td>    -<var>0.7430396708998719707642735577238449585822e-8</var>,</td></tr>
+<tr><th id="119">119</th><td>    <var>0.2583592566524439230844378948704262291927e-7</var>,</td></tr>
+<tr><th id="120">120</th><td>    -<var>0.5746670642147041587497159649318454348117e-7</var>,</td></tr>
+<tr><th id="121">121</th><td>    <var>0.9142922068165324132060550591210267992072e-7</var>,</td></tr>
+<tr><th id="122">122</th><td>    -<var>0.8183698410724358930823737982119474130069e-7</var>,</td></tr>
+<tr><th id="123">123</th><td>    -<var>0.4506604409707170077136555010018549819192e-5</var>,</td></tr>
+<tr><th id="124">124</th><td>    <var>0.01422519127192419234315002746252160965831</var>,</td></tr>
+<tr><th id="125">125</th><td>    -<var>0.5926941084905061794445733628891024027949</var>,</td></tr>
+<tr><th id="126">126</th><td>    <var>4.408830289125943377923077727900630927902</var>,</td></tr>
+<tr><th id="127">127</th><td>    -<var>9.8907772644920670589288081640128194231</var>,</td></tr>
+<tr><th id="128">128</th><td>    <var>6.565936202082889535528455955485877361223</var></td></tr>
+<tr><th id="129">129</th><td>};</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="decl def" id="lanczos_g" title='lanczos_g' data-ref="lanczos_g">lanczos_g</dfn> = <var>6.024680040776729583740234375</var>;</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><u>#<span data-ppcond="33">endif</span></u></td></tr>
+<tr><th id="134">134</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='igam.c.html'>codebrowser/gtsam/3rdparty/cephes/cephes/igam.c</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TranslationRecovery.h source code [codebrowser/gtsam/sfm/TranslationRecovery.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::TranslationRecovery "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/sfm/TranslationRecovery.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>sfm</a>/<a href='TranslationRecovery.h.html'>TranslationRecovery.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010-2020, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">TranslationRecovery.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert, Akshay Krishnan</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@date</span> March 2020</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@brief</span> Recovering translations in an epipolar graph when rotations are given.</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#include <a href="../geometry/Unit3.h.html">&lt;gtsam/geometry/Unit3.h&gt;</a></u></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="../nonlinear/LevenbergMarquardtOptimizer.h.html">&lt;gtsam/nonlinear/LevenbergMarquardtOptimizer.h&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../nonlinear/Values.h.html">&lt;gtsam/nonlinear/Values.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="BinaryMeasurement.h.html">&lt;gtsam/sfm/BinaryMeasurement.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../../../include/c++/13/map.html">&lt;map&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../../../include/c++/13/set.html">&lt;set&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../../../include/c++/13/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../../../include/c++/13/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><i>// Set up an optimization problem for the unknown translations Ti in the world</i></td></tr>
+<tr><th id="32">32</th><td><i>// coordinate frame, given the known camera attitudes wRi with respect to the</i></td></tr>
+<tr><th id="33">33</th><td><i>// world frame, and a set of (noisy) translation directions of type Unit3,</i></td></tr>
+<tr><th id="34">34</th><td><i>// w_aZb. The measurement equation is</i></td></tr>
+<tr><th id="35">35</th><td><i>//    w_aZb = Unit3(Tb - Ta)   (1)</i></td></tr>
+<tr><th id="36">36</th><td><i>// i.e., w_aZb is the translation direction from frame A to B, in world</i></td></tr>
+<tr><th id="37">37</th><td><i>// coordinates. Although Unit3 instances live on a manifold, following</i></td></tr>
+<tr><th id="38">38</th><td><i>// Wilson14eccv_1DSfM.pdf error we compute the *chordal distance* in the</i></td></tr>
+<tr><th id="39">39</th><td><i>// ambient world coordinate frame.</i></td></tr>
+<tr><th id="40">40</th><td><i>//</i></td></tr>
+<tr><th id="41">41</th><td><i>// It is clear that we cannot recover the scale, nor the absolute position,</i></td></tr>
+<tr><th id="42">42</th><td><i>// so the gauge freedom in this case is 3 + 1 = 4. We fix these by taking fixing</i></td></tr>
+<tr><th id="43">43</th><td><i>// the translations Ta and Tb associated with the first measurement w_aZb,</i></td></tr>
+<tr><th id="44">44</th><td><i>// clamping them to their initial values as given to this method. If no initial</i></td></tr>
+<tr><th id="45">45</th><td><i>// values are given, we use the origin for Tb and set Tb to make (1) come</i></td></tr>
+<tr><th id="46">46</th><td><i>// through, i.e.,</i></td></tr>
+<tr><th id="47">47</th><td><i>//    Tb = s * wRa * Point3(w_aZb)     (2)</i></td></tr>
+<tr><th id="48">48</th><td><i>// where s is an arbitrary scale that can be supplied, default 1.0. Hence, two</i></td></tr>
+<tr><th id="49">49</th><td><i>// versions are supplied below corresponding to whether we have initial values</i></td></tr>
+<tr><th id="50">50</th><td><i>// or not.</i></td></tr>
+<tr><th id="51">51</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::TranslationRecovery" title='gtsam::TranslationRecovery' data-ref="gtsam::TranslationRecovery">TranslationRecovery</dfn> {</td></tr>
+<tr><th id="52">52</th><td> <b>public</b>:</td></tr>
+<tr><th id="53">53</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::TranslationRecovery::KeyPair" title='gtsam::TranslationRecovery::KeyPair' data-type='std::pair&lt;Key, Key&gt;' data-ref="gtsam::TranslationRecovery::KeyPair">KeyPair</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;;</td></tr>
+<tr><th id="54">54</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::TranslationRecovery::TranslationEdges" title='gtsam::TranslationRecovery::TranslationEdges' data-type='std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt;' data-ref="gtsam::TranslationRecovery::TranslationEdges">TranslationEdges</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="type" href="../geometry/Unit3.h.html#gtsam::Unit3" title='gtsam::Unit3' data-ref="gtsam::Unit3">Unit3</a>&gt;&gt;;</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td> <b>private</b>:</td></tr>
+<tr><th id="57">57</th><td>  <i>// Translation directions between camera pairs.</i></td></tr>
+<tr><th id="58">58</th><td>  <a class="typedef" href="#gtsam::TranslationRecovery::TranslationEdges" title='gtsam::TranslationRecovery::TranslationEdges' data-type='std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt;' data-ref="gtsam::TranslationRecovery::TranslationEdges">TranslationEdges</a> <dfn class="decl field" id="gtsam::TranslationRecovery::relativeTranslations_" title='gtsam::TranslationRecovery::relativeTranslations_' data-ref="gtsam::TranslationRecovery::relativeTranslations_">relativeTranslations_</dfn>;</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <i>// Parameters.</i></td></tr>
+<tr><th id="61">61</th><td>  <a class="type" href="../nonlinear/LevenbergMarquardtParams.h.html#gtsam::LevenbergMarquardtParams" title='gtsam::LevenbergMarquardtParams' data-ref="gtsam::LevenbergMarquardtParams">LevenbergMarquardtParams</a> <dfn class="decl field" id="gtsam::TranslationRecovery::lmParams_" title='gtsam::TranslationRecovery::lmParams_' data-ref="gtsam::TranslationRecovery::lmParams_">lmParams_</dfn>;</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>  <em>const</em> <em>bool</em> <dfn class="decl field" id="gtsam::TranslationRecovery::use_bilinear_translation_factor_" title='gtsam::TranslationRecovery::use_bilinear_translation_factor_' data-ref="gtsam::TranslationRecovery::use_bilinear_translation_factor_">use_bilinear_translation_factor_</dfn> = <b>false</b>;</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td> <b>public</b>:</td></tr>
+<tr><th id="66">66</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new Translation Recovery object</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">lmParams</span> parameters for optimization.</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="71">71</th><td>  <dfn class="decl def fn" id="_ZN5gtsam19TranslationRecoveryC1ERKNS_24LevenbergMarquardtParamsEb" title='gtsam::TranslationRecovery::TranslationRecovery' data-ref="_ZN5gtsam19TranslationRecoveryC1ERKNS_24LevenbergMarquardtParamsEb">TranslationRecovery</dfn>(<em>const</em> <a class="type" href="../nonlinear/LevenbergMarquardtParams.h.html#gtsam::LevenbergMarquardtParams" title='gtsam::LevenbergMarquardtParams' data-ref="gtsam::LevenbergMarquardtParams">LevenbergMarquardtParams</a> &amp;<dfn class="local col7 decl" id="27lmParams" title='lmParams' data-type='const LevenbergMarquardtParams &amp;' data-ref="27lmParams">lmParams</dfn>,</td></tr>
+<tr><th id="72">72</th><td>                      <em>bool</em> <dfn class="local col8 decl" id="28use_bilinear_translation_factor" title='use_bilinear_translation_factor' data-type='bool' data-ref="28use_bilinear_translation_factor">use_bilinear_translation_factor</dfn> = <b>false</b>)</td></tr>
+<tr><th id="73">73</th><td>      : <a class="member field" href="#gtsam::TranslationRecovery::lmParams_" title='gtsam::TranslationRecovery::lmParams_' data-ref="gtsam::TranslationRecovery::lmParams_">lmParams_</a><a class="ref fn" href="../nonlinear/LevenbergMarquardtParams.h.html#35" title='gtsam::LevenbergMarquardtParams::LevenbergMarquardtParams' data-ref="_ZN5gtsam24LevenbergMarquardtParamsC1ERKS0_">(</a><a class="local col7 ref" href="#27lmParams" title='lmParams' data-ref="27lmParams">lmParams</a>),</td></tr>
+<tr><th id="74">74</th><td>        <a class="member field" href="#gtsam::TranslationRecovery::use_bilinear_translation_factor_" title='gtsam::TranslationRecovery::use_bilinear_translation_factor_' data-ref="gtsam::TranslationRecovery::use_bilinear_translation_factor_">use_bilinear_translation_factor_</a>(<a class="local col8 ref" href="#28use_bilinear_translation_factor" title='use_bilinear_translation_factor' data-ref="28use_bilinear_translation_factor">use_bilinear_translation_factor</a>) {}</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="77">77</th><td><i class="doc">   * <span class="command">@brief</span> Default constructor.</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="79">79</th><td>  <dfn class="decl def fn" id="_ZN5gtsam19TranslationRecoveryC1Ev" title='gtsam::TranslationRecovery::TranslationRecovery' data-ref="_ZN5gtsam19TranslationRecoveryC1Ev">TranslationRecovery</dfn>() = <b>default</b>;</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">   * <span class="command">@brief</span> Build the factor graph to do the optimization.</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">relativeTranslations</span> unit translation directions between</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   * translations to be estimated</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   * <span class="command">@return</span> NonlinearFactorGraph</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="88">88</th><td>  <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <a class="decl fn" href="TranslationRecovery.cpp.html#_ZNK5gtsam19TranslationRecovery10buildGraphERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EE" title='gtsam::TranslationRecovery::buildGraph' data-ref="_ZNK5gtsam19TranslationRecovery10buildGraphERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EE" id="_ZNK5gtsam19TranslationRecovery10buildGraphERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EE">buildGraph</a>(</td></tr>
+<tr><th id="89">89</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="type" href="../geometry/Unit3.h.html#gtsam::Unit3" title='gtsam::Unit3' data-ref="gtsam::Unit3">Unit3</a>&gt;&gt; &amp;<dfn class="local col9 decl" id="29relativeTranslations" title='relativeTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt; &amp;' data-ref="29relativeTranslations">relativeTranslations</dfn>) <em>const</em>;</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   * <span class="command">@brief</span> Add 3 factors to the graph:</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">   *    - A prior on the first point to lie at (0, 0, 0)</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">   *    - If betweenTranslations is non-empty, between factors provided by it.</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">   *    - If betweenTranslations is empty, a prior on scale of the first</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">   * relativeTranslations edge.</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">relativeTranslations</span> unit translation directions between</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">   * translations to be estimated</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">scale</span> scale for first relative translation which fixes gauge.</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">graph</span> factor graph to which prior is added.</i></td></tr>
+<tr><th id="102">102</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">betweenTranslations</span> relative translations (with scale) between 2</i></td></tr>
+<tr><th id="103">103</th><td><i class="doc">   * points in world coordinate frame known a priori.</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">priorNoiseModel</span> the noise model to use with the prior.</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="106">106</th><td>  <em>void</em> <a class="decl fn" href="TranslationRecovery.cpp.html#_ZNK5gtsam19TranslationRecovery8addPriorERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EEdRKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEEESa613336" title='gtsam::TranslationRecovery::addPrior' data-ref="_ZNK5gtsam19TranslationRecovery8addPriorERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EEdRKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEEESa613336" id="_ZNK5gtsam19TranslationRecovery8addPriorERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EEdRKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEEESa613336">addPrior</a>(</td></tr>
+<tr><th id="107">107</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="type" href="../geometry/Unit3.h.html#gtsam::Unit3" title='gtsam::Unit3' data-ref="gtsam::Unit3">Unit3</a>&gt;&gt; &amp;<dfn class="local col0 decl" id="30relativeTranslations" title='relativeTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt; &amp;' data-ref="30relativeTranslations">relativeTranslations</dfn>,</td></tr>
+<tr><th id="108">108</th><td>      <em>const</em> <em>double</em> <dfn class="local col1 decl" id="31scale" title='scale' data-type='const double' data-ref="31scale">scale</dfn>,</td></tr>
+<tr><th id="109">109</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="typedef" href="../geometry/Point3.h.html#gtsam::Point3" title='gtsam::Point3' data-type='Vector3' data-ref="gtsam::Point3">Point3</a>&gt;&gt; &amp;<dfn class="local col2 decl" id="32betweenTranslations" title='betweenTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Point3&gt;&gt; &amp;' data-ref="32betweenTranslations">betweenTranslations</dfn>,</td></tr>
+<tr><th id="110">110</th><td>      <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> *<dfn class="local col3 decl" id="33graph" title='graph' data-type='NonlinearFactorGraph *' data-ref="33graph">graph</dfn>,</td></tr>
+<tr><th id="111">111</th><td>      <em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a> &amp;<dfn class="local col4 decl" id="34priorNoiseModel" title='priorNoiseModel' data-type='const SharedNoiseModel &amp;' data-ref="34priorNoiseModel">priorNoiseModel</dfn> =</td></tr>
+<tr><th id="112">112</th><td>          <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1EOSt10shared_ptrITL0__E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1EOSt10shared_ptrITL0__E"></a><a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1EOSt10shared_ptrITL0__E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1EOSt10shared_ptrITL0__E"></a><span class="namespace">noiseModel::</span><a class="type" href="../linear/NoiseModel.h.html#gtsam::noiseModel::Isotropic" title='gtsam::noiseModel::Isotropic' data-ref="gtsam::noiseModel::Isotropic">Isotropic</a>::<a class="ref fn" href="../linear/NoiseModel.h.html#_ZN5gtsam10noiseModel9Isotropic5SigmaEmdb" title='gtsam::noiseModel::Isotropic::Sigma' data-ref="_ZN5gtsam10noiseModel9Isotropic5SigmaEmdb">Sigma</a>(<span class='inlayHint'>dim:&nbsp;</span><span class='inlayHint'>dim:&nbsp;</span><var>3</var>, <span class='inlayHint'>sigma:&nbsp;</span><span class='inlayHint'>sigma:&nbsp;</span><var>0.01</var>)) <em>const</em>;</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">   * <span class="command">@brief</span> Create random initial translations.</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">relativeTranslations</span> unit translation directions between</i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">   * translations to be estimated</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">betweenTranslations</span> relative translations (with scale) between 2</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">   * points in world coordinate frame known a priori.</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">rng</span> random number generator</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">initialValues</span> (optional) initial values from a prior</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">   * <span class="command">@return</span> Values</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="125">125</th><td>  <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="decl fn" href="TranslationRecovery.cpp.html#_ZNK5gtsam19TranslationRecovery18initializeRandomlyERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EERKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3E1659166" title='gtsam::TranslationRecovery::initializeRandomly' data-ref="_ZNK5gtsam19TranslationRecovery18initializeRandomlyERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EERKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3E1659166" id="_ZNK5gtsam19TranslationRecovery18initializeRandomlyERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EERKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3E1659166">initializeRandomly</a>(</td></tr>
+<tr><th id="126">126</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="type" href="../geometry/Unit3.h.html#gtsam::Unit3" title='gtsam::Unit3' data-ref="gtsam::Unit3">Unit3</a>&gt;&gt; &amp;<dfn class="local col5 decl" id="35relativeTranslations" title='relativeTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt; &amp;' data-ref="35relativeTranslations">relativeTranslations</dfn>,</td></tr>
+<tr><th id="127">127</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="typedef" href="../geometry/Point3.h.html#gtsam::Point3" title='gtsam::Point3' data-type='Vector3' data-ref="gtsam::Point3">Point3</a>&gt;&gt; &amp;<dfn class="local col6 decl" id="36betweenTranslations" title='betweenTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Point3&gt;&gt; &amp;' data-ref="36betweenTranslations">betweenTranslations</dfn>,</td></tr>
+<tr><th id="128">128</th><td>      <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/random.h.html#std::mt19937" title='std::mt19937' data-type='mersenne_twister_engine&lt;uint_fast32_t, 32, 624, 397, 31, 2567483615UL, 11, 4294967295UL, 7, 2636928640UL, 15, 4022730752UL, 18, 1812433253UL&gt;' data-ref="std::mt19937">mt19937</a> *<dfn class="local col7 decl" id="37rng" title='rng' data-type='std::mt19937 *' data-ref="37rng">rng</dfn>, <em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> &amp;<dfn class="local col8 decl" id="38initialValues" title='initialValues' data-type='const Values &amp;' data-ref="38initialValues">initialValues</dfn> = <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a><a class="ref fn" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev">(</a>)) <em>const</em>;</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">   * <span class="command">@brief</span> Version of initializeRandomly with a fixed seed.</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">relativeTranslations</span> unit translation directions between</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">   * translations to be estimated</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">betweenTranslations</span> relative translations (with scale) between 2</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">   * points in world coordinate frame known a priori.</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">initialValues</span> (optional) initial values from a prior</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">   * <span class="command">@return</span> Values</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="140">140</th><td>  <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="decl fn" href="TranslationRecovery.cpp.html#_ZNK5gtsam19TranslationRecovery18initializeRandomlyERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EERKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3E14135946" title='gtsam::TranslationRecovery::initializeRandomly' data-ref="_ZNK5gtsam19TranslationRecovery18initializeRandomlyERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EERKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3E14135946" id="_ZNK5gtsam19TranslationRecovery18initializeRandomlyERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EERKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3E14135946">initializeRandomly</a>(</td></tr>
+<tr><th id="141">141</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="type" href="../geometry/Unit3.h.html#gtsam::Unit3" title='gtsam::Unit3' data-ref="gtsam::Unit3">Unit3</a>&gt;&gt; &amp;<dfn class="local col9 decl" id="39relativeTranslations" title='relativeTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt; &amp;' data-ref="39relativeTranslations">relativeTranslations</dfn>,</td></tr>
+<tr><th id="142">142</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="typedef" href="../geometry/Point3.h.html#gtsam::Point3" title='gtsam::Point3' data-type='Vector3' data-ref="gtsam::Point3">Point3</a>&gt;&gt; &amp;<dfn class="local col0 decl" id="40betweenTranslations" title='betweenTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Point3&gt;&gt; &amp;' data-ref="40betweenTranslations">betweenTranslations</dfn>,</td></tr>
+<tr><th id="143">143</th><td>      <em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> &amp;<dfn class="local col1 decl" id="41initialValues" title='initialValues' data-type='const Values &amp;' data-ref="41initialValues">initialValues</dfn> = <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a><a class="ref fn" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev">(</a>)) <em>const</em>;</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">   * <span class="command">@brief</span> Build and optimize factor graph.</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">relativeTranslations</span> the relative translations, in world coordinate</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   * frames, vector of BinaryMeasurements of Unit3, where each key of a</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">   * measurement is a point in 3D. If a relative translation magnitude is zero,</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">   * it is treated as a hard same-point constraint (the result of all nodes</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">   * connected by a zero-magnitude edge will be the same).</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">scale</span> scale for first relative translation which fixes gauge.</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">   * The scale is only used if betweenTranslations is empty.</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">betweenTranslations</span> relative translations (with scale) between 2</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc">   * points in world coordinate frame known a priori. Unlike</i></td></tr>
+<tr><th id="157">157</th><td><i class="doc">   * relativeTranslations, zero-magnitude betweenTranslations are not treated as</i></td></tr>
+<tr><th id="158">158</th><td><i class="doc">   * hard constraints.</i></td></tr>
+<tr><th id="159">159</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">initialValues</span> initial values for optimization. Initializes randomly</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">   * if not provided.</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   * <span class="command">@return</span> Values</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="163">163</th><td>  <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="decl fn" href="TranslationRecovery.cpp.html#_ZNK5gtsam19TranslationRecovery3runERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EEdRKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEEESaISC_EERKNS_6ValuesE" title='gtsam::TranslationRecovery::run' data-ref="_ZNK5gtsam19TranslationRecovery3runERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EEdRKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEEESaISC_EERKNS_6ValuesE" id="_ZNK5gtsam19TranslationRecovery3runERKSt6vectorINS_17BinaryMeasurementINS_5Unit3EEESaIS4_EEdRKS1_INS2_IN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEEESaISC_EERKNS_6ValuesE">run</a>(</td></tr>
+<tr><th id="164">164</th><td>      <em>const</em> <a class="typedef" href="#gtsam::TranslationRecovery::TranslationEdges" title='gtsam::TranslationRecovery::TranslationEdges' data-type='std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt;' data-ref="gtsam::TranslationRecovery::TranslationEdges">TranslationEdges</a> &amp;<dfn class="local col2 decl" id="42relativeTranslations" title='relativeTranslations' data-type='const TranslationEdges &amp;' data-ref="42relativeTranslations">relativeTranslations</dfn>, <em>const</em> <em>double</em> <dfn class="local col3 decl" id="43scale" title='scale' data-type='const double' data-ref="43scale">scale</dfn> = <var>1.0</var>,</td></tr>
+<tr><th id="165">165</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="type" href="BinaryMeasurement.h.html#gtsam::BinaryMeasurement" title='gtsam::BinaryMeasurement' data-ref="gtsam::BinaryMeasurement">BinaryMeasurement</a>&lt;<a class="typedef" href="../geometry/Point3.h.html#gtsam::Point3" title='gtsam::Point3' data-type='Vector3' data-ref="gtsam::Point3">Point3</a>&gt;&gt; &amp;<dfn class="local col4 decl" id="44betweenTranslations" title='betweenTranslations' data-type='const std::vector&lt;BinaryMeasurement&lt;Point3&gt;&gt; &amp;' data-ref="44betweenTranslations">betweenTranslations</dfn> = <a class="ref fn" href="../../../include/c++/13/bits/stl_vector.h.html#_ZNSt6vectorC1Ev" title='std::vector::vector&lt;_Tp, _Alloc&gt;' data-ref="_ZNSt6vectorC1Ev">{</a>},</td></tr>
+<tr><th id="166">166</th><td>      <em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> &amp;<dfn class="local col5 decl" id="45initialValues" title='initialValues' data-type='const Values &amp;' data-ref="45initialValues">initialValues</dfn> = <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a><a class="ref fn" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev">(</a>)) <em>const</em>;</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="169">169</th><td><i class="doc">   * <span class="command">@brief</span> Simulate translation direction measurements</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="171">171</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">poses</span> SE(3) ground truth poses stored as Values</i></td></tr>
+<tr><th id="172">172</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">edges</span> pairs (a,b) for which a measurement w_aZb will be generated.</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">   * <span class="command">@return</span> TranslationEdges vector of binary measurements where the keys are</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">   * the cameras and the measurement is the simulated Unit3 translation</i></td></tr>
+<tr><th id="175">175</th><td><i class="doc">   * direction between the cameras.</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="177">177</th><td>  <em>static</em> <a class="typedef" href="#gtsam::TranslationRecovery::TranslationEdges" title='gtsam::TranslationRecovery::TranslationEdges' data-type='std::vector&lt;BinaryMeasurement&lt;Unit3&gt;&gt;' data-ref="gtsam::TranslationRecovery::TranslationEdges">TranslationEdges</a> <a class="decl fn" href="TranslationRecovery.cpp.html#_ZN5gtsam19TranslationRecovery20SimulateMeasurementsERKNS_6ValuesERKSt6vectorISt4pairImmESaIS6_EE" title='gtsam::TranslationRecovery::SimulateMeasurements' data-ref="_ZN5gtsam19TranslationRecovery20SimulateMeasurementsERKNS_6ValuesERKSt6vectorISt4pairImmESaIS6_EE" id="_ZN5gtsam19TranslationRecovery20SimulateMeasurementsERKNS_6ValuesERKSt6vectorISt4pairImmESaIS6_EE">SimulateMeasurements</a>(</td></tr>
+<tr><th id="178">178</th><td>      <em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> &amp;<dfn class="local col6 decl" id="46poses" title='poses' data-type='const Values &amp;' data-ref="46poses">poses</dfn>, <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="#gtsam::TranslationRecovery::KeyPair" title='gtsam::TranslationRecovery::KeyPair' data-type='std::pair&lt;Key, Key&gt;' data-ref="gtsam::TranslationRecovery::KeyPair">KeyPair</a>&gt; &amp;<dfn class="local col7 decl" id="47edges" title='edges' data-type='const std::vector&lt;KeyPair&gt; &amp;' data-ref="47edges">edges</dfn>);</td></tr>
+<tr><th id="179">179</th><td>};</td></tr>
+<tr><th id="180">180</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="181">181</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='TranslationRecovery.cpp.html'>codebrowser/gtsam/sfm/TranslationRecovery.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

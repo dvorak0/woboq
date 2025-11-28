@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>zetac.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/zetac.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/zetac.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='zetac.c.html'>zetac.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     zetac.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Riemann zeta function</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, y, zetac();</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * y = zetac( x );</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> *</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> *                inf.</i></td></tr>
+<tr><th id="20">20</th><td><i> *                 -    -x</i></td></tr>
+<tr><th id="21">21</th><td><i> *   zetac(x)  =   &gt;   k   ,   x &gt; 1,</i></td></tr>
+<tr><th id="22">22</th><td><i> *                 -</i></td></tr>
+<tr><th id="23">23</th><td><i> *                k=2</i></td></tr>
+<tr><th id="24">24</th><td><i> *</i></td></tr>
+<tr><th id="25">25</th><td><i> * is related to the Riemann zeta function by</i></td></tr>
+<tr><th id="26">26</th><td><i> *</i></td></tr>
+<tr><th id="27">27</th><td><i> *     Riemann zeta(x) = zetac(x) + 1.</i></td></tr>
+<tr><th id="28">28</th><td><i> *</i></td></tr>
+<tr><th id="29">29</th><td><i> * Extension of the function definition for x &lt; 1 is implemented.</i></td></tr>
+<tr><th id="30">30</th><td><i> * Zero is returned for x &gt; log2(INFINITY).</i></td></tr>
+<tr><th id="31">31</th><td><i> *</i></td></tr>
+<tr><th id="32">32</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="33">33</th><td><i> *</i></td></tr>
+<tr><th id="34">34</th><td><i> * Tabulated values have full machine accuracy.</i></td></tr>
+<tr><th id="35">35</th><td><i> *</i></td></tr>
+<tr><th id="36">36</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="37">37</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="38">38</th><td><i> *    IEEE      1,50        10000       9.8e-16            1.3e-16</i></td></tr>
+<tr><th id="39">39</th><td><i> *</i></td></tr>
+<tr><th id="40">40</th><td><i> *</i></td></tr>
+<tr><th id="41">41</th><td><i> */</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><i>/*</i></td></tr>
+<tr><th id="44">44</th><td><i> * Cephes Math Library Release 2.1:  January, 1989</i></td></tr>
+<tr><th id="45">45</th><td><i> * Copyright 1984, 1987, 1989 by Stephen L. Moshier</i></td></tr>
+<tr><th id="46">46</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="47">47</th><td><i> */</i></td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="50">50</th><td><u>#include <a href="lanczos.h.html">"lanczos.h"</a></u></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><i  data-doc="azetac">/* Riemann zeta(x) - 1</i></td></tr>
+<tr><th id="53">53</th><td><i  data-doc="azetac"> * for integer arguments between 0 and 30.</i></td></tr>
+<tr><th id="54">54</th><td><i  data-doc="azetac"> */</i></td></tr>
+<tr><th id="55">55</th><td><em>static</em> <em>const</em> <em>double</em> <dfn class="tu decl def" id="azetac" title='azetac' data-type='const double[31]' data-ref="azetac">azetac</dfn>[] = {</td></tr>
+<tr><th id="56">56</th><td>    -<var>1.50000000000000000000E0</var>,</td></tr>
+<tr><th id="57">57</th><td>    <var>0.0</var>,  <i>/* Not used; zetac(1.0) is infinity. */</i></td></tr>
+<tr><th id="58">58</th><td>    <var>6.44934066848226436472E-1</var>,</td></tr>
+<tr><th id="59">59</th><td>    <var>2.02056903159594285400E-1</var>,</td></tr>
+<tr><th id="60">60</th><td>    <var>8.23232337111381915160E-2</var>,</td></tr>
+<tr><th id="61">61</th><td>    <var>3.69277551433699263314E-2</var>,</td></tr>
+<tr><th id="62">62</th><td>    <var>1.73430619844491397145E-2</var>,</td></tr>
+<tr><th id="63">63</th><td>    <var>8.34927738192282683980E-3</var>,</td></tr>
+<tr><th id="64">64</th><td>    <var>4.07735619794433937869E-3</var>,</td></tr>
+<tr><th id="65">65</th><td>    <var>2.00839282608221441785E-3</var>,</td></tr>
+<tr><th id="66">66</th><td>    <var>9.94575127818085337146E-4</var>,</td></tr>
+<tr><th id="67">67</th><td>    <var>4.94188604119464558702E-4</var>,</td></tr>
+<tr><th id="68">68</th><td>    <var>2.46086553308048298638E-4</var>,</td></tr>
+<tr><th id="69">69</th><td>    <var>1.22713347578489146752E-4</var>,</td></tr>
+<tr><th id="70">70</th><td>    <var>6.12481350587048292585E-5</var>,</td></tr>
+<tr><th id="71">71</th><td>    <var>3.05882363070204935517E-5</var>,</td></tr>
+<tr><th id="72">72</th><td>    <var>1.52822594086518717326E-5</var>,</td></tr>
+<tr><th id="73">73</th><td>    <var>7.63719763789976227360E-6</var>,</td></tr>
+<tr><th id="74">74</th><td>    <var>3.81729326499983985646E-6</var>,</td></tr>
+<tr><th id="75">75</th><td>    <var>1.90821271655393892566E-6</var>,</td></tr>
+<tr><th id="76">76</th><td>    <var>9.53962033872796113152E-7</var>,</td></tr>
+<tr><th id="77">77</th><td>    <var>4.76932986787806463117E-7</var>,</td></tr>
+<tr><th id="78">78</th><td>    <var>2.38450502727732990004E-7</var>,</td></tr>
+<tr><th id="79">79</th><td>    <var>1.19219925965311073068E-7</var>,</td></tr>
+<tr><th id="80">80</th><td>    <var>5.96081890512594796124E-8</var>,</td></tr>
+<tr><th id="81">81</th><td>    <var>2.98035035146522801861E-8</var>,</td></tr>
+<tr><th id="82">82</th><td>    <var>1.49015548283650412347E-8</var>,</td></tr>
+<tr><th id="83">83</th><td>    <var>7.45071178983542949198E-9</var>,</td></tr>
+<tr><th id="84">84</th><td>    <var>3.72533402478845705482E-9</var>,</td></tr>
+<tr><th id="85">85</th><td>    <var>1.86265972351304900640E-9</var>,</td></tr>
+<tr><th id="86">86</th><td>    <var>9.31327432419668182872E-10</var></td></tr>
+<tr><th id="87">87</th><td>};</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td><i  data-doc="P">/* 2**x (1 - 1/x) (zeta(x) - 1) = P(1/x)/Q(1/x), 1 &lt;= x &lt;= 10 */</i></td></tr>
+<tr><th id="90">90</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="P" title='P' data-type='double[9]' data-ref="P">P</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="91">91</th><td>    <var>5.85746514569725319540E11</var>,</td></tr>
+<tr><th id="92">92</th><td>    <var>2.57534127756102572888E11</var>,</td></tr>
+<tr><th id="93">93</th><td>    <var>4.87781159567948256438E10</var>,</td></tr>
+<tr><th id="94">94</th><td>    <var>5.15399538023885770696E9</var>,</td></tr>
+<tr><th id="95">95</th><td>    <var>3.41646073514754094281E8</var>,</td></tr>
+<tr><th id="96">96</th><td>    <var>1.60837006880656492731E7</var>,</td></tr>
+<tr><th id="97">97</th><td>    <var>5.92785467342109522998E5</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>1.51129169964938823117E4</var>,</td></tr>
+<tr><th id="99">99</th><td>    <var>2.01822444485997955865E2</var>,</td></tr>
+<tr><th id="100">100</th><td>};</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="Q" title='Q' data-type='double[8]' data-ref="Q">Q</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="103">103</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="104">104</th><td>    <var>3.90497676373371157516E11</var>,</td></tr>
+<tr><th id="105">105</th><td>    <var>5.22858235368272161797E10</var>,</td></tr>
+<tr><th id="106">106</th><td>    <var>5.64451517271280543351E9</var>,</td></tr>
+<tr><th id="107">107</th><td>    <var>3.39006746015350418834E8</var>,</td></tr>
+<tr><th id="108">108</th><td>    <var>1.79410371500126453702E7</var>,</td></tr>
+<tr><th id="109">109</th><td>    <var>5.66666825131384797029E5</var>,</td></tr>
+<tr><th id="110">110</th><td>    <var>1.60382976810944131506E4</var>,</td></tr>
+<tr><th id="111">111</th><td>    <var>1.96436237223387314144E2</var>,</td></tr>
+<tr><th id="112">112</th><td>};</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><i  data-doc="A">/* log(zeta(x) - 1 - 2**-x), 10 &lt;= x &lt;= 50 */</i></td></tr>
+<tr><th id="115">115</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="A" title='A' data-type='double[11]' data-ref="A">A</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="116">116</th><td>    <var>8.70728567484590192539E6</var>,</td></tr>
+<tr><th id="117">117</th><td>    <var>1.76506865670346462757E8</var>,</td></tr>
+<tr><th id="118">118</th><td>    <var>2.60889506707483264896E10</var>,</td></tr>
+<tr><th id="119">119</th><td>    <var>5.29806374009894791647E11</var>,</td></tr>
+<tr><th id="120">120</th><td>    <var>2.26888156119238241487E13</var>,</td></tr>
+<tr><th id="121">121</th><td>    <var>3.31884402932705083599E14</var>,</td></tr>
+<tr><th id="122">122</th><td>    <var>5.13778997975868230192E15</var>,</td></tr>
+<tr><th id="123">123</th><td>    -<var>1.98123688133907171455E15</var>,</td></tr>
+<tr><th id="124">124</th><td>    -<var>9.92763810039983572356E16</var>,</td></tr>
+<tr><th id="125">125</th><td>    <var>7.82905376180870586444E16</var>,</td></tr>
+<tr><th id="126">126</th><td>    <var>9.26786275768927717187E16</var>,</td></tr>
+<tr><th id="127">127</th><td>};</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="B" title='B' data-type='double[10]' data-ref="B">B</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="130">130</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="131">131</th><td>    -<var>7.92625410563741062861E6</var>,</td></tr>
+<tr><th id="132">132</th><td>    -<var>1.60529969932920229676E8</var>,</td></tr>
+<tr><th id="133">133</th><td>    -<var>2.37669260975543221788E10</var>,</td></tr>
+<tr><th id="134">134</th><td>    -<var>4.80319584350455169857E11</var>,</td></tr>
+<tr><th id="135">135</th><td>    -<var>2.07820961754173320170E13</var>,</td></tr>
+<tr><th id="136">136</th><td>    -<var>2.96075404507272223680E14</var>,</td></tr>
+<tr><th id="137">137</th><td>    -<var>4.86299103694609136686E15</var>,</td></tr>
+<tr><th id="138">138</th><td>    <var>5.34589509675789930199E15</var>,</td></tr>
+<tr><th id="139">139</th><td>    <var>5.71464111092297631292E16</var>,</td></tr>
+<tr><th id="140">140</th><td>    -<var>1.79915597658676556828E16</var>,</td></tr>
+<tr><th id="141">141</th><td>};</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td><i  data-doc="R">/* (1-x) (zeta(x) - 1), 0 &lt;= x &lt;= 1 */</i></td></tr>
+<tr><th id="144">144</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="R" title='R' data-type='double[6]' data-ref="R">R</dfn>[<var>6</var>] = {</td></tr>
+<tr><th id="145">145</th><td>    -<var>3.28717474506562731748E-1</var>,</td></tr>
+<tr><th id="146">146</th><td>    <var>1.55162528742623950834E1</var>,</td></tr>
+<tr><th id="147">147</th><td>    -<var>2.48762831680821954401E2</var>,</td></tr>
+<tr><th id="148">148</th><td>    <var>1.01050368053237678329E3</var>,</td></tr>
+<tr><th id="149">149</th><td>    <var>1.26726061410235149405E4</var>,</td></tr>
+<tr><th id="150">150</th><td>    -<var>1.11578094770515181334E5</var>,</td></tr>
+<tr><th id="151">151</th><td>};</td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="S" title='S' data-type='double[5]' data-ref="S">S</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="154">154</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="155">155</th><td>    <var>1.95107674914060531512E1</var>,</td></tr>
+<tr><th id="156">156</th><td>    <var>3.17710311750646984099E2</var>,</td></tr>
+<tr><th id="157">157</th><td>    <var>3.03835500874445748734E3</var>,</td></tr>
+<tr><th id="158">158</th><td>    <var>2.03665876435770579345E4</var>,</td></tr>
+<tr><th id="159">159</th><td>    <var>7.43853965136767874343E4</var>,</td></tr>
+<tr><th id="160">160</th><td>};</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="TAYLOR0" title='TAYLOR0' data-type='double[10]' data-ref="TAYLOR0">TAYLOR0</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="163">163</th><td>    -<var>1.0000000009110164892</var>,</td></tr>
+<tr><th id="164">164</th><td>    -<var>1.0000000057646759799</var>,</td></tr>
+<tr><th id="165">165</th><td>    -<var>9.9999983138417361078e-1</var>,</td></tr>
+<tr><th id="166">166</th><td>    -<var>1.0000013011460139596</var>,</td></tr>
+<tr><th id="167">167</th><td>    -<var>1.000001940896320456</var>,</td></tr>
+<tr><th id="168">168</th><td>    -<var>9.9987929950057116496e-1</var>,</td></tr>
+<tr><th id="169">169</th><td>    -<var>1.000785194477042408</var>,</td></tr>
+<tr><th id="170">170</th><td>    -<var>1.0031782279542924256</var>,</td></tr>
+<tr><th id="171">171</th><td>    -<var>9.1893853320467274178e-1</var>,</td></tr>
+<tr><th id="172">172</th><td>    -<var>1.5</var>,</td></tr>
+<tr><th id="173">173</th><td>};</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td><u>#define <dfn class="macro" id="_M/MAXL2" data-ref="_M/MAXL2">MAXL2</dfn> 127</u></td></tr>
+<tr><th id="176">176</th><td><u>#define <dfn class="macro" id="_M/SQRT_2_PI" data-ref="_M/SQRT_2_PI">SQRT_2_PI</dfn> 0.79788456080286535587989</u></td></tr>
+<tr><th id="177">177</th><td></td></tr>
+<tr><th id="178">178</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>;</td></tr>
+<tr><th id="179">179</th><td></td></tr>
+<tr><th id="180">180</th><td><em>static</em> <em>double</em> <a class="tu decl fn" href="#zeta_reflection" title='zeta_reflection' data-type='double zeta_reflection(double )' data-ref="zeta_reflection">zeta_reflection</a>(<em>double</em>);</td></tr>
+<tr><th id="181">181</th><td><em>static</em> <em>double</em> <a class="tu decl fn" href="#zetac_smallneg" title='zetac_smallneg' data-type='double zetac_smallneg(double )' data-ref="zetac_smallneg">zetac_smallneg</a>(<em>double</em>);</td></tr>
+<tr><th id="182">182</th><td><em>static</em> <em>double</em> <a class="tu decl fn" href="#zetac_positive" title='zetac_positive' data-type='double zetac_positive(double )' data-ref="zetac_positive">zetac_positive</a>(<em>double</em>);</td></tr>
+<tr><th id="183">183</th><td></td></tr>
+<tr><th id="184">184</th><td></td></tr>
+<tr><th id="185">185</th><td><i>/*</i></td></tr>
+<tr><th id="186">186</th><td><i> * Riemann zeta function, minus one</i></td></tr>
+<tr><th id="187">187</th><td><i> */</i></td></tr>
+<tr><th id="188">188</th><td><em>double</em> <dfn class="decl def fn" id="zetac" title='zetac' data-ref="zetac">zetac</dfn>(<em>double</em> <dfn class="local col1 decl" id="1x" title='x' data-type='double' data-ref="1x">x</dfn>)</td></tr>
+<tr><th id="189">189</th><td>{</td></tr>
+<tr><th id="190">190</th><td>    <b>if</b> (<a class="macro" href="../../../../../include/math.h.html#1011" title="__builtin_isnan (x)" data-ref="_M/isnan">isnan</a>(<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>)) {</td></tr>
+<tr><th id="191">191</th><td>	<b>return</b> <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>;</td></tr>
+<tr><th id="192">192</th><td>    }</td></tr>
+<tr><th id="193">193</th><td>    <b>else</b> <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> == -<a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>) {</td></tr>
+<tr><th id="194">194</th><td>	<b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="195">195</th><td>    }</td></tr>
+<tr><th id="196">196</th><td>    <b>else</b> <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &lt; <var>0.0</var> &amp;&amp; <a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &gt; -<var>0.01</var>) {</td></tr>
+<tr><th id="197">197</th><td>	<b>return</b> <a class="tu ref fn" href="#zetac_smallneg" title='zetac_smallneg' data-use='c' data-ref="zetac_smallneg">zetac_smallneg</a>(<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>);</td></tr>
+<tr><th id="198">198</th><td>    }</td></tr>
+<tr><th id="199">199</th><td>    <b>else</b> <b>if</b> (<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="200">200</th><td>	<b>return</b> <a class="tu ref fn" href="#zeta_reflection" title='zeta_reflection' data-use='c' data-ref="zeta_reflection">zeta_reflection</a>(-<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>) - <var>1</var>;</td></tr>
+<tr><th id="201">201</th><td>    }</td></tr>
+<tr><th id="202">202</th><td>    <b>else</b> {</td></tr>
+<tr><th id="203">203</th><td>	<b>return</b> <a class="tu ref fn" href="#zetac_positive" title='zetac_positive' data-use='c' data-ref="zetac_positive">zetac_positive</a>(<a class="local col1 ref" href="#1x" title='x' data-ref="1x">x</a>);</td></tr>
+<tr><th id="204">204</th><td>    }</td></tr>
+<tr><th id="205">205</th><td>}</td></tr>
+<tr><th id="206">206</th><td></td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td><i>/*</i></td></tr>
+<tr><th id="209">209</th><td><i> * Riemann zeta function</i></td></tr>
+<tr><th id="210">210</th><td><i> */</i></td></tr>
+<tr><th id="211">211</th><td><em>double</em> <dfn class="decl def fn" id="riemann_zeta" title='riemann_zeta' data-ref="riemann_zeta">riemann_zeta</dfn>(<em>double</em> <dfn class="local col2 decl" id="2x" title='x' data-type='double' data-ref="2x">x</dfn>)</td></tr>
+<tr><th id="212">212</th><td>{</td></tr>
+<tr><th id="213">213</th><td>  <b>if</b> (<a class="macro" href="../../../../../include/math.h.html#1011" title="__builtin_isnan (x)" data-ref="_M/isnan">isnan</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>)) {</td></tr>
+<tr><th id="214">214</th><td>    <b>return</b> <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="215">215</th><td>  }</td></tr>
+<tr><th id="216">216</th><td>  <b>else</b> <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> == -<a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>) {</td></tr>
+<tr><th id="217">217</th><td>    <b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="218">218</th><td>  }</td></tr>
+<tr><th id="219">219</th><td>  <b>else</b> <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &lt; <var>0.0</var> &amp;&amp; <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &gt; -<var>0.01</var>) {</td></tr>
+<tr><th id="220">220</th><td>    <b>return</b> <var>1</var> + <a class="tu ref fn" href="#zetac_smallneg" title='zetac_smallneg' data-use='c' data-ref="zetac_smallneg">zetac_smallneg</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="221">221</th><td>  }</td></tr>
+<tr><th id="222">222</th><td>  <b>else</b> <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="223">223</th><td>    <b>return</b> <a class="tu ref fn" href="#zeta_reflection" title='zeta_reflection' data-use='c' data-ref="zeta_reflection">zeta_reflection</a>(-<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="224">224</th><td>  }</td></tr>
+<tr><th id="225">225</th><td>  <b>else</b> {</td></tr>
+<tr><th id="226">226</th><td>    <b>return</b> <var>1</var> + <a class="tu ref fn" href="#zetac_positive" title='zetac_positive' data-use='c' data-ref="zetac_positive">zetac_positive</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="227">227</th><td>  }</td></tr>
+<tr><th id="228">228</th><td>}</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td><i  data-doc="zetac_positive">/*</i></td></tr>
+<tr><th id="232">232</th><td><i  data-doc="zetac_positive"> * Compute zetac for positive arguments</i></td></tr>
+<tr><th id="233">233</th><td><i  data-doc="zetac_positive"> */</i></td></tr>
+<tr><th id="234">234</th><td><em>static</em> <b>inline</b> <em>double</em> <dfn class="tu decl def fn" id="zetac_positive" title='zetac_positive' data-type='double zetac_positive(double x)' data-ref="zetac_positive">zetac_positive</dfn>(<em>double</em> <dfn class="local col3 decl" id="3x" title='x' data-type='double' data-ref="3x">x</dfn>)</td></tr>
+<tr><th id="235">235</th><td>{</td></tr>
+<tr><th id="236">236</th><td>    <em>int</em> <dfn class="local col4 decl" id="4i" title='i' data-type='int' data-ref="4i">i</dfn>;</td></tr>
+<tr><th id="237">237</th><td>    <em>double</em> <dfn class="local col5 decl" id="5a" title='a' data-type='double' data-ref="5a">a</dfn>, <dfn class="local col6 decl" id="6b" title='b' data-type='double' data-ref="6b">b</dfn>, <dfn class="local col7 decl" id="7s" title='s' data-type='double' data-ref="7s">s</dfn>, <dfn class="local col8 decl" id="8w" title='w' data-type='double' data-ref="8w">w</dfn>;</td></tr>
+<tr><th id="238">238</th><td></td></tr>
+<tr><th id="239">239</th><td>    <b>if</b> (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> == <var>1.0</var>) {</td></tr>
+<tr><th id="240">240</th><td>        <b>return</b> <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="241">241</th><td>    }</td></tr>
+<tr><th id="242">242</th><td></td></tr>
+<tr><th id="243">243</th><td>    <b>if</b> (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> &gt;= <a class="macro" href="#175" title="127" data-ref="_M/MAXL2">MAXL2</a>) {</td></tr>
+<tr><th id="244">244</th><td>	<i>/* because first term is 2**-x */</i></td></tr>
+<tr><th id="245">245</th><td>        <b>return</b> <var>0.0</var>;</td></tr>
+<tr><th id="246">246</th><td>    }</td></tr>
+<tr><th id="247">247</th><td></td></tr>
+<tr><th id="248">248</th><td>    <i>/* Tabulated values for integer argument */</i></td></tr>
+<tr><th id="249">249</th><td>    <a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#165" title='floor' data-ref="floor">floor</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>);</td></tr>
+<tr><th id="250">250</th><td>    <b>if</b> (<a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> == <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>) {</td></tr>
+<tr><th id="251">251</th><td>        <a class="local col4 ref" href="#4i" title='i' data-ref="4i">i</a> = <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>;</td></tr>
+<tr><th id="252">252</th><td>        <b>if</b> (<a class="local col4 ref" href="#4i" title='i' data-ref="4i">i</a> &lt; <var>31</var>) {</td></tr>
+<tr><th id="253">253</th><td><u>#<span data-ppcond="253">ifdef</span> <a class="macro" href="mconf.h.html#80" data-ref="_M/UNK">UNK</a></u></td></tr>
+<tr><th id="254">254</th><td>            <b>return</b> (<a class="tu ref" href="#azetac" title='azetac' data-use='r' data-ref="azetac">azetac</a>[<a class="local col4 ref" href="#4i" title='i' data-ref="4i">i</a>]);</td></tr>
+<tr><th id="255">255</th><td><u>#<span data-ppcond="253">else</span></u></td></tr>
+<tr><th id="256">256</th><td>            <b>return</b> (*(<em>double</em> *) &amp;azetac[<var>4</var> * i]);</td></tr>
+<tr><th id="257">257</th><td><u>#<span data-ppcond="253">endif</span></u></td></tr>
+<tr><th id="258">258</th><td>        }</td></tr>
+<tr><th id="259">259</th><td>    }</td></tr>
+<tr><th id="260">260</th><td></td></tr>
+<tr><th id="261">261</th><td>    <b>if</b> (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> &lt; <var>1.0</var>) {</td></tr>
+<tr><th id="262">262</th><td>        <a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> = <var>1.0</var> - <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>;</td></tr>
+<tr><th id="263">263</th><td>        <a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#R" title='R' data-use='r' data-ref="R">R</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>) / (<a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> * <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#S" title='S' data-use='r' data-ref="S">S</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>));</td></tr>
+<tr><th id="264">264</th><td>        <b>return</b> <a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>;</td></tr>
+<tr><th id="265">265</th><td>    }</td></tr>
+<tr><th id="266">266</th><td></td></tr>
+<tr><th id="267">267</th><td>    <b>if</b> (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> &lt;= <var>10.0</var>) {</td></tr>
+<tr><th id="268">268</th><td>        <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><var>2.0</var>, <span class='inlayHint'>y:&nbsp;</span><a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>) * (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> - <var>1.0</var>);</td></tr>
+<tr><th id="269">269</th><td>        <a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> = <var>1.0</var> / <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>;</td></tr>
+<tr><th id="270">270</th><td>        <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a> = (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#P" title='P' data-use='r' data-ref="P">P</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>)) / (<a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a> * <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#Q" title='Q' data-use='r' data-ref="Q">Q</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>));</td></tr>
+<tr><th id="271">271</th><td>        <b>return</b> <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a>;</td></tr>
+<tr><th id="272">272</th><td>    }</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td>    <b>if</b> (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> &lt;= <var>50.0</var>) {</td></tr>
+<tr><th id="275">275</th><td>        <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><var>2.0</var>, <span class='inlayHint'>y:&nbsp;</span>-<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>);</td></tr>
+<tr><th id="276">276</th><td>        <a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> = <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#A" title='A' data-use='r' data-ref="A">A</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#B" title='B' data-use='r' data-ref="B">B</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>);</td></tr>
+<tr><th id="277">277</th><td>        <a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#95" title='exp' data-ref="exp">exp</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a>) + <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a>;</td></tr>
+<tr><th id="278">278</th><td>        <b>return</b> <a class="local col8 ref" href="#8w" title='w' data-ref="8w">w</a>;</td></tr>
+<tr><th id="279">279</th><td>    }</td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td>    <i>/* Basic sum of inverse powers */</i></td></tr>
+<tr><th id="282">282</th><td>    <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a> = <var>0.0</var>;</td></tr>
+<tr><th id="283">283</th><td>    <a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> = <var>1.0</var>;</td></tr>
+<tr><th id="284">284</th><td>    <b>do</b> {</td></tr>
+<tr><th id="285">285</th><td>        <a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a> += <var>2.0</var>;</td></tr>
+<tr><th id="286">286</th><td>        <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col5 ref" href="#5a" title='a' data-ref="5a">a</a>, <span class='inlayHint'>y:&nbsp;</span>-<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>);</td></tr>
+<tr><th id="287">287</th><td>        <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a> += <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a>;</td></tr>
+<tr><th id="288">288</th><td>    }</td></tr>
+<tr><th id="289">289</th><td>    <b>while</b> (<a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a> / <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a> &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>);</td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td>    <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><var>2.0</var>, <span class='inlayHint'>y:&nbsp;</span>-<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>);</td></tr>
+<tr><th id="292">292</th><td>    <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a> = (<a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a> + <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a>) / (<var>1.0</var> - <a class="local col6 ref" href="#6b" title='b' data-ref="6b">b</a>);</td></tr>
+<tr><th id="293">293</th><td>    <b>return</b> <a class="local col7 ref" href="#7s" title='s' data-ref="7s">s</a>;</td></tr>
+<tr><th id="294">294</th><td>}</td></tr>
+<tr><th id="295">295</th><td></td></tr>
+<tr><th id="296">296</th><td></td></tr>
+<tr><th id="297">297</th><td><i  data-doc="zetac_smallneg">/*</i></td></tr>
+<tr><th id="298">298</th><td><i  data-doc="zetac_smallneg"> * Compute zetac for small negative x. We can't use the reflection</i></td></tr>
+<tr><th id="299">299</th><td><i  data-doc="zetac_smallneg"> * formula because to double precision 1 - x = 1 and zetac(1) = inf.</i></td></tr>
+<tr><th id="300">300</th><td><i  data-doc="zetac_smallneg"> */</i></td></tr>
+<tr><th id="301">301</th><td><em>static</em> <b>inline</b> <em>double</em> <dfn class="tu decl def fn" id="zetac_smallneg" title='zetac_smallneg' data-type='double zetac_smallneg(double x)' data-ref="zetac_smallneg">zetac_smallneg</dfn>(<em>double</em> <dfn class="local col9 decl" id="9x" title='x' data-type='double' data-ref="9x">x</dfn>)</td></tr>
+<tr><th id="302">302</th><td>{</td></tr>
+<tr><th id="303">303</th><td>    <b>return</b> <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col9 ref" href="#9x" title='x' data-ref="9x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#TAYLOR0" title='TAYLOR0' data-use='r' data-ref="TAYLOR0">TAYLOR0</a>, <span class='inlayHint'>N:&nbsp;</span><var>9</var>);</td></tr>
+<tr><th id="304">304</th><td>}</td></tr>
+<tr><th id="305">305</th><td></td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td><i  data-doc="zeta_reflection">/*</i></td></tr>
+<tr><th id="308">308</th><td><i  data-doc="zeta_reflection"> * Compute zetac using the reflection formula (see DLMF 25.4.2) plus</i></td></tr>
+<tr><th id="309">309</th><td><i  data-doc="zeta_reflection"> * the Lanczos approximation for Gamma to avoid overflow.</i></td></tr>
+<tr><th id="310">310</th><td><i  data-doc="zeta_reflection"> */</i></td></tr>
+<tr><th id="311">311</th><td><em>static</em> <b>inline</b> <em>double</em> <dfn class="tu decl def fn" id="zeta_reflection" title='zeta_reflection' data-type='double zeta_reflection(double x)' data-ref="zeta_reflection">zeta_reflection</dfn>(<em>double</em> <dfn class="local col0 decl" id="10x" title='x' data-type='double' data-ref="10x">x</dfn>)</td></tr>
+<tr><th id="312">312</th><td>{</td></tr>
+<tr><th id="313">313</th><td>    <em>double</em> <dfn class="local col1 decl" id="11base" title='base' data-type='double' data-ref="11base">base</dfn>, <dfn class="local col2 decl" id="12large_term" title='large_term' data-type='double' data-ref="12large_term">large_term</dfn>, <dfn class="local col3 decl" id="13small_term" title='small_term' data-type='double' data-ref="13small_term">small_term</dfn>, <dfn class="local col4 decl" id="14hx" title='hx' data-type='double' data-ref="14hx">hx</dfn>, <dfn class="local col5 decl" id="15x_shift" title='x_shift' data-type='double' data-ref="15x_shift">x_shift</dfn>;</td></tr>
+<tr><th id="314">314</th><td></td></tr>
+<tr><th id="315">315</th><td>    <a class="local col4 ref" href="#14hx" title='hx' data-ref="14hx">hx</a> = <a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a> / <var>2</var>;</td></tr>
+<tr><th id="316">316</th><td>    <b>if</b> (<a class="local col4 ref" href="#14hx" title='hx' data-ref="14hx">hx</a> == <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#165" title='floor' data-ref="floor">floor</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#14hx" title='hx' data-ref="14hx">hx</a>)) {</td></tr>
+<tr><th id="317">317</th><td>	<i>/* Hit a zero of the sine factor */</i></td></tr>
+<tr><th id="318">318</th><td>	<b>return</b> <var>0</var>;</td></tr>
+<tr><th id="319">319</th><td>    }</td></tr>
+<tr><th id="320">320</th><td></td></tr>
+<tr><th id="321">321</th><td>    <i>/* Reduce the argument to sine */</i></td></tr>
+<tr><th id="322">322</th><td>    <a class="local col5 ref" href="#15x_shift" title='x_shift' data-ref="15x_shift">x_shift</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#168" title='fmod' data-ref="fmod">fmod</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a>, <span class='inlayHint'>y:&nbsp;</span><var>4</var>);</td></tr>
+<tr><th id="323">323</th><td>    <a class="local col3 ref" href="#13small_term" title='small_term' data-ref="13small_term">small_term</a> = -<a class="macro" href="#176" title="0.79788456080286535587989" data-ref="_M/SQRT_2_PI">SQRT_2_PI</a> * <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#64" title='sin' data-ref="sin">sin</a>(<span class='inlayHint'>x:&nbsp;</span><var>0.5</var> * <a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a> * <a class="local col5 ref" href="#15x_shift" title='x_shift' data-ref="15x_shift">x_shift</a>);</td></tr>
+<tr><th id="324">324</th><td>    <a class="local col3 ref" href="#13small_term" title='small_term' data-ref="13small_term">small_term</a> *= <a class="ref fn" href="../cephes.h.html#lanczos_sum_expg_scaled" title='lanczos_sum_expg_scaled' data-ref="lanczos_sum_expg_scaled">lanczos_sum_expg_scaled</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a> + <var>1</var>) * <a class="ref fn" href="../cephes.h.html#zeta" title='zeta' data-ref="zeta">zeta</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a> + <var>1</var>, <span class='inlayHint'>q:&nbsp;</span><var>1</var>);</td></tr>
+<tr><th id="325">325</th><td></td></tr>
+<tr><th id="326">326</th><td>    <i>/* Group large terms together to prevent overflow */</i></td></tr>
+<tr><th id="327">327</th><td>    <a class="local col1 ref" href="#11base" title='base' data-ref="11base">base</a> = (<a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a> + <a class="ref" href="lanczos.h.html#lanczos_g" title='lanczos_g' data-ref="lanczos_g">lanczos_g</a> + <var>0.5</var>) / (<var>2</var> * <a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a> * <a class="macro" href="../../../../../include/math.h.html#1147" title="2.7182818284590452354" data-ref="_M/M_E">M_E</a>);</td></tr>
+<tr><th id="328">328</th><td>    <a class="local col2 ref" href="#12large_term" title='large_term' data-ref="12large_term">large_term</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#11base" title='base' data-ref="11base">base</a>, <span class='inlayHint'>y:&nbsp;</span><a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a> + <var>0.5</var>);</td></tr>
+<tr><th id="329">329</th><td>    <b>if</b> (<a class="macro" href="../../../../../include/math.h.html#994" title="__builtin_isfinite (large_term)" data-ref="_M/isfinite">isfinite</a>(<a class="local col2 ref" href="#12large_term" title='large_term' data-ref="12large_term">large_term</a>)) {</td></tr>
+<tr><th id="330">330</th><td>      <b>return</b> <a class="local col2 ref" href="#12large_term" title='large_term' data-ref="12large_term">large_term</a> * <a class="local col3 ref" href="#13small_term" title='small_term' data-ref="13small_term">small_term</a>;</td></tr>
+<tr><th id="331">331</th><td>    }</td></tr>
+<tr><th id="332">332</th><td>    <i>/*</i></td></tr>
+<tr><th id="333">333</th><td><i>     * We overflowed, but we might be able to stave off overflow by</i></td></tr>
+<tr><th id="334">334</th><td><i>     * factoring in the small term earlier. To do this we compute</i></td></tr>
+<tr><th id="335">335</th><td><i>     *</i></td></tr>
+<tr><th id="336">336</th><td><i>     * (sqrt(large_term) * small_term) * sqrt(large_term)</i></td></tr>
+<tr><th id="337">337</th><td><i>     *</i></td></tr>
+<tr><th id="338">338</th><td><i>     * Since we only call this method for negative x bounded away from</i></td></tr>
+<tr><th id="339">339</th><td><i>     * zero, the small term can only be as small sine on that region;</i></td></tr>
+<tr><th id="340">340</th><td><i>     * i.e. about machine epsilon. This means that if the above still</i></td></tr>
+<tr><th id="341">341</th><td><i>     * overflows, then there was truly no avoiding it.</i></td></tr>
+<tr><th id="342">342</th><td><i>     */</i></td></tr>
+<tr><th id="343">343</th><td>    <a class="local col2 ref" href="#12large_term" title='large_term' data-ref="12large_term">large_term</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#140" title='pow' data-ref="pow">pow</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col1 ref" href="#11base" title='base' data-ref="11base">base</a>, <span class='inlayHint'>y:&nbsp;</span><var>0.5</var> * <a class="local col0 ref" href="#10x" title='x' data-ref="10x">x</a> + <var>0.25</var>);</td></tr>
+<tr><th id="344">344</th><td>    <b>return</b> (<a class="local col2 ref" href="#12large_term" title='large_term' data-ref="12large_term">large_term</a> * <a class="local col3 ref" href="#13small_term" title='small_term' data-ref="13small_term">small_term</a>) * <a class="local col2 ref" href="#12large_term" title='large_term' data-ref="12large_term">large_term</a>;</td></tr>
+<tr><th id="345">345</th><td>}</td></tr>
+<tr><th id="346">346</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

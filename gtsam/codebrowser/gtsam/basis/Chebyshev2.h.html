@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Chebyshev2.h source code [codebrowser/gtsam/basis/Chebyshev2.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::Chebyshev2 "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/basis/Chebyshev2.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>basis</a>/<a href='Chebyshev2.h.html'>Chebyshev2.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">Chebyshev2.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span> Pseudo-spectral parameterization for Chebyshev polynomials of the</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * second kind.</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * In a pseudo-spectral case, rather than the parameters acting as</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> * weights for the bases polynomials (as in Chebyshev2Basis), here the</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> * parameters are the *values* at a specific set of points in the interval, the</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> * "Chebyshev points". These values uniquely determine the polynomial that</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"> * interpolates them at the Chebyshev points.</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"> * This is different from Chebyshev.h since it leverage ideas from</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"> * pseudo-spectral optimization, i.e. we don't decompose into basis functions,</i></td></tr>
+<tr><th id="25">25</th><td><i class="doc"> * rather estimate function values at the Chebyshev points.</i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"> * Please refer to Agrawal21icra for more details.</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc"> * <span class="command">@author</span> Varun Agrawal, Jing Dong, Frank Dellaert</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc"> * <span class="command">@date</span> July 4, 2020</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><u>#pragma once</u></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../base/Manifold.h.html">&lt;gtsam/base/Manifold.h&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../base/OptionalJacobian.h.html">&lt;gtsam/base/OptionalJacobian.h&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="Basis.h.html">&lt;gtsam/basis/Basis.h&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * Chebyshev Interpolation on Chebyshev points of the second kind</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * Note that N here, the number of points, is one less than N from</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * 'Approximation Theory and Approximation Practice by L. N. Trefethen (pg.42)'.</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="46">46</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::Chebyshev2" title='gtsam::Chebyshev2' data-ref="gtsam::Chebyshev2">Chebyshev2</dfn> : <b>public</b> <a class="type" href="Basis.h.html#gtsam::Basis" title='gtsam::Basis' data-ref="gtsam::Basis">Basis</a>&lt;<a class="type" href="#gtsam::Chebyshev2" title='gtsam::Chebyshev2' data-ref="gtsam::Chebyshev2">Chebyshev2</a>&gt; {</td></tr>
+<tr><th id="47">47</th><td> <b>public</b>:</td></tr>
+<tr><th id="48">48</th><td>  <a class="macro" href="../3rdparty/Eigen/Eigen/src/Core/util/Memory.h.html#789" title="" data-ref="_M/EIGEN_MAKE_ALIGNED_OPERATOR_NEW">EIGEN_MAKE_ALIGNED_OPERATOR_NEW</a></td></tr>
+<tr><th id="49">49</th><td></td></tr>
+<tr><th id="50">50</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::Chebyshev2::Base" title='gtsam::Chebyshev2::Base' data-type='Basis&lt;Chebyshev2&gt;' data-ref="gtsam::Chebyshev2::Base">Base</dfn> = <a class="type" href="Basis.h.html#gtsam::Basis" title='gtsam::Basis' data-ref="gtsam::Basis">Basis</a>&lt;<a class="type" href="#gtsam::Chebyshev2" title='gtsam::Chebyshev2' data-ref="gtsam::Chebyshev2">Chebyshev2</a>&gt;;</td></tr>
+<tr><th id="51">51</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::Chebyshev2::Parameters" title='gtsam::Chebyshev2::Parameters' data-type='Eigen::Matrix&lt;double, -1, 1&gt;' data-ref="gtsam::Chebyshev2::Parameters">Parameters</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <i>/*Nx1*/</i> -<var>1</var>, <var>1</var>&gt;;</td></tr>
+<tr><th id="52">52</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::Chebyshev2::DiffMatrix" title='gtsam::Chebyshev2::DiffMatrix' data-type='Eigen::Matrix&lt;double, -1, -1&gt;' data-ref="gtsam::Chebyshev2::DiffMatrix">DiffMatrix</dfn> = <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <i>/*NxN*/</i> -<var>1</var>, -<var>1</var>&gt;;</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">   * <span class="command">@brief</span> Specific Chebyshev point, within [-1,1] interval.</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">N</span> The degree of the polynomial</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">j</span> The index of the Chebyshev point</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc">   * <span class="command">@return</span> double</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="61">61</th><td>  <em>static</em> <em>double</em> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev25PointEmi" title='gtsam::Chebyshev2::Point' data-ref="_ZN5gtsam10Chebyshev25PointEmi" id="_ZN5gtsam10Chebyshev25PointEmi">Point</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="1N" title='N' data-type='size_t' data-ref="1N">N</dfn>, <em>int</em> <dfn class="local col2 decl" id="2j" title='j' data-type='int' data-ref="2j">j</dfn>);</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc">   * <span class="command">@brief</span> Specific Chebyshev point, within [a,b] interval.</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">N</span> The degree of the polynomial</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">j</span> The index of the Chebyshev point</i></td></tr>
+<tr><th id="68">68</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">a</span> Lower bound of interval (default: -1)</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">b</span> Upper bound of interval (default: 1)</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc">   * <span class="command">@return</span> double</i></td></tr>
+<tr><th id="71">71</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="72">72</th><td>  <em>static</em> <em>double</em> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev25PointEmidd" title='gtsam::Chebyshev2::Point' data-ref="_ZN5gtsam10Chebyshev25PointEmidd" id="_ZN5gtsam10Chebyshev25PointEmidd">Point</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col3 decl" id="3N" title='N' data-type='size_t' data-ref="3N">N</dfn>, <em>int</em> <dfn class="local col4 decl" id="4j" title='j' data-type='int' data-ref="4j">j</dfn>, <em>double</em> <dfn class="local col5 decl" id="5a" title='a' data-type='double' data-ref="5a">a</dfn>, <em>double</em> <dfn class="local col6 decl" id="6b" title='b' data-type='double' data-ref="6b">b</dfn>);</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>  <i class="doc">/// All Chebyshev points</i></td></tr>
+<tr><th id="75">75</th><td>  <em>static</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev26PointsEm" title='gtsam::Chebyshev2::Points' data-ref="_ZN5gtsam10Chebyshev26PointsEm" id="_ZN5gtsam10Chebyshev26PointsEm">Points</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col7 decl" id="7N" title='N' data-type='size_t' data-ref="7N">N</dfn>);</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>  <i class="doc">/// All Chebyshev points, within [a,b] interval</i></td></tr>
+<tr><th id="78">78</th><td>  <em>static</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev26PointsEmdd" title='gtsam::Chebyshev2::Points' data-ref="_ZN5gtsam10Chebyshev26PointsEmdd" id="_ZN5gtsam10Chebyshev26PointsEmdd">Points</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col8 decl" id="8N" title='N' data-type='size_t' data-ref="8N">N</dfn>, <em>double</em> <dfn class="local col9 decl" id="9a" title='a' data-type='double' data-ref="9a">a</dfn>, <em>double</em> <dfn class="local col0 decl" id="10b" title='b' data-type='double' data-ref="10b">b</dfn>);</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc">   * Evaluate Chebyshev Weights on [-1,1] at any x up to order N-1 (N values)</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">   * These weights implement barycentric interpolation at a specific x.</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   * More precisely, f(x) ~ [w0;...;wN] * [f0;...;fN], where the fj are the</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   * values of the function f at the Chebyshev points. As such, for a given x we</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   * obtain a linear map from parameter vectors f to interpolated values f(x).</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   * Optional [a,b] interval can be specified as well.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="88">88</th><td>  <em>static</em> <a class="typedef" href="Basis.h.html#gtsam::Weights" title='gtsam::Weights' data-type='Eigen::Matrix&lt;double, 1, -1&gt;' data-ref="gtsam::Weights">Weights</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev216CalculateWeightsEmddd" title='gtsam::Chebyshev2::CalculateWeights' data-ref="_ZN5gtsam10Chebyshev216CalculateWeightsEmddd" id="_ZN5gtsam10Chebyshev216CalculateWeightsEmddd">CalculateWeights</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="11N" title='N' data-type='size_t' data-ref="11N">N</dfn>, <em>double</em> <dfn class="local col2 decl" id="12x" title='x' data-type='double' data-ref="12x">x</dfn>, <em>double</em> <dfn class="local col3 decl" id="13a" title='a' data-type='double' data-ref="13a">a</dfn> = -<var>1</var>, <em>double</em> <dfn class="local col4 decl" id="14b" title='b' data-type='double' data-ref="14b">b</dfn> = <var>1</var>);</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   *  Evaluate derivative of barycentric weights.</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   *  This is easy and efficient via the DifferentiationMatrix.</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="94">94</th><td>  <em>static</em> <a class="typedef" href="Basis.h.html#gtsam::Weights" title='gtsam::Weights' data-type='Eigen::Matrix&lt;double, 1, -1&gt;' data-ref="gtsam::Weights">Weights</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev217DerivativeWeightsEmddd" title='gtsam::Chebyshev2::DerivativeWeights' data-ref="_ZN5gtsam10Chebyshev217DerivativeWeightsEmddd" id="_ZN5gtsam10Chebyshev217DerivativeWeightsEmddd">DerivativeWeights</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="15N" title='N' data-type='size_t' data-ref="15N">N</dfn>, <em>double</em> <dfn class="local col6 decl" id="16x" title='x' data-type='double' data-ref="16x">x</dfn>, <em>double</em> <dfn class="local col7 decl" id="17a" title='a' data-type='double' data-ref="17a">a</dfn> = -<var>1</var>, <em>double</em> <dfn class="local col8 decl" id="18b" title='b' data-type='double' data-ref="18b">b</dfn> = <var>1</var>);</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>  <i class="doc">/// Compute D = differentiation matrix, Trefethen00book p.53</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">  /// When given a parameter vector f of function values at the Chebyshev</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">  /// points, D*f are the values of f'.</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">  /// <a href="https://people.maths.ox.ac.uk/trefethen/8all.pdf">https://people.maths.ox.ac.uk/trefethen/8all.pdf</a> Theorem 8.4</i></td></tr>
+<tr><th id="100">100</th><td>  <em>static</em> <a class="typedef" href="#gtsam::Chebyshev2::DiffMatrix" title='gtsam::Chebyshev2::DiffMatrix' data-type='Eigen::Matrix&lt;double, -1, -1&gt;' data-ref="gtsam::Chebyshev2::DiffMatrix">DiffMatrix</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev221DifferentiationMatrixEm" title='gtsam::Chebyshev2::DifferentiationMatrix' data-ref="_ZN5gtsam10Chebyshev221DifferentiationMatrixEm" id="_ZN5gtsam10Chebyshev221DifferentiationMatrixEm">DifferentiationMatrix</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col9 decl" id="19N" title='N' data-type='size_t' data-ref="19N">N</dfn>);</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>  <i class="doc">/// Compute D = differentiation matrix, for interval [a,b]</i></td></tr>
+<tr><th id="103">103</th><td>  <em>static</em> <a class="typedef" href="#gtsam::Chebyshev2::DiffMatrix" title='gtsam::Chebyshev2::DiffMatrix' data-type='Eigen::Matrix&lt;double, -1, -1&gt;' data-ref="gtsam::Chebyshev2::DiffMatrix">DiffMatrix</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev221DifferentiationMatrixEmdd" title='gtsam::Chebyshev2::DifferentiationMatrix' data-ref="_ZN5gtsam10Chebyshev221DifferentiationMatrixEmdd" id="_ZN5gtsam10Chebyshev221DifferentiationMatrixEmdd">DifferentiationMatrix</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col0 decl" id="20N" title='N' data-type='size_t' data-ref="20N">N</dfn>, <em>double</em> <dfn class="local col1 decl" id="21a" title='a' data-type='double' data-ref="21a">a</dfn>, <em>double</em> <dfn class="local col2 decl" id="22b" title='b' data-type='double' data-ref="22b">b</dfn>);</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>  <i class="doc">/// IntegrationMatrix returns the (N+1)×(N+1) matrix P such that for any f,</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">  /// F = P * f recovers F (the antiderivative) satisfying f = D * F and F(0)=0.</i></td></tr>
+<tr><th id="107">107</th><td>  <em>static</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev217IntegrationMatrixEm" title='gtsam::Chebyshev2::IntegrationMatrix' data-ref="_ZN5gtsam10Chebyshev217IntegrationMatrixEm" id="_ZN5gtsam10Chebyshev217IntegrationMatrixEm">IntegrationMatrix</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col3 decl" id="23N" title='N' data-type='size_t' data-ref="23N">N</dfn>);</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <i class="doc">/// IntegrationMatrix returns the (N+1)×(N+1) matrix P for interval [a,b]</i></td></tr>
+<tr><th id="110">110</th><td>  <em>static</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev217IntegrationMatrixEmdd" title='gtsam::Chebyshev2::IntegrationMatrix' data-ref="_ZN5gtsam10Chebyshev217IntegrationMatrixEmdd" id="_ZN5gtsam10Chebyshev217IntegrationMatrixEmdd">IntegrationMatrix</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="24N" title='N' data-type='size_t' data-ref="24N">N</dfn>, <em>double</em> <dfn class="local col5 decl" id="25a" title='a' data-type='double' data-ref="25a">a</dfn>, <em>double</em> <dfn class="local col6 decl" id="26b" title='b' data-type='double' data-ref="26b">b</dfn>);</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="113">113</th><td><i class="doc">   *  Calculate Clenshaw-Curtis integration weights.</i></td></tr>
+<tr><th id="114">114</th><td><i class="doc">   *  Trefethen00book, pg 128, clencurt.m</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">   *  Note that N in clencurt.m is 1 less than our N</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="117">117</th><td>  <em>static</em> <a class="typedef" href="Basis.h.html#gtsam::Weights" title='gtsam::Weights' data-type='Eigen::Matrix&lt;double, 1, -1&gt;' data-ref="gtsam::Weights">Weights</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev218IntegrationWeightsEm" title='gtsam::Chebyshev2::IntegrationWeights' data-ref="_ZN5gtsam10Chebyshev218IntegrationWeightsEm" id="_ZN5gtsam10Chebyshev218IntegrationWeightsEm">IntegrationWeights</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col7 decl" id="27N" title='N' data-type='size_t' data-ref="27N">N</dfn>);</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>  <i class="doc">/// Calculate Clenshaw-Curtis integration weights, for interval [a,b]</i></td></tr>
+<tr><th id="120">120</th><td>  <em>static</em> <a class="typedef" href="Basis.h.html#gtsam::Weights" title='gtsam::Weights' data-type='Eigen::Matrix&lt;double, 1, -1&gt;' data-ref="gtsam::Weights">Weights</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev218IntegrationWeightsEmdd" title='gtsam::Chebyshev2::IntegrationWeights' data-ref="_ZN5gtsam10Chebyshev218IntegrationWeightsEmdd" id="_ZN5gtsam10Chebyshev218IntegrationWeightsEmdd">IntegrationWeights</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col8 decl" id="28N" title='N' data-type='size_t' data-ref="28N">N</dfn>, <em>double</em> <dfn class="local col9 decl" id="29a" title='a' data-type='double' data-ref="29a">a</dfn>, <em>double</em> <dfn class="local col0 decl" id="30b" title='b' data-type='double' data-ref="30b">b</dfn>);</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">   * Calculate Double Clenshaw-Curtis integration weights</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">   * We compute them as W * P, where W are the Clenshaw-Curtis weights and P is</i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">   * the integration matrix.</i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="127">127</th><td>  <em>static</em> <a class="typedef" href="Basis.h.html#gtsam::Weights" title='gtsam::Weights' data-type='Eigen::Matrix&lt;double, 1, -1&gt;' data-ref="gtsam::Weights">Weights</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev224DoubleIntegrationWeightsEm" title='gtsam::Chebyshev2::DoubleIntegrationWeights' data-ref="_ZN5gtsam10Chebyshev224DoubleIntegrationWeightsEm" id="_ZN5gtsam10Chebyshev224DoubleIntegrationWeightsEm">DoubleIntegrationWeights</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="31N" title='N' data-type='size_t' data-ref="31N">N</dfn>);</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>  <i class="doc">/// Calculate Double Clenshaw-Curtis integration weights, for interval [a,b]</i></td></tr>
+<tr><th id="130">130</th><td>  <em>static</em> <a class="typedef" href="Basis.h.html#gtsam::Weights" title='gtsam::Weights' data-type='Eigen::Matrix&lt;double, 1, -1&gt;' data-ref="gtsam::Weights">Weights</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev224DoubleIntegrationWeightsEmdd" title='gtsam::Chebyshev2::DoubleIntegrationWeights' data-ref="_ZN5gtsam10Chebyshev224DoubleIntegrationWeightsEmdd" id="_ZN5gtsam10Chebyshev224DoubleIntegrationWeightsEmdd">DoubleIntegrationWeights</a>(<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col2 decl" id="32N" title='N' data-type='size_t' data-ref="32N">N</dfn>, <em>double</em> <dfn class="local col3 decl" id="33a" title='a' data-type='double' data-ref="33a">a</dfn>, <em>double</em> <dfn class="local col4 decl" id="34b" title='b' data-type='double' data-ref="34b">b</dfn>);</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>  <i class="doc">/// Create matrix of values at Chebyshev points given vector-valued function.</i></td></tr>
+<tr><th id="133">133</th><td>  <em>static</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <a class="decl fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev26vectorESt8functionIFddEEmdd" title='gtsam::Chebyshev2::vector' data-ref="_ZN5gtsam10Chebyshev26vectorESt8functionIFddEEmdd" id="_ZN5gtsam10Chebyshev26vectorESt8functionIFddEEmdd">vector</a>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/std_function.h.html#std::function" title='std::function' data-ref="std::function">function</a>&lt;<em>double</em>(<em>double</em>)&gt; <dfn class="local col5 decl" id="35f" title='f' data-type='std::function&lt;double (double)&gt;' data-ref="35f">f</dfn>,</td></tr>
+<tr><th id="134">134</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col6 decl" id="36N" title='N' data-type='size_t' data-ref="36N">N</dfn>, <em>double</em> <dfn class="local col7 decl" id="37a" title='a' data-type='double' data-ref="37a">a</dfn> = -<var>1</var>, <em>double</em> <dfn class="local col8 decl" id="38b" title='b' data-type='double' data-ref="38b">b</dfn> = <var>1</var>);</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>  <i class="doc">/// Create matrix of values at Chebyshev points given vector-valued function.</i></td></tr>
+<tr><th id="137">137</th><td>  <b>template</b> &lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> M&gt;</td></tr>
+<tr><th id="138">138</th><td>  <em>static</em> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="decl def fn" id="_ZN5gtsam10Chebyshev26matrixESt8functionIFN5Eigen6MatrixIdXT_ELi1EXorLNS2_14StorageOptionsE0EquaaeqT_Li1EneLi1ELi1ELS4_1EquaaeqLi1ELi1EneT_Li1ELS4_0EL3736674" title='gtsam::Chebyshev2::matrix' data-ref="_ZN5gtsam10Chebyshev26matrixESt8functionIFN5Eigen6MatrixIdXT_ELi1EXorLNS2_14StorageOptionsE0EquaaeqT_Li1EneLi1ELi1ELS4_1EquaaeqLi1ELi1EneT_Li1ELS4_0EL3736674">matrix</dfn>(<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/std_function.h.html#std::function" title='std::function' data-ref="std::function">function</a>&lt;<span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="tu ref" href="#M" title='M' data-ref="M">M</a>, <var>1</var>&gt;(<em>double</em>)&gt; <dfn class="local col9 decl" id="39f" title='f' data-type='std::function&lt;Eigen::Matrix&lt;double, M, 1&gt; (double)&gt;' data-ref="39f">f</dfn>,</td></tr>
+<tr><th id="139">139</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col0 decl" id="40N" title='N' data-type='size_t' data-ref="40N">N</dfn>, <em>double</em> <dfn class="local col1 decl" id="41a" title='a' data-type='double' data-ref="41a">a</dfn> = -<var>1</var>, <em>double</em> <dfn class="local col2 decl" id="42b" title='b' data-type='double' data-ref="42b">b</dfn> = <var>1</var>) {</td></tr>
+<tr><th id="140">140</th><td>    <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="local col3 decl" id="43Xmat" title='Xmat' data-type='Matrix' data-ref="43Xmat">Xmat</dfn><a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKTL0__RKTL0_0_" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKTL0__RKTL0_0_">(</a><a class="tu ref" href="#M" title='M' data-use='r' data-ref="M">M</a>, <a class="local col0 ref" href="#40N" title='N' data-ref="40N">N</a>);</td></tr>
+<tr><th id="141">141</th><td>    <em>const</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="local col4 decl" id="44points" title='points' data-type='const Vector' data-ref="44points">points</dfn> = <a class="member fn" href="Chebyshev2.cpp.html#_ZN5gtsam10Chebyshev26PointsEmdd" title='gtsam::Chebyshev2::Points' data-ref="_ZN5gtsam10Chebyshev26PointsEmdd">Points</a>(<a class="local col0 ref" href="#40N" title='N' data-ref="40N">N</a>, <a class="local col1 ref" href="#41a" title='a' data-ref="41a">a</a>, <a class="local col2 ref" href="#42b" title='b' data-ref="42b">b</a>);</td></tr>
+<tr><th id="142">142</th><td>    <b>for</b> (<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col5 decl" id="45j" title='j' data-type='size_t' data-ref="45j">j</dfn> = <var>0</var>; <a class="local col5 ref" href="#45j" title='j' data-ref="45j">j</a> &lt; <a class="local col0 ref" href="#40N" title='N' data-ref="40N">N</a>; <a class="local col5 ref" href="#45j" title='j' data-ref="45j">j</a>++) <a class="local col3 ref" href="#43Xmat" title='Xmat' data-ref="43Xmat">Xmat</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/plugins/BlockMethods.h.html#_ZN5Eigen9DenseBase3colEl" title='Eigen::DenseBase::col' data-ref="_ZN5Eigen9DenseBase3colEl">col</a>(<span class='inlayHint'>i:&nbsp;</span><a class="local col5 ref" href="#45j" title='j' data-ref="45j">j</a>) = <a class="local col9 ref" href="#39f" title='f' data-ref="39f">f</a>(<a class="local col4 ref" href="#44points" title='points' data-ref="44points">points</a><a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/DenseCoeffsBase.h.html#_ZNK5Eigen15DenseCoeffsBaseIT_Li0EEclEl" title='Eigen::DenseCoeffsBase&lt;type-parameter-0-0, 0&gt;::operator()' data-ref="_ZNK5Eigen15DenseCoeffsBaseIT_Li0EEclEl">(<a class="local col5 ref" href="#45j" title='j' data-ref="45j">j</a>)</a>);</td></tr>
+<tr><th id="143">143</th><td>    <b>return</b> <a class="ref fn fake" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1EONS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1EONS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEE"></a><a class="local col3 ref" href="#43Xmat" title='Xmat' data-ref="43Xmat">Xmat</a>;</td></tr>
+<tr><th id="144">144</th><td>  }</td></tr>
+<tr><th id="145">145</th><td>};  <i>// \ Chebyshev2</i></td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="148">148</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='Chebyshev2.cpp.html'>codebrowser/gtsam/basis/Chebyshev2.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

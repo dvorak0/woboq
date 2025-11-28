@@ -1,0 +1,4 @@
+<use f='include/boost/pending/indirect_cmp.hpp' l='41' u='w' c='_ZN5boost12indirect_cmpC1ERKT_RKT0_'/>
+<use f='include/boost/pending/indirect_cmp.hpp' l='48' c='_ZNK5boost12indirect_cmpclERKTL0__RKTL0_0_'/>
+<use f='include/boost/pending/indirect_cmp.hpp' l='49' c='_ZNK5boost12indirect_cmpclERKTL0__RKTL0_0_'/>
+<dec f='include/boost/pending/indirect_cmp.hpp' l='54' type='ReadablePropertyMap'/>

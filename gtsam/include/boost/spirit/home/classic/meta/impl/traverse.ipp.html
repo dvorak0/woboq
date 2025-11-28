@@ -1,0 +1,412 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>traverse.ipp source code [include/boost/spirit/home/classic/meta/impl/traverse.ipp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::spirit::classic::impl::traverse_post_order,boost::spirit::classic::impl::traverse_post_order_return_category,boost::spirit::classic::parser_traversal_action_result,boost::spirit::classic::parser_traversal_binary_result,boost::spirit::classic::parser_traversal_plain_result,boost::spirit::classic::parser_traversal_unary_result,boost::spirit::classic::traverse_post_order_env,boost::spirit::classic::traverse_post_order_return "/>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/spirit/home/classic/meta/impl/traverse.ipp'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>include</a>/<a href='../../../../..'>boost</a>/<a href='../../../..'>spirit</a>/<a href='../../..'>home</a>/<a href='../..'>classic</a>/<a href='..'>meta</a>/<a href='./'>impl</a>/<a href='traverse.ipp.html'>traverse.ipp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*=============================================================================</i></td></tr>
+<tr><th id="2">2</th><td><i>    Copyright (c) 2002-2003 Joel de Guzman</i></td></tr>
+<tr><th id="3">3</th><td><i>    Copyright (c) 2002-2003 Hartmut Kaiser</i></td></tr>
+<tr><th id="4">4</th><td><i>    <a href="http://spirit.sourceforge.net/">http://spirit.sourceforge.net/</a></i></td></tr>
+<tr><th id="5">5</th><td><i></i></td></tr>
+<tr><th id="6">6</th><td><i>    Use, modification and distribution is subject to the Boost Software</i></td></tr>
+<tr><th id="7">7</th><td><i>    License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at</i></td></tr>
+<tr><th id="8">8</th><td><i>    <a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="9">9</th><td><i>=============================================================================*/</i></td></tr>
+<tr><th id="10">10</th><td><u>#<span data-ppcond="10">if</span> !defined(<span class="macro" data-ref="_M/BOOST_SPIRIT_TRAVERSE_IPP">BOOST_SPIRIT_TRAVERSE_IPP</span>)</u></td></tr>
+<tr><th id="11">11</th><td><u>#define <dfn class="macro" id="_M/BOOST_SPIRIT_TRAVERSE_IPP" data-ref="_M/BOOST_SPIRIT_TRAVERSE_IPP">BOOST_SPIRIT_TRAVERSE_IPP</dfn></u></td></tr>
+<tr><th id="12">12</th><td></td></tr>
+<tr><th id="13">13</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="../fundamental.hpp.html">&lt;boost/spirit/home/classic/meta/fundamental.hpp&gt;</a></u></td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="17">17</th><td><b>namespace</b> <span class="namespace">boost</span> { <b>namespace</b> <span class="namespace">spirit</span> {</td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><a class="macro" href="../../namespace.hpp.html#29" title="namespace classic {" data-ref="_M/BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN">BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN</a></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="22">22</th><td><b>namespace</b> <span class="namespace">impl</span></td></tr>
+<tr><th id="23">23</th><td>{</td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td>    <b>template</b> &lt;<b>typename</b> CategoryT&gt;</td></tr>
+<tr><th id="26">26</th><td>    <b>struct</b> <dfn class="type" id="boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</dfn>;</td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td>}   <i>// namespace impl</i></td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="31">31</th><td><i>//</i></td></tr>
+<tr><th id="32">32</th><td><i>//  Environment class for post_order_traversal</i></td></tr>
+<tr><th id="33">33</th><td><i>//</i></td></tr>
+<tr><th id="34">34</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><b>template</b> &lt;<em>int</em> Level, <em>int</em> Node, <em>int</em> Index, <em>int</em> LastLeft&gt;</td></tr>
+<tr><th id="37">37</th><td><b>struct</b> <dfn class="type def" id="boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</dfn> {</td></tr>
+<tr><th id="38">38</th><td></td></tr>
+<tr><th id="39">39</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int level = Level" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::spirit::classic::traverse_post_order_env::level" title='boost::spirit::classic::traverse_post_order_env::level' data-ref="boost::spirit::classic::traverse_post_order_env::level">level</dfn> = <a class="tu ref" href="#boost::spirit::classic::traverse_post_order_env::Level" title='boost::spirit::classic::traverse_post_order_env::Level' data-ref="boost::spirit::classic::traverse_post_order_env::Level">Level</a>);</td></tr>
+<tr><th id="40">40</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int node = Node" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::spirit::classic::traverse_post_order_env::node" title='boost::spirit::classic::traverse_post_order_env::node' data-ref="boost::spirit::classic::traverse_post_order_env::node">node</dfn> = <a class="tu ref" href="#boost::spirit::classic::traverse_post_order_env::Node" title='boost::spirit::classic::traverse_post_order_env::Node' data-ref="boost::spirit::classic::traverse_post_order_env::Node">Node</a>);</td></tr>
+<tr><th id="41">41</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int index = Index" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::spirit::classic::traverse_post_order_env::index" title='boost::spirit::classic::traverse_post_order_env::index' data-ref="boost::spirit::classic::traverse_post_order_env::index">index</dfn> = <a class="tu ref" href="#boost::spirit::classic::traverse_post_order_env::Index" title='boost::spirit::classic::traverse_post_order_env::Index' data-ref="boost::spirit::classic::traverse_post_order_env::Index">Index</a>);</td></tr>
+<tr><th id="42">42</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int lastleft = LastLeft" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::spirit::classic::traverse_post_order_env::lastleft" title='boost::spirit::classic::traverse_post_order_env::lastleft' data-ref="boost::spirit::classic::traverse_post_order_env::lastleft">lastleft</dfn> = <a class="tu ref" href="#boost::spirit::classic::traverse_post_order_env::LastLeft" title='boost::spirit::classic::traverse_post_order_env::LastLeft' data-ref="boost::spirit::classic::traverse_post_order_env::LastLeft">LastLeft</a>);</td></tr>
+<tr><th id="43">43</th><td>};</td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="46">46</th><td><i>//</i></td></tr>
+<tr><th id="47">47</th><td><i>//  traverse_post_order_return template</i></td></tr>
+<tr><th id="48">48</th><td><i>//</i></td></tr>
+<tr><th id="49">49</th><td><i>//      This template is a helper for dispatching the calculation of a parser</i></td></tr>
+<tr><th id="50">50</th><td><i>//      type result for a traversal level to the corresponding parser_category</i></td></tr>
+<tr><th id="51">51</th><td><i>//      based specialization.</i></td></tr>
+<tr><th id="52">52</th><td><i>//</i></td></tr>
+<tr><th id="53">53</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td><b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="56">56</th><td><b>struct</b> <dfn class="type def" id="boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</dfn> {</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>    <b>typedef</b> <b>typename</b> ParserT::parser_category_t <dfn class="typedef" id="boost::spirit::classic::traverse_post_order_return::parser_category_t" title='boost::spirit::classic::traverse_post_order_return::parser_category_t' data-type='typename ParserT::parser_category_t' data-ref="boost::spirit::classic::traverse_post_order_return::parser_category_t">parser_category_t</dfn>;</td></tr>
+<tr><th id="59">59</th><td>    <b>typedef</b> <b>typename</b> <span class="namespace">impl::</span><a class="type" href="#boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</a>&lt;<a class="typedef" href="#boost::spirit::classic::traverse_post_order_return::parser_category_t" title='boost::spirit::classic::traverse_post_order_return::parser_category_t' data-type='typename ParserT::parser_category_t' data-ref="boost::spirit::classic::traverse_post_order_return::parser_category_t">parser_category_t</a>&gt;</td></tr>
+<tr><th id="60">60</th><td>        ::<b>template</b> result&lt;MetaT, ParserT, EnvT&gt;::type <dfn class="typedef" id="boost::spirit::classic::traverse_post_order_return::type" title='boost::spirit::classic::traverse_post_order_return::type' data-type='typename impl::traverse_post_order_return_category&lt;parser_category_t&gt;::template result&lt;MetaT, ParserT, EnvT&gt;::type' data-ref="boost::spirit::classic::traverse_post_order_return::type">type</dfn>;</td></tr>
+<tr><th id="61">61</th><td>};</td></tr>
+<tr><th id="62">62</th><td></td></tr>
+<tr><th id="63">63</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="64">64</th><td><i>//</i></td></tr>
+<tr><th id="65">65</th><td><i>//  parser_traversal_..._result templates</i></td></tr>
+<tr><th id="66">66</th><td><i>//</i></td></tr>
+<tr><th id="67">67</th><td><i>//      These are metafunctions, which calculate the resulting parser type</i></td></tr>
+<tr><th id="68">68</th><td><i>//      for all subparsers and feed these types to the user supplied</i></td></tr>
+<tr><th id="69">69</th><td><i>//      metafunctions to get back the resulting parser type of this traversal</i></td></tr>
+<tr><th id="70">70</th><td><i>//      level.</i></td></tr>
+<tr><th id="71">71</th><td><i>//</i></td></tr>
+<tr><th id="72">72</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td><b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="75">75</th><td><b>struct</b> <dfn class="type def" id="boost::spirit::classic::parser_traversal_plain_result" title='boost::spirit::classic::parser_traversal_plain_result' data-ref="boost::spirit::classic::parser_traversal_plain_result">parser_traversal_plain_result</dfn> {</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>    <b>typedef</b> <b>typename</b> MetaT::<b>template</b> plain_result&lt;ParserT, EnvT&gt;::type <dfn class="typedef" id="boost::spirit::classic::parser_traversal_plain_result::type" title='boost::spirit::classic::parser_traversal_plain_result::type' data-type='typename MetaT::template plain_result&lt;ParserT, EnvT&gt;::type' data-ref="boost::spirit::classic::parser_traversal_plain_result::type">type</dfn>;</td></tr>
+<tr><th id="78">78</th><td>};</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="81">81</th><td><b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> UnaryT, <b>typename</b> SubjectT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="82">82</th><td><b>struct</b> <dfn class="type def" id="boost::spirit::classic::parser_traversal_unary_result" title='boost::spirit::classic::parser_traversal_unary_result' data-ref="boost::spirit::classic::parser_traversal_unary_result">parser_traversal_unary_result</dfn> {</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td>    <b>typedef</b> <b>typename</b> MetaT</td></tr>
+<tr><th id="85">85</th><td>        ::<b>template</b> unary_result&lt;UnaryT, SubjectT, EnvT&gt;::type <dfn class="typedef" id="boost::spirit::classic::parser_traversal_unary_result::type" title='boost::spirit::classic::parser_traversal_unary_result::type' data-type='typename MetaT::template unary_result&lt;UnaryT, SubjectT, EnvT&gt;::type' data-ref="boost::spirit::classic::parser_traversal_unary_result::type">type</dfn>;</td></tr>
+<tr><th id="86">86</th><td>};</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="89">89</th><td><b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ActionT, <b>typename</b> SubjectT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="90">90</th><td><b>struct</b> <dfn class="type def" id="boost::spirit::classic::parser_traversal_action_result" title='boost::spirit::classic::parser_traversal_action_result' data-ref="boost::spirit::classic::parser_traversal_action_result">parser_traversal_action_result</dfn> {</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <b>typedef</b> <b>typename</b> MetaT</td></tr>
+<tr><th id="93">93</th><td>        ::<b>template</b> action_result&lt;ActionT, SubjectT, EnvT&gt;::type <dfn class="typedef" id="boost::spirit::classic::parser_traversal_action_result::type" title='boost::spirit::classic::parser_traversal_action_result::type' data-type='typename MetaT::template action_result&lt;ActionT, SubjectT, EnvT&gt;::type' data-ref="boost::spirit::classic::parser_traversal_action_result::type">type</dfn>;</td></tr>
+<tr><th id="94">94</th><td>};</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="97">97</th><td><b>template</b> &lt;</td></tr>
+<tr><th id="98">98</th><td>    <b>typename</b> MetaT, <b>typename</b> BinaryT, <b>typename</b> LeftT,</td></tr>
+<tr><th id="99">99</th><td>    <b>typename</b> RightT, <b>typename</b> EnvT</td></tr>
+<tr><th id="100">100</th><td>&gt;</td></tr>
+<tr><th id="101">101</th><td><b>struct</b> <dfn class="type def" id="boost::spirit::classic::parser_traversal_binary_result" title='boost::spirit::classic::parser_traversal_binary_result' data-ref="boost::spirit::classic::parser_traversal_binary_result">parser_traversal_binary_result</dfn> {</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int thisnum = (node_count&lt;BinaryT&gt;::value + EnvT::lastleft-1)" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>,</td></tr>
+<tr><th id="104">104</th><td>        <dfn class="decl" id="boost::spirit::classic::parser_traversal_binary_result::thisnum" title='boost::spirit::classic::parser_traversal_binary_result::thisnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::thisnum">thisnum</dfn> = (<a class="type" href="../fundamental.hpp.html#boost::spirit::classic::node_count" title='boost::spirit::classic::node_count' data-ref="boost::spirit::classic::node_count">node_count</a>&lt;BinaryT&gt;::value + EnvT::lastleft-<var>1</var>));</td></tr>
+<tr><th id="105">105</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int leftnum = (node_count&lt;LeftT&gt;::value + EnvT::lastleft-1)" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>,</td></tr>
+<tr><th id="106">106</th><td>        <dfn class="decl" id="boost::spirit::classic::parser_traversal_binary_result::leftnum" title='boost::spirit::classic::parser_traversal_binary_result::leftnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::leftnum">leftnum</dfn> = (<a class="type" href="../fundamental.hpp.html#boost::spirit::classic::node_count" title='boost::spirit::classic::node_count' data-ref="boost::spirit::classic::node_count">node_count</a>&lt;LeftT&gt;::value + EnvT::lastleft-<var>1</var>));</td></tr>
+<tr><th id="107">107</th><td>    <a class="macro" href="../../../../../config/detail/suffix.hpp.html#410" title="static const int leafnum = (leaf_count&lt;LeftT&gt;::value + EnvT::index)" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>,</td></tr>
+<tr><th id="108">108</th><td>        <dfn class="decl" id="boost::spirit::classic::parser_traversal_binary_result::leafnum" title='boost::spirit::classic::parser_traversal_binary_result::leafnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::leafnum">leafnum</dfn> = (<a class="type" href="../fundamental.hpp.html#boost::spirit::classic::leaf_count" title='boost::spirit::classic::leaf_count' data-ref="boost::spirit::classic::leaf_count">leaf_count</a>&lt;LeftT&gt;::value + EnvT::index));</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>    <b>typedef</b> parser_traversal_binary_result <dfn class="typedef" id="boost::spirit::classic::parser_traversal_binary_result::self_t" title='boost::spirit::classic::parser_traversal_binary_result::self_t' data-type='parser_traversal_binary_result&lt;MetaT, BinaryT, LeftT, RightT, EnvT&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::self_t">self_t</dfn>;</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>    <i>// left traversal environment and resulting parser type</i></td></tr>
+<tr><th id="113">113</th><td>    <b>typedef</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="114">114</th><td>                (EnvT::level+<var>1</var>), (<a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::self_t" title='boost::spirit::classic::parser_traversal_binary_result::self_t' data-type='parser_traversal_binary_result&lt;MetaT, BinaryT, LeftT, RightT, EnvT&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::self_t">self_t</a>::<a class="ref" href="#105" title='boost::spirit::classic::parser_traversal_binary_result::leftnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::leftnum">leftnum</a>), (EnvT::index), (EnvT::lastleft)</td></tr>
+<tr><th id="115">115</th><td>            &gt; <dfn class="typedef" id="boost::spirit::classic::parser_traversal_binary_result::left_sub_env_t" title='boost::spirit::classic::parser_traversal_binary_result::left_sub_env_t' data-type='traverse_post_order_env&lt;(EnvT::level + 1), (self_t::leftnum), (EnvT::index), (EnvT::lastleft)&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::left_sub_env_t">left_sub_env_t</dfn>;</td></tr>
+<tr><th id="116">116</th><td>    <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</a>&lt;</td></tr>
+<tr><th id="117">117</th><td>                MetaT, LeftT, <a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::left_sub_env_t" title='boost::spirit::classic::parser_traversal_binary_result::left_sub_env_t' data-type='traverse_post_order_env&lt;(EnvT::level + 1), (self_t::leftnum), (EnvT::index), (EnvT::lastleft)&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::left_sub_env_t">left_sub_env_t</a></td></tr>
+<tr><th id="118">118</th><td>            &gt;::type</td></tr>
+<tr><th id="119">119</th><td>        <dfn class="typedef" id="boost::spirit::classic::parser_traversal_binary_result::left_t" title='boost::spirit::classic::parser_traversal_binary_result::left_t' data-type='typename traverse_post_order_return&lt;MetaT, LeftT, left_sub_env_t&gt;::type' data-ref="boost::spirit::classic::parser_traversal_binary_result::left_t">left_t</dfn>;</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td>    <i>// right traversal environment and resulting parser type</i></td></tr>
+<tr><th id="122">122</th><td>    <b>typedef</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="123">123</th><td>                (EnvT::level+<var>1</var>), (<a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::self_t" title='boost::spirit::classic::parser_traversal_binary_result::self_t' data-type='parser_traversal_binary_result&lt;MetaT, BinaryT, LeftT, RightT, EnvT&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::self_t">self_t</a>::<a class="ref" href="#103" title='boost::spirit::classic::parser_traversal_binary_result::thisnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::thisnum">thisnum</a>-<var>1</var>), (<a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::self_t" title='boost::spirit::classic::parser_traversal_binary_result::self_t' data-type='parser_traversal_binary_result&lt;MetaT, BinaryT, LeftT, RightT, EnvT&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::self_t">self_t</a>::<a class="ref" href="#107" title='boost::spirit::classic::parser_traversal_binary_result::leafnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::leafnum">leafnum</a>), (<a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::self_t" title='boost::spirit::classic::parser_traversal_binary_result::self_t' data-type='parser_traversal_binary_result&lt;MetaT, BinaryT, LeftT, RightT, EnvT&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::self_t">self_t</a>::<a class="ref" href="#105" title='boost::spirit::classic::parser_traversal_binary_result::leftnum' data-ref="boost::spirit::classic::parser_traversal_binary_result::leftnum">leftnum</a>+<var>1</var>)</td></tr>
+<tr><th id="124">124</th><td>            &gt; <dfn class="typedef" id="boost::spirit::classic::parser_traversal_binary_result::right_sub_env_t" title='boost::spirit::classic::parser_traversal_binary_result::right_sub_env_t' data-type='traverse_post_order_env&lt;(EnvT::level + 1), (self_t::thisnum - 1), (self_t::leafnum), (self_t::leftnum + 1)&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::right_sub_env_t">right_sub_env_t</dfn>;</td></tr>
+<tr><th id="125">125</th><td>    <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</a>&lt;</td></tr>
+<tr><th id="126">126</th><td>                MetaT, RightT, <a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::right_sub_env_t" title='boost::spirit::classic::parser_traversal_binary_result::right_sub_env_t' data-type='traverse_post_order_env&lt;(EnvT::level + 1), (self_t::thisnum - 1), (self_t::leafnum), (self_t::leftnum + 1)&gt;' data-ref="boost::spirit::classic::parser_traversal_binary_result::right_sub_env_t">right_sub_env_t</a></td></tr>
+<tr><th id="127">127</th><td>            &gt;::type</td></tr>
+<tr><th id="128">128</th><td>        <dfn class="typedef" id="boost::spirit::classic::parser_traversal_binary_result::right_t" title='boost::spirit::classic::parser_traversal_binary_result::right_t' data-type='typename traverse_post_order_return&lt;MetaT, RightT, right_sub_env_t&gt;::type' data-ref="boost::spirit::classic::parser_traversal_binary_result::right_t">right_t</dfn>;</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>    <b>typedef</b> <b>typename</b> MetaT::<b>template</b> binary_result&lt;</td></tr>
+<tr><th id="131">131</th><td>                BinaryT, <a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::left_t" title='boost::spirit::classic::parser_traversal_binary_result::left_t' data-type='typename traverse_post_order_return&lt;MetaT, LeftT, left_sub_env_t&gt;::type' data-ref="boost::spirit::classic::parser_traversal_binary_result::left_t">left_t</a>, <a class="typedef" href="#boost::spirit::classic::parser_traversal_binary_result::right_t" title='boost::spirit::classic::parser_traversal_binary_result::right_t' data-type='typename traverse_post_order_return&lt;MetaT, RightT, right_sub_env_t&gt;::type' data-ref="boost::spirit::classic::parser_traversal_binary_result::right_t">right_t</a>, EnvT</td></tr>
+<tr><th id="132">132</th><td>            &gt;::type</td></tr>
+<tr><th id="133">133</th><td>        <dfn class="typedef" id="boost::spirit::classic::parser_traversal_binary_result::type" title='boost::spirit::classic::parser_traversal_binary_result::type' data-type='typename MetaT::template binary_result&lt;BinaryT, left_t, right_t, EnvT&gt;::type' data-ref="boost::spirit::classic::parser_traversal_binary_result::type">type</dfn>;</td></tr>
+<tr><th id="134">134</th><td>};</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="137">137</th><td><b>namespace</b> <span class="namespace">impl</span></td></tr>
+<tr><th id="138">138</th><td>{</td></tr>
+<tr><th id="139">139</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="140">140</th><td><i>    //</i></td></tr>
+<tr><th id="141">141</th><td><i>    //  Meta functions, which dispatch the calculation of the return type of</i></td></tr>
+<tr><th id="142">142</th><td><i>    //  of the post_order traverse function to the result template of the</i></td></tr>
+<tr><th id="143">143</th><td><i>    //  corresponding parser_category based metafunction template.</i></td></tr>
+<tr><th id="144">144</th><td><i>    //</i></td></tr>
+<tr><th id="145">145</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>    <b>template</b> &lt;<b>typename</b> CategoryT&gt;</td></tr>
+<tr><th id="148">148</th><td>    <b>struct</b> <a class="type" href="#boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</a>;</td></tr>
+<tr><th id="149">149</th><td></td></tr>
+<tr><th id="150">150</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="151">151</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::plain_parser_category" title='boost::spirit::classic::plain_parser_category' data-ref="boost::spirit::classic::plain_parser_category">plain_parser_category</a>&gt; {</td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="154">154</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::plain_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::plain_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::plain_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_plain_result" title='boost::spirit::classic::parser_traversal_plain_result' data-ref="boost::spirit::classic::parser_traversal_plain_result">parser_traversal_plain_result</a>&lt;</td></tr>
+<tr><th id="157">157</th><td>                        MetaT, ParserT, EnvT</td></tr>
+<tr><th id="158">158</th><td>                    &gt;::type</td></tr>
+<tr><th id="159">159</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::plain_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::plain_parser_category&gt;::result::type' data-type='typename parser_traversal_plain_result&lt;MetaT, ParserT, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::plain_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="160">160</th><td>        };</td></tr>
+<tr><th id="161">161</th><td>    };</td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="164">164</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::unary_parser_category" title='boost::spirit::classic::unary_parser_category' data-ref="boost::spirit::classic::unary_parser_category">unary_parser_category</a>&gt; {</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="167">167</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::unary_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::unary_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::unary_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_unary_result" title='boost::spirit::classic::parser_traversal_unary_result' data-ref="boost::spirit::classic::parser_traversal_unary_result">parser_traversal_unary_result</a>&lt;</td></tr>
+<tr><th id="170">170</th><td>                        MetaT, ParserT, <b>typename</b> ParserT::subject_t, EnvT</td></tr>
+<tr><th id="171">171</th><td>                    &gt;::type</td></tr>
+<tr><th id="172">172</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::unary_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::unary_parser_category&gt;::result::type' data-type='typename parser_traversal_unary_result&lt;MetaT, ParserT, typename ParserT::subject_t, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::unary_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="173">173</th><td>        };</td></tr>
+<tr><th id="174">174</th><td>    };</td></tr>
+<tr><th id="175">175</th><td></td></tr>
+<tr><th id="176">176</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="177">177</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::action_parser_category" title='boost::spirit::classic::action_parser_category' data-ref="boost::spirit::classic::action_parser_category">action_parser_category</a>&gt; {</td></tr>
+<tr><th id="178">178</th><td></td></tr>
+<tr><th id="179">179</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="180">180</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::action_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::action_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::action_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_action_result" title='boost::spirit::classic::parser_traversal_action_result' data-ref="boost::spirit::classic::parser_traversal_action_result">parser_traversal_action_result</a>&lt;</td></tr>
+<tr><th id="183">183</th><td>                        MetaT, ParserT, <b>typename</b> ParserT::subject_t, EnvT</td></tr>
+<tr><th id="184">184</th><td>                    &gt;::type</td></tr>
+<tr><th id="185">185</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::action_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::action_parser_category&gt;::result::type' data-type='typename parser_traversal_action_result&lt;MetaT, ParserT, typename ParserT::subject_t, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::action_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="186">186</th><td>        };</td></tr>
+<tr><th id="187">187</th><td>    };</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="190">190</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order_return_category" title='boost::spirit::classic::impl::traverse_post_order_return_category' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category">traverse_post_order_return_category</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::binary_parser_category" title='boost::spirit::classic::binary_parser_category' data-ref="boost::spirit::classic::binary_parser_category">binary_parser_category</a>&gt; {</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="193">193</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::binary_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::binary_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::binary_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="194">194</th><td></td></tr>
+<tr><th id="195">195</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_binary_result" title='boost::spirit::classic::parser_traversal_binary_result' data-ref="boost::spirit::classic::parser_traversal_binary_result">parser_traversal_binary_result</a>&lt;</td></tr>
+<tr><th id="196">196</th><td>                        MetaT, ParserT, <b>typename</b> ParserT::left_t,</td></tr>
+<tr><th id="197">197</th><td>                        <b>typename</b> ParserT::right_t, EnvT</td></tr>
+<tr><th id="198">198</th><td>                    &gt;::type</td></tr>
+<tr><th id="199">199</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::binary_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order_return_category&lt;boost::spirit::classic::binary_parser_category&gt;::result::type' data-type='typename parser_traversal_binary_result&lt;MetaT, ParserT, typename ParserT::left_t, typename ParserT::right_t, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order_return_category{boost::spirit::classic::binary_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="200">200</th><td>        };</td></tr>
+<tr><th id="201">201</th><td>    };</td></tr>
+<tr><th id="202">202</th><td></td></tr>
+<tr><th id="203">203</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="204">204</th><td><i>    //</i></td></tr>
+<tr><th id="205">205</th><td><i>    //  Post-order parser traversal</i></td></tr>
+<tr><th id="206">206</th><td><i>    //</i></td></tr>
+<tr><th id="207">207</th><td><i>    //      The following templates contain the parser_category based code for</i></td></tr>
+<tr><th id="208">208</th><td><i>    //</i></td></tr>
+<tr><th id="209">209</th><td><i>    //        - calculating the type of the resulting parser, which is to be</i></td></tr>
+<tr><th id="210">210</th><td><i>    //          returned from a level of traversal</i></td></tr>
+<tr><th id="211">211</th><td><i>    //        - traversing down the composite parser structure, this traversal</i></td></tr>
+<tr><th id="212">212</th><td><i>    //          returnes a new parser object</i></td></tr>
+<tr><th id="213">213</th><td><i>    //</i></td></tr>
+<tr><th id="214">214</th><td><i>    //      Both tasks are delegated to the MetaT metafunction supplied by the</i></td></tr>
+<tr><th id="215">215</th><td><i>    //      user.</i></td></tr>
+<tr><th id="216">216</th><td><i>    //</i></td></tr>
+<tr><th id="217">217</th><td><i>    ///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="218">218</th><td></td></tr>
+<tr><th id="219">219</th><td>    <b>template</b> &lt;<b>typename</b> CategoryT&gt;</td></tr>
+<tr><th id="220">220</th><td>    <b>struct</b> <dfn class="type" id="boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</dfn>;</td></tr>
+<tr><th id="221">221</th><td></td></tr>
+<tr><th id="222">222</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="223">223</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::plain_parser_category" title='boost::spirit::classic::plain_parser_category' data-ref="boost::spirit::classic::plain_parser_category">plain_parser_category</a>&gt; {</td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="226">226</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::plain_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::plain_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::plain_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="227">227</th><td></td></tr>
+<tr><th id="228">228</th><td>            <b>typedef</b></td></tr>
+<tr><th id="229">229</th><td>                <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_plain_result" title='boost::spirit::classic::parser_traversal_plain_result' data-ref="boost::spirit::classic::parser_traversal_plain_result">parser_traversal_plain_result</a>&lt;MetaT, ParserT, EnvT&gt;::type</td></tr>
+<tr><th id="230">230</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::plain_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::plain_parser_category&gt;::result::type' data-type='typename parser_traversal_plain_result&lt;MetaT, ParserT, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::plain_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="231">231</th><td>        };</td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="234">234</th><td>        <em>static</em></td></tr>
+<tr><th id="235">235</th><td>        <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_plain_result" title='boost::spirit::classic::parser_traversal_plain_result' data-ref="boost::spirit::classic::parser_traversal_plain_result">parser_traversal_plain_result</a>&lt;MetaT, ParserT, EnvT&gt;::type</td></tr>
+<tr><th id="236">236</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_21plain_parser_categoryEE8generateERKT_RKT0_RKT1_" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::plain_parser_category&gt;::generate' data-ref="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_21plain_parser_categoryEE8generateERKT_RKT0_RKT1_">generate</dfn>(MetaT <em>const</em> &amp;<dfn class="local col0 decl" id="5250meta_" title='meta_' data-type='const MetaT &amp;' data-ref="5250meta_">meta_</dfn>, ParserT <em>const</em> &amp;<dfn class="local col1 decl" id="5251parser_" title='parser_' data-type='const ParserT &amp;' data-ref="5251parser_">parser_</dfn>, EnvT <em>const</em> &amp;<dfn class="local col2 decl" id="5252env" title='env' data-type='const EnvT &amp;' data-ref="5252env">env</dfn>)</td></tr>
+<tr><th id="237">237</th><td>        {</td></tr>
+<tr><th id="238">238</th><td>            <b>return</b> <a class="local col0 ref" href="#5250meta_" title='meta_' data-ref="5250meta_">meta_</a>.generate_plain(<a class="local col1 ref" href="#5251parser_" title='parser_' data-ref="5251parser_">parser_</a>, <a class="local col2 ref" href="#5252env" title='env' data-ref="5252env">env</a>);</td></tr>
+<tr><th id="239">239</th><td>        }</td></tr>
+<tr><th id="240">240</th><td>    };</td></tr>
+<tr><th id="241">241</th><td></td></tr>
+<tr><th id="242">242</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="243">243</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::unary_parser_category" title='boost::spirit::classic::unary_parser_category' data-ref="boost::spirit::classic::unary_parser_category">unary_parser_category</a>&gt; {</td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td>        <b>template</b> &lt;</td></tr>
+<tr><th id="246">246</th><td>            <b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> SubjectT, <b>typename</b> EnvT</td></tr>
+<tr><th id="247">247</th><td>        &gt;</td></tr>
+<tr><th id="248">248</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::unary_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::unary_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::unary_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_unary_result" title='boost::spirit::classic::parser_traversal_unary_result' data-ref="boost::spirit::classic::parser_traversal_unary_result">parser_traversal_unary_result</a>&lt;</td></tr>
+<tr><th id="251">251</th><td>                        MetaT, ParserT, SubjectT, EnvT</td></tr>
+<tr><th id="252">252</th><td>                    &gt;::type</td></tr>
+<tr><th id="253">253</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::unary_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::unary_parser_category&gt;::result::type' data-type='typename parser_traversal_unary_result&lt;MetaT, ParserT, SubjectT, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::unary_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="254">254</th><td>        };</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="257">257</th><td>        <em>static</em></td></tr>
+<tr><th id="258">258</th><td>        <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_unary_result" title='boost::spirit::classic::parser_traversal_unary_result' data-ref="boost::spirit::classic::parser_traversal_unary_result">parser_traversal_unary_result</a>&lt;</td></tr>
+<tr><th id="259">259</th><td>            MetaT, ParserT, </td></tr>
+<tr><th id="260">260</th><td>            <b>typename</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</a>&lt;</td></tr>
+<tr><th id="261">261</th><td>                MetaT, <b>typename</b> ParserT::subject_t, EnvT</td></tr>
+<tr><th id="262">262</th><td>            &gt;::type,</td></tr>
+<tr><th id="263">263</th><td>            EnvT</td></tr>
+<tr><th id="264">264</th><td>        &gt;::type</td></tr>
+<tr><th id="265">265</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_21unary_parser_categoryEE8generateERKT_RKT0_RKT1_" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::unary_parser_category&gt;::generate' data-ref="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_21unary_parser_categoryEE8generateERKT_RKT0_RKT1_">generate</dfn>(MetaT <em>const</em> &amp;<dfn class="local col3 decl" id="5253meta_" title='meta_' data-type='const MetaT &amp;' data-ref="5253meta_">meta_</dfn>, ParserT <em>const</em> &amp;<dfn class="local col4 decl" id="5254unary_" title='unary_' data-type='const ParserT &amp;' data-ref="5254unary_">unary_</dfn>, EnvT <em>const</em> &amp;<dfn class="local col5 decl" id="5255env" title='env' data-type='const EnvT &amp;' data-ref="5255env">env</dfn>)</td></tr>
+<tr><th id="266">266</th><td>        {</td></tr>
+<tr><th id="267">267</th><td>            <b>typedef</b> <b>typename</b> ParserT::subject_t             <dfn class="local col6 typedef" id="5256subject_t" title='subject_t' data-type='typename ParserT::subject_t' data-ref="5256subject_t">subject_t</dfn>;</td></tr>
+<tr><th id="268">268</th><td>            <b>typedef</b> <b>typename</b> <a class="local col6 typedef" href="#5256subject_t" title='subject_t' data-type='typename ParserT::subject_t' data-ref="5256subject_t">subject_t</a>::parser_category_t   <dfn class="local col7 typedef" id="5257subject_category_t" title='subject_category_t' data-type='typename subject_t::parser_category_t' data-ref="5257subject_category_t">subject_category_t</dfn>;</td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td>            <b>return</b> <a class="local col3 ref" href="#5253meta_" title='meta_' data-ref="5253meta_">meta_</a>.generate_unary(</td></tr>
+<tr><th id="271">271</th><td>                <a class="local col4 ref" href="#5254unary_" title='unary_' data-ref="5254unary_">unary_</a>,</td></tr>
+<tr><th id="272">272</th><td>                <a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a>&lt;<a class="local col7 typedef" href="#5257subject_category_t" title='subject_category_t' data-type='typename subject_t::parser_category_t' data-ref="5257subject_category_t">subject_category_t</a>&gt;::generate(<a class="local col3 ref" href="#5253meta_" title='meta_' data-ref="5253meta_">meta_</a>,</td></tr>
+<tr><th id="273">273</th><td>                    <a class="local col4 ref" href="#5254unary_" title='unary_' data-ref="5254unary_">unary_</a>.subject(),</td></tr>
+<tr><th id="274">274</th><td>                    <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="275">275</th><td>                        EnvT::level+<var>1</var>, EnvT::node-<var>1</var>, EnvT::index, EnvT::lastleft</td></tr>
+<tr><th id="276">276</th><td>                    &gt;()</td></tr>
+<tr><th id="277">277</th><td>                ),</td></tr>
+<tr><th id="278">278</th><td>                <a class="local col5 ref" href="#5255env" title='env' data-ref="5255env">env</a></td></tr>
+<tr><th id="279">279</th><td>            );</td></tr>
+<tr><th id="280">280</th><td>        }</td></tr>
+<tr><th id="281">281</th><td>    };</td></tr>
+<tr><th id="282">282</th><td></td></tr>
+<tr><th id="283">283</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="284">284</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::action_parser_category" title='boost::spirit::classic::action_parser_category' data-ref="boost::spirit::classic::action_parser_category">action_parser_category</a>&gt; {</td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td>        <b>template</b> &lt;</td></tr>
+<tr><th id="287">287</th><td>            <b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> SubjectT, <b>typename</b> EnvT</td></tr>
+<tr><th id="288">288</th><td>        &gt;</td></tr>
+<tr><th id="289">289</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::action_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::action_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::action_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_action_result" title='boost::spirit::classic::parser_traversal_action_result' data-ref="boost::spirit::classic::parser_traversal_action_result">parser_traversal_action_result</a>&lt;</td></tr>
+<tr><th id="292">292</th><td>                        MetaT, ParserT, SubjectT, EnvT</td></tr>
+<tr><th id="293">293</th><td>                    &gt;::type</td></tr>
+<tr><th id="294">294</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::action_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::action_parser_category&gt;::result::type' data-type='typename parser_traversal_action_result&lt;MetaT, ParserT, SubjectT, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::action_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="295">295</th><td>        };</td></tr>
+<tr><th id="296">296</th><td></td></tr>
+<tr><th id="297">297</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="298">298</th><td>        <em>static</em></td></tr>
+<tr><th id="299">299</th><td>        <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_action_result" title='boost::spirit::classic::parser_traversal_action_result' data-ref="boost::spirit::classic::parser_traversal_action_result">parser_traversal_action_result</a>&lt;</td></tr>
+<tr><th id="300">300</th><td>            MetaT, ParserT, </td></tr>
+<tr><th id="301">301</th><td>            <b>typename</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</a>&lt;</td></tr>
+<tr><th id="302">302</th><td>                MetaT, <b>typename</b> ParserT::subject_t, EnvT</td></tr>
+<tr><th id="303">303</th><td>            &gt;::type,</td></tr>
+<tr><th id="304">304</th><td>            EnvT</td></tr>
+<tr><th id="305">305</th><td>        &gt;::type</td></tr>
+<tr><th id="306">306</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_22action_parser_categoryEE8generateERKT_RKT0_RKT1_" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::action_parser_category&gt;::generate' data-ref="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_22action_parser_categoryEE8generateERKT_RKT0_RKT1_">generate</dfn>(MetaT <em>const</em> &amp;<dfn class="local col8 decl" id="5258meta_" title='meta_' data-type='const MetaT &amp;' data-ref="5258meta_">meta_</dfn>, ParserT <em>const</em> &amp;<dfn class="local col9 decl" id="5259action_" title='action_' data-type='const ParserT &amp;' data-ref="5259action_">action_</dfn>, EnvT <em>const</em> &amp;<dfn class="local col0 decl" id="5260env" title='env' data-type='const EnvT &amp;' data-ref="5260env">env</dfn>)</td></tr>
+<tr><th id="307">307</th><td>        {</td></tr>
+<tr><th id="308">308</th><td>            <b>typedef</b> <b>typename</b> ParserT::subject_t             <dfn class="local col1 typedef" id="5261subject_t" title='subject_t' data-type='typename ParserT::subject_t' data-ref="5261subject_t">subject_t</dfn>;</td></tr>
+<tr><th id="309">309</th><td>            <b>typedef</b> <b>typename</b> <a class="local col1 typedef" href="#5261subject_t" title='subject_t' data-type='typename ParserT::subject_t' data-ref="5261subject_t">subject_t</a>::parser_category_t   <dfn class="local col2 typedef" id="5262subject_category_t" title='subject_category_t' data-type='typename subject_t::parser_category_t' data-ref="5262subject_category_t">subject_category_t</dfn>;</td></tr>
+<tr><th id="310">310</th><td></td></tr>
+<tr><th id="311">311</th><td>            <b>return</b> <a class="local col8 ref" href="#5258meta_" title='meta_' data-ref="5258meta_">meta_</a>.generate_action(</td></tr>
+<tr><th id="312">312</th><td>                <a class="local col9 ref" href="#5259action_" title='action_' data-ref="5259action_">action_</a>,</td></tr>
+<tr><th id="313">313</th><td>                <a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a>&lt;<a class="local col2 typedef" href="#5262subject_category_t" title='subject_category_t' data-type='typename subject_t::parser_category_t' data-ref="5262subject_category_t">subject_category_t</a>&gt;::generate(<a class="local col8 ref" href="#5258meta_" title='meta_' data-ref="5258meta_">meta_</a>,</td></tr>
+<tr><th id="314">314</th><td>                    <a class="local col9 ref" href="#5259action_" title='action_' data-ref="5259action_">action_</a>.subject(),</td></tr>
+<tr><th id="315">315</th><td>                    <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="316">316</th><td>                        EnvT::level+<var>1</var>, EnvT::node-<var>1</var>, EnvT::index, EnvT::lastleft</td></tr>
+<tr><th id="317">317</th><td>                    &gt;()</td></tr>
+<tr><th id="318">318</th><td>                ),</td></tr>
+<tr><th id="319">319</th><td>                <a class="local col0 ref" href="#5260env" title='env' data-ref="5260env">env</a></td></tr>
+<tr><th id="320">320</th><td>            );</td></tr>
+<tr><th id="321">321</th><td>        }</td></tr>
+<tr><th id="322">322</th><td>    };</td></tr>
+<tr><th id="323">323</th><td></td></tr>
+<tr><th id="324">324</th><td>    <b>template</b> &lt;&gt;</td></tr>
+<tr><th id="325">325</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order"><a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a></dfn>&lt;<a class="type" href="../../core/parser.hpp.html#boost::spirit::classic::binary_parser_category" title='boost::spirit::classic::binary_parser_category' data-ref="boost::spirit::classic::binary_parser_category">binary_parser_category</a>&gt; {</td></tr>
+<tr><th id="326">326</th><td></td></tr>
+<tr><th id="327">327</th><td>        <b>template</b> &lt;</td></tr>
+<tr><th id="328">328</th><td>            <b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> LeftT,</td></tr>
+<tr><th id="329">329</th><td>            <b>typename</b> RightT, <b>typename</b> EnvT</td></tr>
+<tr><th id="330">330</th><td>        &gt;</td></tr>
+<tr><th id="331">331</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::binary_parser_category}::result" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::binary_parser_category&gt;::result' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::binary_parser_category}::result">result</dfn> {</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td>            <b>typedef</b> <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_binary_result" title='boost::spirit::classic::parser_traversal_binary_result' data-ref="boost::spirit::classic::parser_traversal_binary_result">parser_traversal_binary_result</a>&lt;</td></tr>
+<tr><th id="334">334</th><td>                        MetaT, ParserT, LeftT, RightT, EnvT</td></tr>
+<tr><th id="335">335</th><td>                    &gt;::type</td></tr>
+<tr><th id="336">336</th><td>                <dfn class="typedef" id="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::binary_parser_category}::result::type" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::binary_parser_category&gt;::result::type' data-type='typename parser_traversal_binary_result&lt;MetaT, ParserT, LeftT, RightT, EnvT&gt;::type' data-ref="boost::spirit::classic::impl::traverse_post_order{boost::spirit::classic::binary_parser_category}::result::type">type</dfn>;</td></tr>
+<tr><th id="337">337</th><td>        };</td></tr>
+<tr><th id="338">338</th><td></td></tr>
+<tr><th id="339">339</th><td>        <b>template</b> &lt;<b>typename</b> MetaT, <b>typename</b> ParserT, <b>typename</b> EnvT&gt;</td></tr>
+<tr><th id="340">340</th><td>        <em>static</em></td></tr>
+<tr><th id="341">341</th><td>        <b>typename</b> <a class="type" href="#boost::spirit::classic::parser_traversal_binary_result" title='boost::spirit::classic::parser_traversal_binary_result' data-ref="boost::spirit::classic::parser_traversal_binary_result">parser_traversal_binary_result</a>&lt;</td></tr>
+<tr><th id="342">342</th><td>            MetaT, ParserT, </td></tr>
+<tr><th id="343">343</th><td>            <b>typename</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</a>&lt;</td></tr>
+<tr><th id="344">344</th><td>                MetaT, <b>typename</b> ParserT::left_t, EnvT</td></tr>
+<tr><th id="345">345</th><td>            &gt;::type,</td></tr>
+<tr><th id="346">346</th><td>            <b>typename</b> <a class="type" href="#boost::spirit::classic::traverse_post_order_return" title='boost::spirit::classic::traverse_post_order_return' data-ref="boost::spirit::classic::traverse_post_order_return">traverse_post_order_return</a>&lt;</td></tr>
+<tr><th id="347">347</th><td>                MetaT, <b>typename</b> ParserT::right_t, EnvT</td></tr>
+<tr><th id="348">348</th><td>            &gt;::type,</td></tr>
+<tr><th id="349">349</th><td>            EnvT</td></tr>
+<tr><th id="350">350</th><td>        &gt;::type</td></tr>
+<tr><th id="351">351</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_22binary_parser_categoryEE8generateERKT_RKT0_RKT1_" title='boost::spirit::classic::impl::traverse_post_order&lt;boost::spirit::classic::binary_parser_category&gt;::generate' data-ref="_ZN5boost6spirit7classic4impl19traverse_post_orderINS1_22binary_parser_categoryEE8generateERKT_RKT0_RKT1_">generate</dfn>(MetaT <em>const</em> &amp;<dfn class="local col3 decl" id="5263meta_" title='meta_' data-type='const MetaT &amp;' data-ref="5263meta_">meta_</dfn>, ParserT <em>const</em> &amp;<dfn class="local col4 decl" id="5264binary_" title='binary_' data-type='const ParserT &amp;' data-ref="5264binary_">binary_</dfn>, EnvT <em>const</em>&amp; <i>/*env*/</i>)</td></tr>
+<tr><th id="352">352</th><td>        {</td></tr>
+<tr><th id="353">353</th><td>            <b>typedef</b> <b>typename</b> ParserT::left_t                <dfn class="local col5 typedef" id="5265left_t" title='left_t' data-type='typename ParserT::left_t' data-ref="5265left_t">left_t</dfn>;</td></tr>
+<tr><th id="354">354</th><td>            <b>typedef</b> <b>typename</b> ParserT::right_t               <dfn class="local col6 typedef" id="5266right_t" title='right_t' data-type='typename ParserT::right_t' data-ref="5266right_t">right_t</dfn>;</td></tr>
+<tr><th id="355">355</th><td>            <b>typedef</b> <b>typename</b> <a class="local col5 typedef" href="#5265left_t" title='left_t' data-type='typename ParserT::left_t' data-ref="5265left_t">left_t</a>::parser_category_t      <dfn class="local col7 typedef" id="5267left_category_t" title='left_category_t' data-type='typename left_t::parser_category_t' data-ref="5267left_category_t">left_category_t</dfn>;</td></tr>
+<tr><th id="356">356</th><td>            <b>typedef</b> <b>typename</b> <a class="local col6 typedef" href="#5266right_t" title='right_t' data-type='typename ParserT::right_t' data-ref="5266right_t">right_t</a>::parser_category_t     <dfn class="local col8 typedef" id="5268right_category_t" title='right_category_t' data-type='typename right_t::parser_category_t' data-ref="5268right_category_t">right_category_t</dfn>;</td></tr>
+<tr><th id="357">357</th><td></td></tr>
+<tr><th id="358">358</th><td>            <b>enum</b> {</td></tr>
+<tr><th id="359">359</th><td>                <dfn class="local col9 enum" id="5269leftnum" title='leftnum' data-type='0' data-ref="5269leftnum">leftnum</dfn> = (<a class="type" href="../fundamental.hpp.html#boost::spirit::classic::node_count" title='boost::spirit::classic::node_count' data-ref="boost::spirit::classic::node_count">node_count</a>&lt;<a class="local col5 typedef" href="#5265left_t" title='left_t' data-type='typename ParserT::left_t' data-ref="5265left_t">left_t</a>&gt;::value + EnvT::lastleft-<var>1</var>),</td></tr>
+<tr><th id="360">360</th><td>                <dfn class="local col0 enum" id="5270thisnum" title='thisnum' data-type='0' data-ref="5270thisnum">thisnum</dfn> = (<a class="type" href="../fundamental.hpp.html#boost::spirit::classic::node_count" title='boost::spirit::classic::node_count' data-ref="boost::spirit::classic::node_count">node_count</a>&lt;ParserT&gt;::value + EnvT::lastleft-<var>1</var>),</td></tr>
+<tr><th id="361">361</th><td>                <dfn class="local col1 enum" id="5271rightnum" title='rightnum' data-type='0' data-ref="5271rightnum">rightnum</dfn> = (<a class="local col0 enum" href="#5270thisnum" title='thisnum' data-ref="5270thisnum">thisnum</a>-<var>1</var>),</td></tr>
+<tr><th id="362">362</th><td>                <dfn class="local col2 enum" id="5272leafnum" title='leafnum' data-type='0' data-ref="5272leafnum">leafnum</dfn> = (<a class="type" href="../fundamental.hpp.html#boost::spirit::classic::leaf_count" title='boost::spirit::classic::leaf_count' data-ref="boost::spirit::classic::leaf_count">leaf_count</a>&lt;<a class="local col5 typedef" href="#5265left_t" title='left_t' data-type='typename ParserT::left_t' data-ref="5265left_t">left_t</a>&gt;::value + EnvT::index)</td></tr>
+<tr><th id="363">363</th><td>            };</td></tr>
+<tr><th id="364">364</th><td></td></tr>
+<tr><th id="365">365</th><td>            <b>return</b> <a class="local col3 ref" href="#5263meta_" title='meta_' data-ref="5263meta_">meta_</a>.generate_binary(</td></tr>
+<tr><th id="366">366</th><td>                <a class="local col4 ref" href="#5264binary_" title='binary_' data-ref="5264binary_">binary_</a>,</td></tr>
+<tr><th id="367">367</th><td>                <a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a>&lt;<a class="local col7 typedef" href="#5267left_category_t" title='left_category_t' data-type='typename left_t::parser_category_t' data-ref="5267left_category_t">left_category_t</a>&gt;::generate(</td></tr>
+<tr><th id="368">368</th><td>                    <a class="local col3 ref" href="#5263meta_" title='meta_' data-ref="5263meta_">meta_</a>, <a class="local col4 ref" href="#5264binary_" title='binary_' data-ref="5264binary_">binary_</a>.left(),</td></tr>
+<tr><th id="369">369</th><td>                    <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="370">370</th><td>                        EnvT::level+<var>1</var>, <a class="local col9 enum" href="#5269leftnum" title='leftnum' data-ref="5269leftnum">leftnum</a>, EnvT::index, EnvT::lastleft</td></tr>
+<tr><th id="371">371</th><td>                    &gt;()</td></tr>
+<tr><th id="372">372</th><td>                ),</td></tr>
+<tr><th id="373">373</th><td>                <a class="type" href="#boost::spirit::classic::impl::traverse_post_order" title='boost::spirit::classic::impl::traverse_post_order' data-ref="boost::spirit::classic::impl::traverse_post_order">traverse_post_order</a>&lt;<a class="local col8 typedef" href="#5268right_category_t" title='right_category_t' data-type='typename right_t::parser_category_t' data-ref="5268right_category_t">right_category_t</a>&gt;::generate(</td></tr>
+<tr><th id="374">374</th><td>                    <a class="local col3 ref" href="#5263meta_" title='meta_' data-ref="5263meta_">meta_</a>, <a class="local col4 ref" href="#5264binary_" title='binary_' data-ref="5264binary_">binary_</a>.right(),</td></tr>
+<tr><th id="375">375</th><td>                    <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="376">376</th><td>                        EnvT::level+<var>1</var>, <a class="local col1 enum" href="#5271rightnum" title='rightnum' data-ref="5271rightnum">rightnum</a>, <a class="local col2 enum" href="#5272leafnum" title='leafnum' data-ref="5272leafnum">leafnum</a>, <a class="local col9 enum" href="#5269leftnum" title='leftnum' data-ref="5269leftnum">leftnum</a>+<var>1</var></td></tr>
+<tr><th id="377">377</th><td>                    &gt;()</td></tr>
+<tr><th id="378">378</th><td>                ),</td></tr>
+<tr><th id="379">379</th><td>                <a class="type" href="#boost::spirit::classic::traverse_post_order_env" title='boost::spirit::classic::traverse_post_order_env' data-ref="boost::spirit::classic::traverse_post_order_env">traverse_post_order_env</a>&lt;</td></tr>
+<tr><th id="380">380</th><td>                    EnvT::level, <a class="local col0 enum" href="#5270thisnum" title='thisnum' data-ref="5270thisnum">thisnum</a>, EnvT::index, EnvT::lastleft</td></tr>
+<tr><th id="381">381</th><td>                &gt;()</td></tr>
+<tr><th id="382">382</th><td>            );</td></tr>
+<tr><th id="383">383</th><td>        }</td></tr>
+<tr><th id="384">384</th><td>    };</td></tr>
+<tr><th id="385">385</th><td></td></tr>
+<tr><th id="386">386</th><td>}   <i>//  namespace impl</i></td></tr>
+<tr><th id="387">387</th><td></td></tr>
+<tr><th id="388">388</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="389">389</th><td><a class="macro" href="../../namespace.hpp.html#31" title="}" data-ref="_M/BOOST_SPIRIT_CLASSIC_NAMESPACE_END">BOOST_SPIRIT_CLASSIC_NAMESPACE_END</a></td></tr>
+<tr><th id="390">390</th><td></td></tr>
+<tr><th id="391">391</th><td>}} <i>// namespace boost::spirit</i></td></tr>
+<tr><th id="392">392</th><td></td></tr>
+<tr><th id="393">393</th><td><u>#<span data-ppcond="10">endif</span> // !defined(BOOST_SPIRIT_TRAVERSE_IPP)</u></td></tr>
+<tr><th id="394">394</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../../codebrowser/gtsam_unstable/linear/QPSParser.cpp.html'>codebrowser/gtsam_unstable/linear/QPSParser.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

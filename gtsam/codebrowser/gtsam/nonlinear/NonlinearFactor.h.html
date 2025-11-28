@@ -1,0 +1,793 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>NonlinearFactor.h source code [codebrowser/gtsam/nonlinear/NonlinearFactor.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::NoiseModelFactor,gtsam::NoiseModelFactorN,gtsam::NonlinearFactor,gtsam::detail::NoiseModelFactorAliases,gtsam::traits "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/nonlinear/NonlinearFactor.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>nonlinear</a>/<a href='NonlinearFactor.h.html'>NonlinearFactor.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   NonlinearFactor.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Non-linear factor base classes</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span>  Richard Roberts</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span>  Gerry Chen</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"></i></td></tr>
+<tr><th id="20">20</th><td><i class="doc">//<span class="command"> \callgraph</span></i></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#pragma once</u></td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="Values.h.html">&lt;gtsam/nonlinear/Values.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../hybrid/HybridValues.h.html">&lt;gtsam/hybrid/HybridValues.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../linear/NoiseModel.h.html">&lt;gtsam/linear/NoiseModel.h&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../linear/JacobianFactor.h.html">&lt;gtsam/linear/JacobianFactor.h&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../inference/Factor.h.html">&lt;gtsam/inference/Factor.h&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../base/OptionalJacobian.h.html">&lt;gtsam/base/OptionalJacobian.h&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../base/utilities.h.html">&lt;gtsam/base/utilities.h&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="32">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../../../include/boost/serialization/base_object.hpp.html">&lt;boost/serialization/base_object.hpp&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#<span data-ppcond="32">endif</span></u></td></tr>
+<tr><th id="35">35</th><td><u>#include <a href="../../../include/c++/13/cstddef.html">&lt;cstddef&gt;</a></u></td></tr>
+<tr><th id="36">36</th><td><u>#include <a href="../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><i>/* ************************************************************************* */</i></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><i class="doc">/** These typedefs and aliases will help with making the evaluateError interface</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * independent of boost</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> * TODO(kartikarcot): Change this to OptionalMatrixNone</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> * This typedef is used to indicate that the Jacobian is not required</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * and the default value used for optional matrix pointer arguments in evaluateError.</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * Had to use the static_cast of a nullptr, because the compiler is not able to</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * deduce the type of the nullptr when expanding the evaluateError templates.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="50">50</th><td><u>#define <dfn class="macro" id="_M/OptionalNone" data-ref="_M/OptionalNone">OptionalNone</dfn> static_cast&lt;gtsam::<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>*&gt;(nullptr)</u></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><i class="doc">/** This typedef will be used everywhere boost::optional&lt;Matrix&amp;&gt; reference was used</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc"> * previously. This is used to indicate that the Jacobian is optional. In the future</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc"> * we will change this to OptionalJacobian</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="56">56</th><td><b>using</b> <dfn class="typedef" id="gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</dfn> = <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>*;</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><i class="doc">/** The OptionalMatrixVecType is a pointer to a vector of matrices. It will</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> * be used in situations where a vector of matrices is optional, like in </i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"> * unwhitenedError.</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="62">62</th><td><b>using</b> <dfn class="typedef" id="gtsam::OptionalMatrixVecType" title='gtsam::OptionalMatrixVecType' data-type='std::vector&lt;Matrix&gt; *' data-ref="gtsam::OptionalMatrixVecType">OptionalMatrixVecType</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;*;</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc"> * Nonlinear factor base class</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="67">67</th><td><i class="doc"> *<span class="command"> \nosubgrouping</span></i></td></tr>
+<tr><th id="68">68</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="69">69</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</dfn>: <b>public</b> <a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a> {</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td><b>protected</b>:</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>  <i>// Some handy typedefs</i></td></tr>
+<tr><th id="74">74</th><td>  <b>typedef</b> <a class="type" href="../inference/Factor.h.html#gtsam::Factor" title='gtsam::Factor' data-ref="gtsam::Factor">Factor</a> <dfn class="typedef" id="gtsam::NonlinearFactor::Base" title='gtsam::NonlinearFactor::Base' data-type='Factor' data-ref="gtsam::NonlinearFactor::Base">Base</dfn>;</td></tr>
+<tr><th id="75">75</th><td>  <b>typedef</b> <a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a> <dfn class="typedef" id="gtsam::NonlinearFactor::This" title='gtsam::NonlinearFactor::This' data-type='NonlinearFactor' data-ref="gtsam::NonlinearFactor::This">This</dfn>;</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><b>public</b>:</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::NonlinearFactor::This" title='gtsam::NonlinearFactor::This' data-type='NonlinearFactor' data-ref="gtsam::NonlinearFactor::This">This</a>&gt; <dfn class="typedef" id="gtsam::NonlinearFactor::shared_ptr" title='gtsam::NonlinearFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NonlinearFactor::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td>  <i class="doc">/** Default constructor for I/O only */</i></td></tr>
+<tr><th id="85">85</th><td>  <dfn class="decl def fn" id="_ZN5gtsam15NonlinearFactorC1Ev" title='gtsam::NonlinearFactor::NonlinearFactor' data-ref="_ZN5gtsam15NonlinearFactorC1Ev">NonlinearFactor</dfn>() {}</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   * Constructor from a collection of the keys involved in this factor</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="90">90</th><td>  <b>template</b>&lt;<b>typename</b> CONTAINER&gt;</td></tr>
+<tr><th id="91">91</th><td>  <dfn class="decl def fn" id="_ZN5gtsam15NonlinearFactorC1ERKT_" title='gtsam::NonlinearFactor::NonlinearFactor' data-ref="_ZN5gtsam15NonlinearFactorC1ERKT_">NonlinearFactor</dfn>(<em>const</em> CONTAINER&amp; <dfn class="local col4 decl" id="26674keys" title='keys' data-type='const CONTAINER &amp;' data-ref="26674keys">keys</dfn>) :</td></tr>
+<tr><th id="92">92</th><td>    <a class="typedef" href="#gtsam::NonlinearFactor::Base" title='gtsam::NonlinearFactor::Base' data-type='Factor' data-ref="gtsam::NonlinearFactor::Base">Base</a>(<a class="local col4 ref" href="#26674keys" title='keys' data-ref="26674keys">keys</a>) {}</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>  <i class="doc">/** print */</i></td></tr>
+<tr><th id="99">99</th><td>  <em>void</em> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::NonlinearFactor::print' data-ref="_ZNK5gtsam15NonlinearFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col5 decl" id="26675s" title='s' data-type='const std::string &amp;' data-ref="26675s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>, <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col6 decl" id="26676keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="26676keyFormatter">keyFormatter</dfn> =</td></tr>
+<tr><th id="100">100</th><td>                                            <a class="ref" href="../inference/Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em> override;</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>  <i class="doc">/** Check if two factors are equal */</i></td></tr>
+<tr><th id="103">103</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor6equalsERKS0_d" title='gtsam::NonlinearFactor::equals' data-ref="_ZNK5gtsam15NonlinearFactor6equalsERKS0_d">equals</dfn>(<em>const</em> <a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>&amp; <dfn class="local col7 decl" id="26677f" title='f' data-type='const NonlinearFactor &amp;' data-ref="26677f">f</dfn>, <em>double</em> <dfn class="local col8 decl" id="26678tol" title='tol' data-type='double' data-ref="26678tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Standard Interface</span></i></td></tr>
+<tr><th id="107">107</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="110">110</th><td><i class="doc">   * In nonlinear factors, the error function returns the negative log-likelihood</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">   * as a non-linear function of the values in a <span class="command">\class</span> <span class="verb">Values object.</span></i></td></tr>
+<tr><th id="112">112</th><td><i class="doc">   * </i></td></tr>
+<tr><th id="113">113</th><td><i class="doc">   * The idea is that Gaussian factors have a quadratic error function that locally </i></td></tr>
+<tr><th id="114">114</th><td><i class="doc">   * approximates the negative log-likelihood, and are obtained by<span class="command"> \b</span> <span class="arg">linearizing</span></i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">   * the nonlinear error function at a given linearization.</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">   * </i></td></tr>
+<tr><th id="117">117</th><td><i class="doc">   * The derived class, <span class="command">\class</span> <span class="verb">NoiseModelFactor, adds a noise model to the factor,</span></i></td></tr>
+<tr><th id="118">118</th><td><i class="doc">   * and calculates the error by asking the user to implement the method</i></td></tr>
+<tr><th id="119">119</th><td><i class="doc">   * <span class="command">\code</span><span class="verb"> double evaluateError(const Values&amp; c) const \</span>endcode.</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="121">121</th><td>  <b>virtual</b> <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor5errorERKNS_6ValuesE" title='gtsam::NonlinearFactor::error' data-ref="_ZNK5gtsam15NonlinearFactor5errorERKNS_6ValuesE">error</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col9 decl" id="26679c" title='c' data-type='const Values &amp;' data-ref="26679c">c</dfn>) <em>const</em>;</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc">   * The Factor::error simply extracts the <span class="command">\class</span> <span class="verb">Values from the</span></i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">   * <span class="command">\class</span> <span class="verb">HybridValues and calculates the error.</span></i></td></tr>
+<tr><th id="126">126</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="127">127</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor5errorERKNS_12HybridValuesE" title='gtsam::NonlinearFactor::error' data-ref="_ZNK5gtsam15NonlinearFactor5errorERKNS_12HybridValuesE">error</dfn>(<em>const</em> <a class="type" href="../hybrid/HybridValues.h.html#gtsam::HybridValues" title='gtsam::HybridValues' data-ref="gtsam::HybridValues">HybridValues</a>&amp; <dfn class="local col0 decl" id="26680c" title='c' data-type='const HybridValues &amp;' data-ref="26680c">c</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>  <i class="doc">/** get the dimension of the factor (number of rows on linearization) */</i></td></tr>
+<tr><th id="130">130</th><td>  <b>virtual</b> <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor3dimEv" title='gtsam::NonlinearFactor::dim' data-ref="_ZNK5gtsam15NonlinearFactor3dimEv">dim</dfn>() <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">   * Checks whether a factor should be used based on a set of values.</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">   * This is primarily used to implement inequality constraints that</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">   * require a variable active set. For all others, the default implementation</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">   * returning true solves this problem.</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">   * In an inequality/bounding constraint, this active() returns true</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">   * when the constraint is *NOT* fulfilled.</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">   * <span class="command">@return</span> true if the constraint is active</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="142">142</th><td>  <b>virtual</b> <em>bool</em> <dfn class="virtual decl def fn" id="_ZNK5gtsam15NonlinearFactor6activeERKNS_6ValuesE" title='gtsam::NonlinearFactor::active' data-ref="_ZNK5gtsam15NonlinearFactor6activeERKNS_6ValuesE">active</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col1 decl" id="26681c" title='c' data-type='const Values &amp;' data-ref="26681c">c</dfn>) <em>const</em> { <b>return</b> <b>true</b>; }</td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>  <i class="doc">/** linearize to a GaussianFactor */</i></td></tr>
+<tr><th id="145">145</th><td>  <b>virtual</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../linear/GaussianFactor.h.html#gtsam::GaussianFactor" title='gtsam::GaussianFactor' data-ref="gtsam::GaussianFactor">GaussianFactor</a>&gt;</td></tr>
+<tr><th id="146">146</th><td>  <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor9linearizeERKNS_6ValuesE" title='gtsam::NonlinearFactor::linearize' data-ref="_ZNK5gtsam15NonlinearFactor9linearizeERKNS_6ValuesE">linearize</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col2 decl" id="26682c" title='c' data-type='const Values &amp;' data-ref="26682c">c</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   * Creates a shared_ptr clone of the factor - needs to be specialized to allow</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">   * for subclasses</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">   * By default, throws exception if subclass does not implement the function.</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="154">154</th><td>  <b>virtual</b> <a class="typedef" href="#gtsam::NonlinearFactor::shared_ptr" title='gtsam::NonlinearFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NonlinearFactor::shared_ptr">shared_ptr</a> <dfn class="virtual decl def fn" id="_ZNK5gtsam15NonlinearFactor5cloneEv" title='gtsam::NonlinearFactor::clone' data-ref="_ZNK5gtsam15NonlinearFactor5cloneEv">clone</dfn>() <em>const</em> {</td></tr>
+<tr><th id="155">155</th><td>    <i>// TODO: choose better exception to throw here</i></td></tr>
+<tr><th id="156">156</th><td>    <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::runtime_error" title='std::runtime_error' data-ref="std::runtime_error">runtime_error</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt13runtime_errorC1EPKc" title='std::runtime_error::runtime_error' data-ref="_ZNSt13runtime_errorC1EPKc">(</a><q>"NonlinearFactor::clone(): Attempting to clone factor with no clone() implemented!"</q>);</td></tr>
+<tr><th id="157">157</th><td>    <b>return</b> <a class="typedef" href="#gtsam::NonlinearFactor::shared_ptr" title='gtsam::NonlinearFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NonlinearFactor::shared_ptr">shared_ptr</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1Ev" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1Ev">(</a>);</td></tr>
+<tr><th id="158">158</th><td>  }</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   * Creates a shared_ptr clone of the</i></td></tr>
+<tr><th id="162">162</th><td><i class="doc">   * factor with different keys using</i></td></tr>
+<tr><th id="163">163</th><td><i class="doc">   * a map from old-&gt;new keys</i></td></tr>
+<tr><th id="164">164</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="165">165</th><td>  <b>virtual</b> <a class="typedef" href="#gtsam::NonlinearFactor::shared_ptr" title='gtsam::NonlinearFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NonlinearFactor::shared_ptr">shared_ptr</a> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor5rekeyERKSt3mapImmSt4lessImESaISt4pairIKmmEEE" title='gtsam::NonlinearFactor::rekey' data-ref="_ZNK5gtsam15NonlinearFactor5rekeyERKSt3mapImmSt4lessImESaISt4pairIKmmEEE">rekey</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>,<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;&amp; <dfn class="local col3 decl" id="26683rekey_mapping" title='rekey_mapping' data-type='const std::map&lt;Key, Key&gt; &amp;' data-ref="26683rekey_mapping">rekey_mapping</dfn>) <em>const</em>;</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="168">168</th><td><i class="doc">   * Clones a factor and fully replaces its keys</i></td></tr>
+<tr><th id="169">169</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">new_keys</span> is the full replacement set of keys</i></td></tr>
+<tr><th id="170">170</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="171">171</th><td>  <b>virtual</b> <a class="typedef" href="#gtsam::NonlinearFactor::shared_ptr" title='gtsam::NonlinearFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NonlinearFactor::shared_ptr">shared_ptr</a> <dfn class="virtual decl fn" id="_ZNK5gtsam15NonlinearFactor5rekeyERKSt6vectorImSaImEE" title='gtsam::NonlinearFactor::rekey' data-ref="_ZNK5gtsam15NonlinearFactor5rekeyERKSt6vectorImSaImEE">rekey</dfn>(<em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a>&amp; <dfn class="local col4 decl" id="26684new_keys" title='new_keys' data-type='const KeyVector &amp;' data-ref="26684new_keys">new_keys</dfn>) <em>const</em>;</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+<tr><th id="173">173</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">   * Should the factor be evaluated in the same thread as the caller</i></td></tr>
+<tr><th id="175">175</th><td><i class="doc">   * This is to enable factors that has shared states (like the Python GIL lock)</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="177">177</th><td>   <b>virtual</b> <em>bool</em> <dfn class="virtual decl def fn" id="_ZNK5gtsam15NonlinearFactor8sendableEv" title='gtsam::NonlinearFactor::sendable' data-ref="_ZNK5gtsam15NonlinearFactor8sendableEv">sendable</dfn>() <em>const</em> {</td></tr>
+<tr><th id="178">178</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="179">179</th><td>  }</td></tr>
+<tr><th id="180">180</th><td></td></tr>
+<tr><th id="181">181</th><td>}; <i>// \class NonlinearFactor</i></td></tr>
+<tr><th id="182">182</th><td></td></tr>
+<tr><th id="183">183</th><td><i class="doc">/// traits</i></td></tr>
+<tr><th id="184">184</th><td><b>template</b>&lt;&gt; <b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits"><a class="type" href="../base/OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a></dfn>&lt;<a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>&gt; : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>&gt; {</td></tr>
+<tr><th id="185">185</th><td>};</td></tr>
+<tr><th id="186">186</th><td></td></tr>
+<tr><th id="187">187</th><td><i>/* ************************************************************************* */</i></td></tr>
+<tr><th id="188">188</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="189">189</th><td><i class="doc"> * A nonlinear sum-of-squares factor with a zero-mean noise model</i></td></tr>
+<tr><th id="190">190</th><td><i class="doc"> * implementing the density <span class="command">\f$</span><span class="verb"> P(z|x) \propto exp -0.5*|z-h(x)|^2_C \</span>f$</i></td></tr>
+<tr><th id="191">191</th><td><i class="doc"> * Templated on the parameter type X and the values structure Values</i></td></tr>
+<tr><th id="192">192</th><td><i class="doc"> * There is no return type specified for h(x). Instead, we require</i></td></tr>
+<tr><th id="193">193</th><td><i class="doc"> * the derived class implements <span class="command">\f$</span><span class="verb"> \mathtt{error\_vector}(x) = h(x)-z \approx A \delta x - b \</span>f$</i></td></tr>
+<tr><th id="194">194</th><td><i class="doc"> * This allows a graph to have factors with measurements of mixed type.</i></td></tr>
+<tr><th id="195">195</th><td><i class="doc"></i></td></tr>
+<tr><th id="196">196</th><td><i class="doc"> * The noise model is typically Gaussian, but robust and constrained error models are also supported.</i></td></tr>
+<tr><th id="197">197</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="198">198</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</dfn>: <b>public</b> <a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a> {</td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td><b>protected</b>:</td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>  <i>// handy typedefs</i></td></tr>
+<tr><th id="203">203</th><td>  <b>typedef</b> <a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a> <dfn class="typedef" id="gtsam::NoiseModelFactor::Base" title='gtsam::NoiseModelFactor::Base' data-type='NonlinearFactor' data-ref="gtsam::NoiseModelFactor::Base">Base</dfn>;</td></tr>
+<tr><th id="204">204</th><td>  <b>typedef</b> <a class="type" href="#gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</a> <dfn class="typedef" id="gtsam::NoiseModelFactor::This" title='gtsam::NoiseModelFactor::This' data-type='NoiseModelFactor' data-ref="gtsam::NoiseModelFactor::This">This</dfn>;</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td>  <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a> <dfn class="decl field" id="gtsam::NoiseModelFactor::noiseModel_" title='gtsam::NoiseModelFactor::noiseModel_' data-ref="gtsam::NoiseModelFactor::noiseModel_">noiseModel_</dfn>; <i class="doc">/** Noise model */</i></td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td><b>public</b>:</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::NoiseModelFactor::This" title='gtsam::NoiseModelFactor::This' data-type='NoiseModelFactor' data-ref="gtsam::NoiseModelFactor::This">This</a>&gt; <dfn class="typedef" id="gtsam::NoiseModelFactor::shared_ptr" title='gtsam::NoiseModelFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NoiseModelFactor::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td>  <i class="doc">/** Default constructor for I/O only */</i></td></tr>
+<tr><th id="213">213</th><td>  <dfn class="decl def fn" id="_ZN5gtsam16NoiseModelFactorC1Ev" title='gtsam::NoiseModelFactor::NoiseModelFactor' data-ref="_ZN5gtsam16NoiseModelFactorC1Ev">NoiseModelFactor</dfn>() {}</td></tr>
+<tr><th id="214">214</th><td></td></tr>
+<tr><th id="215">215</th><td>  <i class="doc">/** Destructor */</i></td></tr>
+<tr><th id="216">216</th><td>  <dfn class="virtual decl def fn" id="_ZN5gtsam16NoiseModelFactorD1Ev" title='gtsam::NoiseModelFactor::~NoiseModelFactor' data-ref="_ZN5gtsam16NoiseModelFactorD1Ev">~NoiseModelFactor</dfn>() override {}</td></tr>
+<tr><th id="217">217</th><td></td></tr>
+<tr><th id="218">218</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="219">219</th><td><i class="doc">   * Constructor</i></td></tr>
+<tr><th id="220">220</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="221">221</th><td>  <b>template</b>&lt;<b>typename</b> CONTAINER&gt;</td></tr>
+<tr><th id="222">222</th><td>  <dfn class="decl def fn" id="_ZN5gtsam16NoiseModelFactorC1ERKSt10shared_ptrINS_10noiseModel4BaseEERKT_" title='gtsam::NoiseModelFactor::NoiseModelFactor' data-ref="_ZN5gtsam16NoiseModelFactorC1ERKSt10shared_ptrINS_10noiseModel4BaseEERKT_">NoiseModelFactor</dfn>(<em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col5 decl" id="26685noiseModel" title='noiseModel' data-type='const SharedNoiseModel &amp;' data-ref="26685noiseModel">noiseModel</dfn>, <em>const</em> CONTAINER&amp; <dfn class="local col6 decl" id="26686keys" title='keys' data-type='const CONTAINER &amp;' data-ref="26686keys">keys</dfn>) :</td></tr>
+<tr><th id="223">223</th><td>    <a class="typedef" href="#gtsam::NoiseModelFactor::Base" title='gtsam::NoiseModelFactor::Base' data-type='NonlinearFactor' data-ref="gtsam::NoiseModelFactor::Base">Base</a>(<a class="local col6 ref" href="#26686keys" title='keys' data-ref="26686keys">keys</a>), <a class="member field" href="#gtsam::NoiseModelFactor::noiseModel_" title='gtsam::NoiseModelFactor::noiseModel_' data-ref="gtsam::NoiseModelFactor::noiseModel_">noiseModel_</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E">(</a><a class="local col5 ref" href="#26685noiseModel" title='noiseModel' data-ref="26685noiseModel">noiseModel</a>) {}</td></tr>
+<tr><th id="224">224</th><td></td></tr>
+<tr><th id="225">225</th><td><b>protected</b>:</td></tr>
+<tr><th id="226">226</th><td></td></tr>
+<tr><th id="227">227</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="228">228</th><td><i class="doc">   * Constructor - only for subclasses, as this does not set keys.</i></td></tr>
+<tr><th id="229">229</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="230">230</th><td>  <dfn class="decl def fn" id="_ZN5gtsam16NoiseModelFactorC1ERKSt10shared_ptrINS_10noiseModel4BaseEE" title='gtsam::NoiseModelFactor::NoiseModelFactor' data-ref="_ZN5gtsam16NoiseModelFactorC1ERKSt10shared_ptrINS_10noiseModel4BaseEE">NoiseModelFactor</dfn>(<em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col7 decl" id="26687noiseModel" title='noiseModel' data-type='const SharedNoiseModel &amp;' data-ref="26687noiseModel">noiseModel</dfn>) : <a class="member field" href="#gtsam::NoiseModelFactor::noiseModel_" title='gtsam::NoiseModelFactor::noiseModel_' data-ref="gtsam::NoiseModelFactor::noiseModel_">noiseModel_</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1ERKSt10shared_ptrIT_E">(</a><a class="local col7 ref" href="#26687noiseModel" title='noiseModel' data-ref="26687noiseModel">noiseModel</a>) {}</td></tr>
+<tr><th id="231">231</th><td></td></tr>
+<tr><th id="232">232</th><td><b>public</b>:</td></tr>
+<tr><th id="233">233</th><td>  <i class="doc">/** Print */</i></td></tr>
+<tr><th id="234">234</th><td>  <em>void</em> <dfn class="virtual decl fn" id="_ZNK5gtsam16NoiseModelFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::NoiseModelFactor::print' data-ref="_ZNK5gtsam16NoiseModelFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col8 decl" id="26688s" title='s' data-type='const std::string &amp;' data-ref="26688s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>,</td></tr>
+<tr><th id="235">235</th><td>    <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col9 decl" id="26689keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="26689keyFormatter">keyFormatter</dfn> = <a class="ref" href="../inference/Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em> override;</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+<tr><th id="237">237</th><td>  <i class="doc">/** Check if two factors are equal */</i></td></tr>
+<tr><th id="238">238</th><td>  <em>bool</em> <dfn class="virtual decl fn" id="_ZNK5gtsam16NoiseModelFactor6equalsERKNS_15NonlinearFactorEd" title='gtsam::NoiseModelFactor::equals' data-ref="_ZNK5gtsam16NoiseModelFactor6equalsERKNS_15NonlinearFactorEd">equals</dfn>(<em>const</em> <a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>&amp; <dfn class="local col0 decl" id="26690f" title='f' data-type='const NonlinearFactor &amp;' data-ref="26690f">f</dfn>, <em>double</em> <dfn class="local col1 decl" id="26691tol" title='tol' data-type='double' data-ref="26691tol">tol</dfn> = <var>1e-9</var>) <em>const</em> override;</td></tr>
+<tr><th id="239">239</th><td></td></tr>
+<tr><th id="240">240</th><td>  <i class="doc">/** get the dimension of the factor (number of rows on linearization) */</i></td></tr>
+<tr><th id="241">241</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="virtual decl def fn" id="_ZNK5gtsam16NoiseModelFactor3dimEv" title='gtsam::NoiseModelFactor::dim' data-ref="_ZNK5gtsam16NoiseModelFactor3dimEv">dim</dfn>() <em>const</em> override {</td></tr>
+<tr><th id="242">242</th><td>    <b>return</b> <a class="member field" href="#gtsam::NoiseModelFactor::noiseModel_" title='gtsam::NoiseModelFactor::noiseModel_' data-ref="gtsam::NoiseModelFactor::noiseModel_">noiseModel_</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="../linear/NoiseModel.h.html#_ZNK5gtsam10noiseModel4Base3dimEv" title='gtsam::noiseModel::Base::dim' data-ref="_ZNK5gtsam10noiseModel4Base3dimEv">dim</a>();</td></tr>
+<tr><th id="243">243</th><td>  }</td></tr>
+<tr><th id="244">244</th><td></td></tr>
+<tr><th id="245">245</th><td>  <i class="doc">/// access to the noise model</i></td></tr>
+<tr><th id="246">246</th><td>  <em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam16NoiseModelFactor10noiseModelEv" title='gtsam::NoiseModelFactor::noiseModel' data-ref="_ZNK5gtsam16NoiseModelFactor10noiseModelEv">noiseModel</dfn>() <em>const</em> {</td></tr>
+<tr><th id="247">247</th><td>    <b>return</b> <a class="member field" href="#gtsam::NoiseModelFactor::noiseModel_" title='gtsam::NoiseModelFactor::noiseModel_' data-ref="gtsam::NoiseModelFactor::noiseModel_">noiseModel_</a>;</td></tr>
+<tr><th id="248">248</th><td>  }</td></tr>
+<tr><th id="249">249</th><td></td></tr>
+<tr><th id="250">250</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="251">251</th><td><i class="doc">   * Error function *without* the NoiseModel, <span class="command">\f$</span><span class="verb"> z-h(x) \</span>f$.</i></td></tr>
+<tr><th id="252">252</th><td><i class="doc">   * Override this method to finish implementing an N-way factor.</i></td></tr>
+<tr><th id="253">253</th><td><i class="doc">   * If the optional arguments is specified, it should compute</i></td></tr>
+<tr><th id="254">254</th><td><i class="doc">   * both the function evaluation and its derivative(s) in H.</i></td></tr>
+<tr><th id="255">255</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="256">256</th><td>  <b>virtual</b> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="virtual decl fn" id="_ZNK5gtsam16NoiseModelFactor15unwhitenedErrorERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" title='gtsam::NoiseModelFactor::unwhitenedError' data-ref="_ZNK5gtsam16NoiseModelFactor15unwhitenedErrorERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE">unwhitenedError</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col2 decl" id="26692x" title='x' data-type='const Values &amp;' data-ref="26692x">x</dfn>, <a class="typedef" href="#gtsam::OptionalMatrixVecType" title='gtsam::OptionalMatrixVecType' data-type='std::vector&lt;Matrix&gt; *' data-ref="gtsam::OptionalMatrixVecType">OptionalMatrixVecType</a> <dfn class="local col3 decl" id="26693H" title='H' data-type='OptionalMatrixVecType' data-ref="26693H">H</dfn> = <b>nullptr</b>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="257">257</th><td></td></tr>
+<tr><th id="258">258</th><td>  <i class="doc">/** support taking in the actual vector instead of the pointer as well</i></td></tr>
+<tr><th id="259">259</th><td><i class="doc">   * to get access to this version of the function from derived classes</i></td></tr>
+<tr><th id="260">260</th><td><i class="doc">   * one will need to use the "using" keyword and specify that like this:</i></td></tr>
+<tr><th id="261">261</th><td><i class="doc">   * public:</i></td></tr>
+<tr><th id="262">262</th><td><i class="doc">   *   using NoiseModelFactor::unwhitenedError;</i></td></tr>
+<tr><th id="263">263</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="264">264</th><td>  <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="decl def fn" id="_ZNK5gtsam16NoiseModelFactor15unwhitenedErrorERKNS_6ValuesERSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" title='gtsam::NoiseModelFactor::unwhitenedError' data-ref="_ZNK5gtsam16NoiseModelFactor15unwhitenedErrorERKNS_6ValuesERSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE">unwhitenedError</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col4 decl" id="26694x" title='x' data-type='const Values &amp;' data-ref="26694x">x</dfn>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&gt;&amp; <dfn class="local col5 decl" id="26695H" title='H' data-type='std::vector&lt;Matrix&gt; &amp;' data-ref="26695H">H</dfn>) <em>const</em> {</td></tr>
+<tr><th id="265">265</th><td>    <b>return</b> <a class="virtual member fn" href="#_ZNK5gtsam16NoiseModelFactor15unwhitenedErrorERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" title='gtsam::NoiseModelFactor::unwhitenedError' data-ref="_ZNK5gtsam16NoiseModelFactor15unwhitenedErrorERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE">unwhitenedError</a>(<a class="local col4 ref" href="#26694x" title='x' data-ref="26694x">x</a>, <span class='inlayHint'>H:&nbsp;</span>&amp;<a class="local col5 ref" href="#26695H" title='H' data-ref="26695H">H</a>);</td></tr>
+<tr><th id="266">266</th><td>  }</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="269">269</th><td><i class="doc">   * Vector of errors, whitened</i></td></tr>
+<tr><th id="270">270</th><td><i class="doc">   * This is the raw error, i.e., i.e. <span class="command">\f$</span><span class="verb"> (h(x)-z)/\sigma \</span>f$ in case of a Gaussian</i></td></tr>
+<tr><th id="271">271</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="272">272</th><td>  <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="decl fn" id="_ZNK5gtsam16NoiseModelFactor13whitenedErrorERKNS_6ValuesE" title='gtsam::NoiseModelFactor::whitenedError' data-ref="_ZNK5gtsam16NoiseModelFactor13whitenedErrorERKNS_6ValuesE">whitenedError</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col6 decl" id="26696c" title='c' data-type='const Values &amp;' data-ref="26696c">c</dfn>) <em>const</em>;</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="275">275</th><td><i class="doc">   * Vector of errors, whitened, but unweighted by any loss function</i></td></tr>
+<tr><th id="276">276</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="277">277</th><td>  <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="decl fn" id="_ZNK5gtsam16NoiseModelFactor23unweightedWhitenedErrorERKNS_6ValuesE" title='gtsam::NoiseModelFactor::unweightedWhitenedError' data-ref="_ZNK5gtsam16NoiseModelFactor23unweightedWhitenedErrorERKNS_6ValuesE">unweightedWhitenedError</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col7 decl" id="26697c" title='c' data-type='const Values &amp;' data-ref="26697c">c</dfn>) <em>const</em>;</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="280">280</th><td><i class="doc">   * Compute the effective weight of the factor from the noise model.</i></td></tr>
+<tr><th id="281">281</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="282">282</th><td>  <em>double</em> <dfn class="decl fn" id="_ZNK5gtsam16NoiseModelFactor6weightERKNS_6ValuesE" title='gtsam::NoiseModelFactor::weight' data-ref="_ZNK5gtsam16NoiseModelFactor6weightERKNS_6ValuesE">weight</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col8 decl" id="26698c" title='c' data-type='const Values &amp;' data-ref="26698c">c</dfn>) <em>const</em>;</td></tr>
+<tr><th id="283">283</th><td></td></tr>
+<tr><th id="284">284</th><td>  <b>using</b> <a class="type" href="#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>::error;</td></tr>
+<tr><th id="285">285</th><td></td></tr>
+<tr><th id="286">286</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="287">287</th><td><i class="doc">   * Calculate the error of the factor.</i></td></tr>
+<tr><th id="288">288</th><td><i class="doc">   * This is the log-likelihood, e.g. <span class="command">\f$</span><span class="verb"> 0.5(h(x)-z)^2/\sigma^2 \</span>f$ in case of Gaussian.</i></td></tr>
+<tr><th id="289">289</th><td><i class="doc">   * In this class, we take the raw prediction error <span class="command">\f$</span><span class="verb"> h(x)-z \</span>f$, ask the noise model</i></td></tr>
+<tr><th id="290">290</th><td><i class="doc">   * to transform it to <span class="command">\f$</span><span class="verb"> (h(x)-z)^2/\sigma^2 \</span>f$, and then multiply by 0.5.</i></td></tr>
+<tr><th id="291">291</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="292">292</th><td>  <em>double</em> <dfn class="virtual decl fn" id="_ZNK5gtsam16NoiseModelFactor5errorERKNS_6ValuesE" title='gtsam::NoiseModelFactor::error' data-ref="_ZNK5gtsam16NoiseModelFactor5errorERKNS_6ValuesE">error</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col9 decl" id="26699c" title='c' data-type='const Values &amp;' data-ref="26699c">c</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="293">293</th><td></td></tr>
+<tr><th id="294">294</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="295">295</th><td><i class="doc">   * Linearize a non-linearFactorN to get a GaussianFactor,</i></td></tr>
+<tr><th id="296">296</th><td><i class="doc">   * <span class="command">\f$</span><span class="verb"> Ax-b \approx h(x+\delta x)-z = h(x) + A \delta x - z \</span>f$</i></td></tr>
+<tr><th id="297">297</th><td><i class="doc">   * Hence <span class="command">\f$</span><span class="verb"> b = z - h(x) = - \mathtt{error\_vector}(x) \</span>f$</i></td></tr>
+<tr><th id="298">298</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="299">299</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../linear/GaussianFactor.h.html#gtsam::GaussianFactor" title='gtsam::GaussianFactor' data-ref="gtsam::GaussianFactor">GaussianFactor</a>&gt; <dfn class="virtual decl fn" id="_ZNK5gtsam16NoiseModelFactor9linearizeERKNS_6ValuesE" title='gtsam::NoiseModelFactor::linearize' data-ref="_ZNK5gtsam16NoiseModelFactor9linearizeERKNS_6ValuesE">linearize</dfn>(<em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col0 decl" id="26700x" title='x' data-type='const Values &amp;' data-ref="26700x">x</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="300">300</th><td></td></tr>
+<tr><th id="301">301</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="302">302</th><td><i class="doc">   * Creates a shared_ptr clone of the</i></td></tr>
+<tr><th id="303">303</th><td><i class="doc">   * factor with a new noise model</i></td></tr>
+<tr><th id="304">304</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="305">305</th><td>  <a class="typedef" href="#gtsam::NoiseModelFactor::shared_ptr" title='gtsam::NoiseModelFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NoiseModelFactor::shared_ptr">shared_ptr</a> <dfn class="decl fn" id="_ZNK5gtsam16NoiseModelFactor22cloneWithNewNoiseModelESt10shared_ptrINS_10noiseModel4BaseEE" title='gtsam::NoiseModelFactor::cloneWithNewNoiseModel' data-ref="_ZNK5gtsam16NoiseModelFactor22cloneWithNewNoiseModelESt10shared_ptrINS_10noiseModel4BaseEE">cloneWithNewNoiseModel</dfn>(<em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a> <dfn class="local col1 decl" id="26701newNoise" title='newNoise' data-type='const SharedNoiseModel' data-ref="26701newNoise">newNoise</dfn>) <em>const</em>;</td></tr>
+<tr><th id="306">306</th><td></td></tr>
+<tr><th id="307">307</th><td> <b>private</b>:</td></tr>
+<tr><th id="308">308</th><td><u>#<span data-ppcond="308">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="309">309</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="310">310</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="311">311</th><td>  <b>template</b>&lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="312">312</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam16NoiseModelFactor9serializeERT_j" title='gtsam::NoiseModelFactor::serialize' data-ref="_ZN5gtsam16NoiseModelFactor9serializeERT_j">serialize</dfn>(ARCHIVE &amp; <dfn class="local col2 decl" id="26702ar" title='ar' data-type='ARCHIVE &amp;' data-ref="26702ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="313">313</th><td>    <a class="local col2 ref" href="#26702ar" title='ar' data-ref="26702ar">ar</a> &amp; <span class="namespace">boost::serialization::</span><a class="ref fn" href="../../../include/boost/core/nvp.hpp.html#_ZN5boost13serialization8make_nvpEPKcRT_" title='boost::serialization::make_nvp' data-ref="_ZN5boost13serialization8make_nvpEPKcRT_">make_nvp</a>(<span class='inlayHint'>n:&nbsp;</span><q>"NonlinearFactor"</q>,</td></tr>
+<tr><th id="314">314</th><td>         <span class='inlayHint'>v&amp;:&nbsp;</span><span class='refarg'><span class="namespace">boost::serialization::</span><a class="ref fn" href="../../../include/boost/serialization/base_object.hpp.html#_ZN5boost13serialization11base_objectERT0_" title='boost::serialization::base_object' data-ref="_ZN5boost13serialization11base_objectERT0_">base_object</a>&lt;<a class="typedef" href="#gtsam::NoiseModelFactor::Base" title='gtsam::NoiseModelFactor::Base' data-type='NonlinearFactor' data-ref="gtsam::NoiseModelFactor::Base">Base</a>&gt;(<span class='inlayHint'>d&amp;:&nbsp;</span><span class='refarg'>*<b>this</b></span>)</span>);</td></tr>
+<tr><th id="315">315</th><td>    <a class="local col2 ref" href="#26702ar" title='ar' data-ref="26702ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;noiseModel_&quot;, noiseModel_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::NoiseModelFactor::noiseModel_" title='gtsam::NoiseModelFactor::noiseModel_' data-ref="gtsam::NoiseModelFactor::noiseModel_">noiseModel_</a></span>);</td></tr>
+<tr><th id="316">316</th><td>  }</td></tr>
+<tr><th id="317">317</th><td><u>#<span data-ppcond="308">endif</span></u></td></tr>
+<tr><th id="318">318</th><td></td></tr>
+<tr><th id="319">319</th><td>}; <i>// \class NoiseModelFactor</i></td></tr>
+<tr><th id="320">320</th><td></td></tr>
+<tr><th id="321">321</th><td><i>/* ************************************************************************* */</i></td></tr>
+<tr><th id="322">322</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="323">323</th><td><i class="doc">/** Convenience base class to add aliases `X1`, `X2`, ..., `X6` -&gt; ValueType&lt;N&gt;.</i></td></tr>
+<tr><th id="324">324</th><td><i class="doc"> * Usage example:</i></td></tr>
+<tr><th id="325">325</th><td><i class="doc"> * ```</i></td></tr>
+<tr><th id="326">326</th><td><i class="doc"> * class MyFactor : public NoiseModelFactorN&lt;Pose3, Point3&gt;,</i></td></tr>
+<tr><th id="327">327</th><td><i class="doc"> *                  public NoiseModelFactorAliases&lt;Pose3, Point3&gt; {</i></td></tr>
+<tr><th id="328">328</th><td><i class="doc"> *  // class implementation ...</i></td></tr>
+<tr><th id="329">329</th><td><i class="doc"> * };</i></td></tr>
+<tr><th id="330">330</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="331">331</th><td><i class="doc"> * // MyFactor::X1 == Pose3</i></td></tr>
+<tr><th id="332">332</th><td><i class="doc"> * // MyFactor::X2 == Point3</i></td></tr>
+<tr><th id="333">333</th><td><i class="doc"> * ```</i></td></tr>
+<tr><th id="334">334</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="335">335</th><td><b>template</b> &lt;<b>typename</b>, <b>typename</b>...&gt;</td></tr>
+<tr><th id="336">336</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn> {};</td></tr>
+<tr><th id="337">337</th><td><b>template</b> &lt;<b>typename</b> T1&gt;</td></tr>
+<tr><th id="338">338</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn>&lt;T1&gt; {</td></tr>
+<tr><th id="339">339</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0}::X" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0&gt;::X' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0}::X">X</dfn> = T1;</td></tr>
+<tr><th id="340">340</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0}::X1" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0&gt;::X1' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0}::X1">X1</dfn> = T1;</td></tr>
+<tr><th id="341">341</th><td>};</td></tr>
+<tr><th id="342">342</th><td><b>template</b> &lt;<b>typename</b> T1, <b>typename</b> T2&gt;</td></tr>
+<tr><th id="343">343</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn>&lt;T1, T2&gt; {</td></tr>
+<tr><th id="344">344</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1}::X1" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1&gt;::X1' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1}::X1">X1</dfn> = T1;</td></tr>
+<tr><th id="345">345</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1}::X2" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1&gt;::X2' data-type='T2' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1}::X2">X2</dfn> = T2;</td></tr>
+<tr><th id="346">346</th><td>};</td></tr>
+<tr><th id="347">347</th><td><b>template</b> &lt;<b>typename</b> T1, <b>typename</b> T2, <b>typename</b> T3&gt;</td></tr>
+<tr><th id="348">348</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn>&lt;T1, T2, T3&gt; {</td></tr>
+<tr><th id="349">349</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2}::X1" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2&gt;::X1' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2}::X1">X1</dfn> = T1;</td></tr>
+<tr><th id="350">350</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2}::X2" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2&gt;::X2' data-type='T2' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2}::X2">X2</dfn> = T2;</td></tr>
+<tr><th id="351">351</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2}::X3" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2&gt;::X3' data-type='T3' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2}::X3">X3</dfn> = T3;</td></tr>
+<tr><th id="352">352</th><td>};</td></tr>
+<tr><th id="353">353</th><td><b>template</b> &lt;<b>typename</b> T1, <b>typename</b> T2, <b>typename</b> T3, <b>typename</b> T4&gt;</td></tr>
+<tr><th id="354">354</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn>&lt;T1, T2, T3, T4&gt; {</td></tr>
+<tr><th id="355">355</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X1" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3&gt;::X1' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X1">X1</dfn> = T1;</td></tr>
+<tr><th id="356">356</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X2" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3&gt;::X2' data-type='T2' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X2">X2</dfn> = T2;</td></tr>
+<tr><th id="357">357</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X3" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3&gt;::X3' data-type='T3' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X3">X3</dfn> = T3;</td></tr>
+<tr><th id="358">358</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X4" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3&gt;::X4' data-type='T4' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3}::X4">X4</dfn> = T4;</td></tr>
+<tr><th id="359">359</th><td>};</td></tr>
+<tr><th id="360">360</th><td><b>template</b> &lt;<b>typename</b> T1, <b>typename</b> T2, <b>typename</b> T3, <b>typename</b> T4, <b>typename</b> T5&gt;</td></tr>
+<tr><th id="361">361</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn>&lt;T1, T2, T3, T4, T5&gt; {</td></tr>
+<tr><th id="362">362</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X1" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4&gt;::X1' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X1">X1</dfn> = T1;</td></tr>
+<tr><th id="363">363</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X2" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4&gt;::X2' data-type='T2' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X2">X2</dfn> = T2;</td></tr>
+<tr><th id="364">364</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X3" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4&gt;::X3' data-type='T3' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X3">X3</dfn> = T3;</td></tr>
+<tr><th id="365">365</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X4" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4&gt;::X4' data-type='T4' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X4">X4</dfn> = T4;</td></tr>
+<tr><th id="366">366</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X5" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4&gt;::X5' data-type='T5' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4}::X5">X5</dfn> = T5;</td></tr>
+<tr><th id="367">367</th><td>};</td></tr>
+<tr><th id="368">368</th><td><b>template</b> &lt;<b>typename</b> T1, <b>typename</b> T2, <b>typename</b> T3, <b>typename</b> T4, <b>typename</b> T5,</td></tr>
+<tr><th id="369">369</th><td>          <b>typename</b> T6, <b>typename</b>... TExtra&gt;</td></tr>
+<tr><th id="370">370</th><td><b>struct</b> <dfn class="type def" id="gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</dfn>&lt;T1, T2, T3, T4, T5, T6, TExtra...&gt; {</td></tr>
+<tr><th id="371">371</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-05784723" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6...&gt;::X1' data-type='T1' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-05784723">X1</dfn> = T1;</td></tr>
+<tr><th id="372">372</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-02632780" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6...&gt;::X2' data-type='T2' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-02632780">X2</dfn> = T2;</td></tr>
+<tr><th id="373">373</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-013555643" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6...&gt;::X3' data-type='T3' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-013555643">X3</dfn> = T3;</td></tr>
+<tr><th id="374">374</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-011134031" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6...&gt;::X4' data-type='T4' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-011134031">X4</dfn> = T4;</td></tr>
+<tr><th id="375">375</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-03650009" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6...&gt;::X5' data-type='T5' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-03650009">X5</dfn> = T5;</td></tr>
+<tr><th id="376">376</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0297236" title='gtsam::detail::NoiseModelFactorAliases&lt;type-parameter-0-0, type-parameter-0-1, type-parameter-0-2, type-parameter-0-3, type-parameter-0-4, type-parameter-0-5, type-parameter-0-6...&gt;::X6' data-type='T6' data-ref="gtsam::detail::NoiseModelFactorAliases{type-parameter-0-0,type-parameter-0-1,type-parameter-0-2,type-parameter-0-3,type-parameter-0-4,type-parameter-0297236">X6</dfn> = T6;</td></tr>
+<tr><th id="377">377</th><td>};</td></tr>
+<tr><th id="378">378</th><td>}  <i>// namespace detail</i></td></tr>
+<tr><th id="379">379</th><td></td></tr>
+<tr><th id="380">380</th><td><i>/* ************************************************************************* */</i></td></tr>
+<tr><th id="381">381</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="382">382</th><td><i class="doc"> * A convenient base class for creating your own NoiseModelFactor</i></td></tr>
+<tr><th id="383">383</th><td><i class="doc"> * with n variables.  To derive from this class, implement evaluateError().</i></td></tr>
+<tr><th id="384">384</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="385">385</th><td><i class="doc"> * For example, a 2-way factor that computes the difference in x-translation</i></td></tr>
+<tr><th id="386">386</th><td><i class="doc"> * between a Pose3 and Point3 could be implemented like so:</i></td></tr>
+<tr><th id="387">387</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="388">388</th><td><i class="doc"> * ~~~~~~~~~~~~~~~~~~~~{.cpp}</i></td></tr>
+<tr><th id="389">389</th><td><i class="doc"> * class MyFactor : public NoiseModelFactorN&lt;Pose3, Point3&gt; {</i></td></tr>
+<tr><th id="390">390</th><td><i class="doc"> *  public:</i></td></tr>
+<tr><th id="391">391</th><td><i class="doc"> *   using Base = NoiseModelFactorN&lt;Pose3, Point3&gt;;</i></td></tr>
+<tr><th id="392">392</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="393">393</th><td><i class="doc"> *   MyFactor(Key pose_key, Key point_key, const SharedNoiseModel&amp; noiseModel)</i></td></tr>
+<tr><th id="394">394</th><td><i class="doc"> *       : Base(noiseModel, pose_key, point_key) {}</i></td></tr>
+<tr><th id="395">395</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="396">396</th><td><i class="doc"> *   Vector evaluateError(</i></td></tr>
+<tr><th id="397">397</th><td><i class="doc"> *       const Pose3&amp; T, const Point3&amp; p,</i></td></tr>
+<tr><th id="398">398</th><td><i class="doc"> *       OptionalMatrixType H_T = OptionalNone,</i></td></tr>
+<tr><th id="399">399</th><td><i class="doc"> *       OptionalMatrixType H_p = OptionalNone) const override {</i></td></tr>
+<tr><th id="400">400</th><td><i class="doc"> *     Matrix36 t_H_T;  // partial derivative of translation w.r.t. pose T</i></td></tr>
+<tr><th id="401">401</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="402">402</th><td><i class="doc"> *     // Only compute t_H_T if needed:</i></td></tr>
+<tr><th id="403">403</th><td><i class="doc"> *     Point3 t = T.translation(H_T ? &amp;t_H_T : 0);</i></td></tr>
+<tr><th id="404">404</th><td><i class="doc"> *     double a = t(0); // a_H_t = [1, 0, 0]</i></td></tr>
+<tr><th id="405">405</th><td><i class="doc"> *     double b = p(0); // b_H_p = [1, 0, 0]</i></td></tr>
+<tr><th id="406">406</th><td><i class="doc"> *     double error = a - b; // H_a = 1, H_b = -1</i></td></tr>
+<tr><th id="407">407</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="408">408</th><td><i class="doc"> *     // H_T = H_a * a_H_t * t_H_T = the first row of t_H_T</i></td></tr>
+<tr><th id="409">409</th><td><i class="doc"> *     if (H_T) *H_T = (Matrix(1, 6) &lt;&lt; t_H_T.row(0)).finished();</i></td></tr>
+<tr><th id="410">410</th><td><i class="doc"> *     // H_p = H_b * b_H_p = -1 * [1, 0, 0]</i></td></tr>
+<tr><th id="411">411</th><td><i class="doc"> *     if (H_p) *H_p = (Matrix(1, 3) &lt;&lt; -1., 0., 0.).finished();</i></td></tr>
+<tr><th id="412">412</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="413">413</th><td><i class="doc"> *     return Vector1(error);</i></td></tr>
+<tr><th id="414">414</th><td><i class="doc"> *   }</i></td></tr>
+<tr><th id="415">415</th><td><i class="doc"> * };</i></td></tr>
+<tr><th id="416">416</th><td><i class="doc"> * </i></td></tr>
+<tr><th id="417">417</th><td><i class="doc"> * // Unit Test</i></td></tr>
+<tr><th id="418">418</th><td><i class="doc"> * TEST(NonlinearFactor, MyFactor) {</i></td></tr>
+<tr><th id="419">419</th><td><i class="doc"> *   MyFactor f(X(1), X(2), noiseModel::Unit::Create(1));</i></td></tr>
+<tr><th id="420">420</th><td><i class="doc"> *   EXPECT_DOUBLES_EQUAL(-8., f.evaluateError(Pose3(), Point3(8., 7., 6.))(0),</i></td></tr>
+<tr><th id="421">421</th><td><i class="doc"> *                        1e-9);</i></td></tr>
+<tr><th id="422">422</th><td><i class="doc"> *   Values values;</i></td></tr>
+<tr><th id="423">423</th><td><i class="doc"> *   values.insert(X(1), Pose3(Rot3::RzRyRx(0.1, 0.2, 0.3), Point3(1, 2, 3)));</i></td></tr>
+<tr><th id="424">424</th><td><i class="doc"> *   values.insert(X(2), Point3(1, 2, 3));</i></td></tr>
+<tr><th id="425">425</th><td><i class="doc"> *   EXPECT_CORRECT_FACTOR_JACOBIANS(f, values, 1e-5, 1e-5);</i></td></tr>
+<tr><th id="426">426</th><td><i class="doc"> * }</i></td></tr>
+<tr><th id="427">427</th><td><i class="doc"> * ~~~~~~~~~~~~~~~~~~~~</i></td></tr>
+<tr><th id="428">428</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="429">429</th><td><i class="doc"> * These factors are templated on a values structure type. The values structures</i></td></tr>
+<tr><th id="430">430</th><td><i class="doc"> * are typically more general than just vectors, e.g., Rot3 or Pose3, which are</i></td></tr>
+<tr><th id="431">431</th><td><i class="doc"> * objects in non-linear manifolds (Lie groups).</i></td></tr>
+<tr><th id="432">432</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="433">433</th><td><b>template</b> &lt;<b>class</b>... ValueTypes&gt;</td></tr>
+<tr><th id="434">434</th><td><b>class</b> <dfn class="type def" id="gtsam::NoiseModelFactorN" title='gtsam::NoiseModelFactorN' data-ref="gtsam::NoiseModelFactorN">NoiseModelFactorN</dfn></td></tr>
+<tr><th id="435">435</th><td>    : <b>public</b> <a class="type" href="#gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</a>,</td></tr>
+<tr><th id="436">436</th><td>      <b>public</b> <span class="namespace">detail::</span><a class="type" href="#gtsam::detail::NoiseModelFactorAliases" title='gtsam::detail::NoiseModelFactorAliases' data-ref="gtsam::detail::NoiseModelFactorAliases">NoiseModelFactorAliases</a>&lt;ValueTypes...&gt; {</td></tr>
+<tr><th id="437">437</th><td> <b>public</b>:</td></tr>
+<tr><th id="438">438</th><td>  <i class="doc">/// N is the number of variables (N-way factor)</i></td></tr>
+<tr><th id="439">439</th><td>  <b>inline</b> <b>constexpr</b> <em>static</em> <em>auto</em> <dfn class="decl def" id="gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</dfn> = <b>sizeof</b>...(ValueTypes);</td></tr>
+<tr><th id="440">440</th><td></td></tr>
+<tr><th id="441">441</th><td>  <b>using</b> <a class="type" href="#gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</a>::unwhitenedError;</td></tr>
+<tr><th id="442">442</th><td></td></tr>
+<tr><th id="443">443</th><td><b>protected</b>:</td></tr>
+<tr><th id="444">444</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::Base" title='gtsam::NoiseModelFactorN::Base' data-type='NoiseModelFactor' data-ref="gtsam::NoiseModelFactorN::Base">Base</dfn> = <a class="type" href="#gtsam::NoiseModelFactor" title='gtsam::NoiseModelFactor' data-ref="gtsam::NoiseModelFactor">NoiseModelFactor</a>;</td></tr>
+<tr><th id="445">445</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::This" title='gtsam::NoiseModelFactorN::This' data-type='NoiseModelFactorN&lt;ValueTypes...&gt;' data-ref="gtsam::NoiseModelFactorN::This">This</dfn> = <a class="type" href="#gtsam::NoiseModelFactorN" title='gtsam::NoiseModelFactorN' data-ref="gtsam::NoiseModelFactorN">NoiseModelFactorN</a>&lt;ValueTypes...&gt;;</td></tr>
+<tr><th id="446">446</th><td></td></tr>
+<tr><th id="447">447</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">SFINAE aliases</span></i></td></tr>
+<tr><th id="448">448</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="449">449</th><td></td></tr>
+<tr><th id="450">450</th><td>  <b>template</b> &lt;<b>typename</b> From, <b>typename</b> To&gt;</td></tr>
+<tr><th id="451">451</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::IsConvertible" title='gtsam::NoiseModelFactorN::IsConvertible' data-type='typename std::enable_if&lt;std::is_convertible&lt;From, To&gt;::value, void&gt;::type' data-ref="gtsam::NoiseModelFactorN::IsConvertible">IsConvertible</dfn> =</td></tr>
+<tr><th id="452">452</th><td>      <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_convertible" title='std::is_convertible' data-ref="std::is_convertible">is_convertible</a>&lt;From, To&gt;::value, <em>void</em>&gt;::type;</td></tr>
+<tr><th id="453">453</th><td></td></tr>
+<tr><th id="454">454</th><td>  <b>template</b> &lt;<em>int</em> I&gt;</td></tr>
+<tr><th id="455">455</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::IndexIsValid" title='gtsam::NoiseModelFactorN::IndexIsValid' data-type='typename std::enable_if&lt;(I &gt;= 1) &amp;&amp; (I &lt;= N), void&gt;::type' data-ref="gtsam::NoiseModelFactorN::IndexIsValid">IndexIsValid</dfn> = <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if" title='std::enable_if' data-ref="std::enable_if">enable_if</a>&lt;(<a class="tu member" href="#gtsam::NoiseModelFactorN::I" title='gtsam::NoiseModelFactorN::I' data-use='r' data-ref="gtsam::NoiseModelFactorN::I">I</a> &gt;= <var>1</var>) &amp;&amp; (<a class="tu member" href="#gtsam::NoiseModelFactorN::I" title='gtsam::NoiseModelFactorN::I' data-use='r' data-ref="gtsam::NoiseModelFactorN::I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>),</td></tr>
+<tr><th id="456">456</th><td>                                               <em>void</em>&gt;::type;  <i>// 1-indexed!</i></td></tr>
+<tr><th id="457">457</th><td></td></tr>
+<tr><th id="458">458</th><td>  <b>template</b> &lt;<b>typename</b> Container&gt;</td></tr>
+<tr><th id="459">459</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::ContainerElementType" title='gtsam::NoiseModelFactorN::ContainerElementType' data-type='typename std::decay&lt;decltype(* std::declval&lt;Container&gt;().begin())&gt;::type' data-ref="gtsam::NoiseModelFactorN::ContainerElementType">ContainerElementType</dfn> =</td></tr>
+<tr><th id="460">460</th><td>      <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::decay" title='std::decay' data-ref="std::decay">decay</a>&lt;<b>decltype</b>(*<span class="namespace">std::</span>declval&lt;Container&gt;().begin())&gt;::type;</td></tr>
+<tr><th id="461">461</th><td>  <b>template</b> &lt;<b>typename</b> Container&gt;</td></tr>
+<tr><th id="462">462</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::IsContainerOfKeys" title='gtsam::NoiseModelFactorN::IsContainerOfKeys' data-type='IsConvertible&lt;ContainerElementType&lt;Container&gt;, Key&gt;' data-ref="gtsam::NoiseModelFactorN::IsContainerOfKeys">IsContainerOfKeys</dfn> = <a class="type" href="#gtsam::NoiseModelFactorN::IsConvertible" title='gtsam::NoiseModelFactorN::IsConvertible' data-ref="gtsam::NoiseModelFactorN::IsConvertible">IsConvertible</a>&lt;<a class="type" href="#gtsam::NoiseModelFactorN::ContainerElementType" title='gtsam::NoiseModelFactorN::ContainerElementType' data-ref="gtsam::NoiseModelFactorN::ContainerElementType">ContainerElementType</a>&lt;Container&gt;, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;;</td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td>  <i class="doc">/** A helper alias to check if a list of args</i></td></tr>
+<tr><th id="465">465</th><td><i class="doc">   * are all references to a matrix or not. It will be used</i></td></tr>
+<tr><th id="466">466</th><td><i class="doc">   * to choose the right overload of evaluateError.</i></td></tr>
+<tr><th id="467">467</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="468">468</th><td>  <b>template</b> &lt;<b>typename</b> Ret, <b>typename</b> ...Args&gt;</td></tr>
+<tr><th id="469">469</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::AreAllMatrixRefs" title='gtsam::NoiseModelFactorN::AreAllMatrixRefs' data-type='std::enable_if_t&lt;(... &amp;&amp; std::is_convertible&lt;Args, Matrix &amp;&gt;::value), Ret&gt;' data-ref="gtsam::NoiseModelFactorN::AreAllMatrixRefs">AreAllMatrixRefs</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if_t" title='std::enable_if_t' data-ref="std::enable_if_t">enable_if_t</a>&lt;(... &amp;&amp; </td></tr>
+<tr><th id="470">470</th><td>      <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_convertible" title='std::is_convertible' data-ref="std::is_convertible">is_convertible</a>&lt;Args, <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>&amp;&gt;::value), Ret&gt;;</td></tr>
+<tr><th id="471">471</th><td>  </td></tr>
+<tr><th id="472">472</th><td>  <b>template</b>&lt;<b>typename</b> Arg&gt;</td></tr>
+<tr><th id="473">473</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::IsMatrixPointer" title='gtsam::NoiseModelFactorN::IsMatrixPointer' data-type='std::is_same&lt;typename std::decay_t&lt;Arg&gt;, Matrix *&gt;' data-ref="gtsam::NoiseModelFactorN::IsMatrixPointer">IsMatrixPointer</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_same" title='std::is_same' data-ref="std::is_same">is_same</a>&lt;<b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::decay_t" title='std::decay_t' data-ref="std::decay_t">decay_t</a>&lt;Arg&gt;, <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>*&gt;;</td></tr>
+<tr><th id="474">474</th><td></td></tr>
+<tr><th id="475">475</th><td>  <b>template</b>&lt;<b>typename</b> Arg&gt;</td></tr>
+<tr><th id="476">476</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::IsNullpointer" title='gtsam::NoiseModelFactorN::IsNullpointer' data-type='std::is_same&lt;typename std::decay_t&lt;Arg&gt;, std::nullptr_t&gt;' data-ref="gtsam::NoiseModelFactorN::IsNullpointer">IsNullpointer</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::is_same" title='std::is_same' data-ref="std::is_same">is_same</a>&lt;<b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::decay_t" title='std::decay_t' data-ref="std::decay_t">decay_t</a>&lt;Arg&gt;, <span class="namespace">std::</span><a class="typedef" href="../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::nullptr_t" title='std::nullptr_t' data-type='decltype(nullptr)' data-ref="std::nullptr_t">nullptr_t</a>&gt;;</td></tr>
+<tr><th id="477">477</th><td></td></tr>
+<tr><th id="478">478</th><td>  <i class="doc">/** A helper alias to check if a list of args</i></td></tr>
+<tr><th id="479">479</th><td><i class="doc">   * are all pointers to a matrix or not. It will be used</i></td></tr>
+<tr><th id="480">480</th><td><i class="doc">   * to choose the right overload of evaluateError.</i></td></tr>
+<tr><th id="481">481</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="482">482</th><td>  <b>template</b> &lt;<b>typename</b> Ret, <b>typename</b> ...Args&gt;</td></tr>
+<tr><th id="483">483</th><td>    <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::AreAllMatrixPtrs" title='gtsam::NoiseModelFactorN::AreAllMatrixPtrs' data-type='std::enable_if_t&lt;(... &amp;&amp; (IsMatrixPointer&lt;Args&gt;::value || IsNullpointer&lt;Args&gt;::value)), Ret&gt;' data-ref="gtsam::NoiseModelFactorN::AreAllMatrixPtrs">AreAllMatrixPtrs</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/type_traits.html#std::enable_if_t" title='std::enable_if_t' data-ref="std::enable_if_t">enable_if_t</a>&lt;(... &amp;&amp;</td></tr>
+<tr><th id="484">484</th><td>            (<a class="type" href="#gtsam::NoiseModelFactorN::IsMatrixPointer" title='gtsam::NoiseModelFactorN::IsMatrixPointer' data-ref="gtsam::NoiseModelFactorN::IsMatrixPointer">IsMatrixPointer</a>&lt;Args&gt;::value || <a class="type" href="#gtsam::NoiseModelFactorN::IsNullpointer" title='gtsam::NoiseModelFactorN::IsNullpointer' data-ref="gtsam::NoiseModelFactorN::IsNullpointer">IsNullpointer</a>&lt;Args&gt;::value)), Ret&gt;;</td></tr>
+<tr><th id="485">485</th><td></td></tr>
+<tr><th id="486">486</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="487">487</th><td></td></tr>
+<tr><th id="488">488</th><td>  <i>/* Like std::void_t, except produces `OptionalMatrixType` instead of</i></td></tr>
+<tr><th id="489">489</th><td><i>   * `void`. Used to expand fixed-type parameter-packs with same length as</i></td></tr>
+<tr><th id="490">490</th><td><i>   * ValueTypes. */</i></td></tr>
+<tr><th id="491">491</th><td>  <b>template</b> &lt;<b>typename</b> T = <em>void</em>&gt;</td></tr>
+<tr><th id="492">492</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::OptionalMatrixTypeT" title='gtsam::NoiseModelFactorN::OptionalMatrixTypeT' data-type='Matrix *' data-ref="gtsam::NoiseModelFactorN::OptionalMatrixTypeT">OptionalMatrixTypeT</dfn> = <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>*;</td></tr>
+<tr><th id="493">493</th><td></td></tr>
+<tr><th id="494">494</th><td>  <i>/* Like std::void_t, except produces `Key` instead of `void`. Used to expand</i></td></tr>
+<tr><th id="495">495</th><td><i>   * fixed-type parameter-packs with same length as ValueTypes. */</i></td></tr>
+<tr><th id="496">496</th><td>  <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="497">497</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::KeyType" title='gtsam::NoiseModelFactorN::KeyType' data-type='Key' data-ref="gtsam::NoiseModelFactorN::KeyType">KeyType</dfn> = <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>;</td></tr>
+<tr><th id="498">498</th><td></td></tr>
+<tr><th id="499">499</th><td>  <i>/* Like std::void_t, except produces `Matrix` instead of</i></td></tr>
+<tr><th id="500">500</th><td><i>   * `void`. Used to expand fixed-type parameter-packs with same length as</i></td></tr>
+<tr><th id="501">501</th><td><i>   * ValueTypes. This helps in creating an evaluateError overload that accepts</i></td></tr>
+<tr><th id="502">502</th><td><i>   * Matrices instead of pointers to matrices */</i></td></tr>
+<tr><th id="503">503</th><td>  <b>template</b> &lt;<b>typename</b> T = <em>void</em>&gt;</td></tr>
+<tr><th id="504">504</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::MatrixTypeT" title='gtsam::NoiseModelFactorN::MatrixTypeT' data-type='Matrix' data-ref="gtsam::NoiseModelFactorN::MatrixTypeT">MatrixTypeT</dfn> = <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>;</td></tr>
+<tr><th id="505">505</th><td></td></tr>
+<tr><th id="506">506</th><td>  <b>public</b>:</td></tr>
+<tr><th id="507">507</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="508">508</th><td><i class="doc">   * The type of the I'th template param can be obtained as ValueType&lt;I&gt;.</i></td></tr>
+<tr><th id="509">509</th><td><i class="doc">   * I is 1-indexed for backwards compatibility/consistency!  So for example,</i></td></tr>
+<tr><th id="510">510</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="511">511</th><td><i class="doc">   * using Factor = NoiseModelFactorN&lt;Pose3, Point3&gt;;</i></td></tr>
+<tr><th id="512">512</th><td><i class="doc">   * Factor::ValueType&lt;1&gt;  // Pose3</i></td></tr>
+<tr><th id="513">513</th><td><i class="doc">   * Factor::ValueType&lt;2&gt;  // Point3</i></td></tr>
+<tr><th id="514">514</th><td><i class="doc">   * // Factor::ValueType&lt;0&gt; // ERROR!  Will not compile.</i></td></tr>
+<tr><th id="515">515</th><td><i class="doc">   * // Factor::ValueType&lt;3&gt; // ERROR!  Will not compile.</i></td></tr>
+<tr><th id="516">516</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="517">517</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="518">518</th><td><i class="doc">   * You can also use the shortcuts `X1`, ..., `X6` which are the same as</i></td></tr>
+<tr><th id="519">519</th><td><i class="doc">   * `ValueType&lt;1&gt;`, ..., `ValueType&lt;6&gt;` respectively (see</i></td></tr>
+<tr><th id="520">520</th><td><i class="doc">   * detail::NoiseModelFactorAliases).</i></td></tr>
+<tr><th id="521">521</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="522">522</th><td><i class="doc">   * Note that, if your class is templated AND you want to use `ValueType&lt;1&gt;`</i></td></tr>
+<tr><th id="523">523</th><td><i class="doc">   * inside your class, due to dependent types you need the `template` keyword:</i></td></tr>
+<tr><th id="524">524</th><td><i class="doc">   * `typename MyFactor&lt;T&gt;::template ValueType&lt;1&gt;`.</i></td></tr>
+<tr><th id="525">525</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="526">526</th><td>  <b>template</b> &lt;<em>int</em> I, <b>typename</b> = <a class="type" href="#gtsam::NoiseModelFactorN::IndexIsValid" title='gtsam::NoiseModelFactorN::IndexIsValid' data-ref="gtsam::NoiseModelFactorN::IndexIsValid">IndexIsValid</a>&lt;<a class="tu member" href="#gtsam::NoiseModelFactorN::I" title='gtsam::NoiseModelFactorN::I' data-ref="gtsam::NoiseModelFactorN::I">I</a>&gt;&gt;</td></tr>
+<tr><th id="527">527</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::NoiseModelFactorN::ValueType" title='gtsam::NoiseModelFactorN::ValueType' data-type='typename std::tuple_element&lt;I - 1, std::tuple&lt;ValueTypes...&gt;&gt;::type' data-ref="gtsam::NoiseModelFactorN::ValueType">ValueType</dfn> =</td></tr>
+<tr><th id="528">528</th><td>      <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/utility.h.html#std::tuple_element" title='std::tuple_element' data-ref="std::tuple_element">tuple_element</a>&lt;<a class="tu member" href="#gtsam::NoiseModelFactorN::I" title='gtsam::NoiseModelFactorN::I' data-use='r' data-ref="gtsam::NoiseModelFactorN::I">I</a> - <var>1</var>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::tuple" title='std::tuple' data-ref="std::tuple">tuple</a>&lt;ValueTypes...&gt;&gt;::type;</td></tr>
+<tr><th id="529">529</th><td></td></tr>
+<tr><th id="530">530</th><td> <b>public</b>:</td></tr>
+<tr><th id="531">531</th><td></td></tr>
+<tr><th id="532">532</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Constructors</span></i></td></tr>
+<tr><th id="533">533</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="534">534</th><td><i class="doc"></i></td></tr>
+<tr><th id="535">535</th><td><i class="doc">  /// Default Constructor for I/O</i></td></tr>
+<tr><th id="536">536</th><td>  <dfn class="decl def fn" id="_ZN5gtsam17NoiseModelFactorNC1Ev" title='gtsam::NoiseModelFactorN::NoiseModelFactorN&lt;ValueTypes...&gt;' data-ref="_ZN5gtsam17NoiseModelFactorNC1Ev">NoiseModelFactorN</dfn>() {}</td></tr>
+<tr><th id="537">537</th><td></td></tr>
+<tr><th id="538">538</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="539">539</th><td><i class="doc">   * Constructor.</i></td></tr>
+<tr><th id="540">540</th><td><i class="doc">   * Example usage: NoiseModelFactorN(noise, key1, key2, ..., keyN)</i></td></tr>
+<tr><th id="541">541</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">noiseModel</span> Shared pointer to noise model.</i></td></tr>
+<tr><th id="542">542</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">keys</span> Keys for the variables in this factor, passed in as separate</i></td></tr>
+<tr><th id="543">543</th><td><i class="doc">   * arguments.</i></td></tr>
+<tr><th id="544">544</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="545">545</th><td>  <dfn class="decl def fn" id="_ZN5gtsam17NoiseModelFactorNC1ERKSt10shared_ptrINS_10noiseModel4BaseEEDpm" title='gtsam::NoiseModelFactorN::NoiseModelFactorN&lt;ValueTypes...&gt;' data-ref="_ZN5gtsam17NoiseModelFactorNC1ERKSt10shared_ptrINS_10noiseModel4BaseEEDpm">NoiseModelFactorN</dfn>(<em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col3 decl" id="26703noiseModel" title='noiseModel' data-type='const SharedNoiseModel &amp;' data-ref="26703noiseModel">noiseModel</dfn>,</td></tr>
+<tr><th id="546">546</th><td>                    <a class="type" href="#gtsam::NoiseModelFactorN::KeyType" title='gtsam::NoiseModelFactorN::KeyType' data-ref="gtsam::NoiseModelFactorN::KeyType">KeyType</a>&lt;ValueTypes&gt;... <dfn class="local col4 decl" id="26704keys" title='keys' data-type='KeyType&lt;ValueTypes&gt;...' data-ref="26704keys">keys</dfn>)</td></tr>
+<tr><th id="547">547</th><td>      : <a class="typedef" href="#gtsam::NoiseModelFactorN::Base" title='gtsam::NoiseModelFactorN::Base' data-type='NoiseModelFactor' data-ref="gtsam::NoiseModelFactorN::Base">Base</a>(<a class="local col3 ref" href="#26703noiseModel" title='noiseModel' data-ref="26703noiseModel">noiseModel</a>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/tuple.html#std::array" title='std::array' data-ref="std::array">array</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>&gt;{<a class="local col4 ref" href="#26704keys" title='keys' data-ref="26704keys">keys</a>...}) {}</td></tr>
+<tr><th id="548">548</th><td></td></tr>
+<tr><th id="549">549</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="550">550</th><td><i class="doc">   * Constructor.</i></td></tr>
+<tr><th id="551">551</th><td><i class="doc">   * Example usage: `NoiseModelFactorN(noise, {key1, key2, ..., keyN})`</i></td></tr>
+<tr><th id="552">552</th><td><i class="doc">   * Example usage: `NoiseModelFactorN(noise, keys)` where keys is a vector&lt;Key&gt;</i></td></tr>
+<tr><th id="553">553</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">noiseModel</span> Shared pointer to noise model.</i></td></tr>
+<tr><th id="554">554</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">keys</span> A container of keys for the variables in this factor.</i></td></tr>
+<tr><th id="555">555</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="556">556</th><td>  <b>template</b> &lt;<b>typename</b> CONTAINER = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/initializer_list.html#std::initializer_list" title='std::initializer_list' data-ref="std::initializer_list">initializer_list</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt;,</td></tr>
+<tr><th id="557">557</th><td>            <b>typename</b> = <a class="type" href="#gtsam::NoiseModelFactorN::IsContainerOfKeys" title='gtsam::NoiseModelFactorN::IsContainerOfKeys' data-ref="gtsam::NoiseModelFactorN::IsContainerOfKeys">IsContainerOfKeys</a>&lt;CONTAINER&gt;&gt;</td></tr>
+<tr><th id="558">558</th><td>  <dfn class="decl def fn" id="_ZN5gtsam17NoiseModelFactorNC1ERKSt10shared_ptrINS_10noiseModel4BaseEETL0__" title='gtsam::NoiseModelFactorN::NoiseModelFactorN&lt;ValueTypes...&gt;' data-ref="_ZN5gtsam17NoiseModelFactorNC1ERKSt10shared_ptrINS_10noiseModel4BaseEETL0__">NoiseModelFactorN</dfn>(<em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col5 decl" id="26705noiseModel" title='noiseModel' data-type='const SharedNoiseModel &amp;' data-ref="26705noiseModel">noiseModel</dfn>, CONTAINER <dfn class="local col6 decl" id="26706keys" title='keys' data-type='CONTAINER' data-ref="26706keys">keys</dfn>)</td></tr>
+<tr><th id="559">559</th><td>      : <a class="typedef" href="#gtsam::NoiseModelFactorN::Base" title='gtsam::NoiseModelFactorN::Base' data-type='NoiseModelFactor' data-ref="gtsam::NoiseModelFactorN::Base">Base</a>(<a class="local col5 ref" href="#26705noiseModel" title='noiseModel' data-ref="26705noiseModel">noiseModel</a>, <a class="local col6 ref" href="#26706keys" title='keys' data-ref="26706keys">keys</a>) {</td></tr>
+<tr><th id="560">560</th><td>    <b>if</b> (<a class="local col6 ref" href="#26706keys" title='keys' data-ref="26706keys">keys</a>.size() != <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>) {</td></tr>
+<tr><th id="561">561</th><td>      <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a></td></tr>
+<tr><th id="562">562</th><td>          <q>"NoiseModelFactorN: wrong number of keys given"</q>);</td></tr>
+<tr><th id="563">563</th><td>    }</td></tr>
+<tr><th id="564">564</th><td>  }</td></tr>
+<tr><th id="565">565</th><td></td></tr>
+<tr><th id="566">566</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="567">567</th><td></td></tr>
+<tr><th id="568">568</th><td>  <dfn class="virtual decl def fn" id="_ZN5gtsam17NoiseModelFactorND1Ev" title='gtsam::NoiseModelFactorN::~NoiseModelFactorN&lt;ValueTypes...&gt;' data-ref="_ZN5gtsam17NoiseModelFactorND1Ev">~NoiseModelFactorN</dfn>() override {}</td></tr>
+<tr><th id="569">569</th><td></td></tr>
+<tr><th id="570">570</th><td>  <i class="doc">/** Returns a key. Usage: `key&lt;I&gt;()` returns the I'th key.</i></td></tr>
+<tr><th id="571">571</th><td><i class="doc">   * I is 1-indexed for backwards compatibility/consistency!  So for example,</i></td></tr>
+<tr><th id="572">572</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="573">573</th><td><i class="doc">   * NoiseModelFactorN&lt;Pose3, Point3&gt; factor(noise, key1, key2);</i></td></tr>
+<tr><th id="574">574</th><td><i class="doc">   * key&lt;1&gt;()  // = key1</i></td></tr>
+<tr><th id="575">575</th><td><i class="doc">   * key&lt;2&gt;()  // = key2</i></td></tr>
+<tr><th id="576">576</th><td><i class="doc">   * // key&lt;0&gt;()  // ERROR!  Will not compile</i></td></tr>
+<tr><th id="577">577</th><td><i class="doc">   * // key&lt;3&gt;()  // ERROR!  Will not compile</i></td></tr>
+<tr><th id="578">578</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="579">579</th><td><i class="doc">   * </i></td></tr>
+<tr><th id="580">580</th><td><i class="doc">   * Note that, if your class is templated AND you are trying to call `key&lt;1&gt;`</i></td></tr>
+<tr><th id="581">581</th><td><i class="doc">   * inside your class, due to dependent types you need the `template` keyword:</i></td></tr>
+<tr><th id="582">582</th><td><i class="doc">   * `this-&gt;key1()`.</i></td></tr>
+<tr><th id="583">583</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="584">584</th><td>  <b>template</b> &lt;<em>int</em> I = <var>1</var>&gt;</td></tr>
+<tr><th id="585">585</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN3keyEv" title='gtsam::NoiseModelFactorN::key' data-ref="_ZNK5gtsam17NoiseModelFactorN3keyEv">key</dfn>() <em>const</em> {</td></tr>
+<tr><th id="586">586</th><td>    <b>static_assert</b>(<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>, <q>"Index out of bounds"</q>);</td></tr>
+<tr><th id="587">587</th><td>    <b>return</b> <a class="member field" href="../inference/Factor.h.html#gtsam::Factor::keys_" title='gtsam::Factor::keys_' data-ref="gtsam::Factor::keys_">keys_</a>[<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> - <var>1</var>];</td></tr>
+<tr><th id="588">588</th><td>  }</td></tr>
+<tr><th id="589">589</th><td></td></tr>
+<tr><th id="590">590</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">NoiseModelFactor methods</span></i></td></tr>
+<tr><th id="591">591</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="592">592</th><td></td></tr>
+<tr><th id="593">593</th><td>  <i class="doc">/** This implements the `unwhitenedError` virtual function by calling the</i></td></tr>
+<tr><th id="594">594</th><td><i class="doc">   * n-key specific version of evaluateError, which is pure virtual so must be</i></td></tr>
+<tr><th id="595">595</th><td><i class="doc">   * implemented in the derived class.</i></td></tr>
+<tr><th id="596">596</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="597">597</th><td><i class="doc">   * Example usage:</i></td></tr>
+<tr><th id="598">598</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="599">599</th><td><i class="doc">   *  gtsam::Values values;</i></td></tr>
+<tr><th id="600">600</th><td><i class="doc">   *  values.insert(...) // populate values</i></td></tr>
+<tr><th id="601">601</th><td><i class="doc">   *  std::vector&lt;Matrix&gt; Hs(2); // this will be an optional output argument</i></td></tr>
+<tr><th id="602">602</th><td><i class="doc">   *  const Vector error = factor.unwhitenedError(values, Hs);</i></td></tr>
+<tr><th id="603">603</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="604">604</th><td><i class="doc">   * <span class="command">@param</span>[in] <span class="arg">x</span> A Values object containing the values of all the variables</i></td></tr>
+<tr><th id="605">605</th><td><i class="doc">   * used in this factor</i></td></tr>
+<tr><th id="606">606</th><td><i class="doc">   * <span class="command">@param</span>[out] <span class="arg">H</span> A vector of (dynamic) matrices whose size should be equal to</i></td></tr>
+<tr><th id="607">607</th><td><i class="doc">   * n.  The Jacobians w.r.t. each variable will be output in this parameter.</i></td></tr>
+<tr><th id="608">608</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="609">609</th><td>  <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="virtual decl def fn" id="_ZNK5gtsam17NoiseModelFactorN15unwhitenedErrorERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE" title='gtsam::NoiseModelFactorN::unwhitenedError' data-ref="_ZNK5gtsam17NoiseModelFactorN15unwhitenedErrorERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS7_EE">unwhitenedError</dfn>(</td></tr>
+<tr><th id="610">610</th><td>      <em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col7 decl" id="26707x" title='x' data-type='const Values &amp;' data-ref="26707x">x</dfn>,</td></tr>
+<tr><th id="611">611</th><td>      <a class="typedef" href="#gtsam::OptionalMatrixVecType" title='gtsam::OptionalMatrixVecType' data-type='std::vector&lt;Matrix&gt; *' data-ref="gtsam::OptionalMatrixVecType">OptionalMatrixVecType</a> <dfn class="local col8 decl" id="26708H" title='H' data-type='OptionalMatrixVecType' data-ref="26708H">H</dfn> = <b>nullptr</b>) <em>const</em> override {</td></tr>
+<tr><th id="612">612</th><td>    <b>return</b> unwhitenedError(<span class="namespace">gtsam::</span><a class="type" href="../base/utilities.h.html#gtsam::index_sequence_for" title='gtsam::index_sequence_for' data-ref="gtsam::index_sequence_for">index_sequence_for</a>&lt;ValueTypes...&gt;{}, <a class="local col7 ref" href="#26707x" title='x' data-ref="26707x">x</a>,</td></tr>
+<tr><th id="613">613</th><td>                           <a class="local col8 ref" href="#26708H" title='H' data-ref="26708H">H</a>);</td></tr>
+<tr><th id="614">614</th><td>  }</td></tr>
+<tr><th id="615">615</th><td></td></tr>
+<tr><th id="616">616</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="617">617</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Virtual methods</span></i></td></tr>
+<tr><th id="618">618</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="619">619</th><td></td></tr>
+<tr><th id="620">620</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="621">621</th><td><i class="doc">   * Override `evaluateError` to finish implementing an n-way factor.</i></td></tr>
+<tr><th id="622">622</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="623">623</th><td><i class="doc">   * Both the `x` and `H` arguments are written here as parameter packs, but</i></td></tr>
+<tr><th id="624">624</th><td><i class="doc">   * when overriding this method, you probably want to explicitly write them</i></td></tr>
+<tr><th id="625">625</th><td><i class="doc">   * out.  For example, for a 2-way factor with variable types Pose3 and Point3,</i></td></tr>
+<tr><th id="626">626</th><td><i class="doc">   * you should implement:</i></td></tr>
+<tr><th id="627">627</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="628">628</th><td><i class="doc">   * Vector evaluateError(</i></td></tr>
+<tr><th id="629">629</th><td><i class="doc">   *     const Pose3&amp; x1, const Point3&amp; x2,</i></td></tr>
+<tr><th id="630">630</th><td><i class="doc">   *     OptionalMatrixType H1 = OptionalNone,</i></td></tr>
+<tr><th id="631">631</th><td><i class="doc">   *     OptionalMatrixType H2 = OptionalNone) const override { ... }</i></td></tr>
+<tr><th id="632">632</th><td><i class="doc">   * ```</i></td></tr>
+<tr><th id="633">633</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="634">634</th><td><i class="doc">   * If any of the optional Matrix reference arguments are specified, it should</i></td></tr>
+<tr><th id="635">635</th><td><i class="doc">   * compute both the function evaluation and its derivative(s) in the requested</i></td></tr>
+<tr><th id="636">636</th><td><i class="doc">   * variables.</i></td></tr>
+<tr><th id="637">637</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="638">638</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">x</span> The values of the variables to evaluate the error for.  Passed in</i></td></tr>
+<tr><th id="639">639</th><td><i class="doc">   * as separate arguments.</i></td></tr>
+<tr><th id="640">640</th><td><i class="doc">   * <span class="command">@param</span>[out] <span class="arg">H</span> The Jacobian with respect to each variable (optional).</i></td></tr>
+<tr><th id="641">641</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="642">642</th><td>  <b>virtual</b> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="virtual decl fn" id="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpPN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEE" title='gtsam::NoiseModelFactorN::evaluateError' data-ref="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpPN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEE">evaluateError</dfn>(<em>const</em> ValueTypes&amp;... <dfn class="local col9 decl" id="26709x" title='x' data-type='const ValueTypes &amp;...' data-ref="26709x">x</dfn>,</td></tr>
+<tr><th id="643">643</th><td>                               <a class="type" href="#gtsam::NoiseModelFactorN::OptionalMatrixTypeT" title='gtsam::NoiseModelFactorN::OptionalMatrixTypeT' data-ref="gtsam::NoiseModelFactorN::OptionalMatrixTypeT">OptionalMatrixTypeT</a>&lt;ValueTypes&gt;... <dfn class="local col0 decl" id="26710H" title='H' data-type='OptionalMatrixTypeT&lt;ValueTypes&gt;...' data-ref="26710H">H</dfn>) <em>const</em> = <var>0</var>;</td></tr>
+<tr><th id="644">644</th><td></td></tr>
+<tr><th id="645">645</th><td>  <i class="doc">/** If all the optional arguments are matrices then redirect the call to </i></td></tr>
+<tr><th id="646">646</th><td><i class="doc">   * the one which takes pointers.</i></td></tr>
+<tr><th id="647">647</th><td><i class="doc">   * To get access to this version of the function from derived classes</i></td></tr>
+<tr><th id="648">648</th><td><i class="doc">   * one will need to use the "using" keyword and specify that like this:</i></td></tr>
+<tr><th id="649">649</th><td><i class="doc">   * public:</i></td></tr>
+<tr><th id="650">650</th><td><i class="doc">   *   using NoiseModelFactorN&lt;list the value types here&gt;::evaluateError;</i></td></tr>
+<tr><th id="651">651</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="652">652</th><td>  <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpRN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEE" title='gtsam::NoiseModelFactorN::evaluateError' data-ref="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpRN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEE">evaluateError</dfn>(<em>const</em> ValueTypes&amp;... <dfn class="local col1 decl" id="26711x" title='x' data-type='const ValueTypes &amp;...' data-ref="26711x">x</dfn>, <a class="type" href="#gtsam::NoiseModelFactorN::MatrixTypeT" title='gtsam::NoiseModelFactorN::MatrixTypeT' data-ref="gtsam::NoiseModelFactorN::MatrixTypeT">MatrixTypeT</a>&lt;ValueTypes&gt;&amp;... <dfn class="local col2 decl" id="26712H" title='H' data-type='MatrixTypeT&lt;ValueTypes&gt; &amp;...' data-ref="26712H">H</dfn>) <em>const</em> {</td></tr>
+<tr><th id="653">653</th><td>    <b>return</b> evaluateError(<a class="local col1 ref" href="#26711x" title='x' data-ref="26711x">x</a>..., (&amp;<a class="local col2 ref" href="#26712H" title='H' data-ref="26712H">H</a>)...);</td></tr>
+<tr><th id="654">654</th><td>  }</td></tr>
+<tr><th id="655">655</th><td></td></tr>
+<tr><th id="656">656</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="657">657</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Convenience method overloads</span></i></td></tr>
+<tr><th id="658">658</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="659">659</th><td></td></tr>
+<tr><th id="660">660</th><td>  <i class="doc">/** No-Jacobians requested function overload.</i></td></tr>
+<tr><th id="661">661</th><td><i class="doc">   * This specializes the version below to avoid recursive calls since this is</i></td></tr>
+<tr><th id="662">662</th><td><i class="doc">   * commonly used.</i></td></tr>
+<tr><th id="663">663</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="664">664</th><td><i class="doc">   * e.g. `const Vector error = factor.evaluateError(pose, point);`</i></td></tr>
+<tr><th id="665">665</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="666">666</th><td>  <b>inline</b> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_" title='gtsam::NoiseModelFactorN::evaluateError' data-ref="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_">evaluateError</dfn>(<em>const</em> ValueTypes&amp;... <dfn class="local col3 decl" id="26713x" title='x' data-type='const ValueTypes &amp;...' data-ref="26713x">x</dfn>) <em>const</em> {</td></tr>
+<tr><th id="667">667</th><td>    <b>return</b> evaluateError(<a class="local col3 ref" href="#26713x" title='x' data-ref="26713x">x</a>..., <a class="type" href="#gtsam::NoiseModelFactorN::OptionalMatrixTypeT" title='gtsam::NoiseModelFactorN::OptionalMatrixTypeT' data-ref="gtsam::NoiseModelFactorN::OptionalMatrixTypeT">OptionalMatrixTypeT</a>&lt;ValueTypes&gt;()...);</td></tr>
+<tr><th id="668">668</th><td>  }</td></tr>
+<tr><th id="669">669</th><td></td></tr>
+<tr><th id="670">670</th><td>  <i class="doc">/** Some (but not all) optional Jacobians are omitted (function overload)</i></td></tr>
+<tr><th id="671">671</th><td><i class="doc">   * and the jacobians are l-value references to matrices.</i></td></tr>
+<tr><th id="672">672</th><td><i class="doc">   * e.g. `const Vector error = factor.evaluateError(pose, point, Hpose);`</i></td></tr>
+<tr><th id="673">673</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="674">674</th><td>  <b>template</b> &lt;<b>typename</b>... OptionalJacArgs, <b>typename</b> = <a class="type" href="#gtsam::NoiseModelFactorN::IndexIsValid" title='gtsam::NoiseModelFactorN::IndexIsValid' data-ref="gtsam::NoiseModelFactorN::IndexIsValid">IndexIsValid</a>&lt;<b>sizeof</b>...(OptionalJacArgs) + <var>1</var>&gt;&gt;</td></tr>
+<tr><th id="675">675</th><td>  <b>inline</b> <a class="type" href="#gtsam::NoiseModelFactorN::AreAllMatrixRefs" title='gtsam::NoiseModelFactorN::AreAllMatrixRefs' data-ref="gtsam::NoiseModelFactorN::AreAllMatrixRefs">AreAllMatrixRefs</a>&lt;<a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>, OptionalJacArgs...&gt; <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpOTL0__" title='gtsam::NoiseModelFactorN::evaluateError' data-ref="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpOTL0__">evaluateError</dfn>(<em>const</em> ValueTypes&amp;... <dfn class="local col4 decl" id="26714x" title='x' data-type='const ValueTypes &amp;...' data-ref="26714x">x</dfn>,</td></tr>
+<tr><th id="676">676</th><td>                                                                  OptionalJacArgs&amp;&amp;... <dfn class="local col5 decl" id="26715H" title='H' data-type='OptionalJacArgs &amp;&amp;...' data-ref="26715H">H</dfn>) <em>const</em> {</td></tr>
+<tr><th id="677">677</th><td>    <b>return</b> evaluateError(<a class="local col4 ref" href="#26714x" title='x' data-ref="26714x">x</a>..., (&amp;<a class="local col5 ref" href="#26715H" title='H' data-ref="26715H">H</a>)...);</td></tr>
+<tr><th id="678">678</th><td>  }</td></tr>
+<tr><th id="679">679</th><td></td></tr>
+<tr><th id="680">680</th><td>  <i class="doc">/** Some (but not all) optional Jacobians are omitted (function overload)</i></td></tr>
+<tr><th id="681">681</th><td><i class="doc">   * and the jacobians are pointers to matrices.</i></td></tr>
+<tr><th id="682">682</th><td><i class="doc">   * e.g. `const Vector error = factor.evaluateError(pose, point, &amp;Hpose);`</i></td></tr>
+<tr><th id="683">683</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="684">684</th><td>  <b>template</b> &lt;<b>typename</b>... OptionalJacArgs, <b>typename</b> = <a class="type" href="#gtsam::NoiseModelFactorN::IndexIsValid" title='gtsam::NoiseModelFactorN::IndexIsValid' data-ref="gtsam::NoiseModelFactorN::IndexIsValid">IndexIsValid</a>&lt;<b>sizeof</b>...(OptionalJacArgs) + <var>1</var>&gt;&gt;</td></tr>
+<tr><th id="685">685</th><td>  <b>inline</b> <a class="type" href="#gtsam::NoiseModelFactorN::AreAllMatrixPtrs" title='gtsam::NoiseModelFactorN::AreAllMatrixPtrs' data-ref="gtsam::NoiseModelFactorN::AreAllMatrixPtrs">AreAllMatrixPtrs</a>&lt;<a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>, OptionalJacArgs...&gt; <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpOTL0__" title='gtsam::NoiseModelFactorN::evaluateError' data-ref="_ZNK5gtsam17NoiseModelFactorN13evaluateErrorEDpRKT_DpOTL0__">evaluateError</dfn>(<em>const</em> ValueTypes&amp;... <dfn class="local col6 decl" id="26716x" title='x' data-type='const ValueTypes &amp;...' data-ref="26716x">x</dfn>,</td></tr>
+<tr><th id="686">686</th><td>                                                                    OptionalJacArgs&amp;&amp;... <dfn class="local col7 decl" id="26717H" title='H' data-type='OptionalJacArgs &amp;&amp;...' data-ref="26717H">H</dfn>) <em>const</em> {</td></tr>
+<tr><th id="687">687</th><td>    <i>// If they are pointer version, ensure to cast them all to be Matrix* types</i></td></tr>
+<tr><th id="688">688</th><td><i>    // This will ensure any arguments inferred as std::nonetype_t are cast to (Matrix*) nullptr</i></td></tr>
+<tr><th id="689">689</th><td><i>    // This guides the compiler to the correct overload which is the one that takes pointers</i></td></tr>
+<tr><th id="690">690</th><td>    <b>return</b> evaluateError(<a class="local col6 ref" href="#26716x" title='x' data-ref="26716x">x</a>..., </td></tr>
+<tr><th id="691">691</th><td>        <span class="namespace">std::</span>forward&lt;OptionalJacArgs&gt;(<a class="local col7 ref" href="#26717H" title='H' data-ref="26717H">H</a>)..., <b>static_cast</b>&lt;<a class="typedef" href="#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a>&gt;(<a class="macro" href="#50" title="static_cast&lt;gtsam::Matrix*&gt;(nullptr)" data-ref="_M/OptionalNone">OptionalNone</a>));</td></tr>
+<tr><th id="692">692</th><td>  }</td></tr>
+<tr><th id="693">693</th><td></td></tr>
+<tr><th id="694">694</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="695">695</th><td></td></tr>
+<tr><th id="696">696</th><td> <b>private</b>:</td></tr>
+<tr><th id="697">697</th><td>  <i class="doc">/** Pack expansion with index_sequence template pattern, used to index into</i></td></tr>
+<tr><th id="698">698</th><td><i class="doc">   * `keys_` and `H`.</i></td></tr>
+<tr><th id="699">699</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="700">700</th><td><i class="doc">   * Example: For `NoiseModelFactorN&lt;Pose3, Point3&gt;`, the call would look like:</i></td></tr>
+<tr><th id="701">701</th><td><i class="doc">   *    `const Vector error = unwhitenedError(0, 1, values, H);`</i></td></tr>
+<tr><th id="702">702</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="703">703</th><td>  <b>template</b> &lt;<span class="namespace">std::</span><a class="typedef" href="../../../include/x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>... Indices&gt;</td></tr>
+<tr><th id="704">704</th><td>  <b>inline</b> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN15unwhitenedErrorENS_14index_sequenceIJXspTL0__EEEERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS9_EE" title='gtsam::NoiseModelFactorN::unwhitenedError' data-ref="_ZNK5gtsam17NoiseModelFactorN15unwhitenedErrorENS_14index_sequenceIJXspTL0__EEEERKNS_6ValuesEPSt6vectorIN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS9_EE">unwhitenedError</dfn>(</td></tr>
+<tr><th id="705">705</th><td>      <span class="namespace">gtsam::</span><a class="type" href="../base/utilities.h.html#gtsam::index_sequence" title='gtsam::index_sequence' data-ref="gtsam::index_sequence">index_sequence</a>&lt;<a class="tu ref" href="#Indices" title='Indices' data-ref="Indices">Indices</a>...&gt;,  <i>//</i></td></tr>
+<tr><th id="706">706</th><td>      <em>const</em> <a class="type" href="Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col8 decl" id="26718x" title='x' data-type='const Values &amp;' data-ref="26718x">x</dfn>,</td></tr>
+<tr><th id="707">707</th><td>      <a class="typedef" href="#gtsam::OptionalMatrixVecType" title='gtsam::OptionalMatrixVecType' data-type='std::vector&lt;Matrix&gt; *' data-ref="gtsam::OptionalMatrixVecType">OptionalMatrixVecType</a> <dfn class="local col9 decl" id="26719H" title='H' data-type='OptionalMatrixVecType' data-ref="26719H">H</dfn> = <b>nullptr</b>) <em>const</em> {</td></tr>
+<tr><th id="708">708</th><td>    <b>if</b> (<b>this</b>-&gt;active(<a class="local col8 ref" href="#26718x" title='x' data-ref="26718x">x</a>)) {</td></tr>
+<tr><th id="709">709</th><td>      <b>if</b> (<a class="local col9 ref" href="#26719H" title='H' data-ref="26719H">H</a>) {</td></tr>
+<tr><th id="710">710</th><td>        <b>return</b> evaluateError(<a class="local col8 ref" href="#26718x" title='x' data-ref="26718x">x</a>.at&lt;ValueTypes&gt;(<a class="member field" href="../inference/Factor.h.html#gtsam::Factor::keys_" title='gtsam::Factor::keys_' data-ref="gtsam::Factor::keys_">keys_</a>[<a class="tu ref" href="#Indices" title='Indices' data-ref="Indices">Indices</a>])...,</td></tr>
+<tr><th id="711">711</th><td>                             (*<a class="local col9 ref" href="#26719H" title='H' data-ref="26719H">H</a>)<a class="ref fn" href="../../../include/c++/13/bits/stl_vector.h.html#_ZNSt6vectorixEm" title='std::vector::operator[]' data-ref="_ZNSt6vectorixEm">[<a class="tu ref" href="#Indices" title='Indices' data-use='r' data-ref="Indices">Indices</a>]</a>...);</td></tr>
+<tr><th id="712">712</th><td>      } <b>else</b> {</td></tr>
+<tr><th id="713">713</th><td>        <b>return</b> evaluateError(<a class="local col8 ref" href="#26718x" title='x' data-ref="26718x">x</a>.at&lt;ValueTypes&gt;(<a class="member field" href="../inference/Factor.h.html#gtsam::Factor::keys_" title='gtsam::Factor::keys_' data-ref="gtsam::Factor::keys_">keys_</a>[<a class="tu ref" href="#Indices" title='Indices' data-ref="Indices">Indices</a>])...);</td></tr>
+<tr><th id="714">714</th><td>      }</td></tr>
+<tr><th id="715">715</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="716">716</th><td>      <b>return</b> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>::Zero(<b>this</b>-&gt;dim());</td></tr>
+<tr><th id="717">717</th><td>    }</td></tr>
+<tr><th id="718">718</th><td>  }</td></tr>
+<tr><th id="719">719</th><td></td></tr>
+<tr><th id="720">720</th><td><u>#<span data-ppcond="720">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="721">721</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="722">722</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="723">723</th><td>  <b>template</b> &lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="724">724</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam17NoiseModelFactorN9serializeERTL0__j" title='gtsam::NoiseModelFactorN::serialize' data-ref="_ZN5gtsam17NoiseModelFactorN9serializeERTL0__j">serialize</dfn>(ARCHIVE&amp; <dfn class="local col0 decl" id="26720ar" title='ar' data-type='ARCHIVE &amp;' data-ref="26720ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="725">725</th><td>    <a class="local col0 ref" href="#26720ar" title='ar' data-ref="26720ar">ar</a>&amp; <span class="namespace">boost::serialization::</span>make_nvp(</td></tr>
+<tr><th id="726">726</th><td>        <q>"NoiseModelFactor"</q>, <span class="namespace">boost::serialization::</span>base_object&lt;<a class="typedef" href="#gtsam::NoiseModelFactorN::Base" title='gtsam::NoiseModelFactorN::Base' data-type='NoiseModelFactor' data-ref="gtsam::NoiseModelFactorN::Base">Base</a>&gt;(*<b>this</b>));</td></tr>
+<tr><th id="727">727</th><td>  }</td></tr>
+<tr><th id="728">728</th><td><u>#<span data-ppcond="720">endif</span></u></td></tr>
+<tr><th id="729">729</th><td></td></tr>
+<tr><th id="730">730</th><td> <b>public</b>:</td></tr>
+<tr><th id="731">731</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Shortcut functions `key1()` -&gt; `key&lt;1&gt;()`</span></i></td></tr>
+<tr><th id="732">732</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="733">733</th><td></td></tr>
+<tr><th id="734">734</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN4key1Ev" title='gtsam::NoiseModelFactorN::key1' data-ref="_ZNK5gtsam17NoiseModelFactorN4key1Ev">key1</dfn>() <em>const</em> {</td></tr>
+<tr><th id="735">735</th><td>    <b>return</b> key&lt;<var>1</var>&gt;();</td></tr>
+<tr><th id="736">736</th><td>  }</td></tr>
+<tr><th id="737">737</th><td>  <b>template</b> &lt;<em>int</em> I = <var>2</var>&gt;</td></tr>
+<tr><th id="738">738</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN4key2Ev" title='gtsam::NoiseModelFactorN::key2' data-ref="_ZNK5gtsam17NoiseModelFactorN4key2Ev">key2</dfn>() <em>const</em> {</td></tr>
+<tr><th id="739">739</th><td>    <b>static_assert</b>(<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>, <q>"Index out of bounds"</q>);</td></tr>
+<tr><th id="740">740</th><td>    <b>return</b> key&lt;<var>2</var>&gt;();</td></tr>
+<tr><th id="741">741</th><td>  }</td></tr>
+<tr><th id="742">742</th><td>  <b>template</b> &lt;<em>int</em> I = <var>3</var>&gt;</td></tr>
+<tr><th id="743">743</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN4key3Ev" title='gtsam::NoiseModelFactorN::key3' data-ref="_ZNK5gtsam17NoiseModelFactorN4key3Ev">key3</dfn>() <em>const</em> {</td></tr>
+<tr><th id="744">744</th><td>    <b>static_assert</b>(<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>, <q>"Index out of bounds"</q>);</td></tr>
+<tr><th id="745">745</th><td>    <b>return</b> key&lt;<var>3</var>&gt;();</td></tr>
+<tr><th id="746">746</th><td>  }</td></tr>
+<tr><th id="747">747</th><td>  <b>template</b> &lt;<em>int</em> I = <var>4</var>&gt;</td></tr>
+<tr><th id="748">748</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN4key4Ev" title='gtsam::NoiseModelFactorN::key4' data-ref="_ZNK5gtsam17NoiseModelFactorN4key4Ev">key4</dfn>() <em>const</em> {</td></tr>
+<tr><th id="749">749</th><td>    <b>static_assert</b>(<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>, <q>"Index out of bounds"</q>);</td></tr>
+<tr><th id="750">750</th><td>    <b>return</b> key&lt;<var>4</var>&gt;();</td></tr>
+<tr><th id="751">751</th><td>  }</td></tr>
+<tr><th id="752">752</th><td>  <b>template</b> &lt;<em>int</em> I = <var>5</var>&gt;</td></tr>
+<tr><th id="753">753</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN4key5Ev" title='gtsam::NoiseModelFactorN::key5' data-ref="_ZNK5gtsam17NoiseModelFactorN4key5Ev">key5</dfn>() <em>const</em> {</td></tr>
+<tr><th id="754">754</th><td>    <b>static_assert</b>(<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>, <q>"Index out of bounds"</q>);</td></tr>
+<tr><th id="755">755</th><td>    <b>return</b> key&lt;<var>5</var>&gt;();</td></tr>
+<tr><th id="756">756</th><td>  }</td></tr>
+<tr><th id="757">757</th><td>  <b>template</b> &lt;<em>int</em> I = <var>6</var>&gt;</td></tr>
+<tr><th id="758">758</th><td>  <b>inline</b> <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl def fn" id="_ZNK5gtsam17NoiseModelFactorN4key6Ev" title='gtsam::NoiseModelFactorN::key6' data-ref="_ZNK5gtsam17NoiseModelFactorN4key6Ev">key6</dfn>() <em>const</em> {</td></tr>
+<tr><th id="759">759</th><td>    <b>static_assert</b>(<a class="tu ref" href="#I" title='I' data-use='r' data-ref="I">I</a> &lt;= <a class="member" href="#gtsam::NoiseModelFactorN::N" title='gtsam::NoiseModelFactorN::N' data-ref="gtsam::NoiseModelFactorN::N">N</a>, <q>"Index out of bounds"</q>);</td></tr>
+<tr><th id="760">760</th><td>    <b>return</b> key&lt;<var>6</var>&gt;();</td></tr>
+<tr><th id="761">761</th><td>  }</td></tr>
+<tr><th id="762">762</th><td></td></tr>
+<tr><th id="763">763</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="764">764</th><td></td></tr>
+<tr><th id="765">765</th><td>};  <i>// \class NoiseModelFactorN</i></td></tr>
+<tr><th id="766">766</th><td></td></tr>
+<tr><th id="767">767</th><td><u>#define <dfn class="macro" id="_M/NoiseModelFactor1" data-ref="_M/NoiseModelFactor1">NoiseModelFactor1</dfn> NoiseModelFactorN</u></td></tr>
+<tr><th id="768">768</th><td><u>#define <dfn class="macro" id="_M/NoiseModelFactor2" data-ref="_M/NoiseModelFactor2">NoiseModelFactor2</dfn> NoiseModelFactorN</u></td></tr>
+<tr><th id="769">769</th><td><u>#define <dfn class="macro" id="_M/NoiseModelFactor3" data-ref="_M/NoiseModelFactor3">NoiseModelFactor3</dfn> NoiseModelFactorN</u></td></tr>
+<tr><th id="770">770</th><td><u>#define <dfn class="macro" id="_M/NoiseModelFactor4" data-ref="_M/NoiseModelFactor4">NoiseModelFactor4</dfn> NoiseModelFactorN</u></td></tr>
+<tr><th id="771">771</th><td><u>#define <dfn class="macro" id="_M/NoiseModelFactor5" data-ref="_M/NoiseModelFactor5">NoiseModelFactor5</dfn> NoiseModelFactorN</u></td></tr>
+<tr><th id="772">772</th><td><u>#define <dfn class="macro" id="_M/NoiseModelFactor6" data-ref="_M/NoiseModelFactor6">NoiseModelFactor6</dfn> NoiseModelFactorN</u></td></tr>
+<tr><th id="773">773</th><td></td></tr>
+<tr><th id="774">774</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="775">775</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

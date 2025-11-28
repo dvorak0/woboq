@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SymEigsSolver.h source code [codebrowser/gtsam/3rdparty/Spectra/SymEigsSolver.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Spectra::SymEigsSolver "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Spectra/SymEigsSolver.h'; var root_path = '../../../..'; var data_path = '../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>codebrowser</a>/<a href='../..'>gtsam</a>/<a href='..'>3rdparty</a>/<a href='./'>Spectra</a>/<a href='SymEigsSolver.h.html'>SymEigsSolver.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Copyright (C) 2016-2025 Yixuan Qiu &lt;yixuan.qiu@cos.name&gt;</i></td></tr>
+<tr><th id="2">2</th><td><i>//</i></td></tr>
+<tr><th id="3">3</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="4">4</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="5">5</th><td><i>// with this file, You can obtain one at <a href="https://mozilla.org/MPL/2.0/">https://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="6">6</th><td></td></tr>
+<tr><th id="7">7</th><td><u>#<span data-ppcond="7">ifndef</span> <span class="macro" data-ref="_M/SPECTRA_SYM_EIGS_SOLVER_H">SPECTRA_SYM_EIGS_SOLVER_H</span></u></td></tr>
+<tr><th id="8">8</th><td><u>#define <dfn class="macro" id="_M/SPECTRA_SYM_EIGS_SOLVER_H" data-ref="_M/SPECTRA_SYM_EIGS_SOLVER_H">SPECTRA_SYM_EIGS_SOLVER_H</dfn></u></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><u>#include <a href="../Eigen/Eigen/Core.html">&lt;Eigen/Core&gt;</a></u></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><u>#include <a href="HermEigsBase.h.html">"HermEigsBase.h"</a></u></td></tr>
+<tr><th id="13">13</th><td><u>#include <a href="Util/SelectionRule.h.html">"Util/SelectionRule.h"</a></u></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="MatOp/DenseSymMatProd.h.html">"MatOp/DenseSymMatProd.h"</a></u></td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><b>namespace</b> <span class="namespace">Spectra</span> {</td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><i class="doc">///</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc">/// <span class="command">\ingroup</span> <span class="verb">EigenSolver</span></i></td></tr>
+<tr><th id="20">20</th><td><i class="doc">///</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc">/// This class implements the eigen solver for real symmetric matrices, i.e.,</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc">/// to solve <span class="command">\f$</span><span class="verb">Ax=\lambda x\</span>f$ where <span class="command">\f$</span><span class="verb">A\</span>f$ is symmetric.</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc">///</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc">/// **Spectra** is designed to calculate a specified number (<span class="command">\f$</span><span class="verb">k\</span>f$)</i></td></tr>
+<tr><th id="25">25</th><td><i class="doc">/// of eigenvalues of a large square matrix (<span class="command">\f$</span><span class="verb">A\</span>f$). Usually <span class="command">\f$</span><span class="verb">k\</span>f$ is much</i></td></tr>
+<tr><th id="26">26</th><td><i class="doc">/// less than the size of the matrix (<span class="command">\f$</span><span class="verb">n\</span>f$), so that only a few eigenvalues</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc">/// and eigenvectors are computed.</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc">///</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc">/// Rather than providing the whole <span class="command">\f$</span><span class="verb">A\</span>f$ matrix, the algorithm only requires</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc">/// the matrix-vector multiplication operation of <span class="command">\f$</span><span class="verb">A\</span>f$. Therefore, users of</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc">/// this solver need to supply a class that computes the result of <span class="command">\f$</span><span class="verb">Av\</span>f$</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc">/// for any given vector <span class="command">\f$</span><span class="verb">v\</span>f$. The name of this class should be given to</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc">/// the template parameter `OpType`, and instance of this class passed to</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc">/// the constructor of SymEigsSolver.</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc">///</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc">/// If the matrix <span class="command">\f$</span><span class="verb">A\</span>f$ is already stored as a matrix object in **Eigen**,</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc">/// for example `Eigen::MatrixXd`, then there is an easy way to construct such a</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc">/// matrix operation class, by using the built-in wrapper class DenseSymMatProd</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">/// that wraps an existing matrix object in **Eigen**. This is also the</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">/// default template parameter for SymEigsSolver. For sparse matrices, the</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc">/// wrapper class SparseSymMatProd can be used similarly.</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc">///</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc">/// If the users need to define their own matrix-vector multiplication operation</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc">/// class, it should define a public type `Scalar` to indicate the element type,</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">/// and implement all the public member functions as in DenseSymMatProd.</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">///</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">/// <span class="command">\tparam</span> <span class="arg">OpType</span>  The name of the matrix operation class. Users could either</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc">///                 use the wrapper classes such as DenseSymMatProd and</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc">///                 SparseSymMatProd, or define their own that implements the type</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">///                 definition `Scalar` and all the public member functions as in</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">///                 DenseSymMatProd.</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc">///</i></td></tr>
+<tr><th id="53">53</th><td><i class="doc">/// Below is an example that demonstrates the usage of this class.</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc">///</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">/// <span class="command">\code</span><span class="verb">{.cpp}</span></i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> #include &lt;Eigen/Core&gt;</span></i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> #include &lt;Spectra/SymEigsSolver.h&gt;</span></i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> // &lt;Spectra/MatOp/DenseSymMatProd.h&gt; is implicitly included</span></i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> #include &lt;iostream&gt;</span></i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> using namespace Spectra;</span></i></td></tr>
+<tr><th id="62">62</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="63">63</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> int main()</span></i></td></tr>
+<tr><th id="64">64</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> {</span></i></td></tr>
+<tr><th id="65">65</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     // We are going to calculate the eigenvalues of M</span></i></td></tr>
+<tr><th id="66">66</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     Eigen::MatrixXd A = Eigen::MatrixXd::Random(10, 10);</span></i></td></tr>
+<tr><th id="67">67</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     Eigen::MatrixXd M = A + A.transpose();</span></i></td></tr>
+<tr><th id="68">68</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="69">69</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     // Construct matrix operation object using the wrapper class DenseSymMatProd</span></i></td></tr>
+<tr><th id="70">70</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     DenseSymMatProd&lt;double&gt; op(M);</span></i></td></tr>
+<tr><th id="71">71</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="72">72</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     // Construct eigen solver object, requesting the largest three eigenvalues</span></i></td></tr>
+<tr><th id="73">73</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     SymEigsSolver&lt;DenseSymMatProd&lt;double&gt;&gt; eigs(op, 3, 6);</span></i></td></tr>
+<tr><th id="74">74</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="75">75</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     // Initialize and compute</span></i></td></tr>
+<tr><th id="76">76</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     eigs.init();</span></i></td></tr>
+<tr><th id="77">77</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     int nconv = eigs.compute(SortRule::LargestAlge);</span></i></td></tr>
+<tr><th id="78">78</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="79">79</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     // Retrieve results</span></i></td></tr>
+<tr><th id="80">80</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     Eigen::VectorXd evalues;</span></i></td></tr>
+<tr><th id="81">81</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     if (eigs.info() == CompInfo::Successful)</span></i></td></tr>
+<tr><th id="82">82</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         evalues = eigs.eigenvalues();</span></i></td></tr>
+<tr><th id="83">83</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="84">84</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     std::cout &lt;&lt; "Eigenvalues found:\n" &lt;&lt; evalues &lt;&lt; std::endl;</span></i></td></tr>
+<tr><th id="85">85</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="86">86</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     return 0;</span></i></td></tr>
+<tr><th id="87">87</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> }</span></i></td></tr>
+<tr><th id="88">88</th><td><i class="doc"><span class="verb"></span>/// \endcode</i></td></tr>
+<tr><th id="89">89</th><td><i class="doc">///</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">/// And here is an example for user-supplied matrix operation class.</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">///</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">/// <span class="command">\code</span><span class="verb">{.cpp}</span></i></td></tr>
+<tr><th id="93">93</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> #include &lt;Eigen/Core&gt;</span></i></td></tr>
+<tr><th id="94">94</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> #include &lt;Spectra/SymEigsSolver.h&gt;</span></i></td></tr>
+<tr><th id="95">95</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> #include &lt;iostream&gt;</span></i></td></tr>
+<tr><th id="96">96</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="97">97</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> using namespace Spectra;</span></i></td></tr>
+<tr><th id="98">98</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="99">99</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> // M = diag(1, 2, ..., 10)</span></i></td></tr>
+<tr><th id="100">100</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> class MyDiagonalTen</span></i></td></tr>
+<tr><th id="101">101</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> {</span></i></td></tr>
+<tr><th id="102">102</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> public:</span></i></td></tr>
+<tr><th id="103">103</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     using Scalar = double;  // A typedef named "Scalar" is required</span></i></td></tr>
+<tr><th id="104">104</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     int rows() const { return 10; }</span></i></td></tr>
+<tr><th id="105">105</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     int cols() const { return 10; }</span></i></td></tr>
+<tr><th id="106">106</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     // y_out = M * x_in</span></i></td></tr>
+<tr><th id="107">107</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     void perform_op(double *x_in, double *y_out) const</span></i></td></tr>
+<tr><th id="108">108</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     {</span></i></td></tr>
+<tr><th id="109">109</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         for (int i = 0; i &lt; rows(); i++)</span></i></td></tr>
+<tr><th id="110">110</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         {</span></i></td></tr>
+<tr><th id="111">111</th><td><i class="doc"><span class="verb"></span>///<span class="verb">             y_out[i] = x_in[i] * (i + 1);</span></i></td></tr>
+<tr><th id="112">112</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         }</span></i></td></tr>
+<tr><th id="113">113</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     }</span></i></td></tr>
+<tr><th id="114">114</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> };</span></i></td></tr>
+<tr><th id="115">115</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="116">116</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> int main()</span></i></td></tr>
+<tr><th id="117">117</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> {</span></i></td></tr>
+<tr><th id="118">118</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     MyDiagonalTen op;</span></i></td></tr>
+<tr><th id="119">119</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     SymEigsSolver&lt;MyDiagonalTen&gt; eigs(op, 3, 6);</span></i></td></tr>
+<tr><th id="120">120</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     eigs.init();</span></i></td></tr>
+<tr><th id="121">121</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     eigs.compute(SortRule::LargestAlge);</span></i></td></tr>
+<tr><th id="122">122</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     if (eigs.info() == CompInfo::Successful)</span></i></td></tr>
+<tr><th id="123">123</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     {</span></i></td></tr>
+<tr><th id="124">124</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         Eigen::VectorXd evalues = eigs.eigenvalues();</span></i></td></tr>
+<tr><th id="125">125</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         // Will get (10, 9, 8)</span></i></td></tr>
+<tr><th id="126">126</th><td><i class="doc"><span class="verb"></span>///<span class="verb">         std::cout &lt;&lt; "Eigenvalues found:\n" &lt;&lt; evalues &lt;&lt; std::endl;</span></i></td></tr>
+<tr><th id="127">127</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     }</span></i></td></tr>
+<tr><th id="128">128</th><td><i class="doc"><span class="verb"></span>///<span class="verb"></span></i></td></tr>
+<tr><th id="129">129</th><td><i class="doc"><span class="verb"></span>///<span class="verb">     return 0;</span></i></td></tr>
+<tr><th id="130">130</th><td><i class="doc"><span class="verb"></span>///<span class="verb"> }</span></i></td></tr>
+<tr><th id="131">131</th><td><i class="doc"><span class="verb"></span>/// \endcode</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">///</i></td></tr>
+<tr><th id="133">133</th><td><b>template</b> &lt;<b>typename</b> OpType = <a class="type" href="MatOp/DenseSymMatProd.h.html#Spectra::DenseSymMatProd" title='Spectra::DenseSymMatProd' data-ref="Spectra::DenseSymMatProd">DenseSymMatProd</a>&lt;<em>double</em>&gt;&gt;</td></tr>
+<tr><th id="134">134</th><td><b>class</b> <dfn class="type def" id="Spectra::SymEigsSolver" title='Spectra::SymEigsSolver' data-ref="Spectra::SymEigsSolver">SymEigsSolver</dfn> : <b>public</b> <a class="type" href="HermEigsBase.h.html#Spectra::HermEigsBase" title='Spectra::HermEigsBase' data-ref="Spectra::HermEigsBase">HermEigsBase</a>&lt;OpType, <a class="type" href="MatOp/internal/ArnoldiOp.h.html#Spectra::IdentityBOp" title='Spectra::IdentityBOp' data-ref="Spectra::IdentityBOp">IdentityBOp</a>&gt;</td></tr>
+<tr><th id="135">135</th><td>{</td></tr>
+<tr><th id="136">136</th><td><b>private</b>:</td></tr>
+<tr><th id="137">137</th><td>    <b>using</b> <dfn class="typedef" id="Spectra::SymEigsSolver::Index" title='Spectra::SymEigsSolver::Index' data-type='Eigen::Index' data-ref="Spectra::SymEigsSolver::Index">Index</dfn> = <span class="namespace">Eigen::</span><a class="typedef" href="../Eigen/Eigen/src/Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>;</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td><b>public</b>:</td></tr>
+<tr><th id="140">140</th><td>    <i class="doc">///</i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">    /// Constructor to create a solver object.</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">    ///</i></td></tr>
+<tr><th id="143">143</th><td><i class="doc">    /// <span class="command">\param</span> <span class="arg">op</span>   The matrix operation object that implements</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">    ///             the matrix-vector multiplication operation of <span class="command">\f$</span><span class="verb">A\</span>f$:</i></td></tr>
+<tr><th id="145">145</th><td><i class="doc">    ///             calculating <span class="command">\f$</span><span class="verb">Av\</span>f$ for any vector <span class="command">\f$</span><span class="verb">v\</span>f$. Users could either</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">    ///             create the object from the wrapper class such as DenseSymMatProd, or</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">    ///             define their own that implements all the public members</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">    ///             as in DenseSymMatProd.</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">    /// <span class="command">\param</span> <span class="arg">nev</span>  Number of eigenvalues requested. This should satisfy <span class="command">\f$</span><span class="verb">1\le nev \le n-1\</span>f$,</i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">    ///             where <span class="command">\f$</span><span class="verb">n\</span>f$ is the size of matrix.</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">    /// <span class="command">\param</span> <span class="arg">ncv</span>  Parameter that controls the convergence speed of the algorithm.</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">    ///             Typically a larger `ncv` means faster convergence, but it may</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">    ///             also result in greater memory use and more matrix operations</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">    ///             in each iteration. This parameter must satisfy <span class="command">\f$</span><span class="verb">nev &lt; ncv \le n\</span>f$,</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">    ///             and is advised to take <span class="command">\f$</span><span class="verb">ncv \ge 2\cdot nev\</span>f$.</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc">    ///</i></td></tr>
+<tr><th id="157">157</th><td>    <dfn class="decl def fn" id="_ZN7Spectra13SymEigsSolverC1ERT_ll" title='Spectra::SymEigsSolver::SymEigsSolver&lt;OpType&gt;' data-ref="_ZN7Spectra13SymEigsSolverC1ERT_ll">SymEigsSolver</dfn>(OpType&amp; <dfn class="local col8 decl" id="488op" title='op' data-type='OpType &amp;' data-ref="488op">op</dfn>, <a class="typedef" href="#Spectra::SymEigsSolver::Index" title='Spectra::SymEigsSolver::Index' data-type='Eigen::Index' data-ref="Spectra::SymEigsSolver::Index">Index</a> <dfn class="local col9 decl" id="489nev" title='nev' data-type='Index' data-ref="489nev">nev</dfn>, <a class="typedef" href="#Spectra::SymEigsSolver::Index" title='Spectra::SymEigsSolver::Index' data-type='Eigen::Index' data-ref="Spectra::SymEigsSolver::Index">Index</a> <dfn class="local col0 decl" id="490ncv" title='ncv' data-type='Index' data-ref="490ncv">ncv</dfn>) :</td></tr>
+<tr><th id="158">158</th><td>        <a class="type" href="HermEigsBase.h.html#Spectra::HermEigsBase" title='Spectra::HermEigsBase' data-ref="Spectra::HermEigsBase">HermEigsBase</a>&lt;OpType, <a class="type" href="MatOp/internal/ArnoldiOp.h.html#Spectra::IdentityBOp" title='Spectra::IdentityBOp' data-ref="Spectra::IdentityBOp">IdentityBOp</a>&gt;(<a class="local col8 ref" href="#488op" title='op' data-ref="488op">op</a>, <a class="type" href="MatOp/internal/ArnoldiOp.h.html#Spectra::IdentityBOp" title='Spectra::IdentityBOp' data-ref="Spectra::IdentityBOp">IdentityBOp</a><a class="ref fn" href="MatOp/internal/ArnoldiOp.h.html#102" title='Spectra::IdentityBOp::IdentityBOp' data-ref="_ZN7Spectra11IdentityBOpC1Ev">(</a>), <a class="local col9 ref" href="#489nev" title='nev' data-ref="489nev">nev</a>, <a class="local col0 ref" href="#490ncv" title='ncv' data-ref="490ncv">ncv</a>)</td></tr>
+<tr><th id="159">159</th><td>    {}</td></tr>
+<tr><th id="160">160</th><td>};</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td>}  <i>// namespace Spectra</i></td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td><u>#<span data-ppcond="7">endif</span>  // SPECTRA_SYM_EIGS_SOLVER_H</u></td></tr>
+<tr><th id="165">165</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../sfm/ShonanAveraging.cpp.html'>codebrowser/gtsam/sfm/ShonanAveraging.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

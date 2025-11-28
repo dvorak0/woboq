@@ -1,0 +1,219 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>MathFunctionsImpl.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/MathFunctionsImpl.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::internal::hypot_impl "/>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/Core/MathFunctionsImpl.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>Core</a>/<a href='MathFunctionsImpl.h.html'>MathFunctionsImpl.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2014 Pedro Gonnet (pedro.gonnet@gmail.com)</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2016 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>//</i></td></tr>
+<tr><th id="7">7</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="8">8</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="9">9</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifndef</span> <span class="macro" data-ref="_M/EIGEN_MATHFUNCTIONSIMPL_H">EIGEN_MATHFUNCTIONSIMPL_H</span></u></td></tr>
+<tr><th id="12">12</th><td><u>#define <dfn class="macro" id="_M/EIGEN_MATHFUNCTIONSIMPL_H" data-ref="_M/EIGEN_MATHFUNCTIONSIMPL_H">EIGEN_MATHFUNCTIONSIMPL_H</dfn></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><b>namespace</b> <span class="namespace">Eigen</span> {</td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> \returns the hyperbolic tan of \a a (coeff-wise)</span></i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"><span class="verb"></span><span class="verb">    Doesn't do anything fancy, just a 13/6-degree rational interpolant which</span></i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"><span class="verb"></span><span class="verb">    is accurate up to a couple of ulps in the (approximate) range [-8, 8],</span></i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"><span class="verb"></span><span class="verb">    outside of which tanh(x) = +/-1 in single precision. The input is clamped</span></i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"><span class="verb"></span><span class="verb">    to the range [-c, c]. The value c is chosen as the smallest value where</span></i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"><span class="verb"></span><span class="verb">    the approximation evaluates to exactly 1. In the reange [-0.0004, 0.0004]</span></i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"><span class="verb"></span><span class="verb">    the approxmation tanh(x) ~= x is used for better accuracy as x tends to zero.</span></i></td></tr>
+<tr><th id="25">25</th><td><i class="doc"><span class="verb"></span><span class="verb"></span></i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"><span class="verb"></span><span class="verb">    This implementation works on both scalars and packets.</span></i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"><span class="verb"></span>*/</i><span class="verb"></span></td></tr>
+<tr><th id="28">28</th><td><span class="verb"></span><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="29">29</th><td>T <dfn class="decl def fn" id="_ZN5Eigen8internal23generic_fast_tanh_floatERKT_" title='Eigen::internal::generic_fast_tanh_float' data-ref="_ZN5Eigen8internal23generic_fast_tanh_floatERKT_">generic_fast_tanh_float</dfn>(<em>const</em> T&amp; <dfn class="local col1 decl" id="6421a_x" title='a_x' data-type='const T &amp;' data-ref="6421a_x">a_x</dfn>)</td></tr>
+<tr><th id="30">30</th><td>{</td></tr>
+<tr><th id="31">31</th><td>  <i>// Clamp the inputs to the range [-c, c]</i></td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="32">ifdef</span> <span class="macro" data-ref="_M/EIGEN_VECTORIZE_FMA">EIGEN_VECTORIZE_FMA</span></u></td></tr>
+<tr><th id="33">33</th><td>  <em>const</em> T plus_clamp = pset1&lt;T&gt;(<var>7.99881172180175781f</var>);</td></tr>
+<tr><th id="34">34</th><td>  <em>const</em> T minus_clamp = pset1&lt;T&gt;(-<var>7.99881172180175781f</var>);</td></tr>
+<tr><th id="35">35</th><td><u>#<span data-ppcond="32">else</span></u></td></tr>
+<tr><th id="36">36</th><td>  <em>const</em> T <dfn class="local col2 decl" id="6422plus_clamp" title='plus_clamp' data-type='const T' data-ref="6422plus_clamp">plus_clamp</dfn> = pset1&lt;T&gt;(<var>7.90531110763549805f</var>);</td></tr>
+<tr><th id="37">37</th><td>  <em>const</em> T <dfn class="local col3 decl" id="6423minus_clamp" title='minus_clamp' data-type='const T' data-ref="6423minus_clamp">minus_clamp</dfn> = pset1&lt;T&gt;(-<var>7.90531110763549805f</var>);</td></tr>
+<tr><th id="38">38</th><td><u>#<span data-ppcond="32">endif</span></u></td></tr>
+<tr><th id="39">39</th><td>  <em>const</em> T <dfn class="local col4 decl" id="6424tiny" title='tiny' data-type='const T' data-ref="6424tiny">tiny</dfn> = pset1&lt;T&gt;(<var>0.0004f</var>);</td></tr>
+<tr><th id="40">40</th><td>  <em>const</em> T <dfn class="local col5 decl" id="6425x" title='x' data-type='const T' data-ref="6425x">x</dfn> = pmax(pmin(<a class="local col1 ref" href="#6421a_x" title='a_x' data-ref="6421a_x">a_x</a>, <a class="local col2 ref" href="#6422plus_clamp" title='plus_clamp' data-ref="6422plus_clamp">plus_clamp</a>), <a class="local col3 ref" href="#6423minus_clamp" title='minus_clamp' data-ref="6423minus_clamp">minus_clamp</a>);</td></tr>
+<tr><th id="41">41</th><td>  <em>const</em> T <dfn class="local col6 decl" id="6426tiny_mask" title='tiny_mask' data-type='const T' data-ref="6426tiny_mask">tiny_mask</dfn> = pcmp_lt(pabs(<a class="local col1 ref" href="#6421a_x" title='a_x' data-ref="6421a_x">a_x</a>), <a class="local col4 ref" href="#6424tiny" title='tiny' data-ref="6424tiny">tiny</a>);</td></tr>
+<tr><th id="42">42</th><td>  <i>// The monomial coefficients of the numerator polynomial (odd).</i></td></tr>
+<tr><th id="43">43</th><td>  <em>const</em> T <dfn class="local col7 decl" id="6427alpha_1" title='alpha_1' data-type='const T' data-ref="6427alpha_1">alpha_1</dfn> = pset1&lt;T&gt;(<var>4.89352455891786e-03f</var>);</td></tr>
+<tr><th id="44">44</th><td>  <em>const</em> T <dfn class="local col8 decl" id="6428alpha_3" title='alpha_3' data-type='const T' data-ref="6428alpha_3">alpha_3</dfn> = pset1&lt;T&gt;(<var>6.37261928875436e-04f</var>);</td></tr>
+<tr><th id="45">45</th><td>  <em>const</em> T <dfn class="local col9 decl" id="6429alpha_5" title='alpha_5' data-type='const T' data-ref="6429alpha_5">alpha_5</dfn> = pset1&lt;T&gt;(<var>1.48572235717979e-05f</var>);</td></tr>
+<tr><th id="46">46</th><td>  <em>const</em> T <dfn class="local col0 decl" id="6430alpha_7" title='alpha_7' data-type='const T' data-ref="6430alpha_7">alpha_7</dfn> = pset1&lt;T&gt;(<var>5.12229709037114e-08f</var>);</td></tr>
+<tr><th id="47">47</th><td>  <em>const</em> T <dfn class="local col1 decl" id="6431alpha_9" title='alpha_9' data-type='const T' data-ref="6431alpha_9">alpha_9</dfn> = pset1&lt;T&gt;(-<var>8.60467152213735e-11f</var>);</td></tr>
+<tr><th id="48">48</th><td>  <em>const</em> T <dfn class="local col2 decl" id="6432alpha_11" title='alpha_11' data-type='const T' data-ref="6432alpha_11">alpha_11</dfn> = pset1&lt;T&gt;(<var>2.00018790482477e-13f</var>);</td></tr>
+<tr><th id="49">49</th><td>  <em>const</em> T <dfn class="local col3 decl" id="6433alpha_13" title='alpha_13' data-type='const T' data-ref="6433alpha_13">alpha_13</dfn> = pset1&lt;T&gt;(-<var>2.76076847742355e-16f</var>);</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td>  <i>// The monomial coefficients of the denominator polynomial (even).</i></td></tr>
+<tr><th id="52">52</th><td>  <em>const</em> T <dfn class="local col4 decl" id="6434beta_0" title='beta_0' data-type='const T' data-ref="6434beta_0">beta_0</dfn> = pset1&lt;T&gt;(<var>4.89352518554385e-03f</var>);</td></tr>
+<tr><th id="53">53</th><td>  <em>const</em> T <dfn class="local col5 decl" id="6435beta_2" title='beta_2' data-type='const T' data-ref="6435beta_2">beta_2</dfn> = pset1&lt;T&gt;(<var>2.26843463243900e-03f</var>);</td></tr>
+<tr><th id="54">54</th><td>  <em>const</em> T <dfn class="local col6 decl" id="6436beta_4" title='beta_4' data-type='const T' data-ref="6436beta_4">beta_4</dfn> = pset1&lt;T&gt;(<var>1.18534705686654e-04f</var>);</td></tr>
+<tr><th id="55">55</th><td>  <em>const</em> T <dfn class="local col7 decl" id="6437beta_6" title='beta_6' data-type='const T' data-ref="6437beta_6">beta_6</dfn> = pset1&lt;T&gt;(<var>1.19825839466702e-06f</var>);</td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>  <i>// Since the polynomials are odd/even, we need x^2.</i></td></tr>
+<tr><th id="58">58</th><td>  <em>const</em> T <dfn class="local col8 decl" id="6438x2" title='x2' data-type='const T' data-ref="6438x2">x2</dfn> = pmul(<a class="local col5 ref" href="#6425x" title='x' data-ref="6425x">x</a>, <a class="local col5 ref" href="#6425x" title='x' data-ref="6425x">x</a>);</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <i>// Evaluate the numerator polynomial p.</i></td></tr>
+<tr><th id="61">61</th><td>  T <dfn class="local col9 decl" id="6439p" title='p' data-type='T' data-ref="6439p">p</dfn> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col3 ref" href="#6433alpha_13" title='alpha_13' data-ref="6433alpha_13">alpha_13</a>, <a class="local col2 ref" href="#6432alpha_11" title='alpha_11' data-ref="6432alpha_11">alpha_11</a>);</td></tr>
+<tr><th id="62">62</th><td>  <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>, <a class="local col1 ref" href="#6431alpha_9" title='alpha_9' data-ref="6431alpha_9">alpha_9</a>);</td></tr>
+<tr><th id="63">63</th><td>  <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>, <a class="local col0 ref" href="#6430alpha_7" title='alpha_7' data-ref="6430alpha_7">alpha_7</a>);</td></tr>
+<tr><th id="64">64</th><td>  <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>, <a class="local col9 ref" href="#6429alpha_5" title='alpha_5' data-ref="6429alpha_5">alpha_5</a>);</td></tr>
+<tr><th id="65">65</th><td>  <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>, <a class="local col8 ref" href="#6428alpha_3" title='alpha_3' data-ref="6428alpha_3">alpha_3</a>);</td></tr>
+<tr><th id="66">66</th><td>  <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>, <a class="local col7 ref" href="#6427alpha_1" title='alpha_1' data-ref="6427alpha_1">alpha_1</a>);</td></tr>
+<tr><th id="67">67</th><td>  <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a> = pmul(<a class="local col5 ref" href="#6425x" title='x' data-ref="6425x">x</a>, <a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>);</td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>  <i>// Evaluate the denominator polynomial q.</i></td></tr>
+<tr><th id="70">70</th><td>  T <dfn class="local col0 decl" id="6440q" title='q' data-type='T' data-ref="6440q">q</dfn> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col7 ref" href="#6437beta_6" title='beta_6' data-ref="6437beta_6">beta_6</a>, <a class="local col6 ref" href="#6436beta_4" title='beta_4' data-ref="6436beta_4">beta_4</a>);</td></tr>
+<tr><th id="71">71</th><td>  <a class="local col0 ref" href="#6440q" title='q' data-ref="6440q">q</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col0 ref" href="#6440q" title='q' data-ref="6440q">q</a>, <a class="local col5 ref" href="#6435beta_2" title='beta_2' data-ref="6435beta_2">beta_2</a>);</td></tr>
+<tr><th id="72">72</th><td>  <a class="local col0 ref" href="#6440q" title='q' data-ref="6440q">q</a> = pmadd(<a class="local col8 ref" href="#6438x2" title='x2' data-ref="6438x2">x2</a>, <a class="local col0 ref" href="#6440q" title='q' data-ref="6440q">q</a>, <a class="local col4 ref" href="#6434beta_0" title='beta_0' data-ref="6434beta_0">beta_0</a>);</td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>  <i>// Divide the numerator by the denominator.</i></td></tr>
+<tr><th id="75">75</th><td>  <b>return</b> pselect(<a class="local col6 ref" href="#6426tiny_mask" title='tiny_mask' data-ref="6426tiny_mask">tiny_mask</a>, <a class="local col5 ref" href="#6425x" title='x' data-ref="6425x">x</a>, pdiv(<a class="local col9 ref" href="#6439p" title='p' data-ref="6439p">p</a>, <a class="local col0 ref" href="#6440q" title='q' data-ref="6440q">q</a>));</td></tr>
+<tr><th id="76">76</th><td>}</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td><b>template</b>&lt;<b>typename</b> RealScalar&gt;</td></tr>
+<tr><th id="79">79</th><td><a class="macro" href="util/Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <a class="macro" href="util/Macros.h.html#917" title="inline" data-ref="_M/EIGEN_STRONG_INLINE">EIGEN_STRONG_INLINE</a></td></tr>
+<tr><th id="80">80</th><td>RealScalar <dfn class="decl def fn" id="_ZN5Eigen8internal19positive_real_hypotERKT_S3_" title='Eigen::internal::positive_real_hypot' data-ref="_ZN5Eigen8internal19positive_real_hypotERKT_S3_">positive_real_hypot</dfn>(<em>const</em> RealScalar&amp; <dfn class="local col1 decl" id="6441x" title='x' data-type='const RealScalar &amp;' data-ref="6441x">x</dfn>, <em>const</em> RealScalar&amp; <dfn class="local col2 decl" id="6442y" title='y' data-type='const RealScalar &amp;' data-ref="6442y">y</dfn>)</td></tr>
+<tr><th id="81">81</th><td>{</td></tr>
+<tr><th id="82">82</th><td>  <i>// IEEE IEC 6059 special cases.</i></td></tr>
+<tr><th id="83">83</th><td>  <b>if</b> ((<span class="namespace">numext::</span>isinf)(<a class="local col1 ref" href="#6441x" title='x' data-ref="6441x">x</a>) || (<span class="namespace">numext::</span>isinf)(<a class="local col2 ref" href="#6442y" title='y' data-ref="6442y">y</a>))</td></tr>
+<tr><th id="84">84</th><td>    <b>return</b> <a class="type" href="util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;RealScalar&gt;::infinity();</td></tr>
+<tr><th id="85">85</th><td>  <b>if</b> ((<span class="namespace">numext::</span>isnan)(<a class="local col1 ref" href="#6441x" title='x' data-ref="6441x">x</a>) || (<span class="namespace">numext::</span>isnan)(<a class="local col2 ref" href="#6442y" title='y' data-ref="6442y">y</a>))</td></tr>
+<tr><th id="86">86</th><td>    <b>return</b> <a class="type" href="util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;RealScalar&gt;::quiet_NaN();</td></tr>
+<tr><th id="87">87</th><td>    </td></tr>
+<tr><th id="88">88</th><td>  <a class="macro" href="util/Macros.h.html#1185" title="using std::sqrt;" data-ref="_M/EIGEN_USING_STD">EIGEN_USING_STD</a>(sqrt);</td></tr>
+<tr><th id="89">89</th><td>  RealScalar <dfn class="local col3 decl" id="6443p" title='p' data-type='RealScalar' data-ref="6443p">p</dfn>, <dfn class="local col4 decl" id="6444qp" title='qp' data-type='RealScalar' data-ref="6444qp">qp</dfn>;</td></tr>
+<tr><th id="90">90</th><td>  <a class="local col3 ref" href="#6443p" title='p' data-ref="6443p">p</a> = <span class="namespace">numext::</span>maxi(<a class="local col1 ref" href="#6441x" title='x' data-ref="6441x">x</a>,<a class="local col2 ref" href="#6442y" title='y' data-ref="6442y">y</a>);</td></tr>
+<tr><th id="91">91</th><td>  <b>if</b>(<a class="local col3 ref" href="#6443p" title='p' data-ref="6443p">p</a>==RealScalar(<var>0</var>)) <b>return</b> RealScalar(<var>0</var>);</td></tr>
+<tr><th id="92">92</th><td>  <a class="local col4 ref" href="#6444qp" title='qp' data-ref="6444qp">qp</a> = <span class="namespace">numext::</span>mini(<a class="local col2 ref" href="#6442y" title='y' data-ref="6442y">y</a>,<a class="local col1 ref" href="#6441x" title='x' data-ref="6441x">x</a>) / <a class="local col3 ref" href="#6443p" title='p' data-ref="6443p">p</a>;</td></tr>
+<tr><th id="93">93</th><td>  <b>return</b> <a class="local col3 ref" href="#6443p" title='p' data-ref="6443p">p</a> * sqrt(RealScalar(<var>1</var>) + <a class="local col4 ref" href="#6444qp" title='qp' data-ref="6444qp">qp</a>*<a class="local col4 ref" href="#6444qp" title='qp' data-ref="6444qp">qp</a>);</td></tr>
+<tr><th id="94">94</th><td>}</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td><b>template</b>&lt;<b>typename</b> Scalar&gt;</td></tr>
+<tr><th id="97">97</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::hypot_impl" title='Eigen::internal::hypot_impl' data-ref="Eigen::internal::hypot_impl">hypot_impl</dfn></td></tr>
+<tr><th id="98">98</th><td>{</td></tr>
+<tr><th id="99">99</th><td>  <b>typedef</b> <b>typename</b> <a class="type" href="util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;Scalar&gt;::Real <dfn class="typedef" id="Eigen::internal::hypot_impl::RealScalar" title='Eigen::internal::hypot_impl::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::internal::hypot_impl::RealScalar">RealScalar</dfn>;</td></tr>
+<tr><th id="100">100</th><td>  <em>static</em> <a class="macro" href="util/Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a></td></tr>
+<tr><th id="101">101</th><td>  <b>inline</b> <a class="typedef" href="#Eigen::internal::hypot_impl::RealScalar" title='Eigen::internal::hypot_impl::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::internal::hypot_impl::RealScalar">RealScalar</a> <dfn class="decl def fn" id="_ZN5Eigen8internal10hypot_impl3runERKT_S4_" title='Eigen::internal::hypot_impl::run' data-ref="_ZN5Eigen8internal10hypot_impl3runERKT_S4_">run</dfn>(<em>const</em> Scalar&amp; <dfn class="local col5 decl" id="6445x" title='x' data-type='const Scalar &amp;' data-ref="6445x">x</dfn>, <em>const</em> Scalar&amp; <dfn class="local col6 decl" id="6446y" title='y' data-type='const Scalar &amp;' data-ref="6446y">y</dfn>)</td></tr>
+<tr><th id="102">102</th><td>  {</td></tr>
+<tr><th id="103">103</th><td>    <a class="macro" href="util/Macros.h.html#1185" title="using std::abs;" data-ref="_M/EIGEN_USING_STD">EIGEN_USING_STD</a>(abs);</td></tr>
+<tr><th id="104">104</th><td>    <b>return</b> positive_real_hypot&lt;<a class="typedef" href="#Eigen::internal::hypot_impl::RealScalar" title='Eigen::internal::hypot_impl::RealScalar' data-type='typename NumTraits&lt;Scalar&gt;::Real' data-ref="Eigen::internal::hypot_impl::RealScalar">RealScalar</a>&gt;(abs(<a class="local col5 ref" href="#6445x" title='x' data-ref="6445x">x</a>), abs(<a class="local col6 ref" href="#6446y" title='y' data-ref="6446y">y</a>));</td></tr>
+<tr><th id="105">105</th><td>  }</td></tr>
+<tr><th id="106">106</th><td>};</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td><i>// Generic complex sqrt implementation that correctly handles corner cases</i></td></tr>
+<tr><th id="109">109</th><td><i>// according to <a href="https://en.cppreference.com/w/cpp/numeric/complex/sqrt">https://en.cppreference.com/w/cpp/numeric/complex/sqrt</a></i></td></tr>
+<tr><th id="110">110</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="111">111</th><td><a class="macro" href="util/Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5Eigen8internal12complex_sqrtERKSt7complexIT_E" title='Eigen::internal::complex_sqrt' data-ref="_ZN5Eigen8internal12complex_sqrtERKSt7complexIT_E">complex_sqrt</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;&amp; <dfn class="local col7 decl" id="6447z" title='z' data-type='const std::complex&lt;T&gt; &amp;' data-ref="6447z">z</dfn>) {</td></tr>
+<tr><th id="112">112</th><td>  <i>// Computes the principal sqrt of the input.</i></td></tr>
+<tr><th id="113">113</th><td><i>  //</i></td></tr>
+<tr><th id="114">114</th><td><i>  // For a complex square root of the number x + i*y. We want to find real</i></td></tr>
+<tr><th id="115">115</th><td><i>  // numbers u and v such that</i></td></tr>
+<tr><th id="116">116</th><td><i>  //    (u + i*v)^2 = x + i*y  &lt;=&gt;</i></td></tr>
+<tr><th id="117">117</th><td><i>  //    u^2 - v^2 + i*2*u*v = x + i*v.</i></td></tr>
+<tr><th id="118">118</th><td><i>  // By equating the real and imaginary parts we get:</i></td></tr>
+<tr><th id="119">119</th><td><i>  //    u^2 - v^2 = x</i></td></tr>
+<tr><th id="120">120</th><td><i>  //    2*u*v = y.</i></td></tr>
+<tr><th id="121">121</th><td><i>  //</i></td></tr>
+<tr><th id="122">122</th><td><i>  // For x &gt;= 0, this has the numerically stable solution</i></td></tr>
+<tr><th id="123">123</th><td><i>  //    u = sqrt(0.5 * (x + sqrt(x^2 + y^2)))</i></td></tr>
+<tr><th id="124">124</th><td><i>  //    v = y / (2 * u)</i></td></tr>
+<tr><th id="125">125</th><td><i>  // and for x &lt; 0,</i></td></tr>
+<tr><th id="126">126</th><td><i>  //    v = sign(y) * sqrt(0.5 * (-x + sqrt(x^2 + y^2)))</i></td></tr>
+<tr><th id="127">127</th><td><i>  //    u = y / (2 * v)</i></td></tr>
+<tr><th id="128">128</th><td><i>  //</i></td></tr>
+<tr><th id="129">129</th><td><i>  // Letting w = sqrt(0.5 * (|x| + |z|)),</i></td></tr>
+<tr><th id="130">130</th><td><i>  //   if x == 0: u = w, v = sign(y) * w</i></td></tr>
+<tr><th id="131">131</th><td><i>  //   if x &gt; 0:  u = w, v = y / (2 * w)</i></td></tr>
+<tr><th id="132">132</th><td><i>  //   if x &lt; 0:  u = |y| / (2 * w), v = sign(y) * w</i></td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td>  <em>const</em> T <dfn class="local col8 decl" id="6448x" title='x' data-type='const T' data-ref="6448x">x</dfn> = <span class="namespace">numext::</span>real(<a class="local col7 ref" href="#6447z" title='z' data-ref="6447z">z</a>);</td></tr>
+<tr><th id="135">135</th><td>  <em>const</em> T <dfn class="local col9 decl" id="6449y" title='y' data-type='const T' data-ref="6449y">y</dfn> = <span class="namespace">numext::</span>imag(<a class="local col7 ref" href="#6447z" title='z' data-ref="6447z">z</a>);</td></tr>
+<tr><th id="136">136</th><td>  <em>const</em> T <dfn class="local col0 decl" id="6450zero" title='zero' data-type='const T' data-ref="6450zero">zero</dfn> = T(<var>0</var>);</td></tr>
+<tr><th id="137">137</th><td>  <em>const</em> T <dfn class="local col1 decl" id="6451w" title='w' data-type='const T' data-ref="6451w">w</dfn> = <span class="namespace">numext::</span>sqrt(T(<var>0.5</var>) * (<span class="namespace">numext::</span>abs(<a class="local col8 ref" href="#6448x" title='x' data-ref="6448x">x</a>) + <span class="namespace">numext::</span>hypot(<a class="local col8 ref" href="#6448x" title='x' data-ref="6448x">x</a>, <a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a>)));</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>  <b>return</b></td></tr>
+<tr><th id="140">140</th><td>    (<span class="namespace">numext::</span>isinf)(<a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a>) ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="type" href="util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::infinity(), <a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a>)</td></tr>
+<tr><th id="141">141</th><td>      : <a class="local col8 ref" href="#6448x" title='x' data-ref="6448x">x</a> == <a class="local col0 ref" href="#6450zero" title='zero' data-ref="6450zero">zero</a> ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a>, <a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a> &lt; <a class="local col0 ref" href="#6450zero" title='zero' data-ref="6450zero">zero</a> ? -<a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a> : <a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a>)</td></tr>
+<tr><th id="142">142</th><td>      : <a class="local col8 ref" href="#6448x" title='x' data-ref="6448x">x</a> &gt; <a class="local col0 ref" href="#6450zero" title='zero' data-ref="6450zero">zero</a> ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a>, <a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a> / (<var>2</var> * <a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a>))</td></tr>
+<tr><th id="143">143</th><td>      : <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<span class="namespace">numext::</span>abs(<a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a>) / (<var>2</var> * <a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a>), <a class="local col9 ref" href="#6449y" title='y' data-ref="6449y">y</a> &lt; <a class="local col0 ref" href="#6450zero" title='zero' data-ref="6450zero">zero</a> ? -<a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a> : <a class="local col1 ref" href="#6451w" title='w' data-ref="6451w">w</a> );</td></tr>
+<tr><th id="144">144</th><td>}</td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td><i>// Generic complex rsqrt implementation.</i></td></tr>
+<tr><th id="147">147</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="148">148</th><td><a class="macro" href="util/Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5Eigen8internal13complex_rsqrtERKSt7complexIT_E" title='Eigen::internal::complex_rsqrt' data-ref="_ZN5Eigen8internal13complex_rsqrtERKSt7complexIT_E">complex_rsqrt</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;&amp; <dfn class="local col2 decl" id="6452z" title='z' data-type='const std::complex&lt;T&gt; &amp;' data-ref="6452z">z</dfn>) {</td></tr>
+<tr><th id="149">149</th><td>  <i>// Computes the principal reciprocal sqrt of the input.</i></td></tr>
+<tr><th id="150">150</th><td><i>  //</i></td></tr>
+<tr><th id="151">151</th><td><i>  // For a complex reciprocal square root of the number z = x + i*y. We want to</i></td></tr>
+<tr><th id="152">152</th><td><i>  // find real numbers u and v such that</i></td></tr>
+<tr><th id="153">153</th><td><i>  //    (u + i*v)^2 = 1 / (x + i*y)  &lt;=&gt;</i></td></tr>
+<tr><th id="154">154</th><td><i>  //    u^2 - v^2 + i*2*u*v = x/|z|^2 - i*v/|z|^2.</i></td></tr>
+<tr><th id="155">155</th><td><i>  // By equating the real and imaginary parts we get:</i></td></tr>
+<tr><th id="156">156</th><td><i>  //    u^2 - v^2 = x/|z|^2</i></td></tr>
+<tr><th id="157">157</th><td><i>  //    2*u*v = y/|z|^2.</i></td></tr>
+<tr><th id="158">158</th><td><i>  //</i></td></tr>
+<tr><th id="159">159</th><td><i>  // For x &gt;= 0, this has the numerically stable solution</i></td></tr>
+<tr><th id="160">160</th><td><i>  //    u = sqrt(0.5 * (x + |z|)) / |z|</i></td></tr>
+<tr><th id="161">161</th><td><i>  //    v = -y / (2 * u * |z|)</i></td></tr>
+<tr><th id="162">162</th><td><i>  // and for x &lt; 0,</i></td></tr>
+<tr><th id="163">163</th><td><i>  //    v = -sign(y) * sqrt(0.5 * (-x + |z|)) / |z|</i></td></tr>
+<tr><th id="164">164</th><td><i>  //    u = -y / (2 * v * |z|)</i></td></tr>
+<tr><th id="165">165</th><td><i>  //</i></td></tr>
+<tr><th id="166">166</th><td><i>  // Letting w = sqrt(0.5 * (|x| + |z|)),</i></td></tr>
+<tr><th id="167">167</th><td><i>  //   if x == 0: u = w / |z|, v = -sign(y) * w / |z|</i></td></tr>
+<tr><th id="168">168</th><td><i>  //   if x &gt; 0:  u = w / |z|, v = -y / (2 * w * |z|)</i></td></tr>
+<tr><th id="169">169</th><td><i>  //   if x &lt; 0:  u = |y| / (2 * w * |z|), v = -sign(y) * w / |z|</i></td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td>  <em>const</em> T <dfn class="local col3 decl" id="6453x" title='x' data-type='const T' data-ref="6453x">x</dfn> = <span class="namespace">numext::</span>real(<a class="local col2 ref" href="#6452z" title='z' data-ref="6452z">z</a>);</td></tr>
+<tr><th id="172">172</th><td>  <em>const</em> T <dfn class="local col4 decl" id="6454y" title='y' data-type='const T' data-ref="6454y">y</dfn> = <span class="namespace">numext::</span>imag(<a class="local col2 ref" href="#6452z" title='z' data-ref="6452z">z</a>);</td></tr>
+<tr><th id="173">173</th><td>  <em>const</em> T <dfn class="local col5 decl" id="6455zero" title='zero' data-type='const T' data-ref="6455zero">zero</dfn> = T(<var>0</var>);</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>  <em>const</em> T <dfn class="local col6 decl" id="6456abs_z" title='abs_z' data-type='const T' data-ref="6456abs_z">abs_z</dfn> = <span class="namespace">numext::</span>hypot(<a class="local col3 ref" href="#6453x" title='x' data-ref="6453x">x</a>, <a class="local col4 ref" href="#6454y" title='y' data-ref="6454y">y</a>);</td></tr>
+<tr><th id="176">176</th><td>  <em>const</em> T <dfn class="local col7 decl" id="6457w" title='w' data-type='const T' data-ref="6457w">w</dfn> = <span class="namespace">numext::</span>sqrt(T(<var>0.5</var>) * (<span class="namespace">numext::</span>abs(<a class="local col3 ref" href="#6453x" title='x' data-ref="6453x">x</a>) + <a class="local col6 ref" href="#6456abs_z" title='abs_z' data-ref="6456abs_z">abs_z</a>));</td></tr>
+<tr><th id="177">177</th><td>  <em>const</em> T <dfn class="local col8 decl" id="6458woz" title='woz' data-type='const T' data-ref="6458woz">woz</dfn> = <a class="local col7 ref" href="#6457w" title='w' data-ref="6457w">w</a> / <a class="local col6 ref" href="#6456abs_z" title='abs_z' data-ref="6456abs_z">abs_z</a>;</td></tr>
+<tr><th id="178">178</th><td>  <i>// Corner cases consistent with 1/sqrt(z) on gcc/clang.</i></td></tr>
+<tr><th id="179">179</th><td>  <b>return</b></td></tr>
+<tr><th id="180">180</th><td>    <a class="local col6 ref" href="#6456abs_z" title='abs_z' data-ref="6456abs_z">abs_z</a> == <a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a> ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="type" href="util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::infinity(), <a class="type" href="util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;T&gt;::quiet_NaN())</td></tr>
+<tr><th id="181">181</th><td>      : ((<span class="namespace">numext::</span>isinf)(<a class="local col3 ref" href="#6453x" title='x' data-ref="6453x">x</a>) || (<span class="namespace">numext::</span>isinf)(<a class="local col4 ref" href="#6454y" title='y' data-ref="6454y">y</a>)) ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a>, <a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a>)</td></tr>
+<tr><th id="182">182</th><td>      : <a class="local col3 ref" href="#6453x" title='x' data-ref="6453x">x</a> == <a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a> ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="local col8 ref" href="#6458woz" title='woz' data-ref="6458woz">woz</a>, <a class="local col4 ref" href="#6454y" title='y' data-ref="6454y">y</a> &lt; <a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a> ? <a class="local col8 ref" href="#6458woz" title='woz' data-ref="6458woz">woz</a> : -<a class="local col8 ref" href="#6458woz" title='woz' data-ref="6458woz">woz</a>)</td></tr>
+<tr><th id="183">183</th><td>      : <a class="local col3 ref" href="#6453x" title='x' data-ref="6453x">x</a> &gt; <a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a> ? <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<a class="local col8 ref" href="#6458woz" title='woz' data-ref="6458woz">woz</a>, -<a class="local col4 ref" href="#6454y" title='y' data-ref="6454y">y</a> / (<var>2</var> * <a class="local col7 ref" href="#6457w" title='w' data-ref="6457w">w</a> * <a class="local col6 ref" href="#6456abs_z" title='abs_z' data-ref="6456abs_z">abs_z</a>))</td></tr>
+<tr><th id="184">184</th><td>      : <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<span class="namespace">numext::</span>abs(<a class="local col4 ref" href="#6454y" title='y' data-ref="6454y">y</a>) / (<var>2</var> * <a class="local col7 ref" href="#6457w" title='w' data-ref="6457w">w</a> * <a class="local col6 ref" href="#6456abs_z" title='abs_z' data-ref="6456abs_z">abs_z</a>), <a class="local col4 ref" href="#6454y" title='y' data-ref="6454y">y</a> &lt; <a class="local col5 ref" href="#6455zero" title='zero' data-ref="6455zero">zero</a> ? <a class="local col8 ref" href="#6458woz" title='woz' data-ref="6458woz">woz</a> : -<a class="local col8 ref" href="#6458woz" title='woz' data-ref="6458woz">woz</a> );</td></tr>
+<tr><th id="185">185</th><td>}</td></tr>
+<tr><th id="186">186</th><td></td></tr>
+<tr><th id="187">187</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="188">188</th><td><a class="macro" href="util/Macros.h.html#976" title="" data-ref="_M/EIGEN_DEVICE_FUNC">EIGEN_DEVICE_FUNC</a> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt; <dfn class="decl def fn" id="_ZN5Eigen8internal11complex_logERKSt7complexIT_E" title='Eigen::internal::complex_log' data-ref="_ZN5Eigen8internal11complex_logERKSt7complexIT_E">complex_log</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;&amp; <dfn class="local col9 decl" id="6459z" title='z' data-type='const std::complex&lt;T&gt; &amp;' data-ref="6459z">z</dfn>) {</td></tr>
+<tr><th id="189">189</th><td>  <i>// Computes complex log.</i></td></tr>
+<tr><th id="190">190</th><td>  T <dfn class="local col0 decl" id="6460a" title='a' data-type='T' data-ref="6460a">a</dfn> = <span class="namespace">numext::</span>abs(<a class="local col9 ref" href="#6459z" title='z' data-ref="6459z">z</a>);</td></tr>
+<tr><th id="191">191</th><td>  <a class="macro" href="util/Macros.h.html#1185" title="using std::atan2;" data-ref="_M/EIGEN_USING_STD">EIGEN_USING_STD</a>(atan2);</td></tr>
+<tr><th id="192">192</th><td>  T <dfn class="local col1 decl" id="6461b" title='b' data-type='T' data-ref="6461b">b</dfn> = atan2(<a class="local col9 ref" href="#6459z" title='z' data-ref="6459z">z</a>.imag(), <a class="local col9 ref" href="#6459z" title='z' data-ref="6459z">z</a>.real());</td></tr>
+<tr><th id="193">193</th><td>  <b>return</b> <span class="namespace">std::</span><a class="type" href="../../../../../../../include/c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt;(<span class="namespace">numext::</span>log(<a class="local col0 ref" href="#6460a" title='a' data-ref="6460a">a</a>), <a class="local col1 ref" href="#6461b" title='b' data-ref="6461b">b</a>);</td></tr>
+<tr><th id="194">194</th><td>}</td></tr>
+<tr><th id="195">195</th><td></td></tr>
+<tr><th id="196">196</th><td>} <i>// end namespace internal</i></td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="199">199</th><td></td></tr>
+<tr><th id="200">200</th><td><u>#<span data-ppcond="11">endif</span> // EIGEN_MATHFUNCTIONSIMPL_H</u></td></tr>
+<tr><th id="201">201</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

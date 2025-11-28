@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>arity_code.hpp source code [include/boost/lambda/detail/arity_code.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::lambda::detail::get_arity_,boost::lambda::get_arity,boost::lambda::get_tuple_arity,boost::lambda::has_placeholder,boost::lambda::includes_placeholder,boost::lambda::lacks_placeholder "/>
+<link rel="stylesheet" href="../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/lambda/detail/arity_code.hpp'; var root_path = '../../../..'; var data_path = '../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../..'>include</a>/<a href='../..'>boost</a>/<a href='..'>lambda</a>/<a href='./'>detail</a>/<a href='arity_code.hpp.html'>arity_code.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// -- Boost Lambda Library -------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i>// Copyright (C) 1999, 2000 Jaakko Jarvi (jaakko.jarvi@cs.utu.fi)</i></td></tr>
+<tr><th id="4">4</th><td><i>//</i></td></tr>
+<tr><th id="5">5</th><td><i>// Distributed under the Boost Software License, Version 1.0. (See</i></td></tr>
+<tr><th id="6">6</th><td><i>// accompanying file LICENSE_1_0.txt or copy at</i></td></tr>
+<tr><th id="7">7</th><td><i>// <a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="8">8</th><td><i>//</i></td></tr>
+<tr><th id="9">9</th><td><i>// For more information, see www.boost.org</i></td></tr>
+<tr><th id="10">10</th><td><i></i></td></tr>
+<tr><th id="11">11</th><td><i>// --------------------------------------------------</i></td></tr>
+<tr><th id="12">12</th><td></td></tr>
+<tr><th id="13">13</th><td><u>#<span data-ppcond="13">ifndef</span> <span class="macro" data-ref="_M/BOOST_LAMBDA_ARITY_CODE_HPP">BOOST_LAMBDA_ARITY_CODE_HPP</span></u></td></tr>
+<tr><th id="14">14</th><td><u>#define <dfn class="macro" id="_M/BOOST_LAMBDA_ARITY_CODE_HPP" data-ref="_M/BOOST_LAMBDA_ARITY_CODE_HPP">BOOST_LAMBDA_ARITY_CODE_HPP</dfn></u></td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><u>#include <a href="../../type_traits/cv_traits.hpp.html">"boost/type_traits/cv_traits.hpp"</a></u></td></tr>
+<tr><th id="17">17</th><td><u>#include <a href="../../type_traits/transform_traits.hpp.html">"boost/type_traits/transform_traits.hpp"</a></u></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><b>namespace</b> <span class="namespace">boost</span> { </td></tr>
+<tr><th id="20">20</th><td><b>namespace</b> <span class="namespace">lambda</span> {</td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><i>// These constants state, whether a lambda_functor instantiation results from </i></td></tr>
+<tr><th id="23">23</th><td><i>// an expression which contains no placeholders (NONE), </i></td></tr>
+<tr><th id="24">24</th><td><i>// only free1 placeholders (FIRST), </i></td></tr>
+<tr><th id="25">25</th><td><i>// free2 placeholders and maybe free1 placeholders (SECOND),</i></td></tr>
+<tr><th id="26">26</th><td><i>// free3 and maybe free1 and free2 placeholders (THIRD),</i></td></tr>
+<tr><th id="27">27</th><td><i>// freeE placeholders and maybe free1 and free2  (EXCEPTION).</i></td></tr>
+<tr><th id="28">28</th><td><i>// RETHROW means, that a rethrow expression is used somewhere in the lambda_functor.</i></td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><b>enum</b> { <dfn class="enum" id="boost::lambda::NONE" title='boost::lambda::NONE' data-ref="boost::lambda::NONE">NONE</dfn>             = <var>0x00</var>, <i>// Notice we are using bits as flags here.</i></td></tr>
+<tr><th id="31">31</th><td>       <dfn class="enum" id="boost::lambda::FIRST" title='boost::lambda::FIRST' data-ref="boost::lambda::FIRST">FIRST</dfn>            = <var>0x01</var>, </td></tr>
+<tr><th id="32">32</th><td>       <dfn class="enum" id="boost::lambda::SECOND" title='boost::lambda::SECOND' data-ref="boost::lambda::SECOND">SECOND</dfn>           = <var>0x02</var>, </td></tr>
+<tr><th id="33">33</th><td>       <dfn class="enum" id="boost::lambda::THIRD" title='boost::lambda::THIRD' data-ref="boost::lambda::THIRD">THIRD</dfn>            = <var>0x04</var>, </td></tr>
+<tr><th id="34">34</th><td>       <dfn class="enum" id="boost::lambda::EXCEPTION" title='boost::lambda::EXCEPTION' data-ref="boost::lambda::EXCEPTION">EXCEPTION</dfn>        = <var>0x08</var>, </td></tr>
+<tr><th id="35">35</th><td>       <dfn class="enum" id="boost::lambda::RETHROW" title='boost::lambda::RETHROW' data-ref="boost::lambda::RETHROW">RETHROW</dfn>          = <var>0x10</var>};</td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="39">39</th><td><b>struct</b> <a class="type" href="#boost::lambda::get_tuple_arity" title='boost::lambda::get_tuple_arity' data-ref="boost::lambda::get_tuple_arity">get_tuple_arity</a>;</td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <a class="type" href="#boost::lambda::detail::get_arity_" title='boost::lambda::detail::get_arity_' data-ref="boost::lambda::detail::get_arity_">get_arity_</a>;</td></tr>
+<tr><th id="44">44</th><td></td></tr>
+<tr><th id="45">45</th><td>} <i>// end detail;</i></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::lambda::get_arity" title='boost::lambda::get_arity' data-ref="boost::lambda::get_arity">get_arity</dfn> {</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = detail::get_arity_&lt;typename boost::remove_cv&lt;typename boost::remove_reference&lt;T&gt;::type&gt;::type&gt;::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::get_arity::value" title='boost::lambda::get_arity::value' data-ref="boost::lambda::get_arity::value">value</dfn> = detail::<a class="type" href="#boost::lambda::detail::get_arity_" title='boost::lambda::detail::get_arity_' data-ref="boost::lambda::detail::get_arity_">get_arity_</a>&lt;<b>typename</b> boost::<a class="type" href="../../type_traits/remove_cv.hpp.html#boost::remove_cv" title='boost::remove_cv' data-ref="boost::remove_cv">remove_cv</a>&lt;<b>typename</b> boost::<a class="type" href="../../type_traits/remove_reference.hpp.html#boost::remove_reference" title='boost::remove_reference' data-ref="boost::remove_reference">remove_reference</a>&lt;T&gt;::type&gt;::type&gt;::value);</td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td>};</td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td><b>namespace</b> <span class="namespace">detail</span> {</td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="56">56</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::get_arity_" title='boost::lambda::detail::get_arity_' data-ref="boost::lambda::detail::get_arity_">get_arity_</dfn> {</td></tr>
+<tr><th id="57">57</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = 0" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::get_arity_::value" title='boost::lambda::detail::get_arity_::value' data-ref="boost::lambda::detail::get_arity_::value">value</dfn> = <var>0</var>);</td></tr>
+<tr><th id="58">58</th><td>};</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="61">61</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::get_arity_" title='boost::lambda::detail::get_arity_' data-ref="boost::lambda::detail::get_arity_">get_arity_</dfn>&lt;<a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor" title='boost::lambda::lambda_functor' data-ref="boost::lambda::lambda_functor">lambda_functor</a>&lt;T&gt; &gt; {</td></tr>
+<tr><th id="62">62</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = get_arity&lt;T&gt;::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::get_arity_{lambda_functor{type-parameter-0-0}}::value" title='boost::lambda::detail::get_arity_&lt;lambda_functor&lt;type-parameter-0-0&gt;&gt;::value' data-ref="boost::lambda::detail::get_arity_{lambda_functor{type-parameter-0-0}}::value">value</dfn> = <a class="type" href="#boost::lambda::get_arity" title='boost::lambda::get_arity' data-ref="boost::lambda::get_arity">get_arity</a>&lt;T&gt;::value);</td></tr>
+<tr><th id="63">63</th><td>};</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td><b>template</b>&lt;<b>class</b> Action, <b>class</b> Args&gt;</td></tr>
+<tr><th id="66">66</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::get_arity_" title='boost::lambda::detail::get_arity_' data-ref="boost::lambda::detail::get_arity_">get_arity_</dfn>&lt;<a class="type" href="lambda_fwd.hpp.html#boost::lambda::lambda_functor_base" title='boost::lambda::lambda_functor_base' data-ref="boost::lambda::lambda_functor_base">lambda_functor_base</a>&lt;Action, Args&gt; &gt; {</td></tr>
+<tr><th id="67">67</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = get_tuple_arity&lt;Args&gt;::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::get_arity_{lambda_functor_base{type-parameter-0-0,type-parameter-0-1}}::value" title='boost::lambda::detail::get_arity_&lt;lambda_functor_base&lt;type-parameter-0-0, type-parameter-0-1&gt;&gt;::value' data-ref="boost::lambda::detail::get_arity_{lambda_functor_base{type-parameter-0-0,type-parameter-0-1}}::value">value</dfn> = <a class="type" href="#boost::lambda::get_tuple_arity" title='boost::lambda::get_tuple_arity' data-ref="boost::lambda::get_tuple_arity">get_tuple_arity</a>&lt;Args&gt;::value);</td></tr>
+<tr><th id="68">68</th><td>};</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td><b>template</b>&lt;<em>int</em> I&gt;</td></tr>
+<tr><th id="71">71</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::detail::get_arity_" title='boost::lambda::detail::get_arity_' data-ref="boost::lambda::detail::get_arity_">get_arity_</dfn>&lt;<a class="type" href="lambda_fwd.hpp.html#boost::lambda::placeholder" title='boost::lambda::placeholder' data-ref="boost::lambda::placeholder">placeholder</a>&lt;<a class="tu ref" href="#boost::lambda::detail::get_arity_{placeholder{I}}::I" title='boost::lambda::detail::get_arity_&lt;placeholder&lt;I&gt;&gt;::I' data-ref="boost::lambda::detail::get_arity_{placeholder{I}}::I">I</a>&gt; &gt; {</td></tr>
+<tr><th id="72">72</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = I" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::detail::get_arity_{placeholder{I}}::value" title='boost::lambda::detail::get_arity_&lt;placeholder&lt;I&gt;&gt;::value' data-ref="boost::lambda::detail::get_arity_{placeholder{I}}::value">value</dfn> = <a class="tu ref" href="#boost::lambda::detail::get_arity_{placeholder{I}}::I" title='boost::lambda::detail::get_arity_&lt;placeholder&lt;I&gt;&gt;::I' data-ref="boost::lambda::detail::get_arity_{placeholder{I}}::I">I</a>);</td></tr>
+<tr><th id="73">73</th><td>};</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>} <i>// detail </i></td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td><b>template</b>&lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="78">78</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::get_tuple_arity" title='boost::lambda::get_tuple_arity' data-ref="boost::lambda::get_tuple_arity">get_tuple_arity</dfn> {</td></tr>
+<tr><th id="79">79</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = get_arity&lt;typename T::head_type&gt;::value | get_tuple_arity&lt;typename T::tail_type&gt;::value" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::get_tuple_arity::value" title='boost::lambda::get_tuple_arity::value' data-ref="boost::lambda::get_tuple_arity::value">value</dfn> = <a class="type" href="#boost::lambda::get_arity" title='boost::lambda::get_arity' data-ref="boost::lambda::get_arity">get_arity</a>&lt;<b>typename</b> T::head_type&gt;::value | <a class="type" href="#boost::lambda::get_tuple_arity" title='boost::lambda::get_tuple_arity' data-ref="boost::lambda::get_tuple_arity">get_tuple_arity</a>&lt;<b>typename</b> T::tail_type&gt;::value);</td></tr>
+<tr><th id="80">80</th><td>};</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td></td></tr>
+<tr><th id="83">83</th><td><b>template</b>&lt;&gt;</td></tr>
+<tr><th id="84">84</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::get_tuple_arity" title='boost::lambda::get_tuple_arity' data-ref="boost::lambda::get_tuple_arity"><a class="type" href="#boost::lambda::get_tuple_arity" title='boost::lambda::get_tuple_arity' data-ref="boost::lambda::get_tuple_arity">get_tuple_arity</a></dfn>&lt;null_type&gt; {</td></tr>
+<tr><th id="85">85</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const int value = 0" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>int</em>, <dfn class="decl" id="boost::lambda::get_tuple_arity{boost::tuples::null_type}::value" title='boost::lambda::get_tuple_arity&lt;boost::tuples::null_type&gt;::value' data-ref="boost::lambda::get_tuple_arity{boost::tuples::null_type}::value">value</dfn> = <var>0</var>);</td></tr>
+<tr><th id="86">86</th><td>};</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>  <i>// Does T have placeholder&lt;I&gt; as it's subexpression?</i></td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td><b>template</b>&lt;<b>class</b> T, <em>int</em> I&gt;</td></tr>
+<tr><th id="92">92</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::has_placeholder" title='boost::lambda::has_placeholder' data-ref="boost::lambda::has_placeholder">has_placeholder</dfn> {</td></tr>
+<tr><th id="93">93</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const bool value = (get_arity&lt;T&gt;::value &amp; I) != 0" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>bool</em>, <dfn class="decl" id="boost::lambda::has_placeholder::value" title='boost::lambda::has_placeholder::value' data-ref="boost::lambda::has_placeholder::value">value</dfn> = (<a class="type" href="#boost::lambda::get_arity" title='boost::lambda::get_arity' data-ref="boost::lambda::get_arity">get_arity</a>&lt;T&gt;::value &amp; <a class="tu ref" href="#boost::lambda::has_placeholder::I" title='boost::lambda::has_placeholder::I' data-use='r' data-ref="boost::lambda::has_placeholder::I">I</a>) != <var>0</var>);</td></tr>
+<tr><th id="94">94</th><td>}; </td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td><b>template</b>&lt;<em>int</em> I, <em>int</em> J&gt;</td></tr>
+<tr><th id="97">97</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::includes_placeholder" title='boost::lambda::includes_placeholder' data-ref="boost::lambda::includes_placeholder">includes_placeholder</dfn> {</td></tr>
+<tr><th id="98">98</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const bool value = (J &amp; I) != 0" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>bool</em>, <dfn class="decl" id="boost::lambda::includes_placeholder::value" title='boost::lambda::includes_placeholder::value' data-ref="boost::lambda::includes_placeholder::value">value</dfn> = (<a class="tu ref" href="#boost::lambda::includes_placeholder::J" title='boost::lambda::includes_placeholder::J' data-use='r' data-ref="boost::lambda::includes_placeholder::J">J</a> &amp; <a class="tu ref" href="#boost::lambda::includes_placeholder::I" title='boost::lambda::includes_placeholder::I' data-use='r' data-ref="boost::lambda::includes_placeholder::I">I</a>) != <var>0</var>);</td></tr>
+<tr><th id="99">99</th><td>};</td></tr>
+<tr><th id="100">100</th><td></td></tr>
+<tr><th id="101">101</th><td><b>template</b>&lt;<em>int</em> I, <em>int</em> J&gt;</td></tr>
+<tr><th id="102">102</th><td><b>struct</b> <dfn class="type def" id="boost::lambda::lacks_placeholder" title='boost::lambda::lacks_placeholder' data-ref="boost::lambda::lacks_placeholder">lacks_placeholder</dfn> {</td></tr>
+<tr><th id="103">103</th><td>  <a class="macro" href="../../config/detail/suffix.hpp.html#410" title="static const bool value = ((J &amp; I) == 0)" data-ref="_M/BOOST_STATIC_CONSTANT">BOOST_STATIC_CONSTANT</a>(<em>bool</em>, <dfn class="decl" id="boost::lambda::lacks_placeholder::value" title='boost::lambda::lacks_placeholder::value' data-ref="boost::lambda::lacks_placeholder::value">value</dfn> = ((<a class="tu ref" href="#boost::lambda::lacks_placeholder::J" title='boost::lambda::lacks_placeholder::J' data-use='r' data-ref="boost::lambda::lacks_placeholder::J">J</a> &amp; <a class="tu ref" href="#boost::lambda::lacks_placeholder::I" title='boost::lambda::lacks_placeholder::I' data-use='r' data-ref="boost::lambda::lacks_placeholder::I">I</a>) == <var>0</var>));</td></tr>
+<tr><th id="104">104</th><td>};</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td>} <i>// namespace lambda</i></td></tr>
+<tr><th id="108">108</th><td>} <i>// namespace boost</i></td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td><u>#<span data-ppcond="13">endif</span></u></td></tr>
+<tr><th id="111">111</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../codebrowser/gtsam_unstable/linear/QPSParser.cpp.html'>codebrowser/gtsam_unstable/linear/QPSParser.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

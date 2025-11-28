@@ -1,0 +1,10 @@
+<dec f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='45' macro='1' type='const guid_initializer&lt;gtsam::SharedNoiseModel&gt; &amp;'/>
+<def f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='45' macro='1' type='const guid_initializer&lt;gtsam::SharedNoiseModel&gt; &amp;'/>
+<dec f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='40' macro='1' type='const guid_initializer&lt;SharedNoiseModel&gt; &amp;'/>
+<def f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='40' macro='1' type='const guid_initializer&lt;SharedNoiseModel&gt; &amp;'/>
+<dec f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='47' macro='1' type='const guid_initializer&lt;gtsam::SharedNoiseModel&gt; &amp;'/>
+<def f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='47' macro='1' type='const guid_initializer&lt;gtsam::SharedNoiseModel&gt; &amp;'/>
+<dec f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='43' macro='1' type='const guid_initializer&lt;SharedNoiseModel&gt; &amp;'/>
+<def f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='43' macro='1' type='const guid_initializer&lt;SharedNoiseModel&gt; &amp;'/>
+<dec f='codebrowser/tests/testSerializationSlam.cpp' l='139' macro='1' type='const guid_initializer&lt;gtsam::SharedNoiseModel&gt; &amp;'/>
+<def f='codebrowser/tests/testSerializationSlam.cpp' l='139' macro='1' type='const guid_initializer&lt;gtsam::SharedNoiseModel&gt; &amp;'/>

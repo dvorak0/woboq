@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>lago.h source code [codebrowser/gtsam/slam/lago.h] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/slam/lago.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>slam</a>/<a href='lago.h.html'>lago.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> *  <span class="command">@file</span> <span class="verb"> lago.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> *  <span class="command">@brief</span> Initialize Pose2 in a factor graph using LAGO</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *  (Linear Approximation for Graph Optimization). see papers:</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> *  L. Carlone, R. Aragues, J. Castellanos, and B. Bona, A fast and accurate</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> *  approximation for planar pose graph optimization, IJRR, 2014.</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> *  L. Carlone, R. Aragues, J.A. Castellanos, and B. Bona, A linear approximation</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"> *  for graph-based simultaneous localization and mapping, RSS, 2011.</i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"> *  <span class="command">@param</span> <span class="arg">graph:</span> nonlinear factor graph (can include arbitrary factors but we assume</i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"> *  that there is a subgraph involving Pose2 and betweenFactors). Also in the current</i></td></tr>
+<tr><th id="25">25</th><td><i class="doc"> *  version we assume that there is an odometric spanning path (x0-&gt;x1, x1-&gt;x2, etc)</i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"> *  and a prior on x0. This assumption can be relaxed by using the extra argument</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"> *  useOdometricPath = false, although this part of code is not stable yet.</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> *  <span class="command">@return</span> Values: initial guess from LAGO (only pose2 are initialized)</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc"> *  <span class="command">@author</span> Luca Carlone</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> *  <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc"> *  <span class="command">@date</span>   May 14, 2014</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><u>#pragma once</u></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td><u>#include <a href="../nonlinear/NonlinearFactorGraph.h.html">&lt;gtsam/nonlinear/NonlinearFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#include <a href="../linear/GaussianFactorGraph.h.html">&lt;gtsam/linear/GaussianFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="39">39</th><td><u>#include <a href="../linear/VectorValues.h.html">&lt;gtsam/linear/VectorValues.h&gt;</a></u></td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="42">42</th><td><b>namespace</b> <span class="namespace">lago</span> {</td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <em>double</em>&gt; <dfn class="typedef" id="gtsam::lago::key2doubleMap" title='gtsam::lago::key2doubleMap' data-type='std::map&lt;Key, double&gt;' data-ref="gtsam::lago::key2doubleMap">key2doubleMap</dfn>;</td></tr>
+<tr><th id="45">45</th><td><b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a>&gt; <dfn class="typedef" id="gtsam::lago::PredecessorMap" title='gtsam::lago::PredecessorMap' data-type='std::map&lt;Key, Key&gt;' data-ref="gtsam::lago::PredecessorMap">PredecessorMap</dfn>;</td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * Compute the cumulative orientations (without wrapping)</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> * for all nodes wrt the root (root has zero orientation).</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="51">51</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="typedef" href="#gtsam::lago::key2doubleMap" title='gtsam::lago::key2doubleMap' data-type='std::map&lt;Key, double&gt;' data-ref="gtsam::lago::key2doubleMap">key2doubleMap</a> <dfn class="decl fn" id="_ZN5gtsam4lago19computeThetasToRootERKSt3mapImdSt4lessImESaISt4pairIKmdEEERKS1_ImmS3_SaIS4_IS5_mEEE" title='gtsam::lago::computeThetasToRoot' data-ref="_ZN5gtsam4lago19computeThetasToRootERKSt3mapImdSt4lessImESaISt4pairIKmdEEERKS1_ImmS3_SaIS4_IS5_mEEE">computeThetasToRoot</dfn>(</td></tr>
+<tr><th id="52">52</th><td>    <em>const</em> <a class="typedef" href="#gtsam::lago::key2doubleMap" title='gtsam::lago::key2doubleMap' data-type='std::map&lt;Key, double&gt;' data-ref="gtsam::lago::key2doubleMap">key2doubleMap</a>&amp; <dfn class="local col1 decl" id="1deltaThetaMap" title='deltaThetaMap' data-type='const key2doubleMap &amp;' data-ref="1deltaThetaMap">deltaThetaMap</dfn>, <em>const</em> <a class="typedef" href="#gtsam::lago::PredecessorMap" title='gtsam::lago::PredecessorMap' data-type='std::map&lt;Key, Key&gt;' data-ref="gtsam::lago::PredecessorMap">PredecessorMap</a>&amp; <dfn class="local col2 decl" id="2tree" title='tree' data-type='const PredecessorMap &amp;' data-ref="2tree">tree</dfn>);</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc"> * Given a factor graph "g", and a spanning tree "tree", select the nodes belonging</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc"> * to the tree and to g, and stores the factor slots corresponding to edges in the</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> * tree and to chordsIds wrt this tree.</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> * Also it computes deltaThetaMap which is a fast way to encode relative</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> * orientations along the tree: for a node key2, s.t. tree[key2]=key1,</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"> * the value deltaThetaMap[key2] is relative orientation theta[key2]-theta[key1]</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="62">62</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <em>void</em> <dfn class="decl fn" id="_ZN5gtsam4lago16getSymbolicGraphERSt6vectorImSaImEES4_RSt3mapImdSt4lessImESaISt4pairIKmdEEERKS5_ImmS7_SaIS8_IS9_mEEERKNS_20NonlinearFactorGraphE" title='gtsam::lago::getSymbolicGraph' data-ref="_ZN5gtsam4lago16getSymbolicGraphERSt6vectorImSaImEES4_RSt3mapImdSt4lessImESaISt4pairIKmdEEERKS5_ImmS7_SaIS8_IS9_mEEERKNS_20NonlinearFactorGraphE">getSymbolicGraph</dfn>(</td></tr>
+<tr><th id="63">63</th><td><i>/*OUTPUTS*/</i><span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>&gt;&amp; <dfn class="local col3 decl" id="3spanningTreeIds" title='spanningTreeIds' data-type='std::vector&lt;size_t&gt; &amp;' data-ref="3spanningTreeIds">spanningTreeIds</dfn>, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>&gt;&amp; <dfn class="local col4 decl" id="4chordsIds" title='chordsIds' data-type='std::vector&lt;size_t&gt; &amp;' data-ref="4chordsIds">chordsIds</dfn>,</td></tr>
+<tr><th id="64">64</th><td>    <a class="typedef" href="#gtsam::lago::key2doubleMap" title='gtsam::lago::key2doubleMap' data-type='std::map&lt;Key, double&gt;' data-ref="gtsam::lago::key2doubleMap">key2doubleMap</a>&amp; <dfn class="local col5 decl" id="5deltaThetaMap" title='deltaThetaMap' data-type='key2doubleMap &amp;' data-ref="5deltaThetaMap">deltaThetaMap</dfn>,</td></tr>
+<tr><th id="65">65</th><td>    <i>/*INPUTS*/</i><em>const</em> <a class="typedef" href="#gtsam::lago::PredecessorMap" title='gtsam::lago::PredecessorMap' data-type='std::map&lt;Key, Key&gt;' data-ref="gtsam::lago::PredecessorMap">PredecessorMap</a>&amp; <dfn class="local col6 decl" id="6tree" title='tree' data-type='const PredecessorMap &amp;' data-ref="6tree">tree</dfn>, <em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col7 decl" id="7g" title='g' data-type='const NonlinearFactorGraph &amp;' data-ref="7g">g</dfn>);</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td><i class="doc">/** Linear factor graph with regularized orientation measurements */</i></td></tr>
+<tr><th id="68">68</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a> <dfn class="decl fn" id="_ZN5gtsam4lago27buildLinearOrientationGraphERKSt6vectorImSaImEES5_RKNS_20NonlinearFactorGraphERKSt3mapImdSt4lessImESaISt4pairIKmdEEERKS9_ImmSB_SaISC_ISD_mEEE" title='gtsam::lago::buildLinearOrientationGraph' data-ref="_ZN5gtsam4lago27buildLinearOrientationGraphERKSt6vectorImSaImEES5_RKNS_20NonlinearFactorGraphERKSt3mapImdSt4lessImESaISt4pairIKmdEEERKS9_ImmSB_SaISC_ISD_mEEE">buildLinearOrientationGraph</dfn>(</td></tr>
+<tr><th id="69">69</th><td>    <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>&gt;&amp; <dfn class="local col8 decl" id="8spanningTreeIds" title='spanningTreeIds' data-type='const std::vector&lt;size_t&gt; &amp;' data-ref="8spanningTreeIds">spanningTreeIds</dfn>,</td></tr>
+<tr><th id="70">70</th><td>    <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span>&gt;&amp; <dfn class="local col9 decl" id="9chordsIds" title='chordsIds' data-type='const std::vector&lt;size_t&gt; &amp;' data-ref="9chordsIds">chordsIds</dfn>, <em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col0 decl" id="10g" title='g' data-type='const NonlinearFactorGraph &amp;' data-ref="10g">g</dfn>,</td></tr>
+<tr><th id="71">71</th><td>    <em>const</em> <a class="typedef" href="#gtsam::lago::key2doubleMap" title='gtsam::lago::key2doubleMap' data-type='std::map&lt;Key, double&gt;' data-ref="gtsam::lago::key2doubleMap">key2doubleMap</a>&amp; <dfn class="local col1 decl" id="11orientationsToRoot" title='orientationsToRoot' data-type='const key2doubleMap &amp;' data-ref="11orientationsToRoot">orientationsToRoot</dfn>, <em>const</em> <a class="typedef" href="#gtsam::lago::PredecessorMap" title='gtsam::lago::PredecessorMap' data-type='std::map&lt;Key, Key&gt;' data-ref="gtsam::lago::PredecessorMap">PredecessorMap</a>&amp; <dfn class="local col2 decl" id="12tree" title='tree' data-type='const PredecessorMap &amp;' data-ref="12tree">tree</dfn>);</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td><i class="doc">/** Given a "pose2" factor graph, find its minimum spanning tree.</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc"> * Note: All 'Pose2' Between factors are given equal weightage.</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc"> * Note: Assumes all the edges (factors) are Between factors.</i></td></tr>
+<tr><th id="76">76</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="77">77</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="typedef" href="#gtsam::lago::PredecessorMap" title='gtsam::lago::PredecessorMap' data-type='std::map&lt;Key, Key&gt;' data-ref="gtsam::lago::PredecessorMap">PredecessorMap</a> <dfn class="decl fn" id="_ZN5gtsam4lago23findMinimumSpanningTreeERKNS_20NonlinearFactorGraphE" title='gtsam::lago::findMinimumSpanningTree' data-ref="_ZN5gtsam4lago23findMinimumSpanningTreeERKNS_20NonlinearFactorGraphE">findMinimumSpanningTree</dfn>(</td></tr>
+<tr><th id="78">78</th><td>    <em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col3 decl" id="13pose2Graph" title='pose2Graph' data-type='const NonlinearFactorGraph &amp;' data-ref="13pose2Graph">pose2Graph</dfn>);</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td><i class="doc">/** LAGO: Return the orientations of the Pose2 in a generic factor graph */</i></td></tr>
+<tr><th id="81">81</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZN5gtsam4lago22initializeOrientationsERKNS_20NonlinearFactorGraphEb" title='gtsam::lago::initializeOrientations' data-ref="_ZN5gtsam4lago22initializeOrientationsERKNS_20NonlinearFactorGraphEb">initializeOrientations</dfn>(</td></tr>
+<tr><th id="82">82</th><td>    <em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col4 decl" id="14graph" title='graph' data-type='const NonlinearFactorGraph &amp;' data-ref="14graph">graph</dfn>, <em>bool</em> <dfn class="local col5 decl" id="15useOdometricPath" title='useOdometricPath' data-type='bool' data-ref="15useOdometricPath">useOdometricPath</dfn> = <b>true</b>);</td></tr>
+<tr><th id="83">83</th><td></td></tr>
+<tr><th id="84">84</th><td><i class="doc">/** Return the values for the Pose2 in a generic factor graph */</i></td></tr>
+<tr><th id="85">85</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="decl fn" id="_ZN5gtsam4lago10initializeERKNS_20NonlinearFactorGraphEb" title='gtsam::lago::initialize' data-ref="_ZN5gtsam4lago10initializeERKNS_20NonlinearFactorGraphEb">initialize</dfn>(<em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col6 decl" id="16graph" title='graph' data-type='const NonlinearFactorGraph &amp;' data-ref="16graph">graph</dfn>,</td></tr>
+<tr><th id="86">86</th><td>    <em>bool</em> <dfn class="local col7 decl" id="17useOdometricPath" title='useOdometricPath' data-type='bool' data-ref="17useOdometricPath">useOdometricPath</dfn> = <b>true</b>);</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td><i class="doc">/** Only correct the orientation part in initialGuess */</i></td></tr>
+<tr><th id="89">89</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <dfn class="decl fn" id="_ZN5gtsam4lago10initializeERKNS_20NonlinearFactorGraphERKNS_6ValuesE" title='gtsam::lago::initialize' data-ref="_ZN5gtsam4lago10initializeERKNS_20NonlinearFactorGraphERKNS_6ValuesE">initialize</dfn>(<em>const</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a>&amp; <dfn class="local col8 decl" id="18graph" title='graph' data-type='const NonlinearFactorGraph &amp;' data-ref="18graph">graph</dfn>,</td></tr>
+<tr><th id="90">90</th><td>    <em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a>&amp; <dfn class="local col9 decl" id="19initialGuess" title='initialGuess' data-type='const Values &amp;' data-ref="19initialGuess">initialGuess</dfn>);</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>} <i>// end of namespace lago</i></td></tr>
+<tr><th id="93">93</th><td>} <i>// end of namespace gtsam</i></td></tr>
+<tr><th id="94">94</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/Pose2SLAMExample_lago.cpp.html'>codebrowser/examples/Pose2SLAMExample_lago.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

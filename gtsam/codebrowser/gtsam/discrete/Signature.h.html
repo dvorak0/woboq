@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Signature.h source code [codebrowser/gtsam/discrete/Signature.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::Signature "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/discrete/Signature.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>discrete</a>/<a href='Signature.h.html'>Signature.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">Signature.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span> signatures for conditional densities</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@date</span> Feb 27, 2011</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="../../../include/c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../../../include/c++/13/vector.html">&lt;vector&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="../../../include/c++/13/optional.html">&lt;optional&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="DiscreteKey.h.html">&lt;gtsam/discrete/DiscreteKey.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc">   * Signature for a discrete conditional distribution, used to construct conditionals.</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc">   * The format is (Key % string) for nodes with no parents,</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc">   * and (Key | Key, Key = string) for nodes with parents.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc">   * The string specifies a conditional probability table in 00 01 10 11 order.</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc">   * For three-valued, it would be 00 01 02 10 11 12 20 21 22, etc...</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc">   * For example, given the following keys</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc">   *   Key A("Asia"), S("Smoking"), T("Tuberculosis"), L("LungCancer"),</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">   *   B("Bronchitis"), E("Either"), X("XRay"), D("Dyspnoea");</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc">   * These are all valid signatures (Asia network example):</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc">   *   A % "99/1"</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc">   *   S % "50/50"</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">   *   T|A = "99/1  95/5"</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">   *   L|S = "99/1  90/10"</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">   *   B|S = "70/30  40/60"</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc">   *   (E|T,L) = "F F F 1"</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc">   *   X|E = "95/5 2/98"</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc">   *   (D|E,B) = "9/1 2/8 3/7 1/9"</i></td></tr>
+<tr><th id="51">51</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="52">52</th><td><i class="doc">   * <span class="command">@ingroup</span> <span class="verb">discrete</span></i></td></tr>
+<tr><th id="53">53</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="54">54</th><td>  <b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</dfn> {</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td>  <b>public</b>:</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td>    <i class="doc">/** Data type for the CPT */</i></td></tr>
+<tr><th id="59">59</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>double</em>&gt; <dfn class="typedef" id="gtsam::Signature::Row" title='gtsam::Signature::Row' data-type='std::vector&lt;double&gt;' data-ref="gtsam::Signature::Row">Row</dfn>;</td></tr>
+<tr><th id="60">60</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<a class="typedef" href="#gtsam::Signature::Row" title='gtsam::Signature::Row' data-type='std::vector&lt;double&gt;' data-ref="gtsam::Signature::Row">Row</a>&gt; <dfn class="typedef" id="gtsam::Signature::Table" title='gtsam::Signature::Table' data-type='std::vector&lt;Row&gt;' data-ref="gtsam::Signature::Table">Table</dfn>;</td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>  <b>private</b>:</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td>    <i class="doc">/** the variable key */</i></td></tr>
+<tr><th id="65">65</th><td>    <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a> <dfn class="decl field" id="gtsam::Signature::key_" title='gtsam::Signature::key_' data-ref="gtsam::Signature::key_">key_</dfn>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>    <i class="doc">/** the parent keys */</i></td></tr>
+<tr><th id="68">68</th><td>    <a class="type" href="DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a> <dfn class="decl field" id="gtsam::Signature::parents_" title='gtsam::Signature::parents_' data-ref="gtsam::Signature::parents_">parents_</dfn>;</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>    <i>// the given CPT specification string</i></td></tr>
+<tr><th id="71">71</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&gt; <dfn class="decl field" id="gtsam::Signature::spec_" title='gtsam::Signature::spec_' data-ref="gtsam::Signature::spec_">spec_</dfn>;</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>    <i>// the CPT as parsed, if successful</i></td></tr>
+<tr><th id="74">74</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<a class="typedef" href="#gtsam::Signature::Table" title='gtsam::Signature::Table' data-type='std::vector&lt;Row&gt;' data-ref="gtsam::Signature::Table">Table</a>&gt; <dfn class="decl field" id="gtsam::Signature::table_" title='gtsam::Signature::table_' data-ref="gtsam::Signature::table_">table_</dfn>;</td></tr>
+<tr><th id="75">75</th><td></td></tr>
+<tr><th id="76">76</th><td>  <b>public</b>:</td></tr>
+<tr><th id="77">77</th><td>   <i class="doc">/**</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc">    * Construct from key, parents, and a Signature::Table specifying the</i></td></tr>
+<tr><th id="79">79</th><td><i class="doc">    * conditional probability table (CPT) in 00 01 10 11 order. For</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">    * three-valued, it would be 00 01 02 10 11 12 20 21 22, etc....</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc">    *</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">    * The first string is parsed to add a key and parents.</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">    *</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">    * Example:</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">    *   Signature::Table table{{0.9, 0.1}, {0.2, 0.8}, {0.3, 0.7}, {0.1, 0.9}};</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">    *   Signature sig(D, {E, B}, table);</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="88">88</th><td>   <dfn class="decl fn" id="_ZN5gtsam9SignatureC1ERKSt4pairImmERKNS_12DiscreteKeysERKSt6vectorIS8_IdSaIdEESaISA_EE" title='gtsam::Signature::Signature' data-ref="_ZN5gtsam9SignatureC1ERKSt4pairImmERKNS_12DiscreteKeysERKSt6vectorIS8_IdSaIdEESaISA_EE">Signature</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col4 decl" id="634key" title='key' data-type='const DiscreteKey &amp;' data-ref="634key">key</dfn>, <em>const</em> <a class="type" href="DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a>&amp; <dfn class="local col5 decl" id="635parents" title='parents' data-type='const DiscreteKeys &amp;' data-ref="635parents">parents</dfn>,</td></tr>
+<tr><th id="89">89</th><td>             <em>const</em> <a class="typedef" href="#gtsam::Signature::Table" title='gtsam::Signature::Table' data-type='std::vector&lt;Row&gt;' data-ref="gtsam::Signature::Table">Table</a>&amp; <dfn class="local col6 decl" id="636table" title='table' data-type='const Table &amp;' data-ref="636table">table</dfn>);</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>   <i class="doc">/**</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">    * Construct from key, parents, and a string specifying the conditional</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">    * probability table (CPT) in 00 01 10 11 order. For three-valued, it would</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">    * be 00 01 02 10 11 12 20 21 22, etc....</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">    *</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">    * The first string is parsed to add a key and parents. The second string</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">    * parses into a table.</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">    *</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">    * Example (same CPT as above):</i></td></tr>
+<tr><th id="100">100</th><td><i class="doc">    *   Signature sig(D, {B,E}, "9/1 2/8 3/7 1/9");</i></td></tr>
+<tr><th id="101">101</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="102">102</th><td>   <dfn class="decl fn" id="_ZN5gtsam9SignatureC1ERKSt4pairImmERKNS_12DiscreteKeysERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::Signature::Signature' data-ref="_ZN5gtsam9SignatureC1ERKSt4pairImmERKNS_12DiscreteKeysERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">Signature</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col7 decl" id="637key" title='key' data-type='const DiscreteKey &amp;' data-ref="637key">key</dfn>, <em>const</em> <a class="type" href="DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a>&amp; <dfn class="local col8 decl" id="638parents" title='parents' data-type='const DiscreteKeys &amp;' data-ref="638parents">parents</dfn>,</td></tr>
+<tr><th id="103">103</th><td>             <em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col9 decl" id="639spec" title='spec' data-type='const std::string &amp;' data-ref="639spec">spec</dfn>);</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>   <i class="doc">/**</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">    * Construct from a single DiscreteKey.</i></td></tr>
+<tr><th id="107">107</th><td><i class="doc">    *</i></td></tr>
+<tr><th id="108">108</th><td><i class="doc">    * The resulting signature has no parents or CPT table. Typical use then</i></td></tr>
+<tr><th id="109">109</th><td><i class="doc">    * either adds parents with | and , operators below, or assigns a table with</i></td></tr>
+<tr><th id="110">110</th><td><i class="doc">    * operator=().</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="112">112</th><td>   <dfn class="decl fn" id="_ZN5gtsam9SignatureC1ERKSt4pairImmE" title='gtsam::Signature::Signature' data-ref="_ZN5gtsam9SignatureC1ERKSt4pairImmE">Signature</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col0 decl" id="640key" title='key' data-type='const DiscreteKey &amp;' data-ref="640key">key</dfn>);</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>   <i class="doc">/** the variable key */</i></td></tr>
+<tr><th id="115">115</th><td>   <em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam9Signature3keyEv" title='gtsam::Signature::key' data-ref="_ZNK5gtsam9Signature3keyEv">key</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::Signature::key_" title='gtsam::Signature::key_' data-ref="gtsam::Signature::key_">key_</a>; }</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td>   <i class="doc">/** the parent keys */</i></td></tr>
+<tr><th id="118">118</th><td>   <em>const</em> <a class="type" href="DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam9Signature7parentsEv" title='gtsam::Signature::parents' data-ref="_ZNK5gtsam9Signature7parentsEv">parents</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::Signature::parents_" title='gtsam::Signature::parents_' data-ref="gtsam::Signature::parents_">parents_</a>; }</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>   <i class="doc">/** All keys, with variable key first */</i></td></tr>
+<tr><th id="121">121</th><td>   <a class="type" href="DiscreteKey.h.html#gtsam::DiscreteKeys" title='gtsam::DiscreteKeys' data-ref="gtsam::DiscreteKeys">DiscreteKeys</a> <dfn class="decl fn" id="_ZNK5gtsam9Signature12discreteKeysEv" title='gtsam::Signature::discreteKeys' data-ref="_ZNK5gtsam9Signature12discreteKeysEv">discreteKeys</dfn>() <em>const</em>;</td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td>   <i class="doc">/** All key indices, with variable key first */</i></td></tr>
+<tr><th id="124">124</th><td>   <a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a> <dfn class="decl fn" id="_ZNK5gtsam9Signature7indicesEv" title='gtsam::Signature::indices' data-ref="_ZNK5gtsam9Signature7indicesEv">indices</dfn>() <em>const</em>;</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>   <i>// the CPT as parsed, if successful</i></td></tr>
+<tr><th id="127">127</th><td>   <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<a class="typedef" href="#gtsam::Signature::Table" title='gtsam::Signature::Table' data-type='std::vector&lt;Row&gt;' data-ref="gtsam::Signature::Table">Table</a>&gt;&amp; <dfn class="decl def fn" id="_ZNK5gtsam9Signature5tableEv" title='gtsam::Signature::table' data-ref="_ZNK5gtsam9Signature5tableEv">table</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::Signature::table_" title='gtsam::Signature::table_' data-ref="gtsam::Signature::table_">table_</a>; }</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td>   <i>// the CPT as a vector of doubles, with key's values most rapidly changing</i></td></tr>
+<tr><th id="130">130</th><td>   <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_vector.h.html#std::vector" title='std::vector' data-ref="std::vector">vector</a>&lt;<em>double</em>&gt; <dfn class="decl fn" id="_ZNK5gtsam9Signature3cptEv" title='gtsam::Signature::cpt' data-ref="_ZNK5gtsam9Signature3cptEv">cpt</dfn>() <em>const</em>;</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td>   <i class="doc">/** Add a parent */</i></td></tr>
+<tr><th id="133">133</th><td>   <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a>&amp; <dfn class="decl fn" id="_ZN5gtsam9SignaturecmERKSt4pairImmE" title='gtsam::Signature::operator,' data-ref="_ZN5gtsam9SignaturecmERKSt4pairImmE"><b>operator</b>,</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col1 decl" id="641parent" title='parent' data-type='const DiscreteKey &amp;' data-ref="641parent">parent</dfn>);</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>   <i class="doc">/** Add the CPT spec */</i></td></tr>
+<tr><th id="136">136</th><td>   <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a>&amp; <dfn class="decl fn" id="_ZN5gtsam9SignatureaSERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::Signature::operator=' data-ref="_ZN5gtsam9SignatureaSERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE"><b>operator</b>=</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col2 decl" id="642spec" title='spec' data-type='const std::string &amp;' data-ref="642spec">spec</dfn>);</td></tr>
+<tr><th id="137">137</th><td></td></tr>
+<tr><th id="138">138</th><td>   <i class="doc">/** Add the CPT spec directly as a table */</i></td></tr>
+<tr><th id="139">139</th><td>   <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a>&amp; <dfn class="decl fn" id="_ZN5gtsam9SignatureaSERKSt6vectorIS1_IdSaIdEESaIS3_EE" title='gtsam::Signature::operator=' data-ref="_ZN5gtsam9SignatureaSERKSt6vectorIS1_IdSaIdEESaIS3_EE"><b>operator</b>=</dfn>(<em>const</em> <a class="typedef" href="#gtsam::Signature::Table" title='gtsam::Signature::Table' data-type='std::vector&lt;Row&gt;' data-ref="gtsam::Signature::Table">Table</a>&amp; <dfn class="local col3 decl" id="643table" title='table' data-type='const Table &amp;' data-ref="643table">table</dfn>);</td></tr>
+<tr><th id="140">140</th><td></td></tr>
+<tr><th id="141">141</th><td>   <i class="doc">/** provide streaming */</i></td></tr>
+<tr><th id="142">142</th><td>   <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <b>friend</b> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="decl fn" id="_ZN5gtsamlsERSoRKNS_9SignatureE" title='gtsam::operator&lt;&lt;' data-ref="_ZN5gtsamlsERSoRKNS_9SignatureE"><b>operator</b>&lt;&lt;</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="local col4 decl" id="644os" title='os' data-type='std::ostream &amp;' data-ref="644os">os</dfn>,</td></tr>
+<tr><th id="143">143</th><td>                                                <em>const</em> <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a>&amp; <dfn class="local col5 decl" id="645s" title='s' data-type='const Signature &amp;' data-ref="645s">s</dfn>);</td></tr>
+<tr><th id="144">144</th><td>  };</td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">   * Helper function to create Signature objects</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">   * example: Signature s = D | E;</i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="150">150</th><td>  <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a> <dfn class="decl fn" id="_ZN5gtsamorERKSt4pairImmES3_" title='gtsam::operator|' data-ref="_ZN5gtsamorERKSt4pairImmES3_"><b>operator</b>|</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col6 decl" id="646key" title='key' data-type='const DiscreteKey &amp;' data-ref="646key">key</dfn>, <em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col7 decl" id="647parent" title='parent' data-type='const DiscreteKey &amp;' data-ref="647parent">parent</dfn>);</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">   * Helper function to create Signature objects</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">   * example: Signature s(D % "99/1");</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="156">156</th><td>  <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a> <dfn class="decl fn" id="_ZN5gtsamrmERKSt4pairImmERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::operator%' data-ref="_ZN5gtsamrmERKSt4pairImmERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE"><b>operator</b>%</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col8 decl" id="648key" title='key' data-type='const DiscreteKey &amp;' data-ref="648key">key</dfn>, <em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col9 decl" id="649parent" title='parent' data-type='const std::string &amp;' data-ref="649parent">parent</dfn>);</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="159">159</th><td><i class="doc">   * Helper function to create Signature objects, using table construction directly</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">   * example: Signature s(D % table);</i></td></tr>
+<tr><th id="161">161</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="162">162</th><td>  <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a> <dfn class="decl fn" id="_ZN5gtsamrmERKSt4pairImmERKSt6vectorIS4_IdSaIdEESaIS6_EE" title='gtsam::operator%' data-ref="_ZN5gtsamrmERKSt4pairImmERKSt6vectorIS4_IdSaIdEESaIS6_EE"><b>operator</b>%</dfn>(<em>const</em> <a class="typedef" href="DiscreteKey.h.html#gtsam::DiscreteKey" title='gtsam::DiscreteKey' data-type='std::pair&lt;Key, size_t&gt;' data-ref="gtsam::DiscreteKey">DiscreteKey</a>&amp; <dfn class="local col0 decl" id="650key" title='key' data-type='const DiscreteKey &amp;' data-ref="650key">key</dfn>, <em>const</em> <a class="type" href="#gtsam::Signature" title='gtsam::Signature' data-ref="gtsam::Signature">Signature</a>::<a class="typedef" href="#gtsam::Signature::Table" title='gtsam::Signature::Table' data-type='std::vector&lt;Row&gt;' data-ref="gtsam::Signature::Table">Table</a>&amp; <dfn class="local col1 decl" id="651parent" title='parent' data-type='const Signature::Table &amp;' data-ref="651parent">parent</dfn>);</td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td>}</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/DiscreteBayesNetExample.cpp.html'>codebrowser/examples/DiscreteBayesNetExample.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

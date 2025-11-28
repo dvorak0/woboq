@@ -1,0 +1,10 @@
+<dec f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='46' macro='1' type='const guid_initializer&lt;gtsam::SharedDiagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='46' macro='1' type='const guid_initializer&lt;gtsam::SharedDiagonal&gt; &amp;'/>
+<dec f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='41' macro='1' type='const guid_initializer&lt;SharedDiagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='41' macro='1' type='const guid_initializer&lt;SharedDiagonal&gt; &amp;'/>
+<dec f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='48' macro='1' type='const guid_initializer&lt;gtsam::SharedDiagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='48' macro='1' type='const guid_initializer&lt;gtsam::SharedDiagonal&gt; &amp;'/>
+<dec f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='44' macro='1' type='const guid_initializer&lt;SharedDiagonal&gt; &amp;'/>
+<def f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='44' macro='1' type='const guid_initializer&lt;SharedDiagonal&gt; &amp;'/>
+<dec f='codebrowser/tests/testSerializationSlam.cpp' l='140' macro='1' type='const guid_initializer&lt;gtsam::SharedDiagonal&gt; &amp;'/>
+<def f='codebrowser/tests/testSerializationSlam.cpp' l='140' macro='1' type='const guid_initializer&lt;gtsam::SharedDiagonal&gt; &amp;'/>

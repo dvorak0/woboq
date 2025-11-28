@@ -1,0 +1,253 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>kn.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/kn.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/kn.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='kn.c.html'>kn.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     kn.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Modified Bessel function, third kind, integer order</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, y, kn();</i></td></tr>
+<tr><th id="10">10</th><td><i> * int n;</i></td></tr>
+<tr><th id="11">11</th><td><i> *</i></td></tr>
+<tr><th id="12">12</th><td><i> * y = kn( n, x );</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> *</i></td></tr>
+<tr><th id="16">16</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="17">17</th><td><i> *</i></td></tr>
+<tr><th id="18">18</th><td><i> * Returns modified Bessel function of the third kind</i></td></tr>
+<tr><th id="19">19</th><td><i> * of order n of the argument.</i></td></tr>
+<tr><th id="20">20</th><td><i> *</i></td></tr>
+<tr><th id="21">21</th><td><i> * The range is partitioned into the two intervals [0,9.55] and</i></td></tr>
+<tr><th id="22">22</th><td><i> * (9.55, infinity).  An ascending power series is used in the</i></td></tr>
+<tr><th id="23">23</th><td><i> * low range, and an asymptotic expansion in the high range.</i></td></tr>
+<tr><th id="24">24</th><td><i> *</i></td></tr>
+<tr><th id="25">25</th><td><i> *</i></td></tr>
+<tr><th id="26">26</th><td><i> *</i></td></tr>
+<tr><th id="27">27</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="28">28</th><td><i> *</i></td></tr>
+<tr><th id="29">29</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="30">30</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="31">31</th><td><i> *    IEEE      0,30        90000       1.8e-8      3.0e-10</i></td></tr>
+<tr><th id="32">32</th><td><i> *</i></td></tr>
+<tr><th id="33">33</th><td><i> *  Error is high only near the crossover point x = 9.55</i></td></tr>
+<tr><th id="34">34</th><td><i> * between the two expansions used.</i></td></tr>
+<tr><th id="35">35</th><td><i> */</i></td></tr>
+<tr><th id="36">36</th><td></td></tr>
+<tr><th id="37">37</th><td></td></tr>
+<tr><th id="38">38</th><td><i>/*</i></td></tr>
+<tr><th id="39">39</th><td><i> * Cephes Math Library Release 2.8:  June, 2000</i></td></tr>
+<tr><th id="40">40</th><td><i> * Copyright 1984, 1987, 1988, 2000 by Stephen L. Moshier</i></td></tr>
+<tr><th id="41">41</th><td><i> */</i></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i>/*</i></td></tr>
+<tr><th id="45">45</th><td><i> * Algorithm for Kn.</i></td></tr>
+<tr><th id="46">46</th><td><i> *                        n-1</i></td></tr>
+<tr><th id="47">47</th><td><i> *                    -n   -  (n-k-1)!    2   k</i></td></tr>
+<tr><th id="48">48</th><td><i> * K (x)  =  0.5 (x/2)     &gt;  -------- (-x /4)</i></td></tr>
+<tr><th id="49">49</th><td><i> *  n                      -     k!</i></td></tr>
+<tr><th id="50">50</th><td><i> *                        k=0</i></td></tr>
+<tr><th id="51">51</th><td><i> *</i></td></tr>
+<tr><th id="52">52</th><td><i> *                     inf.                                   2   k</i></td></tr>
+<tr><th id="53">53</th><td><i> *        n         n   -                                   (x /4)</i></td></tr>
+<tr><th id="54">54</th><td><i> *  + (-1)  0.5(x/2)    &gt;  {p(k+1) + p(n+k+1) - 2log(x/2)} ---------</i></td></tr>
+<tr><th id="55">55</th><td><i> *                      -                                  k! (n+k)!</i></td></tr>
+<tr><th id="56">56</th><td><i> *                     k=0</i></td></tr>
+<tr><th id="57">57</th><td><i> *</i></td></tr>
+<tr><th id="58">58</th><td><i> * where  p(m) is the psi function: p(1) = -EUL and</i></td></tr>
+<tr><th id="59">59</th><td><i> *</i></td></tr>
+<tr><th id="60">60</th><td><i> *                       m-1</i></td></tr>
+<tr><th id="61">61</th><td><i> *                        -</i></td></tr>
+<tr><th id="62">62</th><td><i> *       p(m)  =  -EUL +  &gt;  1/k</i></td></tr>
+<tr><th id="63">63</th><td><i> *                        -</i></td></tr>
+<tr><th id="64">64</th><td><i> *                       k=1</i></td></tr>
+<tr><th id="65">65</th><td><i> *</i></td></tr>
+<tr><th id="66">66</th><td><i> * For large x,</i></td></tr>
+<tr><th id="67">67</th><td><i> *                                          2        2     2</i></td></tr>
+<tr><th id="68">68</th><td><i> *                                       u-1     (u-1 )(u-3 )</i></td></tr>
+<tr><th id="69">69</th><td><i> * K (z)  =  sqrt(pi/2z) exp(-z) { 1 + ------- + ------------ + ...}</i></td></tr>
+<tr><th id="70">70</th><td><i> *  v                                        1            2</i></td></tr>
+<tr><th id="71">71</th><td><i> *                                     1! (8z)     2! (8z)</i></td></tr>
+<tr><th id="72">72</th><td><i> * asymptotically, where</i></td></tr>
+<tr><th id="73">73</th><td><i> *</i></td></tr>
+<tr><th id="74">74</th><td><i> *            2</i></td></tr>
+<tr><th id="75">75</th><td><i> *     u = 4 v .</i></td></tr>
+<tr><th id="76">76</th><td><i> *</i></td></tr>
+<tr><th id="77">77</th><td><i> */</i></td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="80">80</th><td><u>#include &lt;float.h&gt;</u></td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><u>#define <dfn class="macro" id="_M/EUL" data-ref="_M/EUL">EUL</dfn> 5.772156649015328606065e-1</u></td></tr>
+<tr><th id="83">83</th><td><u>#define <dfn class="macro" id="_M/MAXFAC" data-ref="_M/MAXFAC">MAXFAC</dfn> 31</u></td></tr>
+<tr><th id="84">84</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>, <dfn class="decl" id="MAXLOG" title='MAXLOG' data-ref="MAXLOG">MAXLOG</dfn>;</td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td><em>double</em> <dfn class="decl def fn" id="kn" title='kn' data-ref="kn">kn</dfn>(<em>int</em> <dfn class="local col1 decl" id="1nn" title='nn' data-type='int' data-ref="1nn">nn</dfn>, <em>double</em> <dfn class="local col2 decl" id="2x" title='x' data-type='double' data-ref="2x">x</dfn>)</td></tr>
+<tr><th id="87">87</th><td>{</td></tr>
+<tr><th id="88">88</th><td>    <em>double</em> <dfn class="local col3 decl" id="3k" title='k' data-type='double' data-ref="3k">k</dfn>, <dfn class="local col4 decl" id="4kf" title='kf' data-type='double' data-ref="4kf">kf</dfn>, <dfn class="local col5 decl" id="5nk1f" title='nk1f' data-type='double' data-ref="5nk1f">nk1f</dfn>, <dfn class="local col6 decl" id="6nkf" title='nkf' data-type='double' data-ref="6nkf">nkf</dfn>, <dfn class="local col7 decl" id="7zn" title='zn' data-type='double' data-ref="7zn">zn</dfn>, <dfn class="local col8 decl" id="8t" title='t' data-type='double' data-ref="8t">t</dfn>, <dfn class="local col9 decl" id="9s" title='s' data-type='double' data-ref="9s">s</dfn>, <dfn class="local col0 decl" id="10z0" title='z0' data-type='double' data-ref="10z0">z0</dfn>, <dfn class="local col1 decl" id="11z" title='z' data-type='double' data-ref="11z">z</dfn>;</td></tr>
+<tr><th id="89">89</th><td>    <em>double</em> <dfn class="local col2 decl" id="12ans" title='ans' data-type='double' data-ref="12ans">ans</dfn>, <dfn class="local col3 decl" id="13fn" title='fn' data-type='double' data-ref="13fn">fn</dfn>, <dfn class="local col4 decl" id="14pn" title='pn' data-type='double' data-ref="14pn">pn</dfn>, <dfn class="local col5 decl" id="15pk" title='pk' data-type='double' data-ref="15pk">pk</dfn>, <dfn class="local col6 decl" id="16zmn" title='zmn' data-type='double' data-ref="16zmn">zmn</dfn>, <dfn class="local col7 decl" id="17tlg" title='tlg' data-type='double' data-ref="17tlg">tlg</dfn>, <dfn class="local col8 decl" id="18tox" title='tox' data-type='double' data-ref="18tox">tox</dfn>;</td></tr>
+<tr><th id="90">90</th><td>    <em>int</em> <dfn class="local col9 decl" id="19i" title='i' data-type='int' data-ref="19i">i</dfn>, <dfn class="local col0 decl" id="20n" title='n' data-type='int' data-ref="20n">n</dfn>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <b>if</b> (<a class="local col1 ref" href="#1nn" title='nn' data-ref="1nn">nn</a> &lt; <var>0</var>)</td></tr>
+<tr><th id="93">93</th><td>	<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> = -<a class="local col1 ref" href="#1nn" title='nn' data-ref="1nn">nn</a>;</td></tr>
+<tr><th id="94">94</th><td>    <b>else</b></td></tr>
+<tr><th id="95">95</th><td>	<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> = <a class="local col1 ref" href="#1nn" title='nn' data-ref="1nn">nn</a>;</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    <b>if</b> (<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> &gt; <a class="macro" href="#83" title="31" data-ref="_M/MAXFAC">MAXFAC</a>) {</td></tr>
+<tr><th id="98">98</th><td>      <dfn class="lbl" id="21overf" data-ref="21overf">overf</dfn>:</td></tr>
+<tr><th id="99">99</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"kn"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_OVERFLOW" title='SF_ERROR_OVERFLOW' data-ref="SF_ERROR_OVERFLOW">SF_ERROR_OVERFLOW</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="100">100</th><td>	<b>return</b> (<a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>);</td></tr>
+<tr><th id="101">101</th><td>    }</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &lt;= <var>0.0</var>) {</td></tr>
+<tr><th id="104">104</th><td>	<b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="105">105</th><td>	    <a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"kn"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="106">106</th><td>	    <b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="107">107</th><td>	}</td></tr>
+<tr><th id="108">108</th><td>	<b>else</b> {</td></tr>
+<tr><th id="109">109</th><td>	    <a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"kn"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_SINGULAR" title='SF_ERROR_SINGULAR' data-ref="SF_ERROR_SINGULAR">SF_ERROR_SINGULAR</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="110">110</th><td>	    <b>return</b> <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="111">111</th><td>	}</td></tr>
+<tr><th id="112">112</th><td>    }</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>    <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &gt; <var>9.55</var>)</td></tr>
+<tr><th id="116">116</th><td>	<b>goto</b> <a class="lbl" href="#22asymp" data-ref="22asymp">asymp</a>;</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>    <a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a> = <var>0.0</var>;</td></tr>
+<tr><th id="119">119</th><td>    <a class="local col0 ref" href="#10z0" title='z0' data-ref="10z0">z0</a> = <var>0.25</var> * <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> * <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="120">120</th><td>    <a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a> = <var>1.0</var>;</td></tr>
+<tr><th id="121">121</th><td>    <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> = <var>0.0</var>;</td></tr>
+<tr><th id="122">122</th><td>    <a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a> = <var>1.0</var>;</td></tr>
+<tr><th id="123">123</th><td>    <a class="local col8 ref" href="#18tox" title='tox' data-ref="18tox">tox</a> = <var>2.0</var> / <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>    <b>if</b> (<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> &gt; <var>0</var>) {</td></tr>
+<tr><th id="126">126</th><td>	<i>/* compute factorial of n and psi(n) */</i></td></tr>
+<tr><th id="127">127</th><td>	<a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> = -<a class="macro" href="#82" title="5.772156649015328606065e-1" data-ref="_M/EUL">EUL</a>;</td></tr>
+<tr><th id="128">128</th><td>	<a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> = <var>1.0</var>;</td></tr>
+<tr><th id="129">129</th><td>	<b>for</b> (<a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> = <var>1</var>; <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> &lt; <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>; <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a>++) {</td></tr>
+<tr><th id="130">130</th><td>	    <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> += <var>1.0</var> / <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a>;</td></tr>
+<tr><th id="131">131</th><td>	    <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="132">132</th><td>	    <a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a> *= <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a>;</td></tr>
+<tr><th id="133">133</th><td>	}</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>	<a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a> = <a class="local col8 ref" href="#18tox" title='tox' data-ref="18tox">tox</a>;</td></tr>
+<tr><th id="136">136</th><td></td></tr>
+<tr><th id="137">137</th><td>	<b>if</b> (<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> == <var>1</var>) {</td></tr>
+<tr><th id="138">138</th><td>	    <a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a> = <var>1.0</var> / <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="139">139</th><td>	}</td></tr>
+<tr><th id="140">140</th><td>	<b>else</b> {</td></tr>
+<tr><th id="141">141</th><td>	    <a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a> = <a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a> / <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>;</td></tr>
+<tr><th id="142">142</th><td>	    <a class="local col4 ref" href="#4kf" title='kf' data-ref="4kf">kf</a> = <var>1.0</var>;</td></tr>
+<tr><th id="143">143</th><td>	    <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> = <a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a>;</td></tr>
+<tr><th id="144">144</th><td>	    <a class="local col1 ref" href="#11z" title='z' data-ref="11z">z</a> = -<a class="local col0 ref" href="#10z0" title='z0' data-ref="10z0">z0</a>;</td></tr>
+<tr><th id="145">145</th><td>	    <a class="local col7 ref" href="#7zn" title='zn' data-ref="7zn">zn</a> = <var>1.0</var>;</td></tr>
+<tr><th id="146">146</th><td>	    <b>for</b> (<a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> = <var>1</var>; <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> &lt; <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>; <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a>++) {</td></tr>
+<tr><th id="147">147</th><td>		<a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a> = <a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a> / (<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> - <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a>);</td></tr>
+<tr><th id="148">148</th><td>		<a class="local col4 ref" href="#4kf" title='kf' data-ref="4kf">kf</a> = <a class="local col4 ref" href="#4kf" title='kf' data-ref="4kf">kf</a> * <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a>;</td></tr>
+<tr><th id="149">149</th><td>		<a class="local col7 ref" href="#7zn" title='zn' data-ref="7zn">zn</a> *= <a class="local col1 ref" href="#11z" title='z' data-ref="11z">z</a>;</td></tr>
+<tr><th id="150">150</th><td>		<a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> = <a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a> * <a class="local col7 ref" href="#7zn" title='zn' data-ref="7zn">zn</a> / <a class="local col4 ref" href="#4kf" title='kf' data-ref="4kf">kf</a>;</td></tr>
+<tr><th id="151">151</th><td>		<a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> += <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>;</td></tr>
+<tr><th id="152">152</th><td>		<b>if</b> ((<span class="macro" title="1.7976931348623157e+308" data-ref="_M/DBL_MAX">DBL_MAX</span> - <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>)) &lt; <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>))</td></tr>
+<tr><th id="153">153</th><td>		    <b>goto</b> <a class="lbl" href="#21overf" data-ref="21overf">overf</a>;</td></tr>
+<tr><th id="154">154</th><td>		<b>if</b> ((<a class="local col8 ref" href="#18tox" title='tox' data-ref="18tox">tox</a> &gt; <var>1.0</var>) &amp;&amp; ((<span class="macro" title="1.7976931348623157e+308" data-ref="_M/DBL_MAX">DBL_MAX</span> / <a class="local col8 ref" href="#18tox" title='tox' data-ref="18tox">tox</a>) &lt; <a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a>))</td></tr>
+<tr><th id="155">155</th><td>		    <b>goto</b> <a class="lbl" href="#21overf" data-ref="21overf">overf</a>;</td></tr>
+<tr><th id="156">156</th><td>		<a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a> *= <a class="local col8 ref" href="#18tox" title='tox' data-ref="18tox">tox</a>;</td></tr>
+<tr><th id="157">157</th><td>	    }</td></tr>
+<tr><th id="158">158</th><td>	    <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> *= <var>0.5</var>;</td></tr>
+<tr><th id="159">159</th><td>	    <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>);</td></tr>
+<tr><th id="160">160</th><td>	    <b>if</b> ((<a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a> &gt; <var>1.0</var>) &amp;&amp; ((<span class="macro" title="1.7976931348623157e+308" data-ref="_M/DBL_MAX">DBL_MAX</span> / <a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a>) &lt; <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>))</td></tr>
+<tr><th id="161">161</th><td>		<b>goto</b> <a class="lbl" href="#21overf" data-ref="21overf">overf</a>;</td></tr>
+<tr><th id="162">162</th><td>	    <b>if</b> ((<a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> &gt; <var>1.0</var>) &amp;&amp; ((<span class="macro" title="1.7976931348623157e+308" data-ref="_M/DBL_MAX">DBL_MAX</span> / <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>) &lt; <a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a>))</td></tr>
+<tr><th id="163">163</th><td>		<b>goto</b> <a class="lbl" href="#21overf" data-ref="21overf">overf</a>;</td></tr>
+<tr><th id="164">164</th><td>	    <a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a> = <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> * <a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a>;</td></tr>
+<tr><th id="165">165</th><td>	}</td></tr>
+<tr><th id="166">166</th><td>    }</td></tr>
+<tr><th id="167">167</th><td></td></tr>
+<tr><th id="168">168</th><td></td></tr>
+<tr><th id="169">169</th><td>    <a class="local col7 ref" href="#17tlg" title='tlg' data-ref="17tlg">tlg</a> = <var>2.0</var> * <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#104" title='log' data-ref="log">log</a>(<span class='inlayHint'>x:&nbsp;</span><var>0.5</var> * <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="170">170</th><td>    <a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> = -<a class="macro" href="#82" title="5.772156649015328606065e-1" data-ref="_M/EUL">EUL</a>;</td></tr>
+<tr><th id="171">171</th><td>    <b>if</b> (<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> == <var>0</var>) {</td></tr>
+<tr><th id="172">172</th><td>	<a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> = <a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a>;</td></tr>
+<tr><th id="173">173</th><td>	<a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> = <var>1.0</var>;</td></tr>
+<tr><th id="174">174</th><td>    }</td></tr>
+<tr><th id="175">175</th><td>    <b>else</b> {</td></tr>
+<tr><th id="176">176</th><td>	<a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> = <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> + <var>1.0</var> / <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>;</td></tr>
+<tr><th id="177">177</th><td>	<a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> = <var>1.0</var> / <a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a>;</td></tr>
+<tr><th id="178">178</th><td>    }</td></tr>
+<tr><th id="179">179</th><td>    <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> = (<a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> + <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> - <a class="local col7 ref" href="#17tlg" title='tlg' data-ref="17tlg">tlg</a>) * <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>;</td></tr>
+<tr><th id="180">180</th><td>    <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> = <var>1.0</var>;</td></tr>
+<tr><th id="181">181</th><td>    <b>do</b> {</td></tr>
+<tr><th id="182">182</th><td>	<a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> *= <a class="local col0 ref" href="#10z0" title='z0' data-ref="10z0">z0</a> / (<a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> * (<a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> + <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>));</td></tr>
+<tr><th id="183">183</th><td>	<a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> += <var>1.0</var> / <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a>;</td></tr>
+<tr><th id="184">184</th><td>	<a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> += <var>1.0</var> / (<a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> + <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>);</td></tr>
+<tr><th id="185">185</th><td>	<a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> += (<a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> + <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> - <a class="local col7 ref" href="#17tlg" title='tlg' data-ref="17tlg">tlg</a>) * <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>;</td></tr>
+<tr><th id="186">186</th><td>	<a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> += <var>1.0</var>;</td></tr>
+<tr><th id="187">187</th><td>    }</td></tr>
+<tr><th id="188">188</th><td>    <b>while</b> (<a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> / <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>) &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>);</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>    <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> = <var>0.5</var> * <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> / <a class="local col6 ref" href="#16zmn" title='zmn' data-ref="16zmn">zmn</a>;</td></tr>
+<tr><th id="191">191</th><td>    <b>if</b> (<a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a> &amp; <var>1</var>)</td></tr>
+<tr><th id="192">192</th><td>	<a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> = -<a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>;</td></tr>
+<tr><th id="193">193</th><td>    <a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a> += <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>;</td></tr>
+<tr><th id="194">194</th><td></td></tr>
+<tr><th id="195">195</th><td>    <b>return</b> (<a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a>);</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td></td></tr>
+<tr><th id="198">198</th><td></td></tr>
+<tr><th id="199">199</th><td>    <i>/* Asymptotic expansion for Kn(x) */</i></td></tr>
+<tr><th id="200">200</th><td>    <i>/* Converges to 1.4e-17 for x &gt; 18.4 */</i></td></tr>
+<tr><th id="201">201</th><td></td></tr>
+<tr><th id="202">202</th><td>  <dfn class="lbl" id="22asymp" data-ref="22asymp">asymp</dfn>:</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>    <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &gt; <a class="ref" href="#MAXLOG" title='MAXLOG' data-ref="MAXLOG">MAXLOG</a>) {</td></tr>
+<tr><th id="205">205</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"kn"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_UNDERFLOW" title='SF_ERROR_UNDERFLOW' data-ref="SF_ERROR_UNDERFLOW">SF_ERROR_UNDERFLOW</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="206">206</th><td>	<b>return</b> (<var>0.0</var>);</td></tr>
+<tr><th id="207">207</th><td>    }</td></tr>
+<tr><th id="208">208</th><td>    <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> = <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>;</td></tr>
+<tr><th id="209">209</th><td>    <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> = <var>4.0</var> * <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a> * <a class="local col3 ref" href="#3k" title='k' data-ref="3k">k</a>;</td></tr>
+<tr><th id="210">210</th><td>    <a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> = <var>1.0</var>;</td></tr>
+<tr><th id="211">211</th><td>    <a class="local col0 ref" href="#10z0" title='z0' data-ref="10z0">z0</a> = <var>8.0</var> * <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="212">212</th><td>    <a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a> = <var>1.0</var>;</td></tr>
+<tr><th id="213">213</th><td>    <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> = <var>1.0</var>;</td></tr>
+<tr><th id="214">214</th><td>    <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> = <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>;</td></tr>
+<tr><th id="215">215</th><td>    <a class="local col6 ref" href="#6nkf" title='nkf' data-ref="6nkf">nkf</a> = <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="216">216</th><td>    <a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> = <var>0</var>;</td></tr>
+<tr><th id="217">217</th><td>    <b>do</b> {</td></tr>
+<tr><th id="218">218</th><td>	<a class="local col1 ref" href="#11z" title='z' data-ref="11z">z</a> = <a class="local col4 ref" href="#14pn" title='pn' data-ref="14pn">pn</a> - <a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> * <a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a>;</td></tr>
+<tr><th id="219">219</th><td>	<a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> = <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> * <a class="local col1 ref" href="#11z" title='z' data-ref="11z">z</a> / (<a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a> * <a class="local col0 ref" href="#10z0" title='z0' data-ref="10z0">z0</a>);</td></tr>
+<tr><th id="220">220</th><td>	<a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>);</td></tr>
+<tr><th id="221">221</th><td>	<b>if</b> ((<a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> &gt;= <a class="local col0 ref" href="#20n" title='n' data-ref="20n">n</a>) &amp;&amp; (<a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a> &gt; <a class="local col6 ref" href="#6nkf" title='nkf' data-ref="6nkf">nkf</a>)) {</td></tr>
+<tr><th id="222">222</th><td>	    <b>goto</b> <a class="lbl" href="#23adone" data-ref="23adone">adone</a>;</td></tr>
+<tr><th id="223">223</th><td>	}</td></tr>
+<tr><th id="224">224</th><td>	<a class="local col6 ref" href="#6nkf" title='nkf' data-ref="6nkf">nkf</a> = <a class="local col5 ref" href="#5nk1f" title='nk1f' data-ref="5nk1f">nk1f</a>;</td></tr>
+<tr><th id="225">225</th><td>	<a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a> += <a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a>;</td></tr>
+<tr><th id="226">226</th><td>	<a class="local col3 ref" href="#13fn" title='fn' data-ref="13fn">fn</a> += <var>1.0</var>;</td></tr>
+<tr><th id="227">227</th><td>	<a class="local col5 ref" href="#15pk" title='pk' data-ref="15pk">pk</a> += <var>2.0</var>;</td></tr>
+<tr><th id="228">228</th><td>	<a class="local col9 ref" href="#19i" title='i' data-ref="19i">i</a> += <var>1</var>;</td></tr>
+<tr><th id="229">229</th><td>    }</td></tr>
+<tr><th id="230">230</th><td>    <b>while</b> (<a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col8 ref" href="#8t" title='t' data-ref="8t">t</a> / <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>) &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>);</td></tr>
+<tr><th id="231">231</th><td></td></tr>
+<tr><th id="232">232</th><td>  <dfn class="lbl" id="23adone" data-ref="23adone">adone</dfn>:</td></tr>
+<tr><th id="233">233</th><td>    <a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#95" title='exp' data-ref="exp">exp</a>(<span class='inlayHint'>x:&nbsp;</span>-<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>) * <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a> / (<var>2.0</var> * <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>)) * <a class="local col9 ref" href="#9s" title='s' data-ref="9s">s</a>;</td></tr>
+<tr><th id="234">234</th><td>    <b>return</b> (<a class="local col2 ref" href="#12ans" title='ans' data-ref="12ans">ans</a>);</td></tr>
+<tr><th id="235">235</th><td>}</td></tr>
+<tr><th id="236">236</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

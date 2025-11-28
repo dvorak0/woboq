@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>stdtr.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/stdtr.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/stdtr.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='stdtr.c.html'>stdtr.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     stdtr.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Student's t distribution</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double t, stdtr();</i></td></tr>
+<tr><th id="10">10</th><td><i> * short k;</i></td></tr>
+<tr><th id="11">11</th><td><i> *</i></td></tr>
+<tr><th id="12">12</th><td><i> * y = stdtr( k, t );</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * Computes the integral from minus infinity to t of the Student</i></td></tr>
+<tr><th id="18">18</th><td><i> * t distribution with integer k &gt; 0 degrees of freedom:</i></td></tr>
+<tr><th id="19">19</th><td><i> *</i></td></tr>
+<tr><th id="20">20</th><td><i> *                                      t</i></td></tr>
+<tr><th id="21">21</th><td><i> *                                      -</i></td></tr>
+<tr><th id="22">22</th><td><i> *                                     | |</i></td></tr>
+<tr><th id="23">23</th><td><i> *              -                      |         2   -(k+1)/2</i></td></tr>
+<tr><th id="24">24</th><td><i> *             | ( (k+1)/2 )           |  (     x   )</i></td></tr>
+<tr><th id="25">25</th><td><i> *       ----------------------        |  ( 1 + --- )        dx</i></td></tr>
+<tr><th id="26">26</th><td><i> *                     -               |  (      k  )</i></td></tr>
+<tr><th id="27">27</th><td><i> *       sqrt( k pi ) | ( k/2 )        |</i></td></tr>
+<tr><th id="28">28</th><td><i> *                                   | |</i></td></tr>
+<tr><th id="29">29</th><td><i> *                                    -</i></td></tr>
+<tr><th id="30">30</th><td><i> *                                   -inf.</i></td></tr>
+<tr><th id="31">31</th><td><i> *</i></td></tr>
+<tr><th id="32">32</th><td><i> * Relation to incomplete beta integral:</i></td></tr>
+<tr><th id="33">33</th><td><i> *</i></td></tr>
+<tr><th id="34">34</th><td><i> *        1 - stdtr(k,t) = 0.5 * incbet( k/2, 1/2, z )</i></td></tr>
+<tr><th id="35">35</th><td><i> * where</i></td></tr>
+<tr><th id="36">36</th><td><i> *        z = k/(k + t**2).</i></td></tr>
+<tr><th id="37">37</th><td><i> *</i></td></tr>
+<tr><th id="38">38</th><td><i> * For t &lt; -2, this is the method of computation.  For higher t,</i></td></tr>
+<tr><th id="39">39</th><td><i> * a direct method is derived from integration by parts.</i></td></tr>
+<tr><th id="40">40</th><td><i> * Since the function is symmetric about t=0, the area under the</i></td></tr>
+<tr><th id="41">41</th><td><i> * right tail of the density is found by calling the function</i></td></tr>
+<tr><th id="42">42</th><td><i> * with -t instead of t.</i></td></tr>
+<tr><th id="43">43</th><td><i> *</i></td></tr>
+<tr><th id="44">44</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="45">45</th><td><i> *</i></td></tr>
+<tr><th id="46">46</th><td><i> * Tested at random 1 &lt;= k &lt;= 25.  The "domain" refers to t.</i></td></tr>
+<tr><th id="47">47</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="48">48</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="49">49</th><td><i> *    IEEE     -100,-2      50000       5.9e-15     1.4e-15</i></td></tr>
+<tr><th id="50">50</th><td><i> *    IEEE     -2,100      500000       2.7e-15     4.9e-17</i></td></tr>
+<tr><th id="51">51</th><td><i> */</i></td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td><i>/*                                                     stdtri.c</i></td></tr>
+<tr><th id="54">54</th><td><i> *</i></td></tr>
+<tr><th id="55">55</th><td><i> *     Functional inverse of Student's t distribution</i></td></tr>
+<tr><th id="56">56</th><td><i> *</i></td></tr>
+<tr><th id="57">57</th><td><i> *</i></td></tr>
+<tr><th id="58">58</th><td><i> *</i></td></tr>
+<tr><th id="59">59</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="60">60</th><td><i> *</i></td></tr>
+<tr><th id="61">61</th><td><i> * double p, t, stdtri();</i></td></tr>
+<tr><th id="62">62</th><td><i> * int k;</i></td></tr>
+<tr><th id="63">63</th><td><i> *</i></td></tr>
+<tr><th id="64">64</th><td><i> * t = stdtri( k, p );</i></td></tr>
+<tr><th id="65">65</th><td><i> *</i></td></tr>
+<tr><th id="66">66</th><td><i> *</i></td></tr>
+<tr><th id="67">67</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="68">68</th><td><i> *</i></td></tr>
+<tr><th id="69">69</th><td><i> * Given probability p, finds the argument t such that stdtr(k,t)</i></td></tr>
+<tr><th id="70">70</th><td><i> * is equal to p.</i></td></tr>
+<tr><th id="71">71</th><td><i> *</i></td></tr>
+<tr><th id="72">72</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="73">73</th><td><i> *</i></td></tr>
+<tr><th id="74">74</th><td><i> * Tested at random 1 &lt;= k &lt;= 100.  The "domain" refers to p:</i></td></tr>
+<tr><th id="75">75</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="76">76</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="77">77</th><td><i> *    IEEE    .001,.999     25000       5.7e-15     8.0e-16</i></td></tr>
+<tr><th id="78">78</th><td><i> *    IEEE    10^-6,.001    25000       2.0e-12     2.9e-14</i></td></tr>
+<tr><th id="79">79</th><td><i> */</i></td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td><i>/*</i></td></tr>
+<tr><th id="83">83</th><td><i> * Cephes Math Library Release 2.3:  March, 1995</i></td></tr>
+<tr><th id="84">84</th><td><i> * Copyright 1984, 1987, 1995 by Stephen L. Moshier</i></td></tr>
+<tr><th id="85">85</th><td><i> */</i></td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="88">88</th><td><u>#include &lt;float.h&gt;</u></td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td><em>double</em> <dfn class="decl def fn" id="stdtr" title='stdtr' data-ref="stdtr">stdtr</dfn>(<em>int</em> <dfn class="local col1 decl" id="1k" title='k' data-type='int' data-ref="1k">k</dfn>, <em>double</em> <dfn class="local col2 decl" id="2t" title='t' data-type='double' data-ref="2t">t</dfn>)</td></tr>
+<tr><th id="93">93</th><td>{</td></tr>
+<tr><th id="94">94</th><td>    <em>double</em> <dfn class="local col3 decl" id="3x" title='x' data-type='double' data-ref="3x">x</dfn>, <dfn class="local col4 decl" id="4rk" title='rk' data-type='double' data-ref="4rk">rk</dfn>, <dfn class="local col5 decl" id="5z" title='z' data-type='double' data-ref="5z">z</dfn>, <dfn class="local col6 decl" id="6f" title='f' data-type='double' data-ref="6f">f</dfn>, <dfn class="local col7 decl" id="7tz" title='tz' data-type='double' data-ref="7tz">tz</dfn>, <dfn class="local col8 decl" id="8p" title='p' data-type='double' data-ref="8p">p</dfn>, <dfn class="local col9 decl" id="9xsqk" title='xsqk' data-type='double' data-ref="9xsqk">xsqk</dfn>;</td></tr>
+<tr><th id="95">95</th><td>    <em>int</em> <dfn class="local col0 decl" id="10j" title='j' data-type='int' data-ref="10j">j</dfn>;</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    <b>if</b> (<a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a> &lt;= <var>0</var>) {</td></tr>
+<tr><th id="98">98</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"stdtr"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="99">99</th><td>	<b>return</b> (<a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>);</td></tr>
+<tr><th id="100">100</th><td>    }</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <b>if</b> (<a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a> == <var>0</var>)</td></tr>
+<tr><th id="103">103</th><td>	<b>return</b> (<var>0.5</var>);</td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td>    <b>if</b> (<a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a> &lt; -<var>2.0</var>) {</td></tr>
+<tr><th id="106">106</th><td>	<a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a> = <a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a>;</td></tr>
+<tr><th id="107">107</th><td>	<a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a> = <a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a> / (<a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a> + <a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a> * <a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a>);</td></tr>
+<tr><th id="108">108</th><td>	<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> = <var>0.5</var> * <a class="ref fn" href="../cephes.h.html#incbet" title='incbet' data-ref="incbet">incbet</a>(<span class='inlayHint'>aa:&nbsp;</span><var>0.5</var> * <a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a>, <span class='inlayHint'>bb:&nbsp;</span><var>0.5</var>, <span class='inlayHint'>xx:&nbsp;</span><a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a>);</td></tr>
+<tr><th id="109">109</th><td>	<b>return</b> (<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a>);</td></tr>
+<tr><th id="110">110</th><td>    }</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>    <i>/*     compute integral from -t to + t */</i></td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>    <b>if</b> (<a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a> &lt; <var>0</var>)</td></tr>
+<tr><th id="115">115</th><td>	<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> = -<a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a>;</td></tr>
+<tr><th id="116">116</th><td>    <b>else</b></td></tr>
+<tr><th id="117">117</th><td>	<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> = <a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a>;</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>    <a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a> = <a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a>;			<i>/* degrees of freedom */</i></td></tr>
+<tr><th id="120">120</th><td>    <a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a> = <var>1.0</var> + (<a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> * <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a>) / <a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a>;</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td>    <i>/* test if k is odd or even */</i></td></tr>
+<tr><th id="123">123</th><td>    <b>if</b> ((<a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a> &amp; <var>1</var>) != <var>0</var>) {</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td>	<i>/*      computation for odd k   */</i></td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>	<a class="local col9 ref" href="#9xsqk" title='xsqk' data-ref="9xsqk">xsqk</a> = <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> / <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a>);</td></tr>
+<tr><th id="128">128</th><td>	<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#57" title='atan' data-ref="atan">atan</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col9 ref" href="#9xsqk" title='xsqk' data-ref="9xsqk">xsqk</a>);</td></tr>
+<tr><th id="129">129</th><td>	<b>if</b> (<a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a> &gt; <var>1</var>) {</td></tr>
+<tr><th id="130">130</th><td>	    <a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a> = <var>1.0</var>;</td></tr>
+<tr><th id="131">131</th><td>	    <a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a> = <var>1.0</var>;</td></tr>
+<tr><th id="132">132</th><td>	    <a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> = <var>3</var>;</td></tr>
+<tr><th id="133">133</th><td>	    <b>while</b> ((<a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> &lt;= (<a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a> - <var>2</var>)) &amp;&amp; ((<a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a> / <a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a>) &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>)) {</td></tr>
+<tr><th id="134">134</th><td>		<a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a> *= (<a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> - <var>1</var>) / (<a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a> * <a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a>);</td></tr>
+<tr><th id="135">135</th><td>		<a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a> += <a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a>;</td></tr>
+<tr><th id="136">136</th><td>		<a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> += <var>2</var>;</td></tr>
+<tr><th id="137">137</th><td>	    }</td></tr>
+<tr><th id="138">138</th><td>	    <a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> += <a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a> * <a class="local col9 ref" href="#9xsqk" title='xsqk' data-ref="9xsqk">xsqk</a> / <a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a>;</td></tr>
+<tr><th id="139">139</th><td>	}</td></tr>
+<tr><th id="140">140</th><td>	<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> *= <var>2.0</var> / <a class="macro" href="../../../../../include/math.h.html#1152" title="3.14159265358979323846" data-ref="_M/M_PI">M_PI</a>;</td></tr>
+<tr><th id="141">141</th><td>    }</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td></td></tr>
+<tr><th id="144">144</th><td>    <b>else</b> {</td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>	<i>/*      computation for even k  */</i></td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>	<a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a> = <var>1.0</var>;</td></tr>
+<tr><th id="149">149</th><td>	<a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a> = <var>1.0</var>;</td></tr>
+<tr><th id="150">150</th><td>	<a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> = <var>2</var>;</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>	<b>while</b> ((<a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> &lt;= (<a class="local col1 ref" href="#1k" title='k' data-ref="1k">k</a> - <var>2</var>)) &amp;&amp; ((<a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a> / <a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a>) &gt; <a class="ref" href="#MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</a>)) {</td></tr>
+<tr><th id="153">153</th><td>	    <a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a> *= (<a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> - <var>1</var>) / (<a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a> * <a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a>);</td></tr>
+<tr><th id="154">154</th><td>	    <a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a> += <a class="local col7 ref" href="#7tz" title='tz' data-ref="7tz">tz</a>;</td></tr>
+<tr><th id="155">155</th><td>	    <a class="local col0 ref" href="#10j" title='j' data-ref="10j">j</a> += <var>2</var>;</td></tr>
+<tr><th id="156">156</th><td>	}</td></tr>
+<tr><th id="157">157</th><td>	<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> = <a class="local col6 ref" href="#6f" title='f' data-ref="6f">f</a> * <a class="local col3 ref" href="#3x" title='x' data-ref="3x">x</a> / <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col5 ref" href="#5z" title='z' data-ref="5z">z</a> * <a class="local col4 ref" href="#4rk" title='rk' data-ref="4rk">rk</a>);</td></tr>
+<tr><th id="158">158</th><td>    }</td></tr>
+<tr><th id="159">159</th><td></td></tr>
+<tr><th id="160">160</th><td>    <i>/*     common exit     */</i></td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td></td></tr>
+<tr><th id="163">163</th><td>    <b>if</b> (<a class="local col2 ref" href="#2t" title='t' data-ref="2t">t</a> &lt; <var>0</var>)</td></tr>
+<tr><th id="164">164</th><td>	<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> = -<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a>;			<i>/* note destruction of relative accuracy */</i></td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>    <a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a> = <var>0.5</var> + <var>0.5</var> * <a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a>;</td></tr>
+<tr><th id="167">167</th><td>    <b>return</b> (<a class="local col8 ref" href="#8p" title='p' data-ref="8p">p</a>);</td></tr>
+<tr><th id="168">168</th><td>}</td></tr>
+<tr><th id="169">169</th><td></td></tr>
+<tr><th id="170">170</th><td><em>double</em> <dfn class="decl def fn" id="stdtri" title='stdtri' data-ref="stdtri">stdtri</dfn>(<em>int</em> <dfn class="local col1 decl" id="11k" title='k' data-type='int' data-ref="11k">k</dfn>, <em>double</em> <dfn class="local col2 decl" id="12p" title='p' data-type='double' data-ref="12p">p</dfn>)</td></tr>
+<tr><th id="171">171</th><td>{</td></tr>
+<tr><th id="172">172</th><td>    <em>double</em> <dfn class="local col3 decl" id="13t" title='t' data-type='double' data-ref="13t">t</dfn>, <dfn class="local col4 decl" id="14rk" title='rk' data-type='double' data-ref="14rk">rk</dfn>, <dfn class="local col5 decl" id="15z" title='z' data-type='double' data-ref="15z">z</dfn>;</td></tr>
+<tr><th id="173">173</th><td>    <em>int</em> <dfn class="local col6 decl" id="16rflg" title='rflg' data-type='int' data-ref="16rflg">rflg</dfn>;</td></tr>
+<tr><th id="174">174</th><td></td></tr>
+<tr><th id="175">175</th><td>    <b>if</b> (<a class="local col1 ref" href="#11k" title='k' data-ref="11k">k</a> &lt;= <var>0</var> || <a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> &lt;= <var>0.0</var> || <a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> &gt;= <var>1.0</var>) {</td></tr>
+<tr><th id="176">176</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"stdtri"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="177">177</th><td>	<b>return</b> (<a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>);</td></tr>
+<tr><th id="178">178</th><td>    }</td></tr>
+<tr><th id="179">179</th><td></td></tr>
+<tr><th id="180">180</th><td>    <a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a> = <a class="local col1 ref" href="#11k" title='k' data-ref="11k">k</a>;</td></tr>
+<tr><th id="181">181</th><td></td></tr>
+<tr><th id="182">182</th><td>    <b>if</b> (<a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> &gt; <var>0.25</var> &amp;&amp; <a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> &lt; <var>0.75</var>) {</td></tr>
+<tr><th id="183">183</th><td>	<b>if</b> (<a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> == <var>0.5</var>)</td></tr>
+<tr><th id="184">184</th><td>	    <b>return</b> (<var>0.0</var>);</td></tr>
+<tr><th id="185">185</th><td>	<a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a> = <var>1.0</var> - <var>2.0</var> * <a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a>;</td></tr>
+<tr><th id="186">186</th><td>	<a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a> = <a class="ref fn" href="../cephes.h.html#incbi" title='incbi' data-ref="incbi">incbi</a>(<span class='inlayHint'>aa:&nbsp;</span><var>0.5</var>, <span class='inlayHint'>bb:&nbsp;</span><var>0.5</var> * <a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a>, <span class='inlayHint'>yy0:&nbsp;</span><a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#162" title='fabs' data-ref="fabs">fabs</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a>));</td></tr>
+<tr><th id="187">187</th><td>	<a class="local col3 ref" href="#13t" title='t' data-ref="13t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a> * <a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a> / (<var>1.0</var> - <a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a>));</td></tr>
+<tr><th id="188">188</th><td>	<b>if</b> (<a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> &lt; <var>0.5</var>)</td></tr>
+<tr><th id="189">189</th><td>	    <a class="local col3 ref" href="#13t" title='t' data-ref="13t">t</a> = -<a class="local col3 ref" href="#13t" title='t' data-ref="13t">t</a>;</td></tr>
+<tr><th id="190">190</th><td>	<b>return</b> (<a class="local col3 ref" href="#13t" title='t' data-ref="13t">t</a>);</td></tr>
+<tr><th id="191">191</th><td>    }</td></tr>
+<tr><th id="192">192</th><td>    <a class="local col6 ref" href="#16rflg" title='rflg' data-ref="16rflg">rflg</a> = -<var>1</var>;</td></tr>
+<tr><th id="193">193</th><td>    <b>if</b> (<a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> &gt;= <var>0.5</var>) {</td></tr>
+<tr><th id="194">194</th><td>	<a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a> = <var>1.0</var> - <a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a>;</td></tr>
+<tr><th id="195">195</th><td>	<a class="local col6 ref" href="#16rflg" title='rflg' data-ref="16rflg">rflg</a> = <var>1</var>;</td></tr>
+<tr><th id="196">196</th><td>    }</td></tr>
+<tr><th id="197">197</th><td>    <a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a> = <a class="ref fn" href="../cephes.h.html#incbi" title='incbi' data-ref="incbi">incbi</a>(<span class='inlayHint'>aa:&nbsp;</span><var>0.5</var> * <a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a>, <span class='inlayHint'>bb:&nbsp;</span><var>0.5</var>, <span class='inlayHint'>yy0:&nbsp;</span><var>2.0</var> * <a class="local col2 ref" href="#12p" title='p' data-ref="12p">p</a>);</td></tr>
+<tr><th id="198">198</th><td></td></tr>
+<tr><th id="199">199</th><td>    <b>if</b> (<span class="macro" title="1.7976931348623157e+308" data-ref="_M/DBL_MAX">DBL_MAX</span> * <a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a> &lt; <a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a>)</td></tr>
+<tr><th id="200">200</th><td>	<b>return</b> (<a class="local col6 ref" href="#16rflg" title='rflg' data-ref="16rflg">rflg</a> * <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>);</td></tr>
+<tr><th id="201">201</th><td>    <a class="local col3 ref" href="#13t" title='t' data-ref="13t">t</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a> / <a class="local col5 ref" href="#15z" title='z' data-ref="15z">z</a> - <a class="local col4 ref" href="#14rk" title='rk' data-ref="14rk">rk</a>);</td></tr>
+<tr><th id="202">202</th><td>    <b>return</b> (<a class="local col6 ref" href="#16rflg" title='rflg' data-ref="16rflg">rflg</a> * <a class="local col3 ref" href="#13t" title='t' data-ref="13t">t</a>);</td></tr>
+<tr><th id="203">203</th><td>}</td></tr>
+<tr><th id="204">204</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>BiCGSTAB.h source code [codebrowser/gtsam/3rdparty/Eigen/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="Eigen::BiCGSTAB,Eigen::internal::traits "/>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/Eigen/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>codebrowser</a>/<a href='../../../../..'>gtsam</a>/<a href='../../../..'>3rdparty</a>/<a href='../../..'>Eigen</a>/<a href='../..'>Eigen</a>/<a href='..'>src</a>/<a href='./'>IterativeLinearSolvers</a>/<a href='BiCGSTAB.h.html'>BiCGSTAB.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// This file is part of Eigen, a lightweight C++ template library</i></td></tr>
+<tr><th id="2">2</th><td><i>// for linear algebra.</i></td></tr>
+<tr><th id="3">3</th><td><i>//</i></td></tr>
+<tr><th id="4">4</th><td><i>// Copyright (C) 2011-2014 Gael Guennebaud &lt;gael.guennebaud@inria.fr&gt;</i></td></tr>
+<tr><th id="5">5</th><td><i>// Copyright (C) 2012 Désiré Nuentsa-Wakam &lt;desire.nuentsa_wakam@inria.fr&gt;</i></td></tr>
+<tr><th id="6">6</th><td><i>//</i></td></tr>
+<tr><th id="7">7</th><td><i>// This Source Code Form is subject to the terms of the Mozilla</i></td></tr>
+<tr><th id="8">8</th><td><i>// Public License v. 2.0. If a copy of the MPL was not distributed</i></td></tr>
+<tr><th id="9">9</th><td><i>// with this file, You can obtain one at <a href="http://mozilla.org/MPL/2.0/">http://mozilla.org/MPL/2.0/</a>.</i></td></tr>
+<tr><th id="10">10</th><td></td></tr>
+<tr><th id="11">11</th><td><u>#<span data-ppcond="11">ifndef</span> <span class="macro" data-ref="_M/EIGEN_BICGSTAB_H">EIGEN_BICGSTAB_H</span></u></td></tr>
+<tr><th id="12">12</th><td><u>#define <dfn class="macro" id="_M/EIGEN_BICGSTAB_H" data-ref="_M/EIGEN_BICGSTAB_H">EIGEN_BICGSTAB_H</dfn></u></td></tr>
+<tr><th id="13">13</th><td></td></tr>
+<tr><th id="14">14</th><td><b>namespace</b> <span class="namespace">Eigen</span> { </td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="17">17</th><td></td></tr>
+<tr><th id="18">18</th><td><i class="doc">/** <span class="command">\internal</span><span class="verb"> Low-level bi conjugate gradient stabilized algorithm</span></i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \param mat The matrix A</span></i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \param rhs The right hand side vector b</span></i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \param x On input and initial solution, on output the computed solution.</span></i></td></tr>
+<tr><th id="22">22</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \param precond A preconditioner being able to efficiently solve for an</span></i></td></tr>
+<tr><th id="23">23</th><td><i class="doc"><span class="verb"></span>  *<span class="verb">                approximation of Ax=b (regardless of b)</span></i></td></tr>
+<tr><th id="24">24</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \param iters On input the max number of iteration, on output the number of performed iterations.</span></i></td></tr>
+<tr><th id="25">25</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \param tol_error On input the tolerance error, on output an estimation of the relative error.</span></i></td></tr>
+<tr><th id="26">26</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \return false in the case of numerical issue, for example a break down of BiCGSTAB. </span></i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="28">28</th><td><span class="verb"></span><b>template</b>&lt;<b>typename</b> MatrixType, <b>typename</b> Rhs, <b>typename</b> Dest, <b>typename</b> Preconditioner&gt;</td></tr>
+<tr><th id="29">29</th><td><em>bool</em> <dfn class="decl def fn" id="_ZN5Eigen8internal8bicgstabERKT_RKT0_RT1_RKT2_RlRNS7_10RealScalarE" title='Eigen::internal::bicgstab' data-ref="_ZN5Eigen8internal8bicgstabERKT_RKT0_RT1_RKT2_RlRNS7_10RealScalarE">bicgstab</dfn>(<em>const</em> MatrixType&amp; <dfn class="local col0 decl" id="26300mat" title='mat' data-type='const MatrixType &amp;' data-ref="26300mat">mat</dfn>, <em>const</em> Rhs&amp; <dfn class="local col1 decl" id="26301rhs" title='rhs' data-type='const Rhs &amp;' data-ref="26301rhs">rhs</dfn>, Dest&amp; <dfn class="local col2 decl" id="26302x" title='x' data-type='Dest &amp;' data-ref="26302x">x</dfn>,</td></tr>
+<tr><th id="30">30</th><td>              <em>const</em> Preconditioner&amp; <dfn class="local col3 decl" id="26303precond" title='precond' data-type='const Preconditioner &amp;' data-ref="26303precond">precond</dfn>, <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a>&amp; <dfn class="local col4 decl" id="26304iters" title='iters' data-type='Index &amp;' data-ref="26304iters">iters</dfn>,</td></tr>
+<tr><th id="31">31</th><td>              <b>typename</b> Dest::RealScalar&amp; <dfn class="local col5 decl" id="26305tol_error" title='tol_error' data-type='typename Dest::RealScalar &amp;' data-ref="26305tol_error">tol_error</dfn>)</td></tr>
+<tr><th id="32">32</th><td>{</td></tr>
+<tr><th id="33">33</th><td>  <b>using</b> <span class="namespace">std::</span>sqrt;</td></tr>
+<tr><th id="34">34</th><td>  <b>using</b> <span class="namespace">std::</span>abs;</td></tr>
+<tr><th id="35">35</th><td>  <b>typedef</b> <b>typename</b> Dest::RealScalar <dfn class="local col6 typedef" id="26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</dfn>;</td></tr>
+<tr><th id="36">36</th><td>  <b>typedef</b> <b>typename</b> Dest::Scalar <dfn class="local col7 typedef" id="26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</dfn>;</td></tr>
+<tr><th id="37">37</th><td>  <b>typedef</b> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a>,<a class="ref" href="../Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>,<var>1</var>&gt; <dfn class="local col8 typedef" id="26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</dfn>;</td></tr>
+<tr><th id="38">38</th><td>  <a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a> <dfn class="local col9 decl" id="26309tol" title='tol' data-type='RealScalar' data-ref="26309tol">tol</dfn> = <a class="local col5 ref" href="#26305tol_error" title='tol_error' data-ref="26305tol_error">tol_error</a>;</td></tr>
+<tr><th id="39">39</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col0 decl" id="26310maxIters" title='maxIters' data-type='Index' data-ref="26310maxIters">maxIters</dfn> = <a class="local col4 ref" href="#26304iters" title='iters' data-ref="26304iters">iters</a>;</td></tr>
+<tr><th id="40">40</th><td></td></tr>
+<tr><th id="41">41</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col1 decl" id="26311n" title='n' data-type='Index' data-ref="26311n">n</dfn> = <a class="local col0 ref" href="#26300mat" title='mat' data-ref="26300mat">mat</a>.cols();</td></tr>
+<tr><th id="42">42</th><td>  <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a> <dfn class="local col2 decl" id="26312r" title='r' data-type='VectorType' data-ref="26312r">r</dfn>  = <a class="local col1 ref" href="#26301rhs" title='rhs' data-ref="26301rhs">rhs</a> - <a class="local col0 ref" href="#26300mat" title='mat' data-ref="26300mat">mat</a> * <a class="local col2 ref" href="#26302x" title='x' data-ref="26302x">x</a>;</td></tr>
+<tr><th id="43">43</th><td>  <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a> <dfn class="local col3 decl" id="26313r0" title='r0' data-type='VectorType' data-ref="26313r0">r0</dfn> = <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>;</td></tr>
+<tr><th id="44">44</th><td>  </td></tr>
+<tr><th id="45">45</th><td>  <a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a> <dfn class="local col4 decl" id="26314r0_sqnorm" title='r0_sqnorm' data-type='RealScalar' data-ref="26314r0_sqnorm">r0_sqnorm</dfn> = <a class="local col3 ref" href="#26313r0" title='r0' data-ref="26313r0">r0</a>.squaredNorm();</td></tr>
+<tr><th id="46">46</th><td>  <a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a> <dfn class="local col5 decl" id="26315rhs_sqnorm" title='rhs_sqnorm' data-type='RealScalar' data-ref="26315rhs_sqnorm">rhs_sqnorm</dfn> = <a class="local col1 ref" href="#26301rhs" title='rhs' data-ref="26301rhs">rhs</a>.squaredNorm();</td></tr>
+<tr><th id="47">47</th><td>  <b>if</b>(<a class="local col5 ref" href="#26315rhs_sqnorm" title='rhs_sqnorm' data-ref="26315rhs_sqnorm">rhs_sqnorm</a> == <var>0</var>)</td></tr>
+<tr><th id="48">48</th><td>  {</td></tr>
+<tr><th id="49">49</th><td>    <a class="local col2 ref" href="#26302x" title='x' data-ref="26302x">x</a>.setZero();</td></tr>
+<tr><th id="50">50</th><td>    <b>return</b> <b>true</b>;</td></tr>
+<tr><th id="51">51</th><td>  }</td></tr>
+<tr><th id="52">52</th><td>  <a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a> <dfn class="local col6 decl" id="26316rho" title='rho' data-type='Scalar' data-ref="26316rho">rho</dfn>    = <var>1</var>;</td></tr>
+<tr><th id="53">53</th><td>  <a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a> <dfn class="local col7 decl" id="26317alpha" title='alpha' data-type='Scalar' data-ref="26317alpha">alpha</dfn>  = <var>1</var>;</td></tr>
+<tr><th id="54">54</th><td>  <a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a> <dfn class="local col8 decl" id="26318w" title='w' data-type='Scalar' data-ref="26318w">w</dfn>      = <var>1</var>;</td></tr>
+<tr><th id="55">55</th><td>  </td></tr>
+<tr><th id="56">56</th><td>  <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a> <dfn class="local col9 decl" id="26319v" title='v' data-type='VectorType' data-ref="26319v">v</dfn> = <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a>::Zero(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>), <dfn class="local col0 decl" id="26320p" title='p' data-type='VectorType' data-ref="26320p">p</dfn> = <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a>::Zero(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>);</td></tr>
+<tr><th id="57">57</th><td>  <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a> <dfn class="local col1 decl" id="26321y" title='y' data-type='VectorType' data-ref="26321y">y</dfn>(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>),  <dfn class="local col2 decl" id="26322z" title='z' data-type='VectorType' data-ref="26322z">z</dfn>(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>);</td></tr>
+<tr><th id="58">58</th><td>  <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a> <dfn class="local col3 decl" id="26323kt" title='kt' data-type='VectorType' data-ref="26323kt">kt</dfn>(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>), <dfn class="local col4 decl" id="26324ks" title='ks' data-type='VectorType' data-ref="26324ks">ks</dfn>(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>);</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <a class="local col8 typedef" href="#26308VectorType" title='VectorType' data-type='Matrix&lt;Scalar, Dynamic, 1&gt;' data-ref="26308VectorType">VectorType</a> <dfn class="local col5 decl" id="26325s" title='s' data-type='VectorType' data-ref="26325s">s</dfn>(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>), <dfn class="local col6 decl" id="26326t" title='t' data-type='VectorType' data-ref="26326t">t</dfn>(<a class="local col1 ref" href="#26311n" title='n' data-ref="26311n">n</a>);</td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>  <a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a> <dfn class="local col7 decl" id="26327tol2" title='tol2' data-type='RealScalar' data-ref="26327tol2">tol2</dfn> = <a class="local col9 ref" href="#26309tol" title='tol' data-ref="26309tol">tol</a>*<a class="local col9 ref" href="#26309tol" title='tol' data-ref="26309tol">tol</a>*<a class="local col5 ref" href="#26315rhs_sqnorm" title='rhs_sqnorm' data-ref="26315rhs_sqnorm">rhs_sqnorm</a>;</td></tr>
+<tr><th id="63">63</th><td>  <a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a> <dfn class="local col8 decl" id="26328eps2" title='eps2' data-type='RealScalar' data-ref="26328eps2">eps2</dfn> = <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;<a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a>&gt;::epsilon()*<a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::NumTraits" title='Eigen::NumTraits' data-ref="Eigen::NumTraits">NumTraits</a>&lt;<a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a>&gt;::epsilon();</td></tr>
+<tr><th id="64">64</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col9 decl" id="26329i" title='i' data-type='Index' data-ref="26329i">i</dfn> = <var>0</var>;</td></tr>
+<tr><th id="65">65</th><td>  <a class="typedef" href="../Core/util/Meta.h.html#Eigen::Index" title='Eigen::Index' data-type='std::ptrdiff_t' data-ref="Eigen::Index">Index</a> <dfn class="local col0 decl" id="26330restarts" title='restarts' data-type='Index' data-ref="26330restarts">restarts</dfn> = <var>0</var>;</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>  <b>while</b> ( <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>.squaredNorm() &gt; <a class="local col7 ref" href="#26327tol2" title='tol2' data-ref="26327tol2">tol2</a> &amp;&amp; <a class="local col9 ref" href="#26329i" title='i' data-ref="26329i">i</a>&lt;<a class="local col0 ref" href="#26310maxIters" title='maxIters' data-ref="26310maxIters">maxIters</a> )</td></tr>
+<tr><th id="68">68</th><td>  {</td></tr>
+<tr><th id="69">69</th><td>    <a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a> <dfn class="local col1 decl" id="26331rho_old" title='rho_old' data-type='Scalar' data-ref="26331rho_old">rho_old</dfn> = <a class="local col6 ref" href="#26316rho" title='rho' data-ref="26316rho">rho</a>;</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td>    <a class="local col6 ref" href="#26316rho" title='rho' data-ref="26316rho">rho</a> = <a class="local col3 ref" href="#26313r0" title='r0' data-ref="26313r0">r0</a>.dot(<a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>);</td></tr>
+<tr><th id="72">72</th><td>    <b>if</b> (abs(<a class="local col6 ref" href="#26316rho" title='rho' data-ref="26316rho">rho</a>) &lt; <a class="local col8 ref" href="#26328eps2" title='eps2' data-ref="26328eps2">eps2</a>*<a class="local col4 ref" href="#26314r0_sqnorm" title='r0_sqnorm' data-ref="26314r0_sqnorm">r0_sqnorm</a>)</td></tr>
+<tr><th id="73">73</th><td>    {</td></tr>
+<tr><th id="74">74</th><td>      <i>// The new residual vector became too orthogonal to the arbitrarily chosen direction r0</i></td></tr>
+<tr><th id="75">75</th><td><i>      // Let's restart with a new r0:</i></td></tr>
+<tr><th id="76">76</th><td>      <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>  = <a class="local col1 ref" href="#26301rhs" title='rhs' data-ref="26301rhs">rhs</a> - <a class="local col0 ref" href="#26300mat" title='mat' data-ref="26300mat">mat</a> * <a class="local col2 ref" href="#26302x" title='x' data-ref="26302x">x</a>;</td></tr>
+<tr><th id="77">77</th><td>      <a class="local col3 ref" href="#26313r0" title='r0' data-ref="26313r0">r0</a> = <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>;</td></tr>
+<tr><th id="78">78</th><td>      <a class="local col6 ref" href="#26316rho" title='rho' data-ref="26316rho">rho</a> = <a class="local col4 ref" href="#26314r0_sqnorm" title='r0_sqnorm' data-ref="26314r0_sqnorm">r0_sqnorm</a> = <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>.squaredNorm();</td></tr>
+<tr><th id="79">79</th><td>      <b>if</b>(<a class="local col0 ref" href="#26330restarts" title='restarts' data-ref="26330restarts">restarts</a>++ == <var>0</var>)</td></tr>
+<tr><th id="80">80</th><td>        <a class="local col9 ref" href="#26329i" title='i' data-ref="26329i">i</a> = <var>0</var>;</td></tr>
+<tr><th id="81">81</th><td>    }</td></tr>
+<tr><th id="82">82</th><td>    <a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a> <dfn class="local col2 decl" id="26332beta" title='beta' data-type='Scalar' data-ref="26332beta">beta</dfn> = (<a class="local col6 ref" href="#26316rho" title='rho' data-ref="26316rho">rho</a>/<a class="local col1 ref" href="#26331rho_old" title='rho_old' data-ref="26331rho_old">rho_old</a>) * (<a class="local col7 ref" href="#26317alpha" title='alpha' data-ref="26317alpha">alpha</a> / <a class="local col8 ref" href="#26318w" title='w' data-ref="26318w">w</a>);</td></tr>
+<tr><th id="83">83</th><td>    <a class="local col0 ref" href="#26320p" title='p' data-ref="26320p">p</a> = <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a> + <a class="local col2 ref" href="#26332beta" title='beta' data-ref="26332beta">beta</a> * (<a class="local col0 ref" href="#26320p" title='p' data-ref="26320p">p</a> - <a class="local col8 ref" href="#26318w" title='w' data-ref="26318w">w</a> * <a class="local col9 ref" href="#26319v" title='v' data-ref="26319v">v</a>);</td></tr>
+<tr><th id="84">84</th><td>    </td></tr>
+<tr><th id="85">85</th><td>    <a class="local col1 ref" href="#26321y" title='y' data-ref="26321y">y</a> = <a class="local col3 ref" href="#26303precond" title='precond' data-ref="26303precond">precond</a>.solve(<a class="local col0 ref" href="#26320p" title='p' data-ref="26320p">p</a>);</td></tr>
+<tr><th id="86">86</th><td>    </td></tr>
+<tr><th id="87">87</th><td>    <a class="local col9 ref" href="#26319v" title='v' data-ref="26319v">v</a>.noalias() = <a class="local col0 ref" href="#26300mat" title='mat' data-ref="26300mat">mat</a> * <a class="local col1 ref" href="#26321y" title='y' data-ref="26321y">y</a>;</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>    <a class="local col7 ref" href="#26317alpha" title='alpha' data-ref="26317alpha">alpha</a> = <a class="local col6 ref" href="#26316rho" title='rho' data-ref="26316rho">rho</a> / <a class="local col3 ref" href="#26313r0" title='r0' data-ref="26313r0">r0</a>.dot(<a class="local col9 ref" href="#26319v" title='v' data-ref="26319v">v</a>);</td></tr>
+<tr><th id="90">90</th><td>    <a class="local col5 ref" href="#26325s" title='s' data-ref="26325s">s</a> = <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a> - <a class="local col7 ref" href="#26317alpha" title='alpha' data-ref="26317alpha">alpha</a> * <a class="local col9 ref" href="#26319v" title='v' data-ref="26319v">v</a>;</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <a class="local col2 ref" href="#26322z" title='z' data-ref="26322z">z</a> = <a class="local col3 ref" href="#26303precond" title='precond' data-ref="26303precond">precond</a>.solve(<a class="local col5 ref" href="#26325s" title='s' data-ref="26325s">s</a>);</td></tr>
+<tr><th id="93">93</th><td>    <a class="local col6 ref" href="#26326t" title='t' data-ref="26326t">t</a>.noalias() = <a class="local col0 ref" href="#26300mat" title='mat' data-ref="26300mat">mat</a> * <a class="local col2 ref" href="#26322z" title='z' data-ref="26322z">z</a>;</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>    <a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a> <dfn class="local col3 decl" id="26333tmp" title='tmp' data-type='RealScalar' data-ref="26333tmp">tmp</dfn> = <a class="local col6 ref" href="#26326t" title='t' data-ref="26326t">t</a>.squaredNorm();</td></tr>
+<tr><th id="96">96</th><td>    <b>if</b>(<a class="local col3 ref" href="#26333tmp" title='tmp' data-ref="26333tmp">tmp</a>&gt;<a class="local col6 typedef" href="#26306RealScalar" title='RealScalar' data-type='typename Dest::RealScalar' data-ref="26306RealScalar">RealScalar</a>(<var>0</var>))</td></tr>
+<tr><th id="97">97</th><td>      <a class="local col8 ref" href="#26318w" title='w' data-ref="26318w">w</a> = <a class="local col6 ref" href="#26326t" title='t' data-ref="26326t">t</a>.dot(<a class="local col5 ref" href="#26325s" title='s' data-ref="26325s">s</a>) / <a class="local col3 ref" href="#26333tmp" title='tmp' data-ref="26333tmp">tmp</a>;</td></tr>
+<tr><th id="98">98</th><td>    <b>else</b></td></tr>
+<tr><th id="99">99</th><td>      <a class="local col8 ref" href="#26318w" title='w' data-ref="26318w">w</a> = <a class="local col7 typedef" href="#26307Scalar" title='Scalar' data-type='typename Dest::Scalar' data-ref="26307Scalar">Scalar</a>(<var>0</var>);</td></tr>
+<tr><th id="100">100</th><td>    <a class="local col2 ref" href="#26302x" title='x' data-ref="26302x">x</a> += <a class="local col7 ref" href="#26317alpha" title='alpha' data-ref="26317alpha">alpha</a> * <a class="local col1 ref" href="#26321y" title='y' data-ref="26321y">y</a> + <a class="local col8 ref" href="#26318w" title='w' data-ref="26318w">w</a> * <a class="local col2 ref" href="#26322z" title='z' data-ref="26322z">z</a>;</td></tr>
+<tr><th id="101">101</th><td>    <a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a> = <a class="local col5 ref" href="#26325s" title='s' data-ref="26325s">s</a> - <a class="local col8 ref" href="#26318w" title='w' data-ref="26318w">w</a> * <a class="local col6 ref" href="#26326t" title='t' data-ref="26326t">t</a>;</td></tr>
+<tr><th id="102">102</th><td>    ++<a class="local col9 ref" href="#26329i" title='i' data-ref="26329i">i</a>;</td></tr>
+<tr><th id="103">103</th><td>  }</td></tr>
+<tr><th id="104">104</th><td>  <a class="local col5 ref" href="#26305tol_error" title='tol_error' data-ref="26305tol_error">tol_error</a> = sqrt(<a class="local col2 ref" href="#26312r" title='r' data-ref="26312r">r</a>.squaredNorm()/<a class="local col5 ref" href="#26315rhs_sqnorm" title='rhs_sqnorm' data-ref="26315rhs_sqnorm">rhs_sqnorm</a>);</td></tr>
+<tr><th id="105">105</th><td>  <a class="local col4 ref" href="#26304iters" title='iters' data-ref="26304iters">iters</a> = <a class="local col9 ref" href="#26329i" title='i' data-ref="26329i">i</a>;</td></tr>
+<tr><th id="106">106</th><td>  <b>return</b> <b>true</b>; </td></tr>
+<tr><th id="107">107</th><td>}</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>}</td></tr>
+<tr><th id="110">110</th><td></td></tr>
+<tr><th id="111">111</th><td><b>template</b>&lt; <b>typename</b> _MatrixType,</td></tr>
+<tr><th id="112">112</th><td>          <b>typename</b> _Preconditioner = <a class="type" href="BasicPreconditioners.h.html#Eigen::DiagonalPreconditioner" title='Eigen::DiagonalPreconditioner' data-ref="Eigen::DiagonalPreconditioner">DiagonalPreconditioner</a>&lt;<b>typename</b> _MatrixType::Scalar&gt; &gt;</td></tr>
+<tr><th id="113">113</th><td><b>class</b> <a class="type" href="#Eigen::BiCGSTAB" title='Eigen::BiCGSTAB' data-ref="Eigen::BiCGSTAB">BiCGSTAB</a>;</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td><b>template</b>&lt; <b>typename</b> _MatrixType, <b>typename</b> _Preconditioner&gt;</td></tr>
+<tr><th id="118">118</th><td><b>struct</b> <dfn class="type def" id="Eigen::internal::traits" title='Eigen::internal::traits' data-ref="Eigen::internal::traits">traits</dfn>&lt;<a class="type" href="#Eigen::BiCGSTAB" title='Eigen::BiCGSTAB' data-ref="Eigen::BiCGSTAB">BiCGSTAB</a>&lt;_MatrixType,_Preconditioner&gt; &gt;</td></tr>
+<tr><th id="119">119</th><td>{</td></tr>
+<tr><th id="120">120</th><td>  <b>typedef</b> _MatrixType <dfn class="typedef" id="Eigen::internal::traits{BiCGSTAB{type-parameter-0-0,type-parameter-0-1}}::MatrixType" title='Eigen::internal::traits&lt;BiCGSTAB&lt;type-parameter-0-0, type-parameter-0-1&gt;&gt;::MatrixType' data-type='_MatrixType' data-ref="Eigen::internal::traits{BiCGSTAB{type-parameter-0-0,type-parameter-0-1}}::MatrixType">MatrixType</dfn>;</td></tr>
+<tr><th id="121">121</th><td>  <b>typedef</b> _Preconditioner <dfn class="typedef" id="Eigen::internal::traits{BiCGSTAB{type-parameter-0-0,type-parameter-0-1}}::Preconditioner" title='Eigen::internal::traits&lt;BiCGSTAB&lt;type-parameter-0-0, type-parameter-0-1&gt;&gt;::Preconditioner' data-type='_Preconditioner' data-ref="Eigen::internal::traits{BiCGSTAB{type-parameter-0-0,type-parameter-0-1}}::Preconditioner">Preconditioner</dfn>;</td></tr>
+<tr><th id="122">122</th><td>};</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td>}</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td><i class="doc">/** <span class="command">\ingroup</span> <span class="verb">IterativeLinearSolvers_Module</span></i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">  * <span class="command">\brief</span> A bi conjugate gradient stabilized solver for sparse square problems</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">  * This class allows to solve for A.x = b sparse linear problems using a bi conjugate gradient</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">  * stabilized algorithm. The vectors x and b can be either dense or sparse.</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">  * <span class="command">\tparam</span> <span class="arg">_MatrixType</span> the type of the sparse matrix A, can be a dense or a sparse matrix.</i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">  * <span class="command">\tparam</span> <span class="arg">_Preconditioner</span> the type of the preconditioner. Default is DiagonalPreconditioner</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="135">135</th><td><i class="doc">  *<span class="command"> \implsparsesolverconcept</span></i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">  * The maximal number of iterations and tolerance value can be controlled via the setMaxIterations()</i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">  * and setTolerance() methods. The defaults are the size of the problem for the maximal number of iterations</i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">  * and NumTraits&lt;Scalar&gt;::epsilon() for the tolerance.</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">  * </i></td></tr>
+<tr><th id="141">141</th><td><i class="doc">  * The tolerance corresponds to the relative residual error: |Ax-b|/|b|</i></td></tr>
+<tr><th id="142">142</th><td><i class="doc">  * </i></td></tr>
+<tr><th id="143">143</th><td><i class="doc">  *<span class="command"> \b</span> <span class="arg">Performance:</span> when using sparse matrices, best performance is achied for a row-major sparse matrix format.</i></td></tr>
+<tr><th id="144">144</th><td><i class="doc">  * Moreover, in this case multi-threading can be exploited if the user code is compiled with OpenMP enabled.</i></td></tr>
+<tr><th id="145">145</th><td><i class="doc">  * See<span class="command"> \ref</span> <span class="arg">TopicMultiThreading</span> for details.</i></td></tr>
+<tr><th id="146">146</th><td><i class="doc">  * </i></td></tr>
+<tr><th id="147">147</th><td><i class="doc">  * This class can be used as the direct solver classes. Here is a typical usage example:</i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">  * <span class="command">\include</span> <span class="verb">BiCGSTAB_simple.cpp</span></i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">  * </i></td></tr>
+<tr><th id="150">150</th><td><i class="doc">  * By default the iterations start with x=0 as an initial guess of the solution.</i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">  * One can control the start using the solveWithGuess() method.</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">  * </i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">  * BiCGSTAB can also be used in a matrix-free context, see the following <span class="command">\link</span><span class="verb"> MatrixfreeSolverExample example \endlink.</span></i></td></tr>
+<tr><th id="154">154</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"></span></i></td></tr>
+<tr><th id="155">155</th><td><i class="doc"><span class="verb"></span>  *<span class="verb"> \sa class SimplicialCholesky, DiagonalPreconditioner, IdentityPreconditioner</span></i></td></tr>
+<tr><th id="156">156</th><td><i class="doc"><span class="verb"></span><span class="verb">  *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="157">157</th><td><span class="verb"></span><b>template</b>&lt; <b>typename</b> _MatrixType, <b>typename</b> _Preconditioner&gt;</td></tr>
+<tr><th id="158">158</th><td><b>class</b> <dfn class="type def" id="Eigen::BiCGSTAB" title='Eigen::BiCGSTAB' data-ref="Eigen::BiCGSTAB">BiCGSTAB</dfn> : <b>public</b> <a class="type" href="IterativeSolverBase.h.html#Eigen::IterativeSolverBase" title='Eigen::IterativeSolverBase' data-ref="Eigen::IterativeSolverBase">IterativeSolverBase</a>&lt;<a class="type" href="#Eigen::BiCGSTAB" title='Eigen::BiCGSTAB' data-ref="Eigen::BiCGSTAB">BiCGSTAB</a>&lt;_MatrixType,_Preconditioner&gt; &gt;</td></tr>
+<tr><th id="159">159</th><td>{</td></tr>
+<tr><th id="160">160</th><td>  <b>typedef</b> <a class="type" href="IterativeSolverBase.h.html#Eigen::IterativeSolverBase" title='Eigen::IterativeSolverBase' data-ref="Eigen::IterativeSolverBase">IterativeSolverBase</a>&lt;BiCGSTAB&gt; <dfn class="typedef" id="Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</dfn>;</td></tr>
+<tr><th id="161">161</th><td>  <b>using</b> <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::matrix;</td></tr>
+<tr><th id="162">162</th><td>  <b>using</b> <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_error;</td></tr>
+<tr><th id="163">163</th><td>  <b>using</b> <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_iterations;</td></tr>
+<tr><th id="164">164</th><td>  <b>using</b> <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_info;</td></tr>
+<tr><th id="165">165</th><td>  <b>using</b> <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_isInitialized;</td></tr>
+<tr><th id="166">166</th><td><b>public</b>:</td></tr>
+<tr><th id="167">167</th><td>  <b>typedef</b> _MatrixType <dfn class="typedef" id="Eigen::BiCGSTAB::MatrixType" title='Eigen::BiCGSTAB::MatrixType' data-type='_MatrixType' data-ref="Eigen::BiCGSTAB::MatrixType">MatrixType</dfn>;</td></tr>
+<tr><th id="168">168</th><td>  <b>typedef</b> <b>typename</b> <a class="typedef" href="#Eigen::BiCGSTAB::MatrixType" title='Eigen::BiCGSTAB::MatrixType' data-type='_MatrixType' data-ref="Eigen::BiCGSTAB::MatrixType">MatrixType</a>::Scalar <dfn class="typedef" id="Eigen::BiCGSTAB::Scalar" title='Eigen::BiCGSTAB::Scalar' data-type='typename MatrixType::Scalar' data-ref="Eigen::BiCGSTAB::Scalar">Scalar</dfn>;</td></tr>
+<tr><th id="169">169</th><td>  <b>typedef</b> <b>typename</b> <a class="typedef" href="#Eigen::BiCGSTAB::MatrixType" title='Eigen::BiCGSTAB::MatrixType' data-type='_MatrixType' data-ref="Eigen::BiCGSTAB::MatrixType">MatrixType</a>::RealScalar <dfn class="typedef" id="Eigen::BiCGSTAB::RealScalar" title='Eigen::BiCGSTAB::RealScalar' data-type='typename MatrixType::RealScalar' data-ref="Eigen::BiCGSTAB::RealScalar">RealScalar</dfn>;</td></tr>
+<tr><th id="170">170</th><td>  <b>typedef</b> _Preconditioner <dfn class="typedef" id="Eigen::BiCGSTAB::Preconditioner" title='Eigen::BiCGSTAB::Preconditioner' data-type='_Preconditioner' data-ref="Eigen::BiCGSTAB::Preconditioner">Preconditioner</dfn>;</td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td><b>public</b>:</td></tr>
+<tr><th id="173">173</th><td></td></tr>
+<tr><th id="174">174</th><td>  <i class="doc">/** Default constructor. */</i></td></tr>
+<tr><th id="175">175</th><td>  <dfn class="decl def fn" id="_ZN5Eigen8BiCGSTABC1Ev" title='Eigen::BiCGSTAB::BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;' data-ref="_ZN5Eigen8BiCGSTABC1Ev">BiCGSTAB</dfn>() : <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>() {}</td></tr>
+<tr><th id="176">176</th><td></td></tr>
+<tr><th id="177">177</th><td>  <i class="doc">/** Initialize the solver with matrix<span class="command"> \a</span> <span class="arg">A</span> for further<span class="command"> \c</span> <span class="arg">Ax=b</span> solving.</i></td></tr>
+<tr><th id="178">178</th><td><i class="doc">    * </i></td></tr>
+<tr><th id="179">179</th><td><i class="doc">    * This constructor is a shortcut for the default constructor followed</i></td></tr>
+<tr><th id="180">180</th><td><i class="doc">    * by a call to compute().</i></td></tr>
+<tr><th id="181">181</th><td><i class="doc">    * </i></td></tr>
+<tr><th id="182">182</th><td><i class="doc">    * <span class="command">\warning</span> this class stores a reference to the matrix A as well as some</i></td></tr>
+<tr><th id="183">183</th><td><i class="doc">    * precomputed values that depend on it. Therefore, if<span class="command"> \a</span> <span class="arg">A</span> is changed</i></td></tr>
+<tr><th id="184">184</th><td><i class="doc">    * this class becomes invalid. Call compute() to update it with the new</i></td></tr>
+<tr><th id="185">185</th><td><i class="doc">    * matrix A, or modify a copy of A.</i></td></tr>
+<tr><th id="186">186</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="187">187</th><td>  <b>template</b>&lt;<b>typename</b> MatrixDerived&gt;</td></tr>
+<tr><th id="188">188</th><td>  <b>explicit</b> <dfn class="decl def fn" id="_ZN5Eigen8BiCGSTABC1ERKNS_9EigenBaseITL0__EE" title='Eigen::BiCGSTAB::BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;' data-ref="_ZN5Eigen8BiCGSTABC1ERKNS_9EigenBaseITL0__EE">BiCGSTAB</dfn>(<em>const</em> <a class="type" href="../Core/util/ForwardDeclarations.h.html#Eigen::EigenBase" title='Eigen::EigenBase' data-ref="Eigen::EigenBase">EigenBase</a>&lt;MatrixDerived&gt;&amp; <dfn class="local col4 decl" id="26334A" title='A' data-type='const EigenBase&lt;MatrixDerived&gt; &amp;' data-ref="26334A">A</dfn>) : <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>(<a class="local col4 ref" href="#26334A" title='A' data-ref="26334A">A</a>.derived()) {}</td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>  <dfn class="decl def fn" id="_ZN5Eigen8BiCGSTABD1Ev" title='Eigen::BiCGSTAB::~BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;' data-ref="_ZN5Eigen8BiCGSTABD1Ev">~BiCGSTAB</dfn>() {}</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td>  <i class="doc">/** <span class="command">\internal</span><span class="verb"> *</span>/</i><span class="verb"></span></td></tr>
+<tr><th id="193">193</th><td><span class="verb"></span>  <b>template</b>&lt;<b>typename</b> Rhs,<b>typename</b> Dest&gt;</td></tr>
+<tr><th id="194">194</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5Eigen8BiCGSTAB29_solve_vector_with_guess_implERKTL0__RTL0_0_" title='Eigen::BiCGSTAB::_solve_vector_with_guess_impl' data-ref="_ZNK5Eigen8BiCGSTAB29_solve_vector_with_guess_implERKTL0__RTL0_0_">_solve_vector_with_guess_impl</dfn>(<em>const</em> Rhs&amp; <dfn class="local col5 decl" id="26335b" title='b' data-type='const Rhs &amp;' data-ref="26335b">b</dfn>, Dest&amp; <dfn class="local col6 decl" id="26336x" title='x' data-type='Dest &amp;' data-ref="26336x">x</dfn>) <em>const</em></td></tr>
+<tr><th id="195">195</th><td>  {    </td></tr>
+<tr><th id="196">196</th><td>    m_iterations = <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::maxIterations();</td></tr>
+<tr><th id="197">197</th><td>    m_error = <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_tolerance;</td></tr>
+<tr><th id="198">198</th><td>    </td></tr>
+<tr><th id="199">199</th><td>    <em>bool</em> <dfn class="local col7 decl" id="26337ret" title='ret' data-type='bool' data-ref="26337ret">ret</dfn> = <span class="namespace">internal::</span>bicgstab(matrix(), <a class="local col5 ref" href="#26335b" title='b' data-ref="26335b">b</a>, <a class="local col6 ref" href="#26336x" title='x' data-ref="26336x">x</a>, <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_preconditioner, m_iterations, m_error);</td></tr>
+<tr><th id="200">200</th><td></td></tr>
+<tr><th id="201">201</th><td>    m_info = (!<a class="local col7 ref" href="#26337ret" title='ret' data-ref="26337ret">ret</a>) ? <a class="enum" href="../Core/util/Constants.h.html#Eigen::NumericalIssue" title='Eigen::NumericalIssue' data-ref="Eigen::NumericalIssue">NumericalIssue</a></td></tr>
+<tr><th id="202">202</th><td>           : m_error &lt;= <a class="typedef" href="#Eigen::BiCGSTAB::Base" title='Eigen::BiCGSTAB::Base' data-type='IterativeSolverBase&lt;BiCGSTAB&lt;_MatrixType, _Preconditioner&gt;&gt;' data-ref="Eigen::BiCGSTAB::Base">Base</a>::m_tolerance ? <a class="enum" href="../Core/util/Constants.h.html#Eigen::Success" title='Eigen::Success' data-ref="Eigen::Success">Success</a></td></tr>
+<tr><th id="203">203</th><td>           : <a class="enum" href="../Core/util/Constants.h.html#Eigen::NoConvergence" title='Eigen::NoConvergence' data-ref="Eigen::NoConvergence">NoConvergence</a>;</td></tr>
+<tr><th id="204">204</th><td>  }</td></tr>
+<tr><th id="205">205</th><td></td></tr>
+<tr><th id="206">206</th><td><b>protected</b>:</td></tr>
+<tr><th id="207">207</th><td></td></tr>
+<tr><th id="208">208</th><td>};</td></tr>
+<tr><th id="209">209</th><td></td></tr>
+<tr><th id="210">210</th><td>} <i>// end namespace Eigen</i></td></tr>
+<tr><th id="211">211</th><td></td></tr>
+<tr><th id="212">212</th><td><u>#<span data-ppcond="11">endif</span> // EIGEN_BICGSTAB_H</u></td></tr>
+<tr><th id="213">213</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

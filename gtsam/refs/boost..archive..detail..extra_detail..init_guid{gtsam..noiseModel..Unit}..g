@@ -1,0 +1,12 @@
+<dec f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='42' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<def f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='42' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<dec f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='38' macro='1' type='const guid_initializer&lt;noiseModel::Unit&gt; &amp;'/>
+<def f='codebrowser/gtsam/navigation/tests/testSerializationNavigation.cpp' l='38' macro='1' type='const guid_initializer&lt;noiseModel::Unit&gt; &amp;'/>
+<dec f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='44' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<def f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='44' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<dec f='codebrowser/gtsam/sam/tests/testSerializationSam.cpp' l='43' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<def f='codebrowser/gtsam/sam/tests/testSerializationSam.cpp' l='43' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<dec f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='41' macro='1' type='const guid_initializer&lt;noiseModel::Unit&gt; &amp;'/>
+<def f='codebrowser/gtsam/slam/tests/testSerializationInSlam.cpp' l='41' macro='1' type='const guid_initializer&lt;noiseModel::Unit&gt; &amp;'/>
+<dec f='codebrowser/tests/testSerializationSlam.cpp' l='129' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>
+<def f='codebrowser/tests/testSerializationSlam.cpp' l='129' macro='1' type='const guid_initializer&lt;gtsam::noiseModel::Unit&gt; &amp;'/>

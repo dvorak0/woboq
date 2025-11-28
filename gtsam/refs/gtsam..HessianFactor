@@ -1,0 +1,293 @@
+<use f='codebrowser/gtsam/linear/JacobianFactor.h' l='118' c='_ZN5gtsam14JacobianFactorC1ERKNS_13HessianFactorE'/>
+<use f='codebrowser/gtsam/nonlinear/NonlinearFactorGraph.h' l='133'/>
+<use f='codebrowser/gtsam/nonlinear/NonlinearFactorGraph.h' l='142' c='_ZNK5gtsam20NonlinearFactorGraph24linearizeToHessianFactorERKNS_6ValuesERKSt8functionIFvRKSt10shared_ptrINS_13HessianFactorEEEE'/>
+<use f='codebrowser/gtsam/nonlinear/NonlinearFactorGraph.h' l='153' c='_ZNK5gtsam20NonlinearFactorGraph24linearizeToHessianFactorERKNS_6ValuesERKNS_8OrderingERKSt8functionIFvRKSt10shared_ptrINS_13HessianFactorEEEE'/>
+<use f='codebrowser/gtsam/nonlinear/NonlinearFactorGraph.h' l='250' c='_ZNK5gtsam20NonlinearFactorGraph24linearizeToHessianFactorERKNS_6ValuesERKNS_7ScatterERKSt8functionIFvRKSt10shared_ptrINS_13HessianFactorEEEE'/>
+<inh f='codebrowser/gtsam/linear/GaussianFactor.h' l='38' c='gtsam::GaussianFactor'/>
+<def f='codebrowser/gtsam/linear/HessianFactor.h' l='99' ll='382'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='107'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='181' c='_ZN5gtsam13HessianFactorC1ERKNS_19GaussianFactorGraphE'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='188' c='_ZNK5gtsam13HessianFactor5cloneEv'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='332' c='_ZNK5gtsam13HessianFactor13updateHessianEPS0_'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='400' c='_ZN5gtsam17EliminateCholeskyERKNS_19GaussianFactorGraphERKNS_8OrderingE'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='423'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.h' l='423'/>
+<size>88</size>
+<doc f='codebrowser/gtsam/linear/HessianFactor.h' l='36'>/**
+   * @brief A Gaussian factor using the canonical parameters (information form)
+   *
+   * HessianFactor implements a general quadratic factor of the form
+   * \f[ E(x) = 0.5 x^T G x - x^T g + 0.5 f \f]
+   * that stores the matrix \f$ G \f$, the vector \f$ g \f$, and the constant term \f$ f \f$.
+   *
+   * When \f$ G \f$ is positive semidefinite, this factor represents a Gaussian,
+   * in which case \f$ G \f$ is the information matrix \f$ \Lambda \f$,
+   * \f$ g \f$ is the information vector \f$ \eta \f$, and \f$ f \f$ is the residual
+   * sum-square-error at the mean, when \f$ x = \mu \f$.
+   *
+   * Indeed, the negative log-likelihood of a Gaussian is (up to a constant)
+   * @f$ E(x) = 0.5(x-\mu)^T P^{-1} (x-\mu) @f$
+   * with @f$ \mu @f$ the mean and  @f$ P @f$ the covariance matrix. Expanding the product we get
+   * @f[
+   * E(x) = 0.5 x^T P^{-1} x - x^T P^{-1} \mu + 0.5 \mu^T P^{-1} \mu
+   * @f]
+   * We define the Information matrix (or Hessian) @f$ \Lambda = P^{-1} @f$
+   * and the information vector @f$ \eta = P^{-1} \mu = \Lambda \mu @f$
+   * to arrive at the canonical form of the Gaussian:
+   * @f[
+   * E(x) = 0.5 x^T \Lambda x - x^T \eta + 0.5 \mu^T \Lambda \mu
+   * @f]
+   *
+   * This factor is one of the factors that can be in a GaussianFactorGraph.
+   * It may be returned from NonlinearFactor::linearize(), but is also
+   * used internally to store the Hessian during Cholesky elimination.
+   *
+   * This can represent a quadratic factor with characteristics that cannot be
+   * represented using a JacobianFactor (which has the form
+   * \f$ E(x) = \Vert Ax - b \Vert^2 \f$ and stores the Jacobian \f$ A \f$
+   * and error vector \f$ b \f$, i.e. is a sum-of-squares factor).  For example,
+   * a HessianFactor need not be positive semidefinite, it can be indefinite or
+   * even negative semidefinite.
+   *
+   * If a HessianFactor is indefinite or negative semi-definite, then in order
+   * for solving the linear system to be possible,
+   * the Hessian of the full system must be positive definite (i.e. when all
+   * small Hessians are combined, the result must be positive definite).  If
+   * this is not the case, an error will occur during elimination.
+   *
+   * This class stores G, g, and f as an augmented matrix HessianFactor::matrix_.
+   * The upper-left n x n blocks of HessianFactor::matrix_ store the upper-right
+   * triangle of G, the upper-right-most column of length n of HessianFactor::matrix_
+   * stores g, and the lower-right entry of HessianFactor::matrix_ stores f, i.e.
+   * \code
+     HessianFactor::matrix_ = [ G11 G12 G13 ... g1
+                                  0 G22 G23 ... g2
+                                  0   0 G33 ... g3
+                                  :   :   :      :
+                                  0   0   0 ...  f ]
+     \endcode
+     Blocks can be accessed as follows:
+     \code
+     G11 = info(begin(), begin());
+     G12 = info(begin(), begin()+1);
+     G23 = info(begin()+1, begin()+2);
+     g2 = linearTerm(begin()+1);
+     f = constantTerm();
+     .......
+     \endcode
+   */</doc>
+<mbr r='gtsam::HessianFactor::info_' o='256' t='SymmetricBlockMatrix'/>
+<fun r='_ZN5gtsam13HessianFactorC1Ev'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmRKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEERKNS2_IdLin1ELi1ELi0ELin1ELi1EEEd'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmRKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEERKNS2_IdLin1ELin1ELi0ELin1ELin1EEE'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmmRKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEES5_RKNS2_IdLin1ELi1ELi0ELin1ELi1EEES5_S8_d'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmmmRKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEES5_S5_RKNS2_IdLin1ELi1ELi0ELin1ELi1EEES5_S5_S8_S5_S8_d'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKSt6vectorImSaImEERKS1_IN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS8_EERKS1_INS7_IdLin1ELi1ELi0ELin1ELi1EEESaISD_EEd'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKT_RKNS_20SymmetricBlockMatrixE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_14JacobianFactorE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_14GaussianFactorE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_19GaussianFactorGraphERKNS_7ScatterE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_19GaussianFactorGraphE'/>
+<fun r='_ZN5gtsam13HessianFactorD1Ev'/>
+<fun r='_ZNK5gtsam13HessianFactor5cloneEv'/>
+<fun r='_ZNK5gtsam13HessianFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE'/>
+<fun r='_ZNK5gtsam13HessianFactor6equalsERKNS_14GaussianFactorEd'/>
+<fun r='_ZNK5gtsam13HessianFactor5errorERKNS_12VectorValuesE'/>
+<fun r='_ZNK5gtsam13HessianFactor6getDimEN9__gnu_cxx17__normal_iteratorIPKmSt6vectorImSaImEEEE'/>
+<fun r='_ZNK5gtsam13HessianFactor4rowsEv'/>
+<fun r='_ZNK5gtsam13HessianFactor6negateEv'/>
+<fun r='_ZNK5gtsam13HessianFactor12constantTermEv'/>
+<fun r='_ZN5gtsam13HessianFactor12constantTermEv'/>
+<fun r='_ZNK5gtsam13HessianFactor10linearTermEN9__gnu_cxx17__normal_iteratorIPKmSt6vectorImSaImEEEE'/>
+<fun r='_ZNK5gtsam13HessianFactor10linearTermEv'/>
+<fun r='_ZN5gtsam13HessianFactor10linearTermEv'/>
+<fun r='_ZNK5gtsam13HessianFactor4infoEv'/>
+<fun r='_ZN5gtsam13HessianFactor4infoEv'/>
+<fun r='_ZNK5gtsam13HessianFactor20augmentedInformationEv'/>
+<fun r='_ZNK5gtsam13HessianFactor15informationViewEv'/>
+<fun r='_ZNK5gtsam13HessianFactor11informationEv'/>
+<fun r='_ZNK5gtsam13HessianFactor18hessianDiagonalAddERNS_12VectorValuesE'/>
+<fun r='_ZNK5gtsam13HessianFactor15hessianDiagonalEPd'/>
+<fun r='_ZNK5gtsam13HessianFactor20hessianBlockDiagonalEv'/>
+<fun r='_ZNK5gtsam13HessianFactor8jacobianEv'/>
+<fun r='_ZNK5gtsam13HessianFactor17augmentedJacobianEv'/>
+<fun r='_ZNK5gtsam13HessianFactor13updateHessianERKSt6vectorImSaImEEPNS_20SymmetricBlockMatrixE'/>
+<fun r='_ZNK5gtsam13HessianFactor13updateHessianEPS0_'/>
+<fun r='_ZNK5gtsam13HessianFactor18multiplyHessianAddEdRKNS_12VectorValuesERS1_'/>
+<fun r='_ZNK5gtsam13HessianFactor14gradientAtZeroEv'/>
+<fun r='_ZNK5gtsam13HessianFactor14gradientAtZeroEPd'/>
+<fun r='_ZNK5gtsam13HessianFactor8gradientEmRKNS_12VectorValuesE'/>
+<fun r='_ZN5gtsam13HessianFactor17eliminateCholeskyERKNS_8OrderingE'/>
+<fun r='_ZN5gtsam13HessianFactor5solveEv'/>
+<fun r='_ZN5gtsam13HessianFactor8AllocateERKNS_7ScatterE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_7ScatterE'/>
+<fun r='_ZN5gtsam13HessianFactor9serializeERT_j'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKT_RKNS_20SymmetricBlockMatrixE'/>
+<ovr f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='57' c='gtsam::RegularHessianFactor'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='57'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='75' c='_ZN5gtsam20RegularHessianFactorC1ERKSt6vectorImSaImEERKS1_IN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS8_EERKS1_INS7_IdLin1ELi1ELi0ELin1ELi1EEESaISD_EEd'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='85' c='_ZN5gtsam20RegularHessianFactorC1EmmRKN5Eigen6MatrixIdXT_EXT_EXorLNS1_14StorageOptionsE0EquaaeqT_Li1EneT_Li1ELS3_1EquaaeqT_Li1EneT_Li1ELS3_0ELS3_0EEXT14500481'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='96' c='_ZN5gtsam20RegularHessianFactorC1EmmmRKN5Eigen6MatrixIdXT_EXT_EXorLNS1_14StorageOptionsE0EquaaeqT_Li1EneT_Li1ELS3_1EquaaeqT_Li1EneT_Li1ELS3_0ELS3_0EEX9051255'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='110' c='_ZN5gtsam20RegularHessianFactorC1ERKTL0__RKNS_20SymmetricBlockMatrixE'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='121' c='_ZN5gtsam20RegularHessianFactorC1ERKNS_21RegularJacobianFactorIXT_EEE'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='133' c='_ZN5gtsam20RegularHessianFactorC1ERKNS_19GaussianFactorGraphERKNS_7ScatterE'/>
+<use f='codebrowser/gtsam/linear/RegularHessianFactor.h' l='144' c='_ZN5gtsam20RegularHessianFactorC1ERKNS_19GaussianFactorGraphE'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/GaussianFactorGraph.cpp' l='154' c='_ZNK5gtsam19GaussianFactorGraph14sparseJacobianERKNS_8OrderingERmS4_'/>
+<use f='codebrowser/gtsam/linear/GaussianFactorGraph.cpp' l='251' c='_ZNK5gtsam19GaussianFactorGraph16augmentedHessianERKNS_8OrderingE'/>
+<use f='codebrowser/gtsam/linear/GaussianFactorGraph.cpp' l='259' c='_ZNK5gtsam19GaussianFactorGraph16augmentedHessianEv'/>
+<use f='codebrowser/gtsam/linear/GaussianFactorGraph.cpp' l='328' c='_ZNK5gtsam19GaussianFactorGraph15optimizeDenselyEv'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/HessianFactor.cpp' l='231' c='_ZN5gtsam13HessianFactorC1ERKNS_14GaussianFactorE'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.cpp' l='231' c='_ZN5gtsam13HessianFactorC1ERKNS_14GaussianFactorE'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.cpp' l='269' c='_ZNK5gtsam13HessianFactor6equalsERKNS_14GaussianFactorEd'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.cpp' l='269' c='_ZNK5gtsam13HessianFactor6equalsERKNS_14GaussianFactorEd'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.cpp' l='515' c='_ZN5gtsam17EliminateCholeskyERKNS_19GaussianFactorGraphERKNS_8OrderingE'/>
+<use f='codebrowser/gtsam/linear/HessianFactor.cpp' l='523' c='_ZN5gtsam17EliminateCholeskyERKNS_19GaussianFactorGraphERKNS_8OrderingE'/>
+<size>88</size>
+<fun r='_ZN5gtsam13HessianFactor8AllocateERKNS_7ScatterE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_7ScatterE'/>
+<fun r='_ZN5gtsam13HessianFactorC1Ev'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmRKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEERKNS2_IdLin1ELi1ELi0ELin1ELi1EEEd'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmRKN5Eigen6MatrixIdLin1ELi1ELi0ELin1ELi1EEERKNS2_IdLin1ELin1ELi0ELin1ELin1EEE'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmmRKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEES5_RKNS2_IdLin1ELi1ELi0ELin1ELi1EEES5_S8_d'/>
+<fun r='_ZN5gtsam13HessianFactorC1EmmmRKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEES5_S5_RKNS2_IdLin1ELi1ELi0ELin1ELi1EEES5_S5_S8_S5_S8_d'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKSt6vectorImSaImEERKS1_IN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEESaIS8_EERKS1_INS7_IdLin1ELi1ELi0ELin1ELi1EEESaISD_EEd'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_14JacobianFactorE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_14GaussianFactorE'/>
+<fun r='_ZN5gtsam13HessianFactorC1ERKNS_19GaussianFactorGraphERKNS_7ScatterE'/>
+<fun r='_ZNK5gtsam13HessianFactor5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE'/>
+<fun r='_ZNK5gtsam13HessianFactor6equalsERKNS_14GaussianFactorEd'/>
+<fun r='_ZNK5gtsam13HessianFactor20augmentedInformationEv'/>
+<fun r='_ZNK5gtsam13HessianFactor15informationViewEv'/>
+<fun r='_ZNK5gtsam13HessianFactor11informationEv'/>
+<fun r='_ZNK5gtsam13HessianFactor18hessianDiagonalAddERNS_12VectorValuesE'/>
+<fun r='_ZNK5gtsam13HessianFactor15hessianDiagonalEPd'/>
+<fun r='_ZNK5gtsam13HessianFactor20hessianBlockDiagonalEv'/>
+<fun r='_ZNK5gtsam13HessianFactor17augmentedJacobianEv'/>
+<fun r='_ZNK5gtsam13HessianFactor8jacobianEv'/>
+<fun r='_ZNK5gtsam13HessianFactor5errorERKNS_12VectorValuesE'/>
+<fun r='_ZNK5gtsam13HessianFactor13updateHessianERKSt6vectorImSaImEEPNS_20SymmetricBlockMatrixE'/>
+<fun r='_ZNK5gtsam13HessianFactor6negateEv'/>
+<fun r='_ZNK5gtsam13HessianFactor18multiplyHessianAddEdRKNS_12VectorValuesERS1_'/>
+<fun r='_ZNK5gtsam13HessianFactor14gradientAtZeroEv'/>
+<fun r='_ZNK5gtsam13HessianFactor14gradientAtZeroEPd'/>
+<fun r='_ZNK5gtsam13HessianFactor8gradientEmRKNS_12VectorValuesE'/>
+<fun r='_ZN5gtsam13HessianFactor17eliminateCholeskyERKNS_8OrderingE'/>
+<fun r='_ZN5gtsam13HessianFactor5solveEv'/>
+<use f='codebrowser/gtsam/linear/JacobianFactor.cpp' l='58' c='_ZN5gtsam14JacobianFactorC1ERKNS_14GaussianFactorE'/>
+<use f='codebrowser/gtsam/linear/JacobianFactor.cpp' l='58' c='_ZN5gtsam14JacobianFactorC1ERKNS_14GaussianFactorE'/>
+<use f='codebrowser/gtsam/linear/JacobianFactor.cpp' l='91' c='_ZN5gtsam14JacobianFactorC1ERKNS_13HessianFactorE'/>
+<use f='codebrowser/gtsam/linear/JacobianFactor.cpp' l='735' c='_ZNK5gtsam14JacobianFactor8gradientEmRKNS_12VectorValuesE'/>
+<use f='codebrowser/gtsam/linear/JacobianFactor.cpp' l='780' c='_ZNK5gtsam14JacobianFactor6negateEv'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/SubgraphBuilder.cpp' l='379' c='_ZNK5gtsam15SubgraphBuilder7weightsERKNS_19GaussianFactorGraphE'/>
+<use f='codebrowser/gtsam/linear/SubgraphBuilder.cpp' l='388' c='_ZNK5gtsam15SubgraphBuilder7weightsERKNS_19GaussianFactorGraphE'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/tests/testGaussianFactorGraph.cpp' l='319' c='_ZL42createGaussianFactorGraphWithHessianFactorv'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='51' c='_ZN33HessianFactoremptyConstructorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='61' c='_ZN38HessianFactorConversionConstructorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='83' c='_ZN38HessianFactorConversionConstructorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='98' c='_ZN29HessianFactorConstructor1Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='122' c='_ZN30HessianFactorConstructor1bTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='150' c='_ZN29HessianFactorConstructor2Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='194' c='_ZN29HessianFactorConstructor3Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='243' c='_ZN32HessianFactorConstructorNWayTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='284' c='_ZN37HessianFactorCombineAndEliminate1Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='288' c='_ZN37HessianFactorCombineAndEliminate1Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='347' c='_ZN37HessianFactorCombineAndEliminate2Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='348' c='_ZN37HessianFactorCombineAndEliminate2Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='414' c='_ZN27HessianFactoreliminate2Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='443' c='_ZN27HessianFactoreliminate2Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='465' c='_ZN24HessianFactorcombineTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='489' c='_ZN31HessianFactorgradientAtZeroTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='510' c='_ZN25HessianFactorgradientTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='536' c='_ZN32HessianFactorhessianDiagonalTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testHessianFactor.cpp' l='561' c='_ZN22HessianFactorSolveTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/tests/testJacobianFactor.cpp' l='151' c='_ZN36JabobianFactorHessian_conversionTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testJacobianFactor.cpp' l='174' c='_ZN37JabobianFactorHessian_conversion2Test3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testJacobianFactor.cpp' l='184' c='_ZN37JabobianFactorHessian_conversion3Test3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='130'/>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='130' c='_ZN5boost13serialization4guidEv'/>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='130'/>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='130'/>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='130'/>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='152' c='_ZN31Serializationlinear_factorsTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/linear/tests/testSerializationLinear.cpp' l='189' c='_ZN38Serializationgaussian_factor_graphTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam/nonlinear/LinearContainerFactor.h' l='53' c='_ZN5gtsam21LinearContainerFactorC1ERKNS_13HessianFactorERKNS_6ValuesE'/>
+<use f='codebrowser/gtsam/nonlinear/LinearContainerFactor.h' l='153' c='_ZNK5gtsam21LinearContainerFactor9toHessianEv'/>
+<size>88</size>
+<use f='codebrowser/gtsam/nonlinear/LinearContainerFactor.cpp' l='43' c='_ZN5gtsam21LinearContainerFactorC1ERKNS_13HessianFactorERKNS_6ValuesE'/>
+<use f='codebrowser/gtsam/nonlinear/LinearContainerFactor.cpp' l='123' c='_ZNK5gtsam21LinearContainerFactor9linearizeERKNS_6ValuesE'/>
+<use f='codebrowser/gtsam/nonlinear/LinearContainerFactor.cpp' l='142' c='_ZNK5gtsam21LinearContainerFactor9isHessianEv'/>
+<use f='codebrowser/gtsam/nonlinear/LinearContainerFactor.cpp' l='152' c='_ZNK5gtsam21LinearContainerFactor9toHessianEv'/>
+<size>88</size>
+<use f='codebrowser/gtsam/nonlinear/NonlinearFactorGraph.cpp' l='315' c='_ZNK5gtsam20NonlinearFactorGraph24linearizeToHessianFactorERKNS_6ValuesERKNS_7ScatterERKSt8functionIFvRKSt10shared_ptrINS_13HessianFactorEEEE'/>
+<size>88</size>
+<use f='codebrowser/gtsam/nonlinear/tests/testLinearContainerFactor.cpp' l='137' c='_ZN51TestLinearContainerFactorgeneric_hessian_factorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testLinearContainerFactor.cpp' l='181' c='_ZN57TestLinearContainerFactorhessian_factor_withlinpointsTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testLinearContainerFactor.cpp' l='223' c='_ZN57TestLinearContainerFactorhessian_factor_withlinpointsTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testLinearContainerFactor.cpp' l='302' c='_ZN48TestLinearContainerFactorhessian_relinearizeTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testLinearContainerFactor.cpp' l='316' c='_ZN48TestLinearContainerFactorhessian_relinearizeTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='54'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='54' c='_ZN5boost13serialization4guidEv'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='54'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='54'/>
+<use f='codebrowser/gtsam/nonlinear/tests/testSerializationNonlinear.cpp' l='54'/>
+<size>88</size>
+<use f='codebrowser/gtsam/nonlinear/WhiteNoiseFactor.h' l='85' c='_ZN5gtsam16WhiteNoiseFactor9linearizeEdddmm'/>
+<size>88</size>
+<use f='codebrowser/gtsam/slam/tests/testAntiFactor.cpp' l='57' c='_ZN29AntiFactorNegativeHessianTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testAntiFactor.cpp' l='64' c='_ZN29AntiFactorNegativeHessianTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam/slam/tests/testGeneralSFMFactor.cpp' l='474' c='_ZN40GeneralSFMFactorBinaryJacobianFactorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testGeneralSFMFactor.cpp' l='474' c='_ZN40GeneralSFMFactorBinaryJacobianFactorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testGeneralSFMFactor.cpp' l='487' c='_ZN40GeneralSFMFactorBinaryJacobianFactorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testGeneralSFMFactor.cpp' l='487' c='_ZN40GeneralSFMFactorBinaryJacobianFactorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testGeneralSFMFactor.cpp' l='512' c='_ZN41GeneralSFMFactorBinaryJacobianFactor2Test3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam/slam/tests/testSmartProjectionFactor.cpp' l='786' c='_ZN47SmartProjectionFactorimplicitJacobianFactorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testSmartProjectionFactor.cpp' l='787' c='_ZN47SmartProjectionFactorimplicitJacobianFactorTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/linear/LinearCost.h' l='44' c='_ZN5gtsam10LinearCostC1ERKNS_13HessianFactorE'/>
+<use f='codebrowser/gtsam_unstable/linear/LinearEquality.h' l='56' c='_ZN5gtsam14LinearEqualityC1ERKNS_13HessianFactorE'/>
+<use f='codebrowser/gtsam_unstable/linear/LinearInequality.h' l='50' c='_ZN5gtsam16LinearInequalityC1ERKNS_13HessianFactorE'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/linear/QPSParser.cpp' l='331' c='_ZN5gtsam10QPSVisitor6makeQPEv'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/linear/QPSolver.h' l='41' c='_ZN5gtsam8QPPolicy17buildCostFunctionERKNS_2QPERKNS_12VectorValuesE'/>
+<use f='codebrowser/gtsam_unstable/linear/QPSolver.h' l='41' c='_ZN5gtsam8QPPolicy17buildCostFunctionERKNS_2QPERKNS_12VectorValuesE'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/linear/tests/testLinearEquality.cpp' l='87' c='_ZN36LinearEqualityHessian_conversionTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/linear/tests/testQPSolver.cpp' l='50' c='_Z14createTestCasev'/>
+<use f='codebrowser/gtsam_unstable/linear/tests/testQPSolver.cpp' l='105' c='_Z29createEqualityConstrainedTestv'/>
+<use f='codebrowser/gtsam_unstable/linear/tests/testQPSolver.cpp' l='226' c='_Z10testParserN5gtsam9QPSParserE'/>
+<use f='codebrowser/gtsam_unstable/linear/tests/testQPSolver.cpp' l='333' c='_Z20createTestMatlabQPExv'/>
+<use f='codebrowser/gtsam_unstable/linear/tests/testQPSolver.cpp' l='409' c='_ZN28QPSolverfailedSubproblemTest3runER10TestResult'/>
+<use f='codebrowser/gtsam_unstable/linear/tests/testQPSolver.cpp' l='428' c='_ZN29QPSolverinfeasibleInitialTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/nonlinear/ConcurrentBatchFilter.cpp' l='71' c='_ZN5gtsam21ConcurrentBatchFilter17PrintLinearFactorERKSt10shared_ptrINS_14GaussianFactorEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFSB_mEE'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/nonlinear/LinearizedFactor.cpp' l='244' c='_ZNK5gtsam23LinearizedHessianFactor9linearizeERKNS_6ValuesE'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/nonlinear/tests/testLinearizedFactor.cpp' l='180' c='_ZN34LinearizedFactorequals_hessianTest3runER10TestResult'/>
+<use f='codebrowser/gtsam_unstable/nonlinear/tests/testLinearizedFactor.cpp' l='204' c='_ZN33LinearizedFactorclone_hessianTest3runER10TestResult'/>
+<use f='codebrowser/gtsam_unstable/nonlinear/tests/testLinearizedFactor.cpp' l='228' c='_ZN31LinearizedFactoradd_hessianTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/gtsam_unstable/nonlinear/tests/testNonlinearClusterTree.cpp' l='90' c='_ZN32NonlinearClusterTreeClustersTest3runER10TestResult'/>
+<use f='codebrowser/gtsam_unstable/nonlinear/tests/testNonlinearClusterTree.cpp' l='97' c='_ZN32NonlinearClusterTreeClustersTest3runER10TestResult'/>
+<size>88</size>
+<use f='codebrowser/tests/testSerializationSlam.cpp' l='161'/>
+<use f='codebrowser/tests/testSerializationSlam.cpp' l='161' c='_ZN5boost13serialization4guidEv'/>
+<use f='codebrowser/tests/testSerializationSlam.cpp' l='161'/>
+<use f='codebrowser/tests/testSerializationSlam.cpp' l='161'/>
+<use f='codebrowser/tests/testSerializationSlam.cpp' l='161'/>
+<size>88</size>
+<use f='codebrowser/timing/timeSchurFactors.cpp' l='71' c='_Z7timeAllmm'/>
+<size>88</size>

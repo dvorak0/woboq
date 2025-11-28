@@ -1,0 +1,42 @@
+<dec f='codebrowser/gtsam/sfm/SfmTrack.h' l='125' type='Point3'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.h' l='132' u='w' c='_ZN5gtsam8SfmTrackC1Efff'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.h' l='136' u='w' c='_ZN5gtsam8SfmTrackC1ERKN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEEfff'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.h' l='143' u='a' c='_ZNK5gtsam8SfmTrack6point3Ev'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.h' l='167' u='a' c='_ZN5gtsam8SfmTrack9serializeERT_j'/>
+<offset>384</offset>
+<doc f='codebrowser/gtsam/sfm/SfmTrack.h' l='125'>///&lt; 3D position of the point</doc>
+<use f='codebrowser/examples/CreateSFMExampleData.cpp' l='38' u='w' c='_Z20createExampleBALFileRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt6vectorIN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEESaISA_EERKN5gtsam5Pose2041554'/>
+<use f='codebrowser/examples/SFMExampleExpressions_bal.cpp' l='68' u='r' c='main'/>
+<use f='codebrowser/examples/SFMExampleExpressions_bal.cpp' l='96' u='r' c='main'/>
+<use f='codebrowser/examples/SFMExample_bal.cpp' l='68' u='r' c='main'/>
+<use f='codebrowser/examples/SFMExample_bal.cpp' l='74' u='r' c='main'/>
+<use f='codebrowser/examples/SFMExample_bal_COLAMD_METIS.cpp' l='70' u='r' c='main'/>
+<use f='codebrowser/examples/SFMExample_bal_COLAMD_METIS.cpp' l='78' u='r' c='main'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='159' u='w' c='_ZN5gtsam7SfmData15FromBundlerFileERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='239' u='w' c='_ZN5gtsam7SfmData11FromBalFileERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='314' u='r' c='_ZN5gtsam8writeBALERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS_7SfmDataE'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='374' u='w' c='_ZN5gtsam18writeBALfromValuesERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS_7SfmDataERKNS_6ValuesE'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='379' u='w' c='_ZN5gtsam18writeBALfromValuesERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS_7SfmDataERKNS_6ValuesE'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='416' u='r' c='_ZNK5gtsam7SfmData14sfmFactorGraphERKSt10shared_ptrINS_10noiseModel4BaseEESt8optionalImES8_'/>
+<use f='codebrowser/gtsam/sfm/SfmData.cpp' l='434' u='r' c='_ZN5gtsam31initialCamerasAndPointsEstimateERKNS_7SfmDataE'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.cpp' l='27' u='r' c='_ZNK5gtsam8SfmTrack5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.cpp' l='32' u='m' c='_ZNK5gtsam8SfmTrack6equalsERKS0_d'/>
+<use f='codebrowser/gtsam/sfm/SfmTrack.cpp' l='32' u='r' c='_ZNK5gtsam8SfmTrack6equalsERKS0_d'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='49' u='r' c='_ZN22dataSetBalbianelloTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='80' u='r' c='_ZN28dataSetreadBAL_DubrovnikTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='141' u='r' c='_ZN29dataSetwriteBAL_DubrovnikTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='142' u='r' c='_ZN29dataSetwriteBAL_DubrovnikTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='175' u='r' c='_ZN39dataSetwriteBALfromValues_DubrovnikTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='196' u='r' c='_ZN39dataSetwriteBALfromValues_DubrovnikTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/sfm/tests/testSfmData.cpp' l='204' u='r' c='_ZN39dataSetwriteBALfromValues_DubrovnikTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='212' u='r' c='_ZN8example132EssentialMatrixFactor2factorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='242' u='r' c='_ZN8example138EssentialMatrixFactor2minimizationTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='277' u='r' c='_ZN8example132EssentialMatrixFactor3factorTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='306' u='r' c='_ZN8example138EssentialMatrixFactor3minimizationTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='654' u='r' c='_ZN8example235EssentialMatrixFactor2extraTestTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='684' u='r' c='_ZN8example243EssentialMatrixFactor2extraMinimizationTest3runER10TestResult'/>
+<use f='codebrowser/gtsam/slam/tests/testEssentialMatrixFactor.cpp' l='714' u='r' c='_ZN8example235EssentialMatrixFactor3extraTestTest3runER10TestResult'/>
+<use f='codebrowser/timing/timeSFMBAL.cpp' l='52' u='r' c='main'/>
+<use f='codebrowser/timing/timeSFMBALautodiff.cpp' l='69' u='r' c='main'/>
+<use f='codebrowser/timing/timeSFMBALcamTnav.cpp' l='58' u='r' c='main'/>
+<use f='codebrowser/timing/timeSFMBALnavTcam.cpp' l='58' u='r' c='main'/>

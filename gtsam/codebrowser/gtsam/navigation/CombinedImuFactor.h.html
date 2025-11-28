@@ -1,0 +1,346 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CombinedImuFactor.h source code [codebrowser/gtsam/navigation/CombinedImuFactor.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::CombinedImuFactorT,gtsam::PreintegratedCombinedMeasurementsT,gtsam::traits "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/navigation/CombinedImuFactor.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>navigation</a>/<a href='CombinedImuFactor.h.html'>CombinedImuFactor.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> *  <span class="command">@file</span> <span class="verb"> CombinedImuFactor.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> *  <span class="command">@author</span> Luca Carlone</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> *  <span class="command">@author</span> Stephen Williams</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> *  <span class="command">@author</span> Richard Roberts</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> *  <span class="command">@author</span> Vadim Indelman</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> *  <span class="command">@author</span> David Jensen</i></td></tr>
+<tr><th id="19">19</th><td><i class="doc"> *  <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="20">20</th><td><i class="doc"> *  <span class="command">@author</span> Varun Agrawal</i></td></tr>
+<tr><th id="21">21</th><td><i class="doc"> **/</i></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><u>#pragma once</u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><i>/* GTSAM includes */</i></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="PreintegrationCombinedParams.h.html">&lt;gtsam/navigation/PreintegrationCombinedParams.h&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td><u>#<span data-ppcond="30">ifdef</span> <a class="macro" href="../../build/gtsam/config.h.html#90" data-ref="_M/GTSAM_TANGENT_PREINTEGRATION">GTSAM_TANGENT_PREINTEGRATION</a></u></td></tr>
+<tr><th id="31">31</th><td><b>typedef</b> <a class="type" href="TangentPreintegration.h.html#gtsam::TangentPreintegration" title='gtsam::TangentPreintegration' data-ref="gtsam::TangentPreintegration">TangentPreintegration</a> <dfn class="typedef" id="gtsam::DefaultPreintegrationType" title='gtsam::DefaultPreintegrationType' data-type='TangentPreintegration' data-ref="gtsam::DefaultPreintegrationType">DefaultPreintegrationType</dfn>;</td></tr>
+<tr><th id="32">32</th><td><u>#<span data-ppcond="30">else</span></u></td></tr>
+<tr><th id="33">33</th><td><b>typedef</b> ManifoldPreintegration DefaultPreintegrationType;</td></tr>
+<tr><th id="34">34</th><td><u>#<span data-ppcond="30">endif</span></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><i>/*</i></td></tr>
+<tr><th id="37">37</th><td><i> * If you are using the factor, please cite:</i></td></tr>
+<tr><th id="38">38</th><td><i> * L. Carlone, Z. Kira, C. Beall, V. Indelman, F. Dellaert, Eliminating</i></td></tr>
+<tr><th id="39">39</th><td><i> * conditionally independent sets in factor graphs: a unifying perspective based</i></td></tr>
+<tr><th id="40">40</th><td><i> * on smart factors, Int. Conf. on Robotics and Automation (ICRA), 2014.</i></td></tr>
+<tr><th id="41">41</th><td><i> *</i></td></tr>
+<tr><th id="42">42</th><td><i> * REFERENCES:</i></td></tr>
+<tr><th id="43">43</th><td><i> * [1] G.S. Chirikjian, "Stochastic Models, Information Theory, and Lie Groups",</i></td></tr>
+<tr><th id="44">44</th><td><i> *     Volume 2, 2008.</i></td></tr>
+<tr><th id="45">45</th><td><i> * [2] T. Lupton and S.Sukkarieh, "Visual-Inertial-Aided Navigation for</i></td></tr>
+<tr><th id="46">46</th><td><i> *     High-Dynamic Motion in Built Environments Without Initial Conditions",</i></td></tr>
+<tr><th id="47">47</th><td><i> *     TRO, 28(1):61-76, 2012.</i></td></tr>
+<tr><th id="48">48</th><td><i> * [3] L. Carlone, S. Williams, R. Roberts, "Preintegrated IMU factor:</i></td></tr>
+<tr><th id="49">49</th><td><i> *     Computation of the Jacobian Matrices", Tech. Report, 2013.</i></td></tr>
+<tr><th id="50">50</th><td><i> *     Available in this repo as "PreintegratedIMUJacobians.pdf".</i></td></tr>
+<tr><th id="51">51</th><td><i> * [4] C. Forster, L. Carlone, F. Dellaert, D. Scaramuzza, IMU Preintegration on</i></td></tr>
+<tr><th id="52">52</th><td><i> *     Manifold for Efficient Visual-Inertial Maximum-a-Posteriori Estimation,</i></td></tr>
+<tr><th id="53">53</th><td><i> *     Robotics: Science and Systems (RSS), 2015.</i></td></tr>
+<tr><th id="54">54</th><td><i> */</i></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc"> * PreintegratedCombinedMeasurements integrates the IMU measurements</i></td></tr>
+<tr><th id="58">58</th><td><i class="doc"> * (rotation rates and accelerations) and the corresponding covariance matrix.</i></td></tr>
+<tr><th id="59">59</th><td><i class="doc"> * The measurements are then used to build the CombinedImuFactor. Integration</i></td></tr>
+<tr><th id="60">60</th><td><i class="doc"> * is done incrementally (ideally, one integrates the measurement as soon as</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> * it is received from the IMU) so as to avoid costly integration at time of</i></td></tr>
+<tr><th id="62">62</th><td><i class="doc"> * factor construction.</i></td></tr>
+<tr><th id="63">63</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">navigation</span></i></td></tr>
+<tr><th id="65">65</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="66">66</th><td><b>template</b> &lt;<b>class</b> PreintegrationType&gt;</td></tr>
+<tr><th id="67">67</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::PreintegratedCombinedMeasurementsT" title='gtsam::PreintegratedCombinedMeasurementsT' data-ref="gtsam::PreintegratedCombinedMeasurementsT">PreintegratedCombinedMeasurementsT</dfn> : <b>public</b> PreintegrationType {</td></tr>
+<tr><th id="68">68</th><td> <b>public</b>:</td></tr>
+<tr><th id="69">69</th><td>  <b>typedef</b> <a class="type" href="PreintegrationCombinedParams.h.html#gtsam::PreintegrationCombinedParams" title='gtsam::PreintegrationCombinedParams' data-ref="gtsam::PreintegrationCombinedParams">PreintegrationCombinedParams</a> <dfn class="typedef" id="gtsam::PreintegratedCombinedMeasurementsT::Params" title='gtsam::PreintegratedCombinedMeasurementsT::Params' data-type='PreintegrationCombinedParams' data-ref="gtsam::PreintegratedCombinedMeasurementsT::Params">Params</dfn>;</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td> <b>protected</b>:</td></tr>
+<tr><th id="72">72</th><td>  <i>/* Covariance matrix of the preintegrated measurements</i></td></tr>
+<tr><th id="73">73</th><td><i>   * COVARIANCE OF: [PreintROTATION PreintPOSITION PreintVELOCITY BiasAcc</i></td></tr>
+<tr><th id="74">74</th><td><i>   * BiasOmega] (first-order propagation from *measurementCovariance*).</i></td></tr>
+<tr><th id="75">75</th><td><i>   * PreintegratedCombinedMeasurements also include the biases and keep the</i></td></tr>
+<tr><th id="76">76</th><td><i>   * correlation between the preintegrated measurements and the biases</i></td></tr>
+<tr><th id="77">77</th><td><i>   */</i></td></tr>
+<tr><th id="78">78</th><td>  <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <var>15</var>, <var>15</var>&gt; <dfn class="decl field" id="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_' data-ref="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_">preintMeasCov_</dfn>;</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>  <b>template</b> &lt;<b>class</b> PIM&gt; <b>friend</b> <b>class</b> <dfn class="type" id="gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</dfn>;</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td> <b>public</b>:</td></tr>
+<tr><th id="83">83</th><td>  <i class="doc">/// <span class="command">@name</span> <span class="verb">Constructors</span></i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc"></i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">  /// Default constructor only for serialization and wrappers</i></td></tr>
+<tr><th id="87">87</th><td>  <dfn class="decl def fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsTC1Ev" title='gtsam::PreintegratedCombinedMeasurementsT::PreintegratedCombinedMeasurementsT&lt;PreintegrationType&gt;' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsTC1Ev">PreintegratedCombinedMeasurementsT</dfn>() { <b>this</b>-&gt;resetIntegration(); }</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">   *  Default constructor, initializes the class with no measurements</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">   *  <span class="command">@param</span> <span class="arg">p</span> Parameters, typically fixed in a single application</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">   *  <span class="command">@param</span> <span class="arg">biasHat</span> Current estimate of acceleration and rotation rate biases</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">   *  <span class="command">@param</span> <span class="arg">preintMeasCov</span> Covariance matrix used in noise model.</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="95">95</th><td>  <dfn class="decl def fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsTC1ERKSt10shared_ptrINS_28PreintegrationCombinedParamsEERKNS_7imuBias12ConstantBiasERKN5Eigen6MatrixIdLi153572834" title='gtsam::PreintegratedCombinedMeasurementsT::PreintegratedCombinedMeasurementsT&lt;PreintegrationType&gt;' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsTC1ERKSt10shared_ptrINS_28PreintegrationCombinedParamsEERKNS_7imuBias12ConstantBiasERKN5Eigen6MatrixIdLi153572834">PreintegratedCombinedMeasurementsT</dfn>(</td></tr>
+<tr><th id="96">96</th><td>      <em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::PreintegratedCombinedMeasurementsT::Params" title='gtsam::PreintegratedCombinedMeasurementsT::Params' data-type='PreintegrationCombinedParams' data-ref="gtsam::PreintegratedCombinedMeasurementsT::Params">Params</a>&gt;&amp; <dfn class="local col0 decl" id="4370p" title='p' data-type='const std::shared_ptr&lt;Params&gt; &amp;' data-ref="4370p">p</dfn>,</td></tr>
+<tr><th id="97">97</th><td>      <em>const</em> <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>&amp; <dfn class="local col1 decl" id="4371biasHat" title='biasHat' data-type='const imuBias::ConstantBias &amp;' data-ref="4371biasHat">biasHat</dfn> = <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a><a class="ref fn" href="ImuBias.h.html#_ZN5gtsam7imuBias12ConstantBiasC1Ev" title='gtsam::imuBias::ConstantBias::ConstantBias' data-ref="_ZN5gtsam7imuBias12ConstantBiasC1Ev">(</a>),</td></tr>
+<tr><th id="98">98</th><td>      <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <var>15</var>, <var>15</var>&gt;&amp; <dfn class="local col2 decl" id="4372preintMeasCov" title='preintMeasCov' data-type='const Eigen::Matrix&lt;double, 15, 15&gt; &amp;' data-ref="4372preintMeasCov">preintMeasCov</dfn> =</td></tr>
+<tr><th id="99">99</th><td>          <a class="ref fn fake" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKNS_9EigenBaseITL0__EE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKNS_9EigenBaseITL0__EE"></a><span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <var>15</var>, <var>15</var>&gt;::<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/DenseBase.h.html#_ZN5Eigen9DenseBase4ZeroEv" title='Eigen::DenseBase::Zero' data-ref="_ZN5Eigen9DenseBase4ZeroEv">Zero</a>())</td></tr>
+<tr><th id="100">100</th><td>      : PreintegrationType(<a class="local col0 ref" href="#4370p" title='p' data-ref="4370p">p</a>, <a class="local col1 ref" href="#4371biasHat" title='biasHat' data-ref="4371biasHat">biasHat</a>), <a class="member field" href="#gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_' data-ref="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_">preintMeasCov_</a><a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKNS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKNS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEE">(</a><a class="local col2 ref" href="#4372preintMeasCov" title='preintMeasCov' data-ref="4372preintMeasCov">preintMeasCov</a>) {</td></tr>
+<tr><th id="101">101</th><td>    <b>this</b>-&gt;PreintegrationType::resetIntegration();</td></tr>
+<tr><th id="102">102</th><td>  }</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">   *  Construct preintegrated directly from members: base class and</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">   * preintMeasCov</i></td></tr>
+<tr><th id="107">107</th><td><i class="doc">   *  <span class="command">@param</span> <span class="arg">base</span>               PreintegrationType instance</i></td></tr>
+<tr><th id="108">108</th><td><i class="doc">   *  <span class="command">@param</span> <span class="arg">preintMeasCov</span>      Covariance matrix used in noise model.</i></td></tr>
+<tr><th id="109">109</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="110">110</th><td>  <dfn class="decl def fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsTC1ERKT_RKN5Eigen6MatrixIdLi15ELi15ELi0ELi15ELi15EEE" title='gtsam::PreintegratedCombinedMeasurementsT::PreintegratedCombinedMeasurementsT&lt;PreintegrationType&gt;' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsTC1ERKT_RKN5Eigen6MatrixIdLi15ELi15ELi0ELi15ELi15EEE">PreintegratedCombinedMeasurementsT</dfn>(</td></tr>
+<tr><th id="111">111</th><td>      <em>const</em> PreintegrationType&amp; <dfn class="local col3 decl" id="4373base" title='base' data-type='const PreintegrationType &amp;' data-ref="4373base">base</dfn>,</td></tr>
+<tr><th id="112">112</th><td>      <em>const</em> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <var>15</var>, <var>15</var>&gt;&amp; <dfn class="local col4 decl" id="4374preintMeasCov" title='preintMeasCov' data-type='const Eigen::Matrix&lt;double, 15, 15&gt; &amp;' data-ref="4374preintMeasCov">preintMeasCov</dfn>)</td></tr>
+<tr><th id="113">113</th><td>      : PreintegrationType(<a class="local col3 ref" href="#4373base" title='base' data-ref="4373base">base</a>), <a class="member field" href="#gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_' data-ref="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_">preintMeasCov_</a><a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKNS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKNS_6MatrixIT_XT0_EXT1_EXT2_EXT3_EXT4_EEE">(</a><a class="local col4 ref" href="#4374preintMeasCov" title='preintMeasCov' data-ref="4374preintMeasCov">preintMeasCov</a>) {</td></tr>
+<tr><th id="114">114</th><td>    <b>this</b>-&gt;PreintegrationType::resetIntegration();</td></tr>
+<tr><th id="115">115</th><td>  }</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td>  <i class="doc">/// Virtual destructor</i></td></tr>
+<tr><th id="118">118</th><td>  <dfn class="decl def fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsTD1Ev" title='gtsam::PreintegratedCombinedMeasurementsT::~PreintegratedCombinedMeasurementsT&lt;PreintegrationType&gt;' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsTD1Ev">~PreintegratedCombinedMeasurementsT</dfn>() override {}</td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc"></i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Basic utilities</span></i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="124">124</th><td><i class="doc"></i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">  /// Re-initialize PreintegratedCombinedMeasurements</i></td></tr>
+<tr><th id="126">126</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsT16resetIntegrationEv" title='gtsam::PreintegratedCombinedMeasurementsT::resetIntegration' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsT16resetIntegrationEv">resetIntegration</dfn>() override;</td></tr>
+<tr><th id="127">127</th><td></td></tr>
+<tr><th id="128">128</th><td>  <i class="doc">/// const reference to params, shadows definition in base class</i></td></tr>
+<tr><th id="129">129</th><td>  <a class="typedef" href="#gtsam::PreintegratedCombinedMeasurementsT::Params" title='gtsam::PreintegratedCombinedMeasurementsT::Params' data-type='PreintegrationCombinedParams' data-ref="gtsam::PreintegratedCombinedMeasurementsT::Params">Params</a>&amp; <dfn class="decl def fn" id="_ZNK5gtsam34PreintegratedCombinedMeasurementsT1pEv" title='gtsam::PreintegratedCombinedMeasurementsT::p' data-ref="_ZNK5gtsam34PreintegratedCombinedMeasurementsT1pEv">p</dfn>() <em>const</em> { <b>return</b> *<span class="namespace">std::</span>static_pointer_cast&lt;<a class="typedef" href="#gtsam::PreintegratedCombinedMeasurementsT::Params" title='gtsam::PreintegratedCombinedMeasurementsT::Params' data-type='PreintegrationCombinedParams' data-ref="gtsam::PreintegratedCombinedMeasurementsT::Params">Params</a>&gt;(<b>this</b>-&gt;p_); }</td></tr>
+<tr><th id="130">130</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc"></i></td></tr>
+<tr><th id="132">132</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Access instance variables</span></i></td></tr>
+<tr><th id="133">133</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="134">134</th><td><i class="doc">  /// Return pre-integrated measurement covariance</i></td></tr>
+<tr><th id="135">135</th><td>  <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="decl def fn" id="_ZNK5gtsam34PreintegratedCombinedMeasurementsT13preintMeasCovEv" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov' data-ref="_ZNK5gtsam34PreintegratedCombinedMeasurementsT13preintMeasCovEv">preintMeasCov</dfn>() <em>const</em> { <b>return</b> <a class="ref fn fake" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKNS_9EigenBaseITL0__EE" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKNS_9EigenBaseITL0__EE"></a><a class="member field" href="#gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_' data-ref="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_">preintMeasCov_</a>; }</td></tr>
+<tr><th id="136">136</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="137">137</th><td><i class="doc"></i></td></tr>
+<tr><th id="138">138</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="139">139</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="140">140</th><td><i class="doc">  /// print</i></td></tr>
+<tr><th id="141">141</th><td>  <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam34PreintegratedCombinedMeasurementsT5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE" title='gtsam::PreintegratedCombinedMeasurementsT::print' data-ref="_ZNK5gtsam34PreintegratedCombinedMeasurementsT5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE">print</dfn>(</td></tr>
+<tr><th id="142">142</th><td>      <em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col5 decl" id="4375s" title='s' data-type='const std::string &amp;' data-ref="4375s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"Preintegrated Measurements:"</q>) <em>const</em> override;</td></tr>
+<tr><th id="143">143</th><td>  <i class="doc">/// equals</i></td></tr>
+<tr><th id="144">144</th><td>  <em>bool</em> <dfn class="decl fn" id="_ZNK5gtsam34PreintegratedCombinedMeasurementsT6equalsERKNS_34PreintegratedCombinedMeasurementsTIT_EEd" title='gtsam::PreintegratedCombinedMeasurementsT::equals' data-ref="_ZNK5gtsam34PreintegratedCombinedMeasurementsT6equalsERKNS_34PreintegratedCombinedMeasurementsTIT_EEd">equals</dfn>(<em>const</em> <a class="type" href="#gtsam::PreintegratedCombinedMeasurementsT" title='gtsam::PreintegratedCombinedMeasurementsT' data-ref="gtsam::PreintegratedCombinedMeasurementsT">PreintegratedCombinedMeasurementsT</a>&lt;PreintegrationType&gt;&amp; <dfn class="local col6 decl" id="4376expected" title='expected' data-type='const PreintegratedCombinedMeasurementsT&lt;PreintegrationType&gt; &amp;' data-ref="4376expected">expected</dfn>,</td></tr>
+<tr><th id="145">145</th><td>              <em>double</em> <dfn class="local col7 decl" id="4377tol" title='tol' data-type='double' data-ref="4377tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="146">146</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="147">147</th><td><i class="doc"></i></td></tr>
+<tr><th id="148">148</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Main functionality</span></i></td></tr>
+<tr><th id="149">149</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="152">152</th><td><i class="doc">   * Add a single IMU measurement to the preintegration.</i></td></tr>
+<tr><th id="153">153</th><td><i class="doc">   * Both accelerometer and gyroscope measurements are taken to be in the sensor</i></td></tr>
+<tr><th id="154">154</th><td><i class="doc">   * frame and conversion to the body frame is handled by `body_P_sensor` in</i></td></tr>
+<tr><th id="155">155</th><td><i class="doc">   * `PreintegrationParams`.</i></td></tr>
+<tr><th id="156">156</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="157">157</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">measuredAcc</span> Measured acceleration (as given by the sensor)</i></td></tr>
+<tr><th id="158">158</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">measuredOmega</span> Measured angular velocity (as given by the sensor)</i></td></tr>
+<tr><th id="159">159</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">dt</span> Time interval between two consecutive IMU measurements</i></td></tr>
+<tr><th id="160">160</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="161">161</th><td>  <em>void</em> <dfn class="decl fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsT20integrateMeasurementERKN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEES5_d" title='gtsam::PreintegratedCombinedMeasurementsT::integrateMeasurement' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsT20integrateMeasurementERKN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEES5_d">integrateMeasurement</dfn>(<em>const</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>&amp; <dfn class="local col8 decl" id="4378measuredAcc" title='measuredAcc' data-type='const Vector3 &amp;' data-ref="4378measuredAcc">measuredAcc</dfn>,</td></tr>
+<tr><th id="162">162</th><td>                            <em>const</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>&amp; <dfn class="local col9 decl" id="4379measuredOmega" title='measuredOmega' data-type='const Vector3 &amp;' data-ref="4379measuredOmega">measuredOmega</dfn>,</td></tr>
+<tr><th id="163">163</th><td>                            <em>const</em> <em>double</em> <dfn class="local col0 decl" id="4380dt" title='dt' data-type='const double' data-ref="4380dt">dt</dfn>) override;</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td><u>#<span data-ppcond="167">ifdef</span> <a class="macro" href="../../build/gtsam/config.h.html#84" data-ref="_M/GTSAM_ALLOW_DEPRECATED_SINCE_V43">GTSAM_ALLOW_DEPRECATED_SINCE_V43</a></u></td></tr>
+<tr><th id="168">168</th><td><i class="doc">/// <span class="command">@deprecated</span>: biasAccOmegaInt is no longer used. Use a prior on first bias instead.</i></td></tr>
+<tr><th id="169">169</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsT16resetIntegrationERKN5Eigen6MatrixIdLi6ELi6ELi0ELi6ELi6EEE" title='gtsam::PreintegratedCombinedMeasurementsT::resetIntegration' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsT16resetIntegrationERKN5Eigen6MatrixIdLi6ELi6ELi0ELi6ELi6EEE">resetIntegration</dfn>(<em>const</em> <span class="namespace">gtsam::</span><a class="typedef" href="../base/Matrix.h.html#63" title='gtsam::Matrix6' data-type='Eigen::Matrix&lt;double, 6, 6&gt;' data-ref="gtsam::Matrix6">Matrix6</a>&amp; <dfn class="local col1 decl" id="4381Q_init" title='Q_init' data-type='const gtsam::Matrix6 &amp;' data-ref="4381Q_init">Q_init</dfn>) {</td></tr>
+<tr><th id="170">170</th><td>    <span class="namespace">std::</span><a class="ref" href="../../../include/c++/13/iostream.html#std::cerr" title='std::cerr' data-ref="std::cerr">cerr</a> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZStlsRSt13basic_ostreamIcT_EPKc" title='std::operator&lt;&lt;' data-ref="_ZStlsRSt13basic_ostreamIcT_EPKc">&lt;&lt;</a> <q>"Warning: setBiasAccOmegaInit() is deprecated and no longer used."</q> <a class="ref fn" href="../../../include/c++/13/ostream.html#_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E" title='std::basic_ostream::operator&lt;&lt;' data-ref="_ZNSt13basic_ostreamlsEPFRSt13basic_ostreamIT_T0_ES5_E">&lt;&lt;</a> <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/ostream.html#_ZSt4endlRSt13basic_ostreamIT_T0_E" title='std::endl' data-ref="_ZSt4endlRSt13basic_ostreamIT_T0_E">endl</a>;</td></tr>
+<tr><th id="171">171</th><td>    PreintegrationType::resetIntegration();</td></tr>
+<tr><th id="172">172</th><td>    <a class="member field" href="#gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_' data-ref="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_">preintMeasCov_</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/DenseBase.h.html#_ZN5Eigen9DenseBase7setZeroEv" title='Eigen::DenseBase::setZero' data-ref="_ZN5Eigen9DenseBase7setZeroEv">setZero</a>();</td></tr>
+<tr><th id="173">173</th><td>  }</td></tr>
+<tr><th id="174">174</th><td><u>#<span data-ppcond="167">endif</span></u></td></tr>
+<tr><th id="175">175</th><td></td></tr>
+<tr><th id="176">176</th><td> <b>private</b>:</td></tr>
+<tr><th id="177">177</th><td><u>#<span data-ppcond="177">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a>  ///</u></td></tr>
+<tr><th id="178">178</th><td>  <i class="doc">/// Serialization function</i></td></tr>
+<tr><th id="179">179</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="180">180</th><td>  <b>template</b> &lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="181">181</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam34PreintegratedCombinedMeasurementsT9serializeERTL0__j" title='gtsam::PreintegratedCombinedMeasurementsT::serialize' data-ref="_ZN5gtsam34PreintegratedCombinedMeasurementsT9serializeERTL0__j">serialize</dfn>(ARCHIVE&amp; <dfn class="local col2 decl" id="4382ar" title='ar' data-type='ARCHIVE &amp;' data-ref="4382ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="182">182</th><td>    <b>namespace</b> <span class="namespace">bs</span> = <span class="namespace">::boost::</span><span class="namespace">serialization</span>;</td></tr>
+<tr><th id="183">183</th><td>    <a class="local col2 ref" href="#4382ar" title='ar' data-ref="4382ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#26" title="boost::serialization::make_nvp( &quot;PreintegrationType&quot;, boost::serialization::base_object&lt;PreintegrationType &gt;(*this) )" data-ref="_M/BOOST_SERIALIZATION_BASE_OBJECT_NVP">BOOST_SERIALIZATION_BASE_OBJECT_NVP</a>(PreintegrationType);</td></tr>
+<tr><th id="184">184</th><td>    <a class="local col2 ref" href="#4382ar" title='ar' data-ref="4382ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;preintMeasCov_&quot;, preintMeasCov_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<span class='refarg'><a class="member field" href="#gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_" title='gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_' data-ref="gtsam::PreintegratedCombinedMeasurementsT::preintMeasCov_">preintMeasCov_</a></span>);</td></tr>
+<tr><th id="185">185</th><td>  }</td></tr>
+<tr><th id="186">186</th><td><u>#<span data-ppcond="177">endif</span></u></td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td> <b>public</b>:</td></tr>
+<tr><th id="189">189</th><td>  <a class="macro" href="../base/types.h.html#279" title=" using _eigen_aligned_allocator_trait = void;" data-ref="_M/GTSAM_MAKE_ALIGNED_OPERATOR_NEW">GTSAM_MAKE_ALIGNED_OPERATOR_NEW</a></td></tr>
+<tr><th id="190">190</th><td>};</td></tr>
+<tr><th id="191">191</th><td></td></tr>
+<tr><th id="192">192</th><td><i>// For backward compatibility:</i></td></tr>
+<tr><th id="193">193</th><td><b>using</b> <dfn class="typedef" id="gtsam::PreintegratedCombinedMeasurements" title='gtsam::PreintegratedCombinedMeasurements' data-type='PreintegratedCombinedMeasurementsT&lt;DefaultPreintegrationType&gt;' data-ref="gtsam::PreintegratedCombinedMeasurements">PreintegratedCombinedMeasurements</dfn> = <a class="type" href="#gtsam::PreintegratedCombinedMeasurementsT" title='gtsam::PreintegratedCombinedMeasurementsT' data-ref="gtsam::PreintegratedCombinedMeasurementsT">PreintegratedCombinedMeasurementsT</a>&lt;<a class="typedef" href="#gtsam::DefaultPreintegrationType" title='gtsam::DefaultPreintegrationType' data-type='TangentPreintegration' data-ref="gtsam::DefaultPreintegrationType">DefaultPreintegrationType</a>&gt;;</td></tr>
+<tr><th id="194">194</th><td></td></tr>
+<tr><th id="195">195</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="196">196</th><td><i class="doc"> * CombinedImuFactor is a 6-ways factor involving previous state (pose and</i></td></tr>
+<tr><th id="197">197</th><td><i class="doc"> * velocity of the vehicle, as well as bias at previous time step), and current</i></td></tr>
+<tr><th id="198">198</th><td><i class="doc"> * state (pose, velocity, bias at current time step). Following the pre-</i></td></tr>
+<tr><th id="199">199</th><td><i class="doc"> * integration scheme proposed in [2], the CombinedImuFactor includes many IMU</i></td></tr>
+<tr><th id="200">200</th><td><i class="doc"> * measurements, which are "summarized" using the</i></td></tr>
+<tr><th id="201">201</th><td><i class="doc"> * PreintegratedCombinedMeasurements class. There are 3 main differences wrpt</i></td></tr>
+<tr><th id="202">202</th><td><i class="doc"> * the ImuFactor class: 1) The factor is 6-ways, meaning that it also involves</i></td></tr>
+<tr><th id="203">203</th><td><i class="doc"> * both biases (previous and current time step).Therefore, the factor internally</i></td></tr>
+<tr><th id="204">204</th><td><i class="doc"> * imposes the biases to be slowly varying; in particular, the matrices</i></td></tr>
+<tr><th id="205">205</th><td><i class="doc"> * "biasAccCovariance" and "biasOmegaCovariance" described the random walk that</i></td></tr>
+<tr><th id="206">206</th><td><i class="doc"> * models bias evolution. 2) The preintegration covariance takes into account</i></td></tr>
+<tr><th id="207">207</th><td><i class="doc"> * the noise in the bias estimate used for integration. 3) The covariance matrix</i></td></tr>
+<tr><th id="208">208</th><td><i class="doc"> * of the PreintegratedCombinedMeasurements preserves the correlation between</i></td></tr>
+<tr><th id="209">209</th><td><i class="doc"> * the bias uncertainty and the preintegrated measurements uncertainty.</i></td></tr>
+<tr><th id="210">210</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="211">211</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">navigation</span></i></td></tr>
+<tr><th id="212">212</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="213">213</th><td><b>template</b> &lt;<b>class</b> PIM = <a class="typedef" href="#gtsam::PreintegratedCombinedMeasurements" title='gtsam::PreintegratedCombinedMeasurements' data-type='PreintegratedCombinedMeasurementsT&lt;DefaultPreintegrationType&gt;' data-ref="gtsam::PreintegratedCombinedMeasurements">PreintegratedCombinedMeasurements</a>&gt;</td></tr>
+<tr><th id="214">214</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</dfn></td></tr>
+<tr><th id="215">215</th><td>    : <b>public</b> <a class="type" href="../nonlinear/NonlinearFactor.h.html#gtsam::NoiseModelFactorN" title='gtsam::NoiseModelFactorN' data-ref="gtsam::NoiseModelFactorN">NoiseModelFactorN</a>&lt;<a class="type" href="../geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>, <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>, <a class="type" href="../geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>, <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>,</td></tr>
+<tr><th id="216">216</th><td>                               <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>, <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>&gt; {</td></tr>
+<tr><th id="217">217</th><td> <b>public</b>:</td></tr>
+<tr><th id="218">218</th><td> <b>private</b>:</td></tr>
+<tr><th id="219">219</th><td>  <b>typedef</b> <a class="type" href="#gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</a>&lt;PIM&gt; <dfn class="typedef" id="gtsam::CombinedImuFactorT::This" title='gtsam::CombinedImuFactorT::This' data-type='CombinedImuFactorT&lt;PIM&gt;' data-ref="gtsam::CombinedImuFactorT::This">This</dfn>;</td></tr>
+<tr><th id="220">220</th><td>  <b>typedef</b> <a class="type" href="../nonlinear/NonlinearFactor.h.html#gtsam::NoiseModelFactorN" title='gtsam::NoiseModelFactorN' data-ref="gtsam::NoiseModelFactorN">NoiseModelFactorN</a>&lt;<a class="type" href="../geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>, <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>, <a class="type" href="../geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>, <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>,</td></tr>
+<tr><th id="221">221</th><td>                            <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>, <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>&gt;</td></tr>
+<tr><th id="222">222</th><td>      <dfn class="typedef" id="gtsam::CombinedImuFactorT::Base" title='gtsam::CombinedImuFactorT::Base' data-type='NoiseModelFactorN&lt;Pose3, Vector3, Pose3, Vector3, imuBias::ConstantBias, imuBias::ConstantBias&gt;' data-ref="gtsam::CombinedImuFactorT::Base">Base</dfn>;</td></tr>
+<tr><th id="223">223</th><td></td></tr>
+<tr><th id="224">224</th><td>  PIM <dfn class="decl field" id="gtsam::CombinedImuFactorT::pim_" title='gtsam::CombinedImuFactorT::pim_' data-ref="gtsam::CombinedImuFactorT::pim_">pim_</dfn>;</td></tr>
+<tr><th id="225">225</th><td></td></tr>
+<tr><th id="226">226</th><td> <b>public</b>:</td></tr>
+<tr><th id="227">227</th><td>  <i>// Provide access to Matrix&amp; version of evaluateError:</i></td></tr>
+<tr><th id="228">228</th><td>  <b>using</b> <a class="typedef" href="#gtsam::CombinedImuFactorT::Base" title='gtsam::CombinedImuFactorT::Base' data-type='NoiseModelFactorN&lt;Pose3, Vector3, Pose3, Vector3, imuBias::ConstantBias, imuBias::ConstantBias&gt;' data-ref="gtsam::CombinedImuFactorT::Base">Base</a>::evaluateError;</td></tr>
+<tr><th id="229">229</th><td></td></tr>
+<tr><th id="230">230</th><td>  <i class="doc">/** Shorthand for a smart pointer to a factor */</i></td></tr>
+<tr><th id="231">231</th><td>  <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::CombinedImuFactorT::This" title='gtsam::CombinedImuFactorT::This' data-type='CombinedImuFactorT&lt;PIM&gt;' data-ref="gtsam::CombinedImuFactorT::This">This</a>&gt; <dfn class="typedef" id="gtsam::CombinedImuFactorT::shared_ptr" title='gtsam::CombinedImuFactorT::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::CombinedImuFactorT::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="232">232</th><td></td></tr>
+<tr><th id="233">233</th><td>  <i class="doc">/** Default constructor - only use for serialization */</i></td></tr>
+<tr><th id="234">234</th><td>  <dfn class="decl def fn" id="_ZN5gtsam18CombinedImuFactorTC1Ev" title='gtsam::CombinedImuFactorT::CombinedImuFactorT&lt;PIM&gt;' data-ref="_ZN5gtsam18CombinedImuFactorTC1Ev">CombinedImuFactorT</dfn>() {}</td></tr>
+<tr><th id="235">235</th><td></td></tr>
+<tr><th id="236">236</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="237">237</th><td><i class="doc">   * Constructor</i></td></tr>
+<tr><th id="238">238</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">pose_i</span> Previous pose key</i></td></tr>
+<tr><th id="239">239</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">vel_i</span>  Previous velocity key</i></td></tr>
+<tr><th id="240">240</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">pose_j</span> Current pose key</i></td></tr>
+<tr><th id="241">241</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">vel_j</span>  Current velocity key</i></td></tr>
+<tr><th id="242">242</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">bias_i</span> Previous bias key</i></td></tr>
+<tr><th id="243">243</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">bias_j</span> Current bias key</i></td></tr>
+<tr><th id="244">244</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">PreintegratedCombinedMeasurements</span> Combined IMU measurements</i></td></tr>
+<tr><th id="245">245</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="246">246</th><td>  <dfn class="decl def fn" id="_ZN5gtsam18CombinedImuFactorTC1EmmmmmmRKT_" title='gtsam::CombinedImuFactorT::CombinedImuFactorT&lt;PIM&gt;' data-ref="_ZN5gtsam18CombinedImuFactorTC1EmmmmmmRKT_">CombinedImuFactorT</dfn>(</td></tr>
+<tr><th id="247">247</th><td>      <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col3 decl" id="4383pose_i" title='pose_i' data-type='Key' data-ref="4383pose_i">pose_i</dfn>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col4 decl" id="4384vel_i" title='vel_i' data-type='Key' data-ref="4384vel_i">vel_i</dfn>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col5 decl" id="4385pose_j" title='pose_j' data-type='Key' data-ref="4385pose_j">pose_j</dfn>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col6 decl" id="4386vel_j" title='vel_j' data-type='Key' data-ref="4386vel_j">vel_j</dfn>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col7 decl" id="4387bias_i" title='bias_i' data-type='Key' data-ref="4387bias_i">bias_i</dfn>, <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col8 decl" id="4388bias_j" title='bias_j' data-type='Key' data-ref="4388bias_j">bias_j</dfn>,</td></tr>
+<tr><th id="248">248</th><td>      <em>const</em> PIM&amp; <dfn class="local col9 decl" id="4389preintegratedMeasurements" title='preintegratedMeasurements' data-type='const PIM &amp;' data-ref="4389preintegratedMeasurements">preintegratedMeasurements</dfn>)</td></tr>
+<tr><th id="249">249</th><td>      : <a class="typedef" href="#gtsam::CombinedImuFactorT::Base" title='gtsam::CombinedImuFactorT::Base' data-type='NoiseModelFactorN&lt;Pose3, Vector3, Pose3, Vector3, imuBias::ConstantBias, imuBias::ConstantBias&gt;' data-ref="gtsam::CombinedImuFactorT::Base">Base</a>(<span class="namespace">noiseModel::</span><a class="type" href="../linear/NoiseModel.h.html#gtsam::noiseModel::Gaussian" title='gtsam::noiseModel::Gaussian' data-ref="gtsam::noiseModel::Gaussian">Gaussian</a>::<a class="ref fn" href="../linear/NoiseModel.h.html#_ZN5gtsam10noiseModel8Gaussian10CovarianceERKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEb" title='gtsam::noiseModel::Gaussian::Covariance' data-ref="_ZN5gtsam10noiseModel8Gaussian10CovarianceERKN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEEb">Covariance</a>(<span class='inlayHint'>covariance:&nbsp;</span><a class="local col9 ref" href="#4389preintegratedMeasurements" title='preintegratedMeasurements' data-ref="4389preintegratedMeasurements">preintegratedMeasurements</a>.preintMeasCov()),</td></tr>
+<tr><th id="250">250</th><td>             <a class="local col3 ref" href="#4383pose_i" title='pose_i' data-ref="4383pose_i">pose_i</a>, <a class="local col4 ref" href="#4384vel_i" title='vel_i' data-ref="4384vel_i">vel_i</a>, <a class="local col5 ref" href="#4385pose_j" title='pose_j' data-ref="4385pose_j">pose_j</a>, <a class="local col6 ref" href="#4386vel_j" title='vel_j' data-ref="4386vel_j">vel_j</a>, <a class="local col7 ref" href="#4387bias_i" title='bias_i' data-ref="4387bias_i">bias_i</a>, <a class="local col8 ref" href="#4388bias_j" title='bias_j' data-ref="4388bias_j">bias_j</a>),</td></tr>
+<tr><th id="251">251</th><td>        <a class="member field" href="#gtsam::CombinedImuFactorT::pim_" title='gtsam::CombinedImuFactorT::pim_' data-ref="gtsam::CombinedImuFactorT::pim_">pim_</a>(<a class="local col9 ref" href="#4389preintegratedMeasurements" title='preintegratedMeasurements' data-ref="4389preintegratedMeasurements">preintegratedMeasurements</a>) {}</td></tr>
+<tr><th id="252">252</th><td></td></tr>
+<tr><th id="253">253</th><td>  <dfn class="virtual decl def fn" id="_ZN5gtsam18CombinedImuFactorTD1Ev" title='gtsam::CombinedImuFactorT::~CombinedImuFactorT&lt;PIM&gt;' data-ref="_ZN5gtsam18CombinedImuFactorTD1Ev">~CombinedImuFactorT</dfn>() override {}</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td>  <i class="doc">/// <span class="command">@return</span> a deep copy of this factor</i></td></tr>
+<tr><th id="256">256</th><td>  <span class="namespace">gtsam::</span><a class="type" href="../nonlinear/NonlinearFactor.h.html#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>::<a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::NonlinearFactor::shared_ptr" title='gtsam::NonlinearFactor::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::NonlinearFactor::shared_ptr">shared_ptr</a> <dfn class="virtual decl def fn" id="_ZNK5gtsam18CombinedImuFactorT5cloneEv" title='gtsam::CombinedImuFactorT::clone' data-ref="_ZNK5gtsam18CombinedImuFactorT5cloneEv">clone</dfn>() <em>const</em> override {</td></tr>
+<tr><th id="257">257</th><td>    <b>return</b> <span class="namespace">std::</span>make_shared&lt;<a class="typedef" href="#gtsam::CombinedImuFactorT::This" title='gtsam::CombinedImuFactorT::This' data-type='CombinedImuFactorT&lt;PIM&gt;' data-ref="gtsam::CombinedImuFactorT::This">This</a>&gt;(*<b>this</b>);</td></tr>
+<tr><th id="258">258</th><td>  }</td></tr>
+<tr><th id="259">259</th><td></td></tr>
+<tr><th id="260">260</th><td>  <i class="doc">/** implement functions needed for Testable */</i></td></tr>
+<tr><th id="261">261</th><td><i class="doc"></i></td></tr>
+<tr><th id="262">262</th><td><i class="doc">  /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="263">263</th><td><i class="doc">  /// @{</i></td></tr>
+<tr><th id="264">264</th><td><i class="doc">  /// print</i></td></tr>
+<tr><th id="265">265</th><td>  <em>void</em> <dfn class="virtual decl fn" id="_ZNK5gtsam18CombinedImuFactorT5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::CombinedImuFactorT::print' data-ref="_ZNK5gtsam18CombinedImuFactorT5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col0 decl" id="4390s" title='s' data-type='const std::string &amp;' data-ref="4390s">s</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>""</q>, <em>const</em> <a class="typedef" href="../inference/Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col1 decl" id="4391keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="4391keyFormatter">keyFormatter</dfn> =</td></tr>
+<tr><th id="266">266</th><td>                                            <a class="ref" href="../inference/Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em> override;</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td>  <i class="doc">/// equals</i></td></tr>
+<tr><th id="269">269</th><td>  <em>bool</em> <dfn class="virtual decl fn" id="_ZNK5gtsam18CombinedImuFactorT6equalsERKNS_15NonlinearFactorEd" title='gtsam::CombinedImuFactorT::equals' data-ref="_ZNK5gtsam18CombinedImuFactorT6equalsERKNS_15NonlinearFactorEd">equals</dfn>(<em>const</em> <a class="type" href="../nonlinear/NonlinearFactor.h.html#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a>&amp; <dfn class="local col2 decl" id="4392expected" title='expected' data-type='const NonlinearFactor &amp;' data-ref="4392expected">expected</dfn>,</td></tr>
+<tr><th id="270">270</th><td>              <em>double</em> <dfn class="local col3 decl" id="4393tol" title='tol' data-type='double' data-ref="4393tol">tol</dfn> = <var>1e-9</var>) <em>const</em> override;</td></tr>
+<tr><th id="271">271</th><td>  <i class="doc">/// @}</i></td></tr>
+<tr><th id="272">272</th><td></td></tr>
+<tr><th id="273">273</th><td>  <i class="doc">/** Access the preintegrated measurements. */</i></td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td>  <em>const</em> PIM&amp; <dfn class="decl def fn" id="_ZNK5gtsam18CombinedImuFactorT25preintegratedMeasurementsEv" title='gtsam::CombinedImuFactorT::preintegratedMeasurements' data-ref="_ZNK5gtsam18CombinedImuFactorT25preintegratedMeasurementsEv">preintegratedMeasurements</dfn>() <em>const</em> {</td></tr>
+<tr><th id="276">276</th><td>    <b>return</b> <a class="member field" href="#gtsam::CombinedImuFactorT::pim_" title='gtsam::CombinedImuFactorT::pim_' data-ref="gtsam::CombinedImuFactorT::pim_">pim_</a>;</td></tr>
+<tr><th id="277">277</th><td>  }</td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>  <i class="doc">/** implement functions needed to derive from Factor */</i></td></tr>
+<tr><th id="280">280</th><td><i class="doc"></i></td></tr>
+<tr><th id="281">281</th><td><i class="doc">  /// vector of errors</i></td></tr>
+<tr><th id="282">282</th><td>  <a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a> <dfn class="virtual decl fn" id="_ZNK5gtsam18CombinedImuFactorT13evaluateErrorERKNS_5Pose3ERKN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEES3_S8_RKNS_7imuBias12ConstantBiasESC_PNS5_IdLin1ELin3297908" title='gtsam::CombinedImuFactorT::evaluateError' data-ref="_ZNK5gtsam18CombinedImuFactorT13evaluateErrorERKNS_5Pose3ERKN5Eigen6MatrixIdLi3ELi1ELi0ELi3ELi1EEES3_S8_RKNS_7imuBias12ConstantBiasESC_PNS5_IdLin1ELin3297908">evaluateError</dfn>(<em>const</em> <a class="type" href="../geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>&amp; <dfn class="local col4 decl" id="4394pose_i" title='pose_i' data-type='const Pose3 &amp;' data-ref="4394pose_i">pose_i</dfn>, <em>const</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>&amp; <dfn class="local col5 decl" id="4395vel_i" title='vel_i' data-type='const Vector3 &amp;' data-ref="4395vel_i">vel_i</dfn>,</td></tr>
+<tr><th id="283">283</th><td>                       <em>const</em> <a class="type" href="../geometry/Pose3.h.html#gtsam::Pose3" title='gtsam::Pose3' data-ref="gtsam::Pose3">Pose3</a>&amp; <dfn class="local col6 decl" id="4396pose_j" title='pose_j' data-type='const Pose3 &amp;' data-ref="4396pose_j">pose_j</dfn>, <em>const</em> <a class="typedef" href="../base/Vector.h.html#gtsam::Vector3" title='gtsam::Vector3' data-type='Eigen::Vector3d' data-ref="gtsam::Vector3">Vector3</a>&amp; <dfn class="local col7 decl" id="4397vel_j" title='vel_j' data-type='const Vector3 &amp;' data-ref="4397vel_j">vel_j</dfn>,</td></tr>
+<tr><th id="284">284</th><td>                       <em>const</em> <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>&amp; <dfn class="local col8 decl" id="4398bias_i" title='bias_i' data-type='const imuBias::ConstantBias &amp;' data-ref="4398bias_i">bias_i</dfn>,</td></tr>
+<tr><th id="285">285</th><td>                       <em>const</em> <span class="namespace">imuBias::</span><a class="type" href="ImuBias.h.html#gtsam::imuBias::ConstantBias" title='gtsam::imuBias::ConstantBias' data-ref="gtsam::imuBias::ConstantBias">ConstantBias</a>&amp; <dfn class="local col9 decl" id="4399bias_j" title='bias_j' data-type='const imuBias::ConstantBias &amp;' data-ref="4399bias_j">bias_j</dfn>,</td></tr>
+<tr><th id="286">286</th><td>                       <a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a> <dfn class="local col0 decl" id="4400H1" title='H1' data-type='OptionalMatrixType' data-ref="4400H1">H1</dfn>, <a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a> <dfn class="local col1 decl" id="4401H2" title='H2' data-type='OptionalMatrixType' data-ref="4401H2">H2</dfn>,</td></tr>
+<tr><th id="287">287</th><td>                       <a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a> <dfn class="local col2 decl" id="4402H3" title='H3' data-type='OptionalMatrixType' data-ref="4402H3">H3</dfn>, <a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a> <dfn class="local col3 decl" id="4403H4" title='H4' data-type='OptionalMatrixType' data-ref="4403H4">H4</dfn>,</td></tr>
+<tr><th id="288">288</th><td>                       <a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a> <dfn class="local col4 decl" id="4404H5" title='H5' data-type='OptionalMatrixType' data-ref="4404H5">H5</dfn>,</td></tr>
+<tr><th id="289">289</th><td>                       <a class="typedef" href="../nonlinear/NonlinearFactor.h.html#gtsam::OptionalMatrixType" title='gtsam::OptionalMatrixType' data-type='Matrix *' data-ref="gtsam::OptionalMatrixType">OptionalMatrixType</a> <dfn class="local col5 decl" id="4405H6" title='H6' data-type='OptionalMatrixType' data-ref="4405H6">H6</dfn>) <em>const</em> override;</td></tr>
+<tr><th id="290">290</th><td></td></tr>
+<tr><th id="291">291</th><td> <b>private</b>:</td></tr>
+<tr><th id="292">292</th><td><u>#<span data-ppcond="292">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="293">293</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="294">294</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="295">295</th><td>  <b>template</b> &lt;<b>class</b> ARCHIVE&gt;</td></tr>
+<tr><th id="296">296</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam18CombinedImuFactorT9serializeERTL0__j" title='gtsam::CombinedImuFactorT::serialize' data-ref="_ZN5gtsam18CombinedImuFactorT9serializeERTL0__j">serialize</dfn>(ARCHIVE&amp; <dfn class="local col6 decl" id="4406ar" title='ar' data-type='ARCHIVE &amp;' data-ref="4406ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) {</td></tr>
+<tr><th id="297">297</th><td>    <i>// NoiseModelFactor6 instead of NoiseModelFactorN for backward compatibility</i></td></tr>
+<tr><th id="298">298</th><td>    <a class="local col6 ref" href="#4406ar" title='ar' data-ref="4406ar">ar</a>&amp; <span class="namespace">boost::serialization::</span>make_nvp(</td></tr>
+<tr><th id="299">299</th><td>        <q>"NoiseModelFactor6"</q>, <span class="namespace">boost::serialization::</span>base_object&lt;<a class="typedef" href="#gtsam::CombinedImuFactorT::Base" title='gtsam::CombinedImuFactorT::Base' data-type='NoiseModelFactorN&lt;Pose3, Vector3, Pose3, Vector3, imuBias::ConstantBias, imuBias::ConstantBias&gt;' data-ref="gtsam::CombinedImuFactorT::Base">Base</a>&gt;(*<b>this</b>));</td></tr>
+<tr><th id="300">300</th><td>    <a class="local col6 ref" href="#4406ar" title='ar' data-ref="4406ar">ar</a>&amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;pim_&quot;, pim_)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="member field" href="#gtsam::CombinedImuFactorT::pim_" title='gtsam::CombinedImuFactorT::pim_' data-ref="gtsam::CombinedImuFactorT::pim_">pim_</a>);</td></tr>
+<tr><th id="301">301</th><td>  }</td></tr>
+<tr><th id="302">302</th><td><u>#<span data-ppcond="292">endif</span></u></td></tr>
+<tr><th id="303">303</th><td></td></tr>
+<tr><th id="304">304</th><td> <b>public</b>:</td></tr>
+<tr><th id="305">305</th><td>  <a class="macro" href="../base/types.h.html#279" title=" using _eigen_aligned_allocator_trait = void;" data-ref="_M/GTSAM_MAKE_ALIGNED_OPERATOR_NEW">GTSAM_MAKE_ALIGNED_OPERATOR_NEW</a></td></tr>
+<tr><th id="306">306</th><td>};</td></tr>
+<tr><th id="307">307</th><td><i>// class CombinedImuFactorT</i></td></tr>
+<tr><th id="308">308</th><td><i></i></td></tr>
+<tr><th id="309">309</th><td><i>// For backward compatibility:</i></td></tr>
+<tr><th id="310">310</th><td><b>using</b> <dfn class="typedef" id="gtsam::CombinedImuFactor" title='gtsam::CombinedImuFactor' data-type='CombinedImuFactorT&lt;&gt;' data-ref="gtsam::CombinedImuFactor">CombinedImuFactor</dfn> = <a class="type" href="#gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</a>&lt;&gt;;</td></tr>
+<tr><th id="311">311</th><td></td></tr>
+<tr><th id="312">312</th><td><i>// operator&lt;&lt; for CombinedImuFactorT</i></td></tr>
+<tr><th id="313">313</th><td><b>template</b> &lt;<b>class</b> PIM&gt;</td></tr>
+<tr><th id="314">314</th><td><a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="decl fn" id="_ZN5gtsamlsERSoRKNS_18CombinedImuFactorTIT_EE" title='gtsam::operator&lt;&lt;' data-ref="_ZN5gtsamlsERSoRKNS_18CombinedImuFactorTIT_EE"><b>operator</b>&lt;&lt;</dfn>(<span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/iosfwd.html#std::ostream" title='std::ostream' data-type='basic_ostream&lt;char&gt;' data-ref="std::ostream">ostream</a>&amp; <dfn class="local col7 decl" id="4407os" title='os' data-type='std::ostream &amp;' data-ref="4407os">os</dfn>, <em>const</em> <a class="type" href="#gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</a>&lt;PIM&gt;&amp; <dfn class="local col8 decl" id="4408f" title='f' data-type='const CombinedImuFactorT&lt;PIM&gt; &amp;' data-ref="4408f">f</dfn>);</td></tr>
+<tr><th id="315">315</th><td></td></tr>
+<tr><th id="316">316</th><td><b>template</b> &lt;&gt;</td></tr>
+<tr><th id="317">317</th><td><b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits"><a class="type" href="../base/Testable.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a></dfn>&lt;<a class="type" href="PreintegrationCombinedParams.h.html#gtsam::PreintegrationCombinedParams" title='gtsam::PreintegrationCombinedParams' data-ref="gtsam::PreintegrationCombinedParams">PreintegrationCombinedParams</a>&gt;</td></tr>
+<tr><th id="318">318</th><td>    : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="PreintegrationCombinedParams.h.html#gtsam::PreintegrationCombinedParams" title='gtsam::PreintegrationCombinedParams' data-ref="gtsam::PreintegrationCombinedParams">PreintegrationCombinedParams</a>&gt; {};</td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td><b>template</b> &lt;<b>class</b> PreintegrationType&gt;</td></tr>
+<tr><th id="321">321</th><td><b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</dfn>&lt;<a class="type" href="#gtsam::PreintegratedCombinedMeasurementsT" title='gtsam::PreintegratedCombinedMeasurementsT' data-ref="gtsam::PreintegratedCombinedMeasurementsT">PreintegratedCombinedMeasurementsT</a>&lt;PreintegrationType&gt;&gt;</td></tr>
+<tr><th id="322">322</th><td>    : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::PreintegratedCombinedMeasurementsT" title='gtsam::PreintegratedCombinedMeasurementsT' data-ref="gtsam::PreintegratedCombinedMeasurementsT">PreintegratedCombinedMeasurementsT</a>&lt;PreintegrationType&gt;&gt; {};</td></tr>
+<tr><th id="323">323</th><td> </td></tr>
+<tr><th id="324">324</th><td><b>template</b> &lt;<b>class</b> PIM&gt;</td></tr>
+<tr><th id="325">325</th><td><b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</dfn>&lt;<a class="type" href="#gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</a>&lt;PIM&gt;&gt; : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::CombinedImuFactorT" title='gtsam::CombinedImuFactorT' data-ref="gtsam::CombinedImuFactorT">CombinedImuFactorT</a>&lt;PIM&gt;&gt; {};</td></tr>
+<tr><th id="326">326</th><td></td></tr>
+<tr><th id="327">327</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="328">328</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/CombinedImuFactorsExample.cpp.html'>codebrowser/examples/CombinedImuFactorsExample.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,50 @@
+<dec f='codebrowser/gtsam/3rdparty/metis/libmetis/struct.h' l='49' type='idx_t'/>
+<offset>32</offset>
+<doc f='codebrowser/gtsam/3rdparty/metis/libmetis/struct.h' l='49'>/*!&lt; The number of the adjacent edges
+                             that are incident on pid */</doc>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/contig.c' l='666' u='r' c='libmetis__MoveGroupContigForVol'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/contig.c' l='678' u='r' c='libmetis__MoveGroupContigForVol'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/debug.c' l='404' u='r' c='libmetis__CheckKWayVolPartitionParams'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='548' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='548' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='552' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='552' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='562' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='564' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='594' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='604' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='612' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='618' u='r' c='libmetis__Greedy_KWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1222' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1222' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1226' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1226' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1237' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1239' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1276' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1288' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1296' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1302' u='r' c='libmetis__Greedy_McKWayVolOptimize'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1503' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1529' u='w' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1531' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1532' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1532' u='w' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1533' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1570' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1594' u='w' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1597' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1634' u='w' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1637' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1663' u='w' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1715' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayfm.c' l='1770' u='r' c='libmetis__KWayVolUpdate'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayrefine.c' l='280' u='w' c='libmetis__ComputeKWayPartitionParams'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayrefine.c' l='287' u='w' c='libmetis__ComputeKWayPartitionParams'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayrefine.c' l='462' u='w' c='libmetis__ProjectKWayPartition'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayrefine.c' l='465' u='w' c='libmetis__ProjectKWayPartition'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/kwayrefine.c' l='619' u='r' c='libmetis__ComputeKWayVolGains'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/minconn.c' l='87' u='r' c='libmetis__ComputeSubDomainGraph'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/minconn.c' l='633' u='r' c='libmetis__MoveGroupMinConnForVol'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/minconn.c' l='646' u='r' c='libmetis__MoveGroupMinConnForVol'/>
+<use f='codebrowser/gtsam/3rdparty/metis/libmetis/minconn.c' l='647' u='r' c='libmetis__MoveGroupMinConnForVol'/>

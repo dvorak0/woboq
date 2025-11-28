@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ShonanGaugeFactor.h source code [codebrowser/gtsam/sfm/ShonanGaugeFactor.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::ShonanGaugeFactor "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/sfm/ShonanGaugeFactor.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>sfm</a>/<a href='ShonanGaugeFactor.h.html'>ShonanGaugeFactor.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010-2019, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">  ShonanGaugeFactor.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@date</span>   March 2019</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@brief</span>  Factor used in Shonan Averaging to clamp down gauge freedom</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../geometry/SOn.h.html">&lt;gtsam/geometry/SOn.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="../linear/JacobianFactor.h.html">&lt;gtsam/linear/JacobianFactor.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../nonlinear/NonlinearFactor.h.html">&lt;gtsam/nonlinear/NonlinearFactor.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="26">26</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="27">27</th><td><i class="doc"> * The ShonanGaugeFactor creates a constraint on a single SO(n) to avoid moving</i></td></tr>
+<tr><th id="28">28</th><td><i class="doc"> * in the stabilizer.</i></td></tr>
+<tr><th id="29">29</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="30">30</th><td><i class="doc"> * Details: SO(p) contains the p*3 Stiefel matrices of orthogonal frames: we</i></td></tr>
+<tr><th id="31">31</th><td><i class="doc"> * take those to be the 3 columns on the left.</i></td></tr>
+<tr><th id="32">32</th><td><i class="doc"> * The P*P skew-symmetric matrices associated with so(p) can be partitioned as</i></td></tr>
+<tr><th id="33">33</th><td><i class="doc"> * (Appendix B in the ECCV paper):</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc"> * | [w] -K' |</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * |  K  [g] |</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * where w is the SO(3) space, K are the extra Stiefel diemnsions (wormhole!)</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * and (g)amma are extra dimensions in SO(p) that do not modify the cost</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * function. The latter corresponds to rotations SO(p-d), and so the first few</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * values of p-d for d==3 with their corresponding dimensionality are {0:0, 1:0,</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> * 2:1, 3:3, ...}</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * The ShonanGaugeFactor adds a unit Jacobian to these extra dimensions,</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * essentially restricting the optimization to the Stiefel manifold.</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="45">45</th><td><b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::ShonanGaugeFactor" title='gtsam::ShonanGaugeFactor' data-ref="gtsam::ShonanGaugeFactor">ShonanGaugeFactor</dfn> : <b>public</b> <a class="type" href="../nonlinear/NonlinearFactor.h.html#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a> {</td></tr>
+<tr><th id="46">46</th><td>  <i>// Row dimension, equal to the dimensionality of SO(p-d)</i></td></tr>
+<tr><th id="47">47</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="decl field" id="gtsam::ShonanGaugeFactor::rows_" title='gtsam::ShonanGaugeFactor::rows_' data-ref="gtsam::ShonanGaugeFactor::rows_">rows_</dfn>;</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td>  <i class="doc">/// Constant Jacobian</i></td></tr>
+<tr><th id="50">50</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor" title='gtsam::JacobianFactor' data-ref="gtsam::JacobianFactor">JacobianFactor</a>&gt; <dfn class="decl field" id="gtsam::ShonanGaugeFactor::whitenedJacobian_" title='gtsam::ShonanGaugeFactor::whitenedJacobian_' data-ref="gtsam::ShonanGaugeFactor::whitenedJacobian_">whitenedJacobian_</dfn>;</td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><b>public</b>:</td></tr>
+<tr><th id="53">53</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="54">54</th><td><i class="doc">   * Construct from key for an SO(p) matrix, for base dimension d (2 or 3)</i></td></tr>
+<tr><th id="55">55</th><td><i class="doc">   * If parameter gamma is given, it acts as a precision = 1/sigma^2, and</i></td></tr>
+<tr><th id="56">56</th><td><i class="doc">   * the Jacobian will be multiplied with 1/sigma = sqrt(gamma).</i></td></tr>
+<tr><th id="57">57</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="58">58</th><td>  <dfn class="decl def fn" id="_ZN5gtsam17ShonanGaugeFactorC1EmmmSt8optionalIdE" title='gtsam::ShonanGaugeFactor::ShonanGaugeFactor' data-ref="_ZN5gtsam17ShonanGaugeFactorC1EmmmSt8optionalIdE">ShonanGaugeFactor</dfn>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col9 decl" id="509key" title='key' data-type='Key' data-ref="509key">key</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col0 decl" id="510p" title='p' data-type='size_t' data-ref="510p">p</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col1 decl" id="511d" title='d' data-type='size_t' data-ref="511d">d</dfn> = <var>3</var>,</td></tr>
+<tr><th id="59">59</th><td>                    <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;<em>double</em>&gt; <dfn class="local col2 decl" id="512gamma" title='gamma' data-type='std::optional&lt;double&gt;' data-ref="512gamma">gamma</dfn> = <a class="ref fn" href="../../../include/c++/13/optional.html#_ZNSt8optionalC1Ev" title='std::optional::optional&lt;_Tp&gt;' data-ref="_ZNSt8optionalC1Ev">{</a>})</td></tr>
+<tr><th id="60">60</th><td>      : <a class="type" href="../nonlinear/NonlinearFactor.h.html#gtsam::NonlinearFactor" title='gtsam::NonlinearFactor' data-ref="gtsam::NonlinearFactor">NonlinearFactor</a><a class="ref fn" href="../nonlinear/NonlinearFactor.h.html#_ZN5gtsam15NonlinearFactorC1ERKT_" title='gtsam::NonlinearFactor::NonlinearFactor' data-ref="_ZN5gtsam15NonlinearFactorC1ERKT_">(</a><a class="typedef" href="../inference/Key.h.html#gtsam::KeyVector" title='gtsam::KeyVector' data-type='FastVector&lt;Key&gt;' data-ref="gtsam::KeyVector">KeyVector</a><a class="ref fn" href="../../../include/c++/13/bits/stl_vector.h.html#_ZNSt6vectorC1ESt16initializer_listIT_ERKT0_" title='std::vector::vector&lt;_Tp, _Alloc&gt;' data-ref="_ZNSt6vectorC1ESt16initializer_listIT_ERKT0_">{</a><a class="local col9 ref" href="#509key" title='key' data-ref="509key">key</a>}) {</td></tr>
+<tr><th id="61">61</th><td>    <b>if</b> (<a class="local col0 ref" href="#510p" title='p' data-ref="510p">p</a> &lt; <a class="local col1 ref" href="#511d" title='d' data-ref="511d">d</a>) {</td></tr>
+<tr><th id="62">62</th><td>      <b>throw</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/stdexcept.html#std::invalid_argument" title='std::invalid_argument' data-ref="std::invalid_argument">invalid_argument</a><a class="ref fn" href="../../../include/c++/13/stdexcept.html#_ZNSt16invalid_argumentC1EPKc" title='std::invalid_argument::invalid_argument' data-ref="_ZNSt16invalid_argumentC1EPKc">(</a><q>"ShonanGaugeFactor must have p&gt;=d."</q>);</td></tr>
+<tr><th id="63">63</th><td>    }</td></tr>
+<tr><th id="64">64</th><td>    <i>// Calculate dimensions</i></td></tr>
+<tr><th id="65">65</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col3 decl" id="513q" title='q' data-type='size_t' data-ref="513q">q</dfn> = <a class="local col0 ref" href="#510p" title='p' data-ref="510p">p</a> - <a class="local col1 ref" href="#511d" title='d' data-ref="511d">d</a>;</td></tr>
+<tr><th id="66">66</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="514P" title='P' data-type='size_t' data-ref="514P">P</dfn> = <a class="typedef" href="../geometry/SOn.h.html#gtsam::SOn" title='gtsam::SOn' data-type='SO&lt;Eigen::Dynamic&gt;' data-ref="gtsam::SOn">SOn</a>::<a class="ref fn" href="../geometry/SOn.h.html#_ZN5gtsam2SO9DimensionEm" title='gtsam::SO::Dimension' data-ref="_ZN5gtsam2SO9DimensionEm">Dimension</a>(<span class='inlayHint'>n:&nbsp;</span><a class="local col0 ref" href="#510p" title='p' data-ref="510p">p</a>); <i>// dimensionality of SO(p)</i></td></tr>
+<tr><th id="67">67</th><td>    <a class="member field" href="#gtsam::ShonanGaugeFactor::rows_" title='gtsam::ShonanGaugeFactor::rows_' data-ref="gtsam::ShonanGaugeFactor::rows_">rows_</a> = <a class="typedef" href="../geometry/SOn.h.html#gtsam::SOn" title='gtsam::SOn' data-type='SO&lt;Eigen::Dynamic&gt;' data-ref="gtsam::SOn">SOn</a>::<a class="ref fn" href="../geometry/SOn.h.html#_ZN5gtsam2SO9DimensionEm" title='gtsam::SO::Dimension' data-ref="_ZN5gtsam2SO9DimensionEm">Dimension</a>(<span class='inlayHint'>n:&nbsp;</span><a class="local col3 ref" href="#513q" title='q' data-ref="513q">q</a>);    <i>// dimensionality of SO(q), the gauge</i></td></tr>
+<tr><th id="68">68</th><td></td></tr>
+<tr><th id="69">69</th><td>    <i>// Create constant Jacobian as a rows_*P matrix: there are rows_ penalized</i></td></tr>
+<tr><th id="70">70</th><td><i>    // dimensions, but it is a bit tricky to find them among the P columns.</i></td></tr>
+<tr><th id="71">71</th><td><i>    // The key is to look at how skew-symmetric matrices are laid out in SOn.h:</i></td></tr>
+<tr><th id="72">72</th><td><i>    // the first tangent dimension will always be included, but beyond that we</i></td></tr>
+<tr><th id="73">73</th><td><i>    // have to be careful. We always need to skip the d top-rows of the skew-</i></td></tr>
+<tr><th id="74">74</th><td><i>    // symmetric matrix as they below to K, part of the Stiefel manifold.</i></td></tr>
+<tr><th id="75">75</th><td>    <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="local col5 decl" id="515A" title='A' data-type='Matrix' data-ref="515A">A</dfn><a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/Matrix.h.html#_ZN5Eigen6MatrixC1ERKTL0__RKTL0_0_" title='Eigen::Matrix::Matrix&lt;_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols&gt;' data-ref="_ZN5Eigen6MatrixC1ERKTL0__RKTL0_0_">(</a><a class="member field" href="#gtsam::ShonanGaugeFactor::rows_" title='gtsam::ShonanGaugeFactor::rows_' data-ref="gtsam::ShonanGaugeFactor::rows_">rows_</a>, <a class="local col4 ref" href="#514P" title='P' data-ref="514P">P</a>);</td></tr>
+<tr><th id="76">76</th><td>    <a class="local col5 ref" href="#515A" title='A' data-ref="515A">A</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/CwiseNullaryOp.h.html#_ZN5Eigen9DenseBase7setZeroEv" title='Eigen::DenseBase::setZero' data-ref="_ZN5Eigen9DenseBase7setZeroEv">setZero</a>();</td></tr>
+<tr><th id="77">77</th><td>    <em>double</em> <dfn class="local col6 decl" id="516invSigma" title='invSigma' data-type='double' data-ref="516invSigma">invSigma</dfn> = <a class="ref fn fake" href="../../../include/c++/13/optional.html#_ZNKSt8optionalcvbEv" title='std::optional::operator bool' data-ref="_ZNKSt8optionalcvbEv"></a><a class="local col2 ref" href="#512gamma" title='gamma' data-ref="512gamma">gamma</a> ? <span class="namespace">std::</span><a class="ref fn" href="../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span><a class="ref fn" href="../../../include/c++/13/optional.html#_ZNRSt8optionaldeEv" title='std::optional::operator*' data-ref="_ZNRSt8optionaldeEv">*</a><a class="local col2 ref" href="#512gamma" title='gamma' data-ref="512gamma">gamma</a>) : <var>1.0</var>;</td></tr>
+<tr><th id="78">78</th><td>    <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col7 decl" id="517i" title='i' data-type='size_t' data-ref="517i">i</dfn> = <var>0</var>, <dfn class="local col8 decl" id="518j" title='j' data-type='size_t' data-ref="518j">j</dfn> = <var>0</var>, <dfn class="local col9 decl" id="519n" title='n' data-type='size_t' data-ref="519n">n</dfn> = <a class="local col0 ref" href="#510p" title='p' data-ref="510p">p</a> - <var>1</var> - <a class="local col1 ref" href="#511d" title='d' data-ref="511d">d</a>;</td></tr>
+<tr><th id="79">79</th><td>    <b>while</b> (<a class="local col7 ref" href="#517i" title='i' data-ref="517i">i</a> &lt; <a class="member field" href="#gtsam::ShonanGaugeFactor::rows_" title='gtsam::ShonanGaugeFactor::rows_' data-ref="gtsam::ShonanGaugeFactor::rows_">rows_</a>) {</td></tr>
+<tr><th id="80">80</th><td>      <a class="local col5 ref" href="#515A" title='A' data-ref="515A">A</a>.<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/plugins/BlockMethods.h.html#_ZN5Eigen9DenseBase5blockEllTL0__TL0_0_" title='Eigen::DenseBase::block' data-ref="_ZN5Eigen9DenseBase5blockEllTL0__TL0_0_">block</a>(<span class='inlayHint'>startRow:&nbsp;</span><a class="local col7 ref" href="#517i" title='i' data-ref="517i">i</a>, <span class='inlayHint'>startCol:&nbsp;</span><a class="local col8 ref" href="#518j" title='j' data-ref="518j">j</a>, <span class='inlayHint'>blockRows:&nbsp;</span><a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a>, <span class='inlayHint'>blockCols:&nbsp;</span><a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a>) <a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/Block.h.html#111" title='Eigen::Block::operator=' data-ref="_ZN5Eigen5BlockaSERKNS_9DenseBaseITL0__EE">=</a> <a class="local col6 ref" href="#516invSigma" title='invSigma' data-ref="516invSigma">invSigma</a> <a class="ref fn" href="../3rdparty/Eigen/Eigen/src/plugins/CommonCwiseBinaryOps.h.html#50" title='Eigen::operator*' data-ref="_ZN5EigenmlERKTL0__RKNS_10MatrixBaseIT_EE">*</a> <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a>::<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/CwiseNullaryOp.h.html#_ZN5Eigen10MatrixBase8IdentityEll" title='Eigen::MatrixBase::Identity' data-ref="_ZN5Eigen10MatrixBase8IdentityEll">Identity</a>(<span class='inlayHint'>rows:&nbsp;</span><a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a>, <span class='inlayHint'>cols:&nbsp;</span><a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a>);</td></tr>
+<tr><th id="81">81</th><td>      <a class="local col7 ref" href="#517i" title='i' data-ref="517i">i</a> += <a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a>;</td></tr>
+<tr><th id="82">82</th><td>      <a class="local col8 ref" href="#518j" title='j' data-ref="518j">j</a> += <a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a> + <a class="local col1 ref" href="#511d" title='d' data-ref="511d">d</a>; <i>// skip d columns</i></td></tr>
+<tr><th id="83">83</th><td>      <a class="local col9 ref" href="#519n" title='n' data-ref="519n">n</a> -= <var>1</var>;</td></tr>
+<tr><th id="84">84</th><td>    }</td></tr>
+<tr><th id="85">85</th><td>    <i>// TODO(frank): assign the right one in the right columns</i></td></tr>
+<tr><th id="86">86</th><td>    <a class="member field" href="#gtsam::ShonanGaugeFactor::whitenedJacobian_" title='gtsam::ShonanGaugeFactor::whitenedJacobian_' data-ref="gtsam::ShonanGaugeFactor::whitenedJacobian_">whitenedJacobian_</a> <a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptraSEOSt10shared_ptrIT_E" title='std::shared_ptr::operator=' data-ref="_ZNSt10shared_ptraSEOSt10shared_ptrIT_E">=</a></td></tr>
+<tr><th id="87">87</th><td>        <span class="namespace">std::</span><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZSt11make_sharedDpOT0_" title='std::make_shared' data-ref="_ZSt11make_sharedDpOT0_">make_shared</a>&lt;<a class="type" href="../linear/JacobianFactor.h.html#gtsam::JacobianFactor" title='gtsam::JacobianFactor' data-ref="gtsam::JacobianFactor">JacobianFactor</a>&gt;(<span class='inlayHint'>args&amp;:&nbsp;</span><span class='refarg'><a class="local col9 ref" href="#509key" title='key' data-ref="509key">key</a></span>, <span class='inlayHint'>args&amp;:&nbsp;</span><span class='refarg'><a class="local col5 ref" href="#515A" title='A' data-ref="515A">A</a></span>, <span class='inlayHint'>args:&nbsp;</span><a class="typedef" href="../base/Vector.h.html#gtsam::Vector" title='gtsam::Vector' data-type='Eigen::VectorXd' data-ref="gtsam::Vector">Vector</a>::<a class="ref fn" href="../3rdparty/Eigen/Eigen/src/Core/CwiseNullaryOp.h.html#_ZN5Eigen9DenseBase4ZeroEl" title='Eigen::DenseBase::Zero' data-ref="_ZN5Eigen9DenseBase4ZeroEl">Zero</a>(<span class='inlayHint'>size:&nbsp;</span><a class="member field" href="#gtsam::ShonanGaugeFactor::rows_" title='gtsam::ShonanGaugeFactor::rows_' data-ref="gtsam::ShonanGaugeFactor::rows_">rows_</a>));</td></tr>
+<tr><th id="88">88</th><td>  }</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>  <i class="doc">/// Destructor</i></td></tr>
+<tr><th id="91">91</th><td>  <dfn class="virtual decl def fn" id="_ZN5gtsam17ShonanGaugeFactorD1Ev" title='gtsam::ShonanGaugeFactor::~ShonanGaugeFactor' data-ref="_ZN5gtsam17ShonanGaugeFactorD1Ev">~ShonanGaugeFactor</dfn>() override {}</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td>  <i class="doc">/// Calculate the error of the factor: always zero</i></td></tr>
+<tr><th id="94">94</th><td>  <em>double</em> <dfn class="virtual decl def fn" id="_ZNK5gtsam17ShonanGaugeFactor5errorERKNS_6ValuesE" title='gtsam::ShonanGaugeFactor::error' data-ref="_ZNK5gtsam17ShonanGaugeFactor5errorERKNS_6ValuesE">error</dfn>(<em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> &amp;<dfn class="local col0 decl" id="520c" title='c' data-type='const Values &amp;' data-ref="520c">c</dfn>) <em>const</em> override { <b>return</b> <var>0</var>; }</td></tr>
+<tr><th id="95">95</th><td></td></tr>
+<tr><th id="96">96</th><td>  <i class="doc">/// get the dimension of the factor (number of rows on linearization)</i></td></tr>
+<tr><th id="97">97</th><td>  <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="virtual decl def fn" id="_ZNK5gtsam17ShonanGaugeFactor3dimEv" title='gtsam::ShonanGaugeFactor::dim' data-ref="_ZNK5gtsam17ShonanGaugeFactor3dimEv">dim</dfn>() <em>const</em> override { <b>return</b> <a class="member field" href="#gtsam::ShonanGaugeFactor::rows_" title='gtsam::ShonanGaugeFactor::rows_' data-ref="gtsam::ShonanGaugeFactor::rows_">rows_</a>; }</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>  <i class="doc">/// linearize to a GaussianFactor</i></td></tr>
+<tr><th id="100">100</th><td>  <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="../linear/GaussianFactor.h.html#gtsam::GaussianFactor" title='gtsam::GaussianFactor' data-ref="gtsam::GaussianFactor">GaussianFactor</a>&gt; <dfn class="virtual decl def fn" id="_ZNK5gtsam17ShonanGaugeFactor9linearizeERKNS_6ValuesE" title='gtsam::ShonanGaugeFactor::linearize' data-ref="_ZNK5gtsam17ShonanGaugeFactor9linearizeERKNS_6ValuesE">linearize</dfn>(<em>const</em> <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> &amp;<dfn class="local col1 decl" id="521c" title='c' data-type='const Values &amp;' data-ref="521c">c</dfn>) <em>const</em> override {</td></tr>
+<tr><th id="101">101</th><td>    <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1ERKSt10shared_ptrITL0__E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1ERKSt10shared_ptrITL0__E"></a><a class="member field" href="#gtsam::ShonanGaugeFactor::whitenedJacobian_" title='gtsam::ShonanGaugeFactor::whitenedJacobian_' data-ref="gtsam::ShonanGaugeFactor::whitenedJacobian_">whitenedJacobian_</a>;</td></tr>
+<tr><th id="102">102</th><td>  }</td></tr>
+<tr><th id="103">103</th><td>};</td></tr>
+<tr><th id="104">104</th><td><i>// \ShonanGaugeFactor</i></td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td>} <i>// namespace gtsam</i></td></tr>
+<tr><th id="107">107</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='ShonanAveraging.cpp.html'>codebrowser/gtsam/sfm/ShonanAveraging.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

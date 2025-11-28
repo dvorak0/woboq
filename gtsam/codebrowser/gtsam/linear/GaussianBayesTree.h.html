@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>GaussianBayesTree.h source code [codebrowser/gtsam/linear/GaussianBayesTree.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::GaussianBayesTree,gtsam::GaussianBayesTreeClique,gtsam::traits "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/linear/GaussianBayesTree.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>linear</a>/<a href='GaussianBayesTree.h.html'>GaussianBayesTree.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   GaussianBayesTree.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   Gaussian Bayes Tree, the result of eliminating a GaussianJunctionTree</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@brief</span>   GaussianBayesTree</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span>  Frank Dellaert</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span>  Richard Roberts</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#pragma once</u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="GaussianBayesNet.h.html">&lt;gtsam/linear/GaussianBayesNet.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="GaussianFactorGraph.h.html">&lt;gtsam/linear/GaussianFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../inference/BayesTree.h.html">&lt;gtsam/inference/BayesTree.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../inference/BayesTreeCliqueBase.h.html">&lt;gtsam/inference/BayesTreeCliqueBase.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td>  <i>// Forward declarations</i></td></tr>
+<tr><th id="30">30</th><td>  <b>class</b> <a class="type" href="GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional" id="gtsam::GaussianConditional">GaussianConditional</a>;</td></tr>
+<tr><th id="31">31</th><td>  <b>class</b> <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues" id="gtsam::VectorValues">VectorValues</a>;</td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td>  <i>/* ************************************************************************* */</i></td></tr>
+<tr><th id="34">34</th><td>  <i class="doc">/** A clique in a GaussianBayesTree */</i></td></tr>
+<tr><th id="35">35</th><td>  <b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::GaussianBayesTreeClique" title='gtsam::GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique">GaussianBayesTreeClique</dfn> :</td></tr>
+<tr><th id="36">36</th><td>    <b>public</b> <a class="type" href="../inference/BayesTreeCliqueBase.h.html#gtsam::BayesTreeCliqueBase" title='gtsam::BayesTreeCliqueBase' data-ref="gtsam::BayesTreeCliqueBase">BayesTreeCliqueBase</a>&lt;<a class="type" href="#gtsam::GaussianBayesTreeClique" title='gtsam::GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique">GaussianBayesTreeClique</a>, <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>&gt;</td></tr>
+<tr><th id="37">37</th><td>  {</td></tr>
+<tr><th id="38">38</th><td>  <b>public</b>:</td></tr>
+<tr><th id="39">39</th><td>    <b>typedef</b> <a class="type" href="#gtsam::GaussianBayesTreeClique" title='gtsam::GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique">GaussianBayesTreeClique</a> <dfn class="typedef" id="gtsam::GaussianBayesTreeClique::This" title='gtsam::GaussianBayesTreeClique::This' data-type='GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique::This">This</dfn>;</td></tr>
+<tr><th id="40">40</th><td>    <b>typedef</b> <a class="type" href="../inference/BayesTreeCliqueBase.h.html#gtsam::BayesTreeCliqueBase" title='gtsam::BayesTreeCliqueBase' data-ref="gtsam::BayesTreeCliqueBase">BayesTreeCliqueBase</a>&lt;<a class="type" href="#gtsam::GaussianBayesTreeClique" title='gtsam::GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique">GaussianBayesTreeClique</a>, <a class="type" href="GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>&gt; <dfn class="typedef" id="gtsam::GaussianBayesTreeClique::Base" title='gtsam::GaussianBayesTreeClique::Base' data-type='BayesTreeCliqueBase&lt;GaussianBayesTreeClique, GaussianFactorGraph&gt;' data-ref="gtsam::GaussianBayesTreeClique::Base">Base</dfn>;</td></tr>
+<tr><th id="41">41</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::GaussianBayesTreeClique::This" title='gtsam::GaussianBayesTreeClique::This' data-type='GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique::This">This</a>&gt; <dfn class="typedef" id="gtsam::GaussianBayesTreeClique::shared_ptr" title='gtsam::GaussianBayesTreeClique::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::GaussianBayesTreeClique::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="42">42</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::weak_ptr" title='std::weak_ptr' data-ref="std::weak_ptr">weak_ptr</a>&lt;<a class="typedef" href="#gtsam::GaussianBayesTreeClique::This" title='gtsam::GaussianBayesTreeClique::This' data-type='GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique::This">This</a>&gt; <dfn class="typedef" id="gtsam::GaussianBayesTreeClique::weak_ptr" title='gtsam::GaussianBayesTreeClique::weak_ptr' data-type='std::weak_ptr&lt;This&gt;' data-ref="gtsam::GaussianBayesTreeClique::weak_ptr">weak_ptr</dfn>;</td></tr>
+<tr><th id="43">43</th><td>    <dfn class="decl def fn" id="_ZN5gtsam23GaussianBayesTreeCliqueC1Ev" title='gtsam::GaussianBayesTreeClique::GaussianBayesTreeClique' data-ref="_ZN5gtsam23GaussianBayesTreeCliqueC1Ev">GaussianBayesTreeClique</dfn>() {}</td></tr>
+<tr><th id="44">44</th><td>    <dfn class="decl def fn" id="_ZN5gtsam23GaussianBayesTreeCliqueC1ERKSt10shared_ptrINS_19GaussianConditionalEE" title='gtsam::GaussianBayesTreeClique::GaussianBayesTreeClique' data-ref="_ZN5gtsam23GaussianBayesTreeCliqueC1ERKSt10shared_ptrINS_19GaussianConditionalEE">GaussianBayesTreeClique</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="GaussianConditional.h.html#gtsam::GaussianConditional" title='gtsam::GaussianConditional' data-ref="gtsam::GaussianConditional">GaussianConditional</a>&gt;&amp; <dfn class="local col5 decl" id="675conditional" title='conditional' data-type='const std::shared_ptr&lt;GaussianConditional&gt; &amp;' data-ref="675conditional">conditional</dfn>) : <a class="typedef" href="#gtsam::GaussianBayesTreeClique::Base" title='gtsam::GaussianBayesTreeClique::Base' data-type='BayesTreeCliqueBase&lt;GaussianBayesTreeClique, GaussianFactorGraph&gt;' data-ref="gtsam::GaussianBayesTreeClique::Base">Base</a><a class="ref fn" href="../inference/BayesTreeCliqueBase.h.html#_ZN5gtsam19BayesTreeCliqueBaseC1ERKSt10shared_ptrINS_17EliminationTraitsIT0_E12BayesNetType15ConditionalTypeEE" title='gtsam::BayesTreeCliqueBase::BayesTreeCliqueBase&lt;DERIVED, FACTORGRAPH&gt;' data-ref="_ZN5gtsam19BayesTreeCliqueBaseC1ERKSt10shared_ptrINS_17EliminationTraitsIT0_E12BayesNetType15ConditionalTypeEE">(</a><a class="local col5 ref" href="#675conditional" title='conditional' data-ref="675conditional">conditional</a>) {}</td></tr>
+<tr><th id="45">45</th><td>  };</td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td>  <i>/* ************************************************************************* */</i></td></tr>
+<tr><th id="48">48</th><td>  <i class="doc">/** A Bayes tree representing a Gaussian density */</i></td></tr>
+<tr><th id="49">49</th><td>  <b>class</b> <a class="macro" href="../../build/gtsam/dllexport.h.html#54" title="" data-ref="_M/GTSAM_EXPORT">GTSAM_EXPORT</a> <dfn class="type def" id="gtsam::GaussianBayesTree" title='gtsam::GaussianBayesTree' data-ref="gtsam::GaussianBayesTree">GaussianBayesTree</dfn> :</td></tr>
+<tr><th id="50">50</th><td>    <b>public</b> <a class="type" href="../inference/FactorGraph.h.html#gtsam::BayesTree" title='gtsam::BayesTree' data-ref="gtsam::BayesTree">BayesTree</a>&lt;<a class="type" href="#gtsam::GaussianBayesTreeClique" title='gtsam::GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique">GaussianBayesTreeClique</a>&gt;</td></tr>
+<tr><th id="51">51</th><td>  {</td></tr>
+<tr><th id="52">52</th><td>  <b>private</b>:</td></tr>
+<tr><th id="53">53</th><td>    <b>typedef</b> <a class="type" href="../inference/FactorGraph.h.html#gtsam::BayesTree" title='gtsam::BayesTree' data-ref="gtsam::BayesTree">BayesTree</a>&lt;<a class="type" href="#gtsam::GaussianBayesTreeClique" title='gtsam::GaussianBayesTreeClique' data-ref="gtsam::GaussianBayesTreeClique">GaussianBayesTreeClique</a>&gt; <dfn class="typedef" id="gtsam::GaussianBayesTree::Base" title='gtsam::GaussianBayesTree::Base' data-type='BayesTree&lt;GaussianBayesTreeClique&gt;' data-ref="gtsam::GaussianBayesTree::Base">Base</dfn>;</td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td>  <b>public</b>:</td></tr>
+<tr><th id="56">56</th><td>    <b>typedef</b> <a class="type" href="#gtsam::GaussianBayesTree" title='gtsam::GaussianBayesTree' data-ref="gtsam::GaussianBayesTree">GaussianBayesTree</a> <dfn class="typedef" id="gtsam::GaussianBayesTree::This" title='gtsam::GaussianBayesTree::This' data-type='GaussianBayesTree' data-ref="gtsam::GaussianBayesTree::This">This</dfn>;</td></tr>
+<tr><th id="57">57</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::GaussianBayesTree::This" title='gtsam::GaussianBayesTree::This' data-type='GaussianBayesTree' data-ref="gtsam::GaussianBayesTree::This">This</a>&gt; <dfn class="typedef" id="gtsam::GaussianBayesTree::shared_ptr" title='gtsam::GaussianBayesTree::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::GaussianBayesTree::shared_ptr">shared_ptr</dfn>;</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td>    <i class="doc">/** Default constructor, creates an empty Bayes tree */</i></td></tr>
+<tr><th id="60">60</th><td>    <dfn class="decl def fn" id="_ZN5gtsam17GaussianBayesTreeC1Ev" title='gtsam::GaussianBayesTree::GaussianBayesTree' data-ref="_ZN5gtsam17GaussianBayesTreeC1Ev">GaussianBayesTree</dfn>() {}</td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>    <i class="doc">/** Check equality */</i></td></tr>
+<tr><th id="63">63</th><td>    <em>bool</em> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree6equalsERKS0_d" title='gtsam::GaussianBayesTree::equals' data-ref="_ZNK5gtsam17GaussianBayesTree6equalsERKS0_d">equals</dfn>(<em>const</em> <a class="typedef" href="#gtsam::GaussianBayesTree::This" title='gtsam::GaussianBayesTree::This' data-type='GaussianBayesTree' data-ref="gtsam::GaussianBayesTree::This">This</a>&amp; <dfn class="local col6 decl" id="676other" title='other' data-type='const This &amp;' data-ref="676other">other</dfn>, <em>double</em> <dfn class="local col7 decl" id="677tol" title='tol' data-type='double' data-ref="677tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="64">64</th><td></td></tr>
+<tr><th id="65">65</th><td>    <i class="doc">/** Recursively optimize the BayesTree to produce a vector solution. */</i></td></tr>
+<tr><th id="66">66</th><td>    <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree8optimizeEv" title='gtsam::GaussianBayesTree::optimize' data-ref="_ZNK5gtsam17GaussianBayesTree8optimizeEv">optimize</dfn>() <em>const</em>;</td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="69">69</th><td><i class="doc">     * Optimize along the gradient direction, with a closed-form computation to perform the line</i></td></tr>
+<tr><th id="70">70</th><td><i class="doc">     * search.  The gradient is computed about <span class="command">\f$</span><span class="verb"> \delta x=0 \</span>f$.</i></td></tr>
+<tr><th id="71">71</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="72">72</th><td><i class="doc">     * This function returns <span class="command">\f$</span><span class="verb"> \delta x \</span>f$ that minimizes a reparametrized problem.  The error</i></td></tr>
+<tr><th id="73">73</th><td><i class="doc">     * function of a GaussianBayesNet is</i></td></tr>
+<tr><th id="74">74</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="75">75</th><td><i class="doc">     * <span class="command">\f[</span><span class="verb"> f(\delta x) = \frac{1}{2} |R \delta x - d|^2 = \frac{1}{2}d^T d - d^T R \delta x +</span></i></td></tr>
+<tr><th id="76">76</th><td><i class="doc"><span class="verb"></span>     *<span class="verb"> \frac{1}{2} \delta x^T R^T R \delta x \</span>f]</i></td></tr>
+<tr><th id="77">77</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="78">78</th><td><i class="doc">     * with gradient and Hessian</i></td></tr>
+<tr><th id="79">79</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="80">80</th><td><i class="doc">     * <span class="command">\f[</span><span class="verb"> g(\delta x) = R^T(R\delta x - d), \qquad G(\delta x) = R^T R. \</span>f]</i></td></tr>
+<tr><th id="81">81</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="82">82</th><td><i class="doc">     * This function performs the line search in the direction of the gradient evaluated at <span class="command">\f$</span><span class="verb"> g =</span></i></td></tr>
+<tr><th id="83">83</th><td><i class="doc"><span class="verb"></span>     *<span class="verb"> g(\delta x = 0) \</span>f$ with step size <span class="command">\f$</span><span class="verb"> \alpha \</span>f$ that minimizes <span class="command">\f$</span><span class="verb"> f(\delta x = \alpha g)</span></i></td></tr>
+<tr><th id="84">84</th><td><i class="doc"><span class="verb"></span>     * \f$:</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">     * <span class="command">\f[</span><span class="verb"> f(\alpha) = \frac{1}{2} d^T d + g^T \delta x + \frac{1}{2} \alpha^2 g^T G g \</span>f]</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">     * Optimizing by setting the derivative to zero yields <span class="command">\f$</span><span class="verb"> \hat \alpha = (-g^T g) / (g^T G g)</span></i></td></tr>
+<tr><th id="89">89</th><td><i class="doc"><span class="verb"></span>     * \f$.  For efficiency, this function evaluates the denominator without computing the Hessian</i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">     * <span class="command">\f$</span><span class="verb"> G \</span>f$, returning</i></td></tr>
+<tr><th id="91">91</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="92">92</th><td><i class="doc">     * <span class="command">\f[</span><span class="verb"> \delta x = \hat\alpha g = \frac{-g^T g}{(R g)^T(R g)} \</span>f] */</i></td></tr>
+<tr><th id="93">93</th><td>    <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree22optimizeGradientSearchEv" title='gtsam::GaussianBayesTree::optimizeGradientSearch' data-ref="_ZNK5gtsam17GaussianBayesTree22optimizeGradientSearchEv">optimizeGradientSearch</dfn>() <em>const</em>;</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>    <i class="doc">/** Compute the gradient of the energy function, <span class="command">\f$</span><span class="verb"> \nabla_{x=x_0} \left\Vert \Sigma^{-1} R x -</span></i></td></tr>
+<tr><th id="96">96</th><td><i class="doc"><span class="verb"></span>     *<span class="verb"> d \right\Vert^2 \</span>f$, centered around <span class="command">\f$</span><span class="verb"> x = x_0 \</span>f$. The gradient is <span class="command">\f$</span><span class="verb"> R^T(Rx-d) \</span>f$.</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">     * <span class="command">@param</span> <span class="arg">x0</span> The center about which to compute the gradient</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">     * <span class="command">@return</span> The gradient as a VectorValues */</i></td></tr>
+<tr><th id="100">100</th><td>    <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree8gradientERKNS_12VectorValuesE" title='gtsam::GaussianBayesTree::gradient' data-ref="_ZNK5gtsam17GaussianBayesTree8gradientERKNS_12VectorValuesE">gradient</dfn>(<em>const</em> <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a>&amp; <dfn class="local col8 decl" id="678x0" title='x0' data-type='const VectorValues &amp;' data-ref="678x0">x0</dfn>) <em>const</em>;</td></tr>
+<tr><th id="101">101</th><td></td></tr>
+<tr><th id="102">102</th><td>    <i class="doc">/** Compute the gradient of the energy function, <span class="command">\f$</span><span class="verb"> \nabla_{x=0} \left\Vert \Sigma^{-1} R x - d</span></i></td></tr>
+<tr><th id="103">103</th><td><i class="doc"><span class="verb"></span>     *<span class="verb"> \right\Vert^2 \</span>f$, centered around zero. The gradient about zero is <span class="command">\f$</span><span class="verb"> -R^T d \</span>f$.  See also</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">     * gradient(const GaussianBayesNet&amp;, const VectorValues&amp;).</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">     *</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">     * <span class="command">@return</span> A VectorValues storing the gradient. */</i></td></tr>
+<tr><th id="107">107</th><td>    <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree14gradientAtZeroEv" title='gtsam::GaussianBayesTree::gradientAtZero' data-ref="_ZNK5gtsam17GaussianBayesTree14gradientAtZeroEv">gradientAtZero</dfn>() <em>const</em>;</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>    <i class="doc">/** 0.5 * sum of squared Mahalanobis distances. */</i></td></tr>
+<tr><th id="110">110</th><td>    <em>double</em> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree5errorERKNS_12VectorValuesE" title='gtsam::GaussianBayesTree::error' data-ref="_ZNK5gtsam17GaussianBayesTree5errorERKNS_12VectorValuesE">error</dfn>(<em>const</em> <a class="type" href="VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a>&amp; <dfn class="local col9 decl" id="679x" title='x' data-type='const VectorValues &amp;' data-ref="679x">x</dfn>) <em>const</em>;</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>    <i class="doc">/** Computes the determinant of a GassianBayesTree, as if the Bayes tree is reorganized into a</i></td></tr>
+<tr><th id="113">113</th><td><i class="doc">     * matrix. A GassianBayesTree is equivalent to an upper triangular matrix, and for an upper</i></td></tr>
+<tr><th id="114">114</th><td><i class="doc">     * triangular matrix determinant is the product of the diagonal elements. Instead of actually</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">     * multiplying we add the logarithms of the diagonal elements and take the exponent at the end</i></td></tr>
+<tr><th id="116">116</th><td><i class="doc">     * because this is more numerically stable. */</i></td></tr>
+<tr><th id="117">117</th><td>    <em>double</em> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree11determinantEv" title='gtsam::GaussianBayesTree::determinant' data-ref="_ZNK5gtsam17GaussianBayesTree11determinantEv">determinant</dfn>() <em>const</em>;</td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td>    <i class="doc">/** Computes the determinant of a GassianBayesTree, as if the Bayes tree is reorganized into a</i></td></tr>
+<tr><th id="120">120</th><td><i class="doc">     * matrix. A GassianBayesTree is equivalent to an upper triangular matrix, and for an upper</i></td></tr>
+<tr><th id="121">121</th><td><i class="doc">     * triangular matrix determinant is the product of the diagonal elements. Instead of actually</i></td></tr>
+<tr><th id="122">122</th><td><i class="doc">     * multiplying we add the logarithms of the diagonal elements and take the exponent at the end</i></td></tr>
+<tr><th id="123">123</th><td><i class="doc">     * because this is more numerically stable. */</i></td></tr>
+<tr><th id="124">124</th><td>    <em>double</em> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree14logDeterminantEv" title='gtsam::GaussianBayesTree::logDeterminant' data-ref="_ZNK5gtsam17GaussianBayesTree14logDeterminantEv">logDeterminant</dfn>() <em>const</em>;</td></tr>
+<tr><th id="125">125</th><td></td></tr>
+<tr><th id="126">126</th><td>    <i class="doc">/** Return the marginal on the requested variable as a covariance matrix.  See also</i></td></tr>
+<tr><th id="127">127</th><td><i class="doc">    *   marginalFactor(). */</i></td></tr>
+<tr><th id="128">128</th><td>    <a class="typedef" href="../base/Matrix.h.html#gtsam::Matrix" title='gtsam::Matrix' data-type='Eigen::MatrixXd' data-ref="gtsam::Matrix">Matrix</a> <dfn class="decl fn" id="_ZNK5gtsam17GaussianBayesTree18marginalCovarianceEm" title='gtsam::GaussianBayesTree::marginalCovariance' data-ref="_ZNK5gtsam17GaussianBayesTree18marginalCovarianceEm">marginalCovariance</dfn>(<a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="local col0 decl" id="680key" title='key' data-type='Key' data-ref="680key">key</dfn>) <em>const</em>;</td></tr>
+<tr><th id="129">129</th><td>  };</td></tr>
+<tr><th id="130">130</th><td></td></tr>
+<tr><th id="131">131</th><td>  <i class="doc">/// traits</i></td></tr>
+<tr><th id="132">132</th><td>  <b>template</b>&lt;&gt;</td></tr>
+<tr><th id="133">133</th><td>  <b>struct</b> <dfn class="type def" id="gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits"><a class="type" href="../base/Testable.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a></dfn>&lt;<a class="type" href="#gtsam::GaussianBayesTree" title='gtsam::GaussianBayesTree' data-ref="gtsam::GaussianBayesTree">GaussianBayesTree</a>&gt; : <b>public</b> <a class="type" href="../base/Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;<a class="type" href="#gtsam::GaussianBayesTree" title='gtsam::GaussianBayesTree' data-ref="gtsam::GaussianBayesTree">GaussianBayesTree</a>&gt; {</td></tr>
+<tr><th id="134">134</th><td>  };</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>} <i>//\ namespace gtsam</i></td></tr>
+<tr><th id="137">137</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/FixedLagSmootherExample.cpp.html'>codebrowser/examples/FixedLagSmootherExample.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

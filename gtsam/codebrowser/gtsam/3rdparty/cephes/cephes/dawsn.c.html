@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>dawsn.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/dawsn.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/dawsn.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='dawsn.c.html'>dawsn.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     dawsn.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Dawson's Integral</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, y, dawsn();</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * y = dawsn( x );</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * Approximates the integral</i></td></tr>
+<tr><th id="18">18</th><td><i> *</i></td></tr>
+<tr><th id="19">19</th><td><i> *                             x</i></td></tr>
+<tr><th id="20">20</th><td><i> *                             -</i></td></tr>
+<tr><th id="21">21</th><td><i> *                      2     | |        2</i></td></tr>
+<tr><th id="22">22</th><td><i> *  dawsn(x)  =  exp( -x  )   |    exp( t  ) dt</i></td></tr>
+<tr><th id="23">23</th><td><i> *                          | |</i></td></tr>
+<tr><th id="24">24</th><td><i> *                           -</i></td></tr>
+<tr><th id="25">25</th><td><i> *                           0</i></td></tr>
+<tr><th id="26">26</th><td><i> *</i></td></tr>
+<tr><th id="27">27</th><td><i> * Three different rational approximations are employed, for</i></td></tr>
+<tr><th id="28">28</th><td><i> * the intervals 0 to 3.25; 3.25 to 6.25; and 6.25 up.</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> *</i></td></tr>
+<tr><th id="31">31</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="32">32</th><td><i> *</i></td></tr>
+<tr><th id="33">33</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="34">34</th><td><i> * arithmetic   domain     # trials      peak         rms</i></td></tr>
+<tr><th id="35">35</th><td><i> *    IEEE      0,10        10000       6.9e-16     1.0e-16</i></td></tr>
+<tr><th id="36">36</th><td><i> *</i></td></tr>
+<tr><th id="37">37</th><td><i> *</i></td></tr>
+<tr><th id="38">38</th><td><i> */</i></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><i>/*                                                     dawsn.c */</i></td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td></td></tr>
+<tr><th id="43">43</th><td><i>/*</i></td></tr>
+<tr><th id="44">44</th><td><i> * Cephes Math Library Release 2.1:  January, 1989</i></td></tr>
+<tr><th id="45">45</th><td><i> * Copyright 1984, 1987, 1989 by Stephen L. Moshier</i></td></tr>
+<tr><th id="46">46</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="47">47</th><td><i> */</i></td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="50">50</th><td><i  data-doc="AN">/* Dawson's integral, interval 0 to 3.25 */</i></td></tr>
+<tr><th id="51">51</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AN" title='AN' data-type='double[10]' data-ref="AN">AN</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="52">52</th><td>    <var>1.13681498971755972054E-11</var>,</td></tr>
+<tr><th id="53">53</th><td>    <var>8.49262267667473811108E-10</var>,</td></tr>
+<tr><th id="54">54</th><td>    <var>1.94434204175553054283E-8</var>,</td></tr>
+<tr><th id="55">55</th><td>    <var>9.53151741254484363489E-7</var>,</td></tr>
+<tr><th id="56">56</th><td>    <var>3.07828309874913200438E-6</var>,</td></tr>
+<tr><th id="57">57</th><td>    <var>3.52513368520288738649E-4</var>,</td></tr>
+<tr><th id="58">58</th><td>    -<var>8.50149846724410912031E-4</var>,</td></tr>
+<tr><th id="59">59</th><td>    <var>4.22618223005546594270E-2</var>,</td></tr>
+<tr><th id="60">60</th><td>    -<var>9.17480371773452345351E-2</var>,</td></tr>
+<tr><th id="61">61</th><td>    <var>9.99999999999999994612E-1</var>,</td></tr>
+<tr><th id="62">62</th><td>};</td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="AD" title='AD' data-type='double[11]' data-ref="AD">AD</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="65">65</th><td>    <var>2.40372073066762605484E-11</var>,</td></tr>
+<tr><th id="66">66</th><td>    <var>1.48864681368493396752E-9</var>,</td></tr>
+<tr><th id="67">67</th><td>    <var>5.21265281010541664570E-8</var>,</td></tr>
+<tr><th id="68">68</th><td>    <var>1.27258478273186970203E-6</var>,</td></tr>
+<tr><th id="69">69</th><td>    <var>2.32490249820789513991E-5</var>,</td></tr>
+<tr><th id="70">70</th><td>    <var>3.25524741826057911661E-4</var>,</td></tr>
+<tr><th id="71">71</th><td>    <var>3.48805814657162590916E-3</var>,</td></tr>
+<tr><th id="72">72</th><td>    <var>2.79448531198828973716E-2</var>,</td></tr>
+<tr><th id="73">73</th><td>    <var>1.58874241960120565368E-1</var>,</td></tr>
+<tr><th id="74">74</th><td>    <var>5.74918629489320327824E-1</var>,</td></tr>
+<tr><th id="75">75</th><td>    <var>1.00000000000000000539E0</var>,</td></tr>
+<tr><th id="76">76</th><td>};</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td><i  data-doc="BN">/* interval 3.25 to 6.25 */</i></td></tr>
+<tr><th id="79">79</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="BN" title='BN' data-type='double[11]' data-ref="BN">BN</dfn>[<var>11</var>] = {</td></tr>
+<tr><th id="80">80</th><td>    <var>5.08955156417900903354E-1</var>,</td></tr>
+<tr><th id="81">81</th><td>    -<var>2.44754418142697847934E-1</var>,</td></tr>
+<tr><th id="82">82</th><td>    <var>9.41512335303534411857E-2</var>,</td></tr>
+<tr><th id="83">83</th><td>    -<var>2.18711255142039025206E-2</var>,</td></tr>
+<tr><th id="84">84</th><td>    <var>3.66207612329569181322E-3</var>,</td></tr>
+<tr><th id="85">85</th><td>    -<var>4.23209114460388756528E-4</var>,</td></tr>
+<tr><th id="86">86</th><td>    <var>3.59641304793896631888E-5</var>,</td></tr>
+<tr><th id="87">87</th><td>    -<var>2.14640351719968974225E-6</var>,</td></tr>
+<tr><th id="88">88</th><td>    <var>9.10010780076391431042E-8</var>,</td></tr>
+<tr><th id="89">89</th><td>    -<var>2.40274520828250956942E-9</var>,</td></tr>
+<tr><th id="90">90</th><td>    <var>3.59233385440928410398E-11</var>,</td></tr>
+<tr><th id="91">91</th><td>};</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="BD" title='BD' data-type='double[10]' data-ref="BD">BD</dfn>[<var>10</var>] = {</td></tr>
+<tr><th id="94">94</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="95">95</th><td>    -<var>6.31839869873368190192E-1</var>,</td></tr>
+<tr><th id="96">96</th><td>    <var>2.36706788228248691528E-1</var>,</td></tr>
+<tr><th id="97">97</th><td>    -<var>5.31806367003223277662E-2</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>8.48041718586295374409E-3</var>,</td></tr>
+<tr><th id="99">99</th><td>    -<var>9.47996768486665330168E-4</var>,</td></tr>
+<tr><th id="100">100</th><td>    <var>7.81025592944552338085E-5</var>,</td></tr>
+<tr><th id="101">101</th><td>    -<var>4.55875153252442634831E-6</var>,</td></tr>
+<tr><th id="102">102</th><td>    <var>1.89100358111421846170E-7</var>,</td></tr>
+<tr><th id="103">103</th><td>    -<var>4.91324691331920606875E-9</var>,</td></tr>
+<tr><th id="104">104</th><td>    <var>7.18466403235734541950E-11</var>,</td></tr>
+<tr><th id="105">105</th><td>};</td></tr>
+<tr><th id="106">106</th><td></td></tr>
+<tr><th id="107">107</th><td><i  data-doc="CN">/* 6.25 to infinity */</i></td></tr>
+<tr><th id="108">108</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="CN" title='CN' data-type='double[5]' data-ref="CN">CN</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="109">109</th><td>    -<var>5.90592860534773254987E-1</var>,</td></tr>
+<tr><th id="110">110</th><td>    <var>6.29235242724368800674E-1</var>,</td></tr>
+<tr><th id="111">111</th><td>    -<var>1.72858975380388136411E-1</var>,</td></tr>
+<tr><th id="112">112</th><td>    <var>1.64837047825189632310E-2</var>,</td></tr>
+<tr><th id="113">113</th><td>    -<var>4.86827613020462700845E-4</var>,</td></tr>
+<tr><th id="114">114</th><td>};</td></tr>
+<tr><th id="115">115</th><td></td></tr>
+<tr><th id="116">116</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="CD" title='CD' data-type='double[5]' data-ref="CD">CD</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="117">117</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="118">118</th><td>    -<var>2.69820057197544900361E0</var>,</td></tr>
+<tr><th id="119">119</th><td>    <var>1.73270799045947845857E0</var>,</td></tr>
+<tr><th id="120">120</th><td>    -<var>3.93708582281939493482E-1</var>,</td></tr>
+<tr><th id="121">121</th><td>    <var>3.44278924041233391079E-2</var>,</td></tr>
+<tr><th id="122">122</th><td>    -<var>9.73655226040941223894E-4</var>,</td></tr>
+<tr><th id="123">123</th><td>};</td></tr>
+<tr><th id="124">124</th><td></td></tr>
+<tr><th id="125">125</th><td><b>extern</b> <em>double</em> <dfn class="decl" id="MACHEP" title='MACHEP' data-ref="MACHEP">MACHEP</dfn>;</td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td><em>double</em> <dfn class="decl def fn" id="dawsn" title='dawsn' data-ref="dawsn">dawsn</dfn>(<em>double</em> <dfn class="local col1 decl" id="1xx" title='xx' data-type='double' data-ref="1xx">xx</dfn>)</td></tr>
+<tr><th id="128">128</th><td>{</td></tr>
+<tr><th id="129">129</th><td>    <em>double</em> <dfn class="local col2 decl" id="2x" title='x' data-type='double' data-ref="2x">x</dfn>, <dfn class="local col3 decl" id="3y" title='y' data-type='double' data-ref="3y">y</dfn>;</td></tr>
+<tr><th id="130">130</th><td>    <em>int</em> <dfn class="local col4 decl" id="4sign" title='sign' data-type='int' data-ref="4sign">sign</dfn>;</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td>    <a class="local col4 ref" href="#4sign" title='sign' data-ref="4sign">sign</a> = <var>1</var>;</td></tr>
+<tr><th id="134">134</th><td>    <b>if</b> (<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> &lt; <var>0.0</var>) {</td></tr>
+<tr><th id="135">135</th><td>	<a class="local col4 ref" href="#4sign" title='sign' data-ref="4sign">sign</a> = -<var>1</var>;</td></tr>
+<tr><th id="136">136</th><td>	<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> = -<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>;</td></tr>
+<tr><th id="137">137</th><td>    }</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>    <b>if</b> (<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> &lt; <var>3.25</var>) {</td></tr>
+<tr><th id="140">140</th><td>	<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> * <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>;</td></tr>
+<tr><th id="141">141</th><td>	<a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AN" title='AN' data-use='r' data-ref="AN">AN</a>, <span class='inlayHint'>N:&nbsp;</span><var>9</var>) / <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#AD" title='AD' data-use='r' data-ref="AD">AD</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>);</td></tr>
+<tr><th id="142">142</th><td>	<b>return</b> (<a class="local col4 ref" href="#4sign" title='sign' data-ref="4sign">sign</a> * <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>);</td></tr>
+<tr><th id="143">143</th><td>    }</td></tr>
+<tr><th id="144">144</th><td></td></tr>
+<tr><th id="145">145</th><td></td></tr>
+<tr><th id="146">146</th><td>    <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <var>1.0</var> / (<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> * <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>);</td></tr>
+<tr><th id="147">147</th><td></td></tr>
+<tr><th id="148">148</th><td>    <b>if</b> (<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> &lt; <var>6.25</var>) {</td></tr>
+<tr><th id="149">149</th><td>	<a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <var>1.0</var> / <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> + <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#BN" title='BN' data-use='r' data-ref="BN">BN</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>) / (<a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#BD" title='BD' data-use='r' data-ref="BD">BD</a>, <span class='inlayHint'>N:&nbsp;</span><var>10</var>) * <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>);</td></tr>
+<tr><th id="150">150</th><td>	<b>return</b> (<a class="local col4 ref" href="#4sign" title='sign' data-ref="4sign">sign</a> * <var>0.5</var> * <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>);</td></tr>
+<tr><th id="151">151</th><td>    }</td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>    <b>if</b> (<a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> &gt; <var>1.0e9</var>)</td></tr>
+<tr><th id="155">155</th><td>	<b>return</b> ((<a class="local col4 ref" href="#4sign" title='sign' data-ref="4sign">sign</a> * <var>0.5</var>) / <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>);</td></tr>
+<tr><th id="156">156</th><td></td></tr>
+<tr><th id="157">157</th><td>    <i>/* 6.25 to infinity */</i></td></tr>
+<tr><th id="158">158</th><td>    <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <var>1.0</var> / <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a> + <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#CN" title='CN' data-use='r' data-ref="CN">CN</a>, <span class='inlayHint'>N:&nbsp;</span><var>4</var>) / (<a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#CD" title='CD' data-use='r' data-ref="CD">CD</a>, <span class='inlayHint'>N:&nbsp;</span><var>5</var>) * <a class="local col1 ref" href="#1xx" title='xx' data-ref="1xx">xx</a>);</td></tr>
+<tr><th id="159">159</th><td>    <b>return</b> (<a class="local col4 ref" href="#4sign" title='sign' data-ref="4sign">sign</a> * <var>0.5</var> * <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>);</td></tr>
+<tr><th id="160">160</th><td>}</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

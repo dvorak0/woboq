@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>EliminationTree.h source code [codebrowser/gtsam/inference/EliminationTree.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::EliminationTree "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/inference/EliminationTree.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>inference</a>/<a href='EliminationTree.h.html'>EliminationTree.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i>* GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i>* Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i>* All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i>* Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i>* See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i>* -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc">* <span class="command">@file</span> <span class="verb">   EliminationTree.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc">* <span class="command">@author</span>  Frank Dellaert</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc">* <span class="command">@author</span>  Richard Roberts</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc">* <span class="command">@date</span>    Oct 13, 2010</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc">*/</i></td></tr>
+<tr><th id="18">18</th><td><u>#pragma once</u></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="../../../include/c++/13/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../../../include/c++/13/memory.html">&lt;memory&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../base/Testable.h.html">&lt;gtsam/base/Testable.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../base/FastVector.h.html">&lt;gtsam/base/FastVector.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><b>class</b> <dfn class="type" id="EliminationTreeTester" title='EliminationTreeTester' data-ref="EliminationTreeTester">EliminationTreeTester</dfn>; <i>// for unit tests, see testEliminationTree</i></td></tr>
+<tr><th id="27">27</th><td></td></tr>
+<tr><th id="28">28</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="29">29</th><td></td></tr>
+<tr><th id="30">30</th><td>  <b>class</b> <a class="type" href="VariableIndex.h.html#gtsam::VariableIndex" title='gtsam::VariableIndex' data-ref="gtsam::VariableIndex" id="gtsam::VariableIndex">VariableIndex</a>;</td></tr>
+<tr><th id="31">31</th><td>  <b>class</b> <a class="type" href="Ordering.h.html#gtsam::Ordering" title='gtsam::Ordering' data-ref="gtsam::Ordering" id="gtsam::Ordering">Ordering</a>;</td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="34">34</th><td><i class="doc">  * An elimination tree is a data structure used intermediately during</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc">  * elimination.  In future versions it will be used to save work between</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc">  * multiple eliminations.</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc">  * When a variable is eliminated, a new factor is created by combining that</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc">  * variable's neighboring factors.  The new combined factor involves the combined</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc">  * factors' involved variables.  When the lowest-ordered one of those variables</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc">  * is eliminated, it consumes that combined factor.  In the elimination tree,</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc">  * that lowest-ordered variable is the parent of the variable that was eliminated to</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc">  * produce the combined factor.  This yields a tree in general, and not a chain</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc">  * because of the implicit sparse structure of the resulting Bayes net.</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc">  *</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc">  * This structure is examined even more closely in a JunctionTree, which</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc">  * additionally identifies cliques in the chordal Bayes net.</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc">  *<span class="command"> \nosubgrouping</span></i></td></tr>
+<tr><th id="49">49</th><td><i class="doc">  */</i></td></tr>
+<tr><th id="50">50</th><td>  <b>template</b>&lt;<b>class</b> BAYESNET, <b>class</b> GRAPH&gt;</td></tr>
+<tr><th id="51">51</th><td>  <b>class</b> <dfn class="type def" id="gtsam::EliminationTree" title='gtsam::EliminationTree' data-ref="gtsam::EliminationTree">EliminationTree</dfn></td></tr>
+<tr><th id="52">52</th><td>  {</td></tr>
+<tr><th id="53">53</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="54">54</th><td>    <b>typedef</b> <a class="type" href="JunctionTree.h.html#gtsam::EliminationTree" title='gtsam::EliminationTree' data-ref="gtsam::EliminationTree">EliminationTree</a>&lt;BAYESNET, GRAPH&gt; <dfn class="typedef" id="gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</dfn>; <i class="doc">///&lt; This class</i></td></tr>
+<tr><th id="55">55</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</a>&gt; <dfn class="typedef" id="gtsam::EliminationTree::shared_ptr" title='gtsam::EliminationTree::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::EliminationTree::shared_ptr">shared_ptr</dfn>; <i class="doc">///&lt; Shared pointer to this class</i></td></tr>
+<tr><th id="56">56</th><td></td></tr>
+<tr><th id="57">57</th><td>  <b>public</b>:</td></tr>
+<tr><th id="58">58</th><td>    <b>typedef</b> GRAPH <dfn class="typedef" id="gtsam::EliminationTree::FactorGraphType" title='gtsam::EliminationTree::FactorGraphType' data-type='GRAPH' data-ref="gtsam::EliminationTree::FactorGraphType">FactorGraphType</dfn>; <i class="doc">///&lt; The factor graph type</i></td></tr>
+<tr><th id="59">59</th><td>    <b>typedef</b> <b>typename</b> GRAPH::FactorType <dfn class="typedef" id="gtsam::EliminationTree::FactorType" title='gtsam::EliminationTree::FactorType' data-type='typename GRAPH::FactorType' data-ref="gtsam::EliminationTree::FactorType">FactorType</dfn>; <i class="doc">///&lt; The type of factors</i></td></tr>
+<tr><th id="60">60</th><td>    <b>typedef</b> <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::FactorType" title='gtsam::EliminationTree::FactorType' data-type='typename GRAPH::FactorType' data-ref="gtsam::EliminationTree::FactorType">FactorType</a>&gt; <dfn class="typedef" id="gtsam::EliminationTree::sharedFactor" title='gtsam::EliminationTree::sharedFactor' data-type='typename std::shared_ptr&lt;FactorType&gt;' data-ref="gtsam::EliminationTree::sharedFactor">sharedFactor</dfn>;  <i class="doc">///&lt; Shared pointer to a factor</i></td></tr>
+<tr><th id="61">61</th><td>    <b>typedef</b> BAYESNET <dfn class="typedef" id="gtsam::EliminationTree::BayesNetType" title='gtsam::EliminationTree::BayesNetType' data-type='BAYESNET' data-ref="gtsam::EliminationTree::BayesNetType">BayesNetType</dfn>; <i class="doc">///&lt; The BayesNet corresponding to FACTOR</i></td></tr>
+<tr><th id="62">62</th><td>    <b>typedef</b> <b>typename</b> <a class="typedef" href="#gtsam::EliminationTree::BayesNetType" title='gtsam::EliminationTree::BayesNetType' data-type='BAYESNET' data-ref="gtsam::EliminationTree::BayesNetType">BayesNetType</a>::ConditionalType <dfn class="typedef" id="gtsam::EliminationTree::ConditionalType" title='gtsam::EliminationTree::ConditionalType' data-type='typename BayesNetType::ConditionalType' data-ref="gtsam::EliminationTree::ConditionalType">ConditionalType</dfn>; <i class="doc">///&lt; The type of conditionals</i></td></tr>
+<tr><th id="63">63</th><td>    <b>typedef</b> <b>typename</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::ConditionalType" title='gtsam::EliminationTree::ConditionalType' data-type='typename BayesNetType::ConditionalType' data-ref="gtsam::EliminationTree::ConditionalType">ConditionalType</a>&gt; <dfn class="typedef" id="gtsam::EliminationTree::sharedConditional" title='gtsam::EliminationTree::sharedConditional' data-type='typename std::shared_ptr&lt;ConditionalType&gt;' data-ref="gtsam::EliminationTree::sharedConditional">sharedConditional</dfn>; <i class="doc">///&lt; Shared pointer to a conditional</i></td></tr>
+<tr><th id="64">64</th><td>    <b>typedef</b> <b>typename</b> GRAPH::Eliminate <dfn class="typedef" id="gtsam::EliminationTree::Eliminate" title='gtsam::EliminationTree::Eliminate' data-type='typename GRAPH::Eliminate' data-ref="gtsam::EliminationTree::Eliminate">Eliminate</dfn>;</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>    <b>struct</b> <dfn class="type def" id="gtsam::EliminationTree::Node" title='gtsam::EliminationTree::Node' data-ref="gtsam::EliminationTree::Node">Node</dfn> {</td></tr>
+<tr><th id="67">67</th><td>      <b>typedef</b> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::sharedFactor" title='gtsam::EliminationTree::sharedFactor' data-type='typename std::shared_ptr&lt;FactorType&gt;' data-ref="gtsam::EliminationTree::sharedFactor">sharedFactor</a>&gt; <dfn class="typedef" id="gtsam::EliminationTree::Node::Factors" title='gtsam::EliminationTree::Node::Factors' data-type='FastVector&lt;sharedFactor&gt;' data-ref="gtsam::EliminationTree::Node::Factors">Factors</dfn>;</td></tr>
+<tr><th id="68">68</th><td>      <b>typedef</b> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::EliminationTree::Node" title='gtsam::EliminationTree::Node' data-ref="gtsam::EliminationTree::Node">Node</a>&gt; &gt; <dfn class="typedef" id="gtsam::EliminationTree::Node::Children" title='gtsam::EliminationTree::Node::Children' data-type='FastVector&lt;std::shared_ptr&lt;Node&gt;&gt;' data-ref="gtsam::EliminationTree::Node::Children">Children</dfn>;</td></tr>
+<tr><th id="69">69</th><td></td></tr>
+<tr><th id="70">70</th><td>      <a class="typedef" href="../base/types.h.html#gtsam::Key" title='gtsam::Key' data-type='std::uint64_t' data-ref="gtsam::Key">Key</a> <dfn class="decl field" id="gtsam::EliminationTree::Node::key" title='gtsam::EliminationTree::Node::key' data-ref="gtsam::EliminationTree::Node::key">key</dfn>; <i class="doc">///&lt; key associated with root</i></td></tr>
+<tr><th id="71">71</th><td>      <a class="typedef" href="#gtsam::EliminationTree::Node::Factors" title='gtsam::EliminationTree::Node::Factors' data-type='FastVector&lt;sharedFactor&gt;' data-ref="gtsam::EliminationTree::Node::Factors">Factors</a> <dfn class="decl field" id="gtsam::EliminationTree::Node::factors" title='gtsam::EliminationTree::Node::factors' data-ref="gtsam::EliminationTree::Node::factors">factors</dfn>; <i class="doc">///&lt; factors associated with root</i></td></tr>
+<tr><th id="72">72</th><td>      <a class="typedef" href="#gtsam::EliminationTree::Node::Children" title='gtsam::EliminationTree::Node::Children' data-type='FastVector&lt;std::shared_ptr&lt;Node&gt;&gt;' data-ref="gtsam::EliminationTree::Node::Children">Children</a> <dfn class="decl field" id="gtsam::EliminationTree::Node::children" title='gtsam::EliminationTree::Node::children' data-ref="gtsam::EliminationTree::Node::children">children</dfn>; <i class="doc">///&lt; sub-trees</i></td></tr>
+<tr><th id="73">73</th><td></td></tr>
+<tr><th id="74">74</th><td>      <a class="typedef" href="#gtsam::EliminationTree::sharedFactor" title='gtsam::EliminationTree::sharedFactor' data-type='typename std::shared_ptr&lt;FactorType&gt;' data-ref="gtsam::EliminationTree::sharedFactor">sharedFactor</a> <dfn class="decl fn" id="_ZNK5gtsam15EliminationTree4Node9eliminateERKSt10shared_ptrIT_ERKNT0_9EliminateERKSt6vectorIS2_INS7_10FactorTypeEENS_8internal26FastDefaultVectorAllocatorISD_E4typeEE" title='gtsam::EliminationTree::Node::eliminate' data-ref="_ZNK5gtsam15EliminationTree4Node9eliminateERKSt10shared_ptrIT_ERKNT0_9EliminateERKSt6vectorIS2_INS7_10FactorTypeEENS_8internal26FastDefaultVectorAllocatorISD_E4typeEE">eliminate</dfn>(<em>const</em> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::BayesNetType" title='gtsam::EliminationTree::BayesNetType' data-type='BAYESNET' data-ref="gtsam::EliminationTree::BayesNetType">BayesNetType</a>&gt;&amp; <dfn class="local col3 decl" id="153output" title='output' data-type='const std::shared_ptr&lt;BayesNetType&gt; &amp;' data-ref="153output">output</dfn>,</td></tr>
+<tr><th id="75">75</th><td>        <em>const</em> <a class="typedef" href="#gtsam::EliminationTree::Eliminate" title='gtsam::EliminationTree::Eliminate' data-type='typename GRAPH::Eliminate' data-ref="gtsam::EliminationTree::Eliminate">Eliminate</a>&amp; <dfn class="local col4 decl" id="154function" title='function' data-type='const Eliminate &amp;' data-ref="154function">function</dfn>, <em>const</em> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::sharedFactor" title='gtsam::EliminationTree::sharedFactor' data-type='typename std::shared_ptr&lt;FactorType&gt;' data-ref="gtsam::EliminationTree::sharedFactor">sharedFactor</a>&gt;&amp; <dfn class="local col5 decl" id="155childrenFactors" title='childrenFactors' data-type='const FastVector&lt;sharedFactor&gt; &amp;' data-ref="155childrenFactors">childrenFactors</dfn>) <em>const</em>;</td></tr>
+<tr><th id="76">76</th><td></td></tr>
+<tr><th id="77">77</th><td>      <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam15EliminationTree4Node5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS7_mEE" title='gtsam::EliminationTree::Node::print' data-ref="_ZNK5gtsam15EliminationTree4Node5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS7_mEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col6 decl" id="156str" title='str' data-type='const std::string &amp;' data-ref="156str">str</dfn>, <em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col7 decl" id="157keyFormatter" title='keyFormatter' data-type='const KeyFormatter &amp;' data-ref="157keyFormatter">keyFormatter</dfn>) <em>const</em>;</td></tr>
+<tr><th id="78">78</th><td>    };</td></tr>
+<tr><th id="79">79</th><td></td></tr>
+<tr><th id="80">80</th><td>    <b>typedef</b> <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="type" href="#gtsam::EliminationTree::Node" title='gtsam::EliminationTree::Node' data-ref="gtsam::EliminationTree::Node">Node</a>&gt; <dfn class="typedef" id="gtsam::EliminationTree::sharedNode" title='gtsam::EliminationTree::sharedNode' data-type='std::shared_ptr&lt;Node&gt;' data-ref="gtsam::EliminationTree::sharedNode">sharedNode</dfn>; <i class="doc">///&lt; Shared pointer to Node</i></td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="83">83</th><td>    <i class="doc">/** concept check */</i></td></tr>
+<tr><th id="84">84</th><td>    <a class="macro" href="../base/Testable.h.html#177" title="using _gtsam_Testable_FactorType = gtsam::IsTestable&lt;FactorType&gt;;" data-ref="_M/GTSAM_CONCEPT_TESTABLE_TYPE">GTSAM_CONCEPT_TESTABLE_TYPE</a>(<a class="typedef" href="#gtsam::EliminationTree::FactorType" title='gtsam::EliminationTree::FactorType' data-type='typename GRAPH::FactorType' data-ref="gtsam::EliminationTree::FactorType">FactorType</a>)</td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td>    <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::sharedNode" title='gtsam::EliminationTree::sharedNode' data-type='std::shared_ptr&lt;Node&gt;' data-ref="gtsam::EliminationTree::sharedNode">sharedNode</a>&gt; <dfn class="decl field" id="gtsam::EliminationTree::roots_" title='gtsam::EliminationTree::roots_' data-ref="gtsam::EliminationTree::roots_">roots_</dfn>;</td></tr>
+<tr><th id="87">87</th><td>    <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::sharedFactor" title='gtsam::EliminationTree::sharedFactor' data-type='typename std::shared_ptr&lt;FactorType&gt;' data-ref="gtsam::EliminationTree::sharedFactor">sharedFactor</a>&gt; <dfn class="decl field" id="gtsam::EliminationTree::remainingFactors_" title='gtsam::EliminationTree::remainingFactors_' data-ref="gtsam::EliminationTree::remainingFactors_">remainingFactors_</dfn>;</td></tr>
+<tr><th id="88">88</th><td></td></tr>
+<tr><th id="89">89</th><td>    <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Constructors</span></i></td></tr>
+<tr><th id="90">90</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>    <i class="doc">/**</i></td></tr>
+<tr><th id="93">93</th><td><i class="doc">    * Build the elimination tree of a factor graph using pre-computed column structure.</i></td></tr>
+<tr><th id="94">94</th><td><i class="doc">    * <span class="command">@param</span> <span class="arg">factorGraph</span> The factor graph for which to build the elimination tree</i></td></tr>
+<tr><th id="95">95</th><td><i class="doc">    * <span class="command">@param</span> <span class="arg">structure</span> The set of factors involving each variable.  If this is not</i></td></tr>
+<tr><th id="96">96</th><td><i class="doc">    * precomputed, you can call the Create(const FactorGraph&lt;DERIVEDFACTOR&gt;&amp;)</i></td></tr>
+<tr><th id="97">97</th><td><i class="doc">    * named constructor instead.</i></td></tr>
+<tr><th id="98">98</th><td><i class="doc">    * <span class="command">@return</span> The elimination tree</i></td></tr>
+<tr><th id="99">99</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="100">100</th><td>    <dfn class="decl fn" id="_ZN5gtsam15EliminationTreeC1ERKT0_RKNS_13VariableIndexERKNS_8OrderingE" title='gtsam::EliminationTree::EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="_ZN5gtsam15EliminationTreeC1ERKT0_RKNS_13VariableIndexERKNS_8OrderingE">EliminationTree</dfn>(<em>const</em> <a class="typedef" href="#gtsam::EliminationTree::FactorGraphType" title='gtsam::EliminationTree::FactorGraphType' data-type='GRAPH' data-ref="gtsam::EliminationTree::FactorGraphType">FactorGraphType</a>&amp; <dfn class="local col8 decl" id="158factorGraph" title='factorGraph' data-type='const FactorGraphType &amp;' data-ref="158factorGraph">factorGraph</dfn>,</td></tr>
+<tr><th id="101">101</th><td>      <em>const</em> <a class="type" href="VariableIndex.h.html#gtsam::VariableIndex" title='gtsam::VariableIndex' data-ref="gtsam::VariableIndex">VariableIndex</a>&amp; <dfn class="local col9 decl" id="159structure" title='structure' data-type='const VariableIndex &amp;' data-ref="159structure">structure</dfn>, <em>const</em> <a class="type" href="Ordering.h.html#gtsam::Ordering" title='gtsam::Ordering' data-ref="gtsam::Ordering">Ordering</a>&amp; <dfn class="local col0 decl" id="160order" title='order' data-type='const Ordering &amp;' data-ref="160order">order</dfn>);</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>    <i class="doc">/** Build the elimination tree of a factor graph.  Note that this has to compute the column</i></td></tr>
+<tr><th id="104">104</th><td><i class="doc">    * structure as a VariableIndex, so if you already have this precomputed, use the other</i></td></tr>
+<tr><th id="105">105</th><td><i class="doc">    * constructor instead.</i></td></tr>
+<tr><th id="106">106</th><td><i class="doc">    * <span class="command">@param</span> <span class="arg">factorGraph</span> The factor graph for which to build the elimination tree</i></td></tr>
+<tr><th id="107">107</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="108">108</th><td>    <dfn class="decl fn" id="_ZN5gtsam15EliminationTreeC1ERKT0_RKNS_8OrderingE" title='gtsam::EliminationTree::EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="_ZN5gtsam15EliminationTreeC1ERKT0_RKNS_8OrderingE">EliminationTree</dfn>(<em>const</em> <a class="typedef" href="#gtsam::EliminationTree::FactorGraphType" title='gtsam::EliminationTree::FactorGraphType' data-type='GRAPH' data-ref="gtsam::EliminationTree::FactorGraphType">FactorGraphType</a>&amp; <dfn class="local col1 decl" id="161factorGraph" title='factorGraph' data-type='const FactorGraphType &amp;' data-ref="161factorGraph">factorGraph</dfn>, <em>const</em> <a class="type" href="Ordering.h.html#gtsam::Ordering" title='gtsam::Ordering' data-ref="gtsam::Ordering">Ordering</a>&amp; <dfn class="local col2 decl" id="162order" title='order' data-type='const Ordering &amp;' data-ref="162order">order</dfn>);</td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td>    <i class="doc">/** Copy constructor - makes a deep copy of the tree structure, but only pointers to factors are</i></td></tr>
+<tr><th id="111">111</th><td><i class="doc">     *  copied, factors are not cloned. */</i></td></tr>
+<tr><th id="112">112</th><td>    <dfn class="decl def fn" id="_ZN5gtsam15EliminationTreeC1ERKNS_15EliminationTreeIT_T0_EE" title='gtsam::EliminationTree::EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="_ZN5gtsam15EliminationTreeC1ERKNS_15EliminationTreeIT_T0_EE">EliminationTree</dfn>(<em>const</em> <a class="typedef" href="#gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</a>&amp; <dfn class="local col3 decl" id="163other" title='other' data-type='const This &amp;' data-ref="163other">other</dfn>) { *<b>this</b> = <a class="local col3 ref" href="#163other" title='other' data-ref="163other">other</a>; }</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td>    <i class="doc">/** Assignment operator - makes a deep copy of the tree structure, but only pointers to factors</i></td></tr>
+<tr><th id="115">115</th><td><i class="doc">     *  are copied, factors are not cloned. */</i></td></tr>
+<tr><th id="116">116</th><td>    <a class="typedef" href="#gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</a>&amp; <dfn class="decl fn" id="_ZN5gtsam15EliminationTreeaSERKNS_15EliminationTreeIT_T0_EE" title='gtsam::EliminationTree::operator=' data-ref="_ZN5gtsam15EliminationTreeaSERKNS_15EliminationTreeIT_T0_EE"><b>operator</b>=</dfn>(<em>const</em> <a class="typedef" href="#gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</a>&amp; <dfn class="local col4 decl" id="164other" title='other' data-type='const This &amp;' data-ref="164other">other</dfn>);</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="119">119</th><td></td></tr>
+<tr><th id="120">120</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="121">121</th><td>    <dfn class="decl fn" id="_ZN5gtsam15EliminationTreeD1Ev" title='gtsam::EliminationTree::~EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="_ZN5gtsam15EliminationTreeD1Ev">~EliminationTree</dfn>(); </td></tr>
+<tr><th id="122">122</th><td></td></tr>
+<tr><th id="123">123</th><td>  <b>public</b>:</td></tr>
+<tr><th id="124">124</th><td>    <i class="doc">/// <span class="command">@name</span> <span class="verb">Standard Interface</span></i></td></tr>
+<tr><th id="125">125</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="126">126</th><td></td></tr>
+<tr><th id="127">127</th><td>    <i class="doc">/** Eliminate the factors to a Bayes net and remaining factor graph</i></td></tr>
+<tr><th id="128">128</th><td><i class="doc">    * <span class="command">@param</span> <span class="arg">function</span> The function to use to eliminate, see the namespace functions</i></td></tr>
+<tr><th id="129">129</th><td><i class="doc">    * in GaussianFactorGraph.h</i></td></tr>
+<tr><th id="130">130</th><td><i class="doc">    * <span class="command">@return</span> The Bayes net and factor graph resulting from elimination</i></td></tr>
+<tr><th id="131">131</th><td><i class="doc">    */</i></td></tr>
+<tr><th id="132">132</th><td>    <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_iterator.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::BayesNetType" title='gtsam::EliminationTree::BayesNetType' data-type='BAYESNET' data-ref="gtsam::EliminationTree::BayesNetType">BayesNetType</a>&gt;, <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::FactorGraphType" title='gtsam::EliminationTree::FactorGraphType' data-type='GRAPH' data-ref="gtsam::EliminationTree::FactorGraphType">FactorGraphType</a>&gt; &gt;</td></tr>
+<tr><th id="133">133</th><td>      <dfn class="decl fn" id="_ZNK5gtsam15EliminationTree9eliminateENT0_9EliminateE" title='gtsam::EliminationTree::eliminate' data-ref="_ZNK5gtsam15EliminationTree9eliminateENT0_9EliminateE">eliminate</dfn>(<a class="typedef" href="#gtsam::EliminationTree::Eliminate" title='gtsam::EliminationTree::Eliminate' data-type='typename GRAPH::Eliminate' data-ref="gtsam::EliminationTree::Eliminate">Eliminate</a> <dfn class="local col5 decl" id="165function" title='function' data-type='Eliminate' data-ref="165function">function</dfn>) <em>const</em>;</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="136">136</th><td><i class="doc">    /// <span class="command">@name</span> <span class="verb">Testable</span></i></td></tr>
+<tr><th id="137">137</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>    <i class="doc">/** Print the tree to cout */</i></td></tr>
+<tr><th id="140">140</th><td>    <em>void</em> <dfn class="decl fn" id="_ZNK5gtsam15EliminationTree5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE" title='gtsam::EliminationTree::print' data-ref="_ZNK5gtsam15EliminationTree5printERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKSt8functionIFS6_mEE">print</dfn>(<em>const</em> <span class="namespace">std::</span><a class="typedef" href="../../../include/c++/13/bits/stringfwd.h.html#std::string" title='std::string' data-type='basic_string&lt;char&gt;' data-ref="std::string">string</a>&amp; <dfn class="local col6 decl" id="166name" title='name' data-type='const std::string &amp;' data-ref="166name">name</dfn> = <a class="ref fn fake" href="../../../include/c++/13/bits/basic_string.h.html#_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_" title='std::basic_string::basic_string&lt;_CharT, _Traits, _Alloc&gt;' data-ref="_ZNSt7__cxx1112basic_stringC1EPKT_RKT1_"></a><q>"EliminationTree: "</q>,</td></tr>
+<tr><th id="141">141</th><td>      <em>const</em> <a class="typedef" href="Key.h.html#gtsam::KeyFormatter" title='gtsam::KeyFormatter' data-type='std::function&lt;std::string (Key)&gt;' data-ref="gtsam::KeyFormatter">KeyFormatter</a>&amp; <dfn class="local col7 decl" id="167formatter" title='formatter' data-type='const KeyFormatter &amp;' data-ref="167formatter">formatter</dfn> = <a class="ref" href="Key.h.html#gtsam::DefaultKeyFormatter" title='gtsam::DefaultKeyFormatter' data-ref="gtsam::DefaultKeyFormatter">DefaultKeyFormatter</a>) <em>const</em>;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="144">144</th><td>    <i class="doc">/** Test whether the tree is equal to another */</i></td></tr>
+<tr><th id="145">145</th><td>    <em>bool</em> <dfn class="decl fn" id="_ZNK5gtsam15EliminationTree6equalsERKNS_15EliminationTreeIT_T0_EEd" title='gtsam::EliminationTree::equals' data-ref="_ZNK5gtsam15EliminationTree6equalsERKNS_15EliminationTreeIT_T0_EEd">equals</dfn>(<em>const</em> <a class="typedef" href="#gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</a>&amp; <dfn class="local col8 decl" id="168other" title='other' data-type='const This &amp;' data-ref="168other">other</dfn>, <em>double</em> <dfn class="local col9 decl" id="169tol" title='tol' data-type='double' data-ref="169tol">tol</dfn> = <var>1e-9</var>) <em>const</em>;</td></tr>
+<tr><th id="146">146</th><td></td></tr>
+<tr><th id="147">147</th><td>    <i class="doc">/// @}</i></td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td>  <b>public</b>:</td></tr>
+<tr><th id="150">150</th><td>    <i class="doc">/// <span class="command">@name</span> <span class="verb">Advanced Interface</span></i></td></tr>
+<tr><th id="151">151</th><td><i class="doc">    /// @{</i></td></tr>
+<tr><th id="152">152</th><td></td></tr>
+<tr><th id="153">153</th><td>    <i class="doc">/** Return the set of roots (one for a tree, multiple for a forest) */</i></td></tr>
+<tr><th id="154">154</th><td>    <em>const</em> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::sharedNode" title='gtsam::EliminationTree::sharedNode' data-type='std::shared_ptr&lt;Node&gt;' data-ref="gtsam::EliminationTree::sharedNode">sharedNode</a>&gt;&amp; <dfn class="decl def fn" id="_ZNK5gtsam15EliminationTree5rootsEv" title='gtsam::EliminationTree::roots' data-ref="_ZNK5gtsam15EliminationTree5rootsEv">roots</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::EliminationTree::roots_" title='gtsam::EliminationTree::roots_' data-ref="gtsam::EliminationTree::roots_">roots_</a>; }</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>    <i class="doc">/** Return the remaining factors that are not pulled into elimination */</i></td></tr>
+<tr><th id="157">157</th><td>    <em>const</em> <a class="type" href="../base/FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<a class="typedef" href="#gtsam::EliminationTree::sharedFactor" title='gtsam::EliminationTree::sharedFactor' data-type='typename std::shared_ptr&lt;FactorType&gt;' data-ref="gtsam::EliminationTree::sharedFactor">sharedFactor</a>&gt;&amp; <dfn class="decl def fn" id="_ZNK5gtsam15EliminationTree16remainingFactorsEv" title='gtsam::EliminationTree::remainingFactors' data-ref="_ZNK5gtsam15EliminationTree16remainingFactorsEv">remainingFactors</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::EliminationTree::remainingFactors_" title='gtsam::EliminationTree::remainingFactors_' data-ref="gtsam::EliminationTree::remainingFactors_">remainingFactors_</a>; }</td></tr>
+<tr><th id="158">158</th><td></td></tr>
+<tr><th id="159">159</th><td>    <i class="doc">/** Swap the data of this tree with another one, this operation is very fast. */</i></td></tr>
+<tr><th id="160">160</th><td>    <em>void</em> <dfn class="decl fn" id="_ZN5gtsam15EliminationTree4swapERNS_15EliminationTreeIT_T0_EE" title='gtsam::EliminationTree::swap' data-ref="_ZN5gtsam15EliminationTree4swapERNS_15EliminationTreeIT_T0_EE">swap</dfn>(<a class="typedef" href="#gtsam::EliminationTree::This" title='gtsam::EliminationTree::This' data-type='EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="gtsam::EliminationTree::This">This</a>&amp; <dfn class="local col0 decl" id="170other" title='other' data-type='This &amp;' data-ref="170other">other</dfn>);</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td>  <b>protected</b>:</td></tr>
+<tr><th id="163">163</th><td>    <i class="doc">/// Protected default constructor</i></td></tr>
+<tr><th id="164">164</th><td>    <dfn class="decl def fn" id="_ZN5gtsam15EliminationTreeC1Ev" title='gtsam::EliminationTree::EliminationTree&lt;BAYESNET, GRAPH&gt;' data-ref="_ZN5gtsam15EliminationTreeC1Ev">EliminationTree</dfn>() {}</td></tr>
+<tr><th id="165">165</th><td></td></tr>
+<tr><th id="166">166</th><td>  <b>private</b>:</td></tr>
+<tr><th id="167">167</th><td>    <i class="doc">/// Allow access to constructor and add methods for testing purposes</i></td></tr>
+<tr><th id="168">168</th><td>    <b>friend</b> <b>class</b> ::<a class="type" href="#EliminationTreeTester" title='EliminationTreeTester' data-ref="EliminationTreeTester">EliminationTreeTester</a>;</td></tr>
+<tr><th id="169">169</th><td>  };</td></tr>
+<tr><th id="170">170</th><td></td></tr>
+<tr><th id="171">171</th><td>}</td></tr>
+<tr><th id="172">172</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/SolverComparer.cpp.html'>codebrowser/examples/SolverComparer.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>FitBasis.h source code [codebrowser/gtsam/basis/FitBasis.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::FitBasis "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/basis/FitBasis.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>basis</a>/<a href='FitBasis.h.html'>FitBasis.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">FitBasis.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@date</span> July 4, 2020</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Varun Agrawal, Frank Dellaert</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@brief</span> Fit a Basis using least-squares</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><i>/*</i></td></tr>
+<tr><th id="20">20</th><td><i> *  Concept needed for LS. Parameters = Coefficients | Values</i></td></tr>
+<tr><th id="21">21</th><td><i> *    - Parameters, Jacobian</i></td></tr>
+<tr><th id="22">22</th><td><i> *    - PredictFactor(double x)(Parameters p, OptionalJacobian&lt;1,N&gt; H)</i></td></tr>
+<tr><th id="23">23</th><td><i> */</i></td></tr>
+<tr><th id="24">24</th><td></td></tr>
+<tr><th id="25">25</th><td><u>#pragma once</u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="Basis.h.html">&lt;gtsam/basis/Basis.h&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="BasisFactors.h.html">&lt;gtsam/basis/BasisFactors.h&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../linear/GaussianFactorGraph.h.html">&lt;gtsam/linear/GaussianFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../linear/VectorValues.h.html">&lt;gtsam/linear/VectorValues.h&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../nonlinear/NonlinearFactorGraph.h.html">&lt;gtsam/nonlinear/NonlinearFactorGraph.h&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td></td></tr>
+<tr><th id="33">33</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="34">34</th><td></td></tr>
+<tr><th id="35">35</th><td><i class="doc">/// Our sequence representation is a map of {x: y} values where y = f(x)</i></td></tr>
+<tr><th id="36">36</th><td><b>using</b> <dfn class="typedef" id="gtsam::Sequence" title='gtsam::Sequence' data-type='std::map&lt;double, double&gt;' data-ref="gtsam::Sequence">Sequence</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_map.h.html#std::map" title='std::map' data-ref="std::map">map</a>&lt;<em>double</em>, <em>double</em>&gt;;</td></tr>
+<tr><th id="37">37</th><td><i class="doc">/// A sample is a key-value pair from a sequence.</i></td></tr>
+<tr><th id="38">38</th><td><b>using</b> <dfn class="typedef" id="gtsam::Sample" title='gtsam::Sample' data-type='std::pair&lt;double, double&gt;' data-ref="gtsam::Sample">Sample</dfn> = <span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;<em>double</em>, <em>double</em>&gt;;</td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * Class that does regression via least squares</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * Example usage:</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> *  size_t N = 3;</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> *  auto fit = FitBasis&lt;Chebyshev2&gt;(data_points, noise_model, N);</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> *  Vector coefficients = fit.parameters();</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * where `data_points` are a map from `x` to `y` values indicating a function</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * mapping at specific points, `noise_model` is the gaussian noise model, and</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> * `N` is the degree of the polynomial basis used to fit the function.</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="51">51</th><td><b>template</b> &lt;<b>class</b> Basis&gt;</td></tr>
+<tr><th id="52">52</th><td><b>class</b> <dfn class="type def" id="gtsam::FitBasis" title='gtsam::FitBasis' data-ref="gtsam::FitBasis">FitBasis</dfn> {</td></tr>
+<tr><th id="53">53</th><td> <b>public</b>:</td></tr>
+<tr><th id="54">54</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::FitBasis::Parameters" title='gtsam::FitBasis::Parameters' data-type='typename Basis::Parameters' data-ref="gtsam::FitBasis::Parameters">Parameters</dfn> = <b>typename</b> Basis::Parameters;</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td> <b>private</b>:</td></tr>
+<tr><th id="57">57</th><td>  <a class="typedef" href="#gtsam::FitBasis::Parameters" title='gtsam::FitBasis::Parameters' data-type='typename Basis::Parameters' data-ref="gtsam::FitBasis::Parameters">Parameters</a> <dfn class="decl field" id="gtsam::FitBasis::parameters_" title='gtsam::FitBasis::parameters_' data-ref="gtsam::FitBasis::parameters_">parameters_</dfn>;</td></tr>
+<tr><th id="58">58</th><td></td></tr>
+<tr><th id="59">59</th><td> <b>public</b>:</td></tr>
+<tr><th id="60">60</th><td>  <i class="doc">/// Create nonlinear FG from Sequence</i></td></tr>
+<tr><th id="61">61</th><td>  <em>static</em> <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <dfn class="decl def fn" id="_ZN5gtsam8FitBasis14NonlinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm" title='gtsam::FitBasis::NonlinearGraph' data-ref="_ZN5gtsam8FitBasis14NonlinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm">NonlinearGraph</dfn>(<em>const</em> <a class="typedef" href="#gtsam::Sequence" title='gtsam::Sequence' data-type='std::map&lt;double, double&gt;' data-ref="gtsam::Sequence">Sequence</a>&amp; <dfn class="local col1 decl" id="1sequence" title='sequence' data-type='const Sequence &amp;' data-ref="1sequence">sequence</dfn>,</td></tr>
+<tr><th id="62">62</th><td>                                             <em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col2 decl" id="2model" title='model' data-type='const SharedNoiseModel &amp;' data-ref="2model">model</dfn>,</td></tr>
+<tr><th id="63">63</th><td>                                             <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col3 decl" id="3N" title='N' data-type='size_t' data-ref="3N">N</dfn>) {</td></tr>
+<tr><th id="64">64</th><td>    <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <a class="ref fn fake" href="../nonlinear/NonlinearFactorGraph.h.html#_ZN5gtsam20NonlinearFactorGraphC1Ev" title='gtsam::NonlinearFactorGraph::NonlinearFactorGraph' data-ref="_ZN5gtsam20NonlinearFactorGraphC1Ev"></a><dfn class="local col4 decl" id="4graph" title='graph' data-type='NonlinearFactorGraph' data-ref="4graph">graph</dfn>;</td></tr>
+<tr><th id="65">65</th><td>    <b>for</b> (<em>const</em> <a class="typedef" href="#gtsam::Sample" title='gtsam::Sample' data-type='std::pair&lt;double, double&gt;' data-ref="gtsam::Sample">Sample</a> <dfn class="local col5 decl" id="5sample" title='sample' data-type='const Sample' data-ref="5sample">sample</dfn> : <a class="local col1 ref" href="#1sequence" title='sequence' data-ref="1sequence">sequence</a>) {</td></tr>
+<tr><th id="66">66</th><td>      <a class="local col4 ref" href="#4graph" title='graph' data-ref="4graph">graph</a>.emplace_shared&lt;<a class="type" href="BasisFactors.h.html#gtsam::EvaluationFactor" title='gtsam::EvaluationFactor' data-ref="gtsam::EvaluationFactor">EvaluationFactor</a>&lt;Basis&gt;&gt;(<var>0</var>, <a class="local col5 ref" href="#5sample" title='sample' data-ref="5sample">sample</a>.<a class="ref field" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair::second" title='std::pair&lt;double, double&gt;::second' data-ref="std::pair::second">second</a>, <a class="local col2 ref" href="#2model" title='model' data-ref="2model">model</a>, <a class="local col3 ref" href="#3N" title='N' data-ref="3N">N</a>,</td></tr>
+<tr><th id="67">67</th><td>                                                    <a class="local col5 ref" href="#5sample" title='sample' data-ref="5sample">sample</a>.<a class="ref field" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair::first" title='std::pair&lt;double, double&gt;::first' data-ref="std::pair::first">first</a>);</td></tr>
+<tr><th id="68">68</th><td>    }</td></tr>
+<tr><th id="69">69</th><td>    <b>return</b> <a class="ref fn fake" href="../nonlinear/NonlinearFactorGraph.h.html#55" title='gtsam::NonlinearFactorGraph::NonlinearFactorGraph' data-ref="_ZN5gtsam20NonlinearFactorGraphC1EOS0_"></a><a class="local col4 ref" href="#4graph" title='graph' data-ref="4graph">graph</a>;</td></tr>
+<tr><th id="70">70</th><td>  }</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>  <i class="doc">/// Create linear FG from Sequence</i></td></tr>
+<tr><th id="73">73</th><td>  <em>static</em> <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>::<a class="typedef" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph::shared_ptr" title='gtsam::GaussianFactorGraph::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::GaussianFactorGraph::shared_ptr">shared_ptr</a> <dfn class="decl def fn" id="_ZN5gtsam8FitBasis11LinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm" title='gtsam::FitBasis::LinearGraph' data-ref="_ZN5gtsam8FitBasis11LinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm">LinearGraph</dfn>(</td></tr>
+<tr><th id="74">74</th><td>      <em>const</em> <a class="typedef" href="#gtsam::Sequence" title='gtsam::Sequence' data-type='std::map&lt;double, double&gt;' data-ref="gtsam::Sequence">Sequence</a>&amp; <dfn class="local col6 decl" id="6sequence" title='sequence' data-type='const Sequence &amp;' data-ref="6sequence">sequence</dfn>, <em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col7 decl" id="7model" title='model' data-type='const SharedNoiseModel &amp;' data-ref="7model">model</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col8 decl" id="8N" title='N' data-type='size_t' data-ref="8N">N</dfn>) {</td></tr>
+<tr><th id="75">75</th><td>    <a class="type" href="../nonlinear/NonlinearFactorGraph.h.html#gtsam::NonlinearFactorGraph" title='gtsam::NonlinearFactorGraph' data-ref="gtsam::NonlinearFactorGraph">NonlinearFactorGraph</a> <dfn class="local col9 decl" id="9graph" title='graph' data-type='NonlinearFactorGraph' data-ref="9graph">graph</dfn> = <a class="member fn" href="#_ZN5gtsam8FitBasis14NonlinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm" title='gtsam::FitBasis::NonlinearGraph' data-ref="_ZN5gtsam8FitBasis14NonlinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm">NonlinearGraph</a>(<a class="local col6 ref" href="#6sequence" title='sequence' data-ref="6sequence">sequence</a>, <a class="local col7 ref" href="#7model" title='model' data-ref="7model">model</a>, <a class="local col8 ref" href="#8N" title='N' data-ref="8N">N</a>);</td></tr>
+<tr><th id="76">76</th><td>    <a class="type" href="../nonlinear/Values.h.html#gtsam::Values" title='gtsam::Values' data-ref="gtsam::Values">Values</a> <a class="ref fn fake" href="../nonlinear/Values.h.html#_ZN5gtsam6ValuesC1Ev" title='gtsam::Values::Values' data-ref="_ZN5gtsam6ValuesC1Ev"></a><dfn class="local col0 decl" id="10values" title='values' data-type='Values' data-ref="10values">values</dfn>;</td></tr>
+<tr><th id="77">77</th><td>    <a class="local col0 ref" href="#10values" title='values' data-ref="10values">values</a>.insert&lt;<a class="typedef" href="#gtsam::FitBasis::Parameters" title='gtsam::FitBasis::Parameters' data-type='typename Basis::Parameters' data-ref="gtsam::FitBasis::Parameters">Parameters</a>&gt;(<var>0</var>, <a class="typedef" href="#gtsam::FitBasis::Parameters" title='gtsam::FitBasis::Parameters' data-type='typename Basis::Parameters' data-ref="gtsam::FitBasis::Parameters">Parameters</a>::Zero(<a class="local col8 ref" href="#8N" title='N' data-ref="8N">N</a>));</td></tr>
+<tr><th id="78">78</th><td>    <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>::<a class="typedef" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph::shared_ptr" title='gtsam::GaussianFactorGraph::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::GaussianFactorGraph::shared_ptr">shared_ptr</a> <dfn class="local col1 decl" id="11gfg" title='gfg' data-type='GaussianFactorGraph::shared_ptr' data-ref="11gfg">gfg</dfn> = <a class="local col9 ref" href="#9graph" title='graph' data-ref="9graph">graph</a>.<a class="ref fn" href="../nonlinear/NonlinearFactorGraph.h.html#_ZNK5gtsam20NonlinearFactorGraph9linearizeERKNS_6ValuesE" title='gtsam::NonlinearFactorGraph::linearize' data-ref="_ZNK5gtsam20NonlinearFactorGraph9linearizeERKNS_6ValuesE">linearize</a>(<span class='inlayHint'>linearizationPoint:&nbsp;</span><a class="local col0 ref" href="#10values" title='values' data-ref="10values">values</a>);</td></tr>
+<tr><th id="79">79</th><td>    <b>return</b> <a class="ref fn fake" href="../../../include/c++/13/bits/shared_ptr.h.html#_ZNSt10shared_ptrC1EOSt10shared_ptrIT_E" title='std::shared_ptr::shared_ptr&lt;_Tp&gt;' data-ref="_ZNSt10shared_ptrC1EOSt10shared_ptrIT_E"></a><a class="local col1 ref" href="#11gfg" title='gfg' data-ref="11gfg">gfg</a>;</td></tr>
+<tr><th id="80">80</th><td>  }</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <i class="doc">/**</i></td></tr>
+<tr><th id="83">83</th><td><i class="doc">   * <span class="command">@brief</span> Construct a new FitBasis object.</i></td></tr>
+<tr><th id="84">84</th><td><i class="doc">   *</i></td></tr>
+<tr><th id="85">85</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">sequence</span> map of x-&gt;y values for a function, a.k.a. y = f(x).</i></td></tr>
+<tr><th id="86">86</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">model</span> The noise model to use.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">   * <span class="command">@param</span> <span class="arg">N</span> The degree of the polynomial to fit.</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">   */</i></td></tr>
+<tr><th id="89">89</th><td>  <dfn class="decl def fn" id="_ZN5gtsam8FitBasisC1ERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm" title='gtsam::FitBasis::FitBasis&lt;Basis&gt;' data-ref="_ZN5gtsam8FitBasisC1ERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm">FitBasis</dfn>(<em>const</em> <a class="typedef" href="#gtsam::Sequence" title='gtsam::Sequence' data-type='std::map&lt;double, double&gt;' data-ref="gtsam::Sequence">Sequence</a>&amp; <dfn class="local col2 decl" id="12sequence" title='sequence' data-type='const Sequence &amp;' data-ref="12sequence">sequence</dfn>, <em>const</em> <a class="typedef" href="../linear/NoiseModel.h.html#gtsam::SharedNoiseModel" title='gtsam::SharedNoiseModel' data-type='noiseModel::Base::shared_ptr' data-ref="gtsam::SharedNoiseModel">SharedNoiseModel</a>&amp; <dfn class="local col3 decl" id="13model" title='model' data-type='const SharedNoiseModel &amp;' data-ref="13model">model</dfn>, <span class='typedef' title='size_t' data-type='unsigned long' data-ref="size_t">size_t</span> <dfn class="local col4 decl" id="14N" title='N' data-type='size_t' data-ref="14N">N</dfn>) {</td></tr>
+<tr><th id="90">90</th><td>    <a class="type" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph" title='gtsam::GaussianFactorGraph' data-ref="gtsam::GaussianFactorGraph">GaussianFactorGraph</a>::<a class="typedef" href="../linear/GaussianFactorGraph.h.html#gtsam::GaussianFactorGraph::shared_ptr" title='gtsam::GaussianFactorGraph::shared_ptr' data-type='std::shared_ptr&lt;This&gt;' data-ref="gtsam::GaussianFactorGraph::shared_ptr">shared_ptr</a> <dfn class="local col5 decl" id="15gfg" title='gfg' data-type='GaussianFactorGraph::shared_ptr' data-ref="15gfg">gfg</dfn> = <a class="member fn" href="#_ZN5gtsam8FitBasis11LinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm" title='gtsam::FitBasis::LinearGraph' data-ref="_ZN5gtsam8FitBasis11LinearGraphERKSt3mapIddSt4lessIdESaISt4pairIKddEEERKSt10shared_ptrINS_10noiseModel4BaseEEm">LinearGraph</a>(<a class="local col2 ref" href="#12sequence" title='sequence' data-ref="12sequence">sequence</a>, <a class="local col3 ref" href="#13model" title='model' data-ref="13model">model</a>, <a class="local col4 ref" href="#14N" title='N' data-ref="14N">N</a>);</td></tr>
+<tr><th id="91">91</th><td>    <a class="type" href="../linear/VectorValues.h.html#gtsam::VectorValues" title='gtsam::VectorValues' data-ref="gtsam::VectorValues">VectorValues</a> <dfn class="local col6 decl" id="16solution" title='solution' data-type='VectorValues' data-ref="16solution">solution</dfn> = <a class="local col5 ref" href="#15gfg" title='gfg' data-ref="15gfg">gfg</a><a class="ref fn" href="../../../include/c++/13/bits/shared_ptr_base.h.html#_ZNKSt19__shared_ptr_accessptEv" title='std::__shared_ptr_access::operator-&gt;' data-ref="_ZNKSt19__shared_ptr_accessptEv">-&gt;</a><a class="ref fn" href="../linear/GaussianFactorGraph.h.html#_ZNK5gtsam19GaussianFactorGraph8optimizeERKSt8functionIFSt4pairISt10shared_ptrINS_19GaussianConditionalEES3_INS_14GaussianFactorEEERKS0_RKNS_8OrderingEEE" title='gtsam::GaussianFactorGraph::optimize' data-ref="_ZNK5gtsam19GaussianFactorGraph8optimizeERKSt8functionIFSt4pairISt10shared_ptrINS_19GaussianConditionalEES3_INS_14GaussianFactorEEERKS0_RKNS_8OrderingEEE">optimize</a>();</td></tr>
+<tr><th id="92">92</th><td>    <a class="member field" href="#gtsam::FitBasis::parameters_" title='gtsam::FitBasis::parameters_' data-ref="gtsam::FitBasis::parameters_">parameters_</a> = <a class="local col6 ref" href="#16solution" title='solution' data-ref="16solution">solution</a>.<a class="ref fn" href="../linear/VectorValues.h.html#_ZN5gtsam12VectorValues2atEm" title='gtsam::VectorValues::at' data-ref="_ZN5gtsam12VectorValues2atEm">at</a>(<span class='inlayHint'>j:&nbsp;</span><var>0</var>);</td></tr>
+<tr><th id="93">93</th><td>  }</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>  <i class="doc">/// Return Fourier coefficients</i></td></tr>
+<tr><th id="96">96</th><td>  <a class="typedef" href="#gtsam::FitBasis::Parameters" title='gtsam::FitBasis::Parameters' data-type='typename Basis::Parameters' data-ref="gtsam::FitBasis::Parameters">Parameters</a> <dfn class="decl def fn" id="_ZNK5gtsam8FitBasis10parametersEv" title='gtsam::FitBasis::parameters' data-ref="_ZNK5gtsam8FitBasis10parametersEv">parameters</dfn>() <em>const</em> { <b>return</b> <a class="member field" href="#gtsam::FitBasis::parameters_" title='gtsam::FitBasis::parameters_' data-ref="gtsam::FitBasis::parameters_">parameters_</a>; }</td></tr>
+<tr><th id="97">97</th><td>};</td></tr>
+<tr><th id="98">98</th><td></td></tr>
+<tr><th id="99">99</th><td>}  <i>// namespace gtsam</i></td></tr>
+<tr><th id="100">100</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='tests/testChebyshev.cpp.html'>codebrowser/gtsam/basis/tests/testChebyshev.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

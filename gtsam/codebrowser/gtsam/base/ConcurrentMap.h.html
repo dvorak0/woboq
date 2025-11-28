@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ConcurrentMap.h source code [codebrowser/gtsam/base/ConcurrentMap.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::ConcurrentMap "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/base/ConcurrentMap.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>base</a>/<a href='ConcurrentMap.h.html'>ConcurrentMap.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">   FastMap.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span>   A thin wrapper around std::map that uses boost's fast_pool_allocator.</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span>  Richard Roberts</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@date</span>    Oct 17, 2010</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><u>#pragma once</u></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="../global_includes.h.html">&lt;gtsam/global_includes.h&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td></td></tr>
+<tr><th id="23">23</th><td><i>// Change class depending on whether we are using TBB</i></td></tr>
+<tr><th id="24">24</th><td><u>#<span data-ppcond="24">ifdef</span> <span class="macro" data-ref="_M/GTSAM_USE_TBB">GTSAM_USE_TBB</span></u></td></tr>
+<tr><th id="25">25</th><td></td></tr>
+<tr><th id="26">26</th><td><i>// Include TBB header</i></td></tr>
+<tr><th id="27">27</th><td><u>#  include &lt;tbb/concurrent_unordered_map.h&gt;</u></td></tr>
+<tr><th id="28">28</th><td><u>#  undef min // TBB seems to include Windows.h which defines these macros that cause problems</u></td></tr>
+<tr><th id="29">29</th><td><u>#  undef max</u></td></tr>
+<tr><th id="30">30</th><td><u>#  undef ERROR</u></td></tr>
+<tr><th id="31">31</th><td></td></tr>
+<tr><th id="32">32</th><td><u>#include &lt;functional&gt; // std::hash()</u></td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><i>// Use TBB concurrent_unordered_map for ConcurrentMap</i></td></tr>
+<tr><th id="35">35</th><td><b>template</b> &lt;<b>typename</b> KEY, <b>typename</b> VALUE&gt;</td></tr>
+<tr><th id="36">36</th><td><b>using</b> ConcurrentMapBase = tbb::concurrent_unordered_map&lt;</td></tr>
+<tr><th id="37">37</th><td>  KEY,</td></tr>
+<tr><th id="38">38</th><td>  VALUE,</td></tr>
+<tr><th id="39">39</th><td>  std::hash&lt;KEY&gt;</td></tr>
+<tr><th id="40">40</th><td>  &gt;;</td></tr>
+<tr><th id="41">41</th><td></td></tr>
+<tr><th id="42">42</th><td><u>#<span data-ppcond="24">else</span></u></td></tr>
+<tr><th id="43">43</th><td></td></tr>
+<tr><th id="44">44</th><td><i>// If we're not using TBB, use a FastMap for ConcurrentMap</i></td></tr>
+<tr><th id="45">45</th><td><u>#include <a href="FastMap.h.html">&lt;gtsam/base/FastMap.h&gt;</a></u></td></tr>
+<tr><th id="46">46</th><td><b>template</b> &lt;<b>typename</b> KEY, <b>typename</b> VALUE&gt;</td></tr>
+<tr><th id="47">47</th><td><b>using</b> <dfn class="typedef" id="ConcurrentMapBase" title='ConcurrentMapBase' data-type='gtsam::FastMap&lt;KEY, VALUE&gt;' data-ref="ConcurrentMapBase">ConcurrentMapBase</dfn> = <span class="namespace">gtsam::</span><a class="type" href="FastMap.h.html#gtsam::FastMap" title='gtsam::FastMap' data-ref="gtsam::FastMap">FastMap</a>&lt;KEY, VALUE&gt;;</td></tr>
+<tr><th id="48">48</th><td></td></tr>
+<tr><th id="49">49</th><td><u>#<span data-ppcond="24">endif</span></u></td></tr>
+<tr><th id="50">50</th><td></td></tr>
+<tr><th id="51">51</th><td><u>#<span data-ppcond="51">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="52">52</th><td><u>#include <a href="../../../include/boost/serialization/nvp.hpp.html">&lt;boost/serialization/nvp.hpp&gt;</a></u></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="../../../include/boost/serialization/split_member.hpp.html">&lt;boost/serialization/split_member.hpp&gt;</a></u></td></tr>
+<tr><th id="54">54</th><td><u>#<span data-ppcond="51">endif</span></u></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><u>#include <a href="FastVector.h.html">&lt;gtsam/base/FastVector.h&gt;</a></u></td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="61">61</th><td><i class="doc"> * FastMap is a thin wrapper around std::map that uses the boost</i></td></tr>
+<tr><th id="62">62</th><td><i class="doc"> * fast_pool_allocator instead of the default STL allocator.  This is just a</i></td></tr>
+<tr><th id="63">63</th><td><i class="doc"> * convenience to avoid having lengthy types in the code.  Through timing,</i></td></tr>
+<tr><th id="64">64</th><td><i class="doc"> * we've seen that the fast_pool_allocator can lead to speedups of several</i></td></tr>
+<tr><th id="65">65</th><td><i class="doc"> * percent.</i></td></tr>
+<tr><th id="66">66</th><td><i class="doc"> * <span class="command">@ingroup</span> <span class="verb">base</span></i></td></tr>
+<tr><th id="67">67</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="68">68</th><td><b>template</b>&lt;<b>typename</b> KEY, <b>typename</b> VALUE&gt;</td></tr>
+<tr><th id="69">69</th><td><b>class</b> <dfn class="type def" id="gtsam::ConcurrentMap" title='gtsam::ConcurrentMap' data-ref="gtsam::ConcurrentMap">ConcurrentMap</dfn> : <b>public</b> <a class="type" href="#ConcurrentMapBase" title='ConcurrentMapBase' data-ref="ConcurrentMapBase">ConcurrentMapBase</a>&lt;KEY,VALUE&gt; {</td></tr>
+<tr><th id="70">70</th><td></td></tr>
+<tr><th id="71">71</th><td><b>public</b>:</td></tr>
+<tr><th id="72">72</th><td></td></tr>
+<tr><th id="73">73</th><td>  <b>typedef</b> <a class="type" href="#ConcurrentMapBase" title='ConcurrentMapBase' data-ref="ConcurrentMapBase">ConcurrentMapBase</a>&lt;KEY,VALUE&gt; <dfn class="typedef" id="gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</dfn>;</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>  <i class="doc">/** Default constructor */</i></td></tr>
+<tr><th id="76">76</th><td>  <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMapC1Ev" title='gtsam::ConcurrentMap::ConcurrentMap&lt;KEY, VALUE&gt;' data-ref="_ZN5gtsam13ConcurrentMapC1Ev">ConcurrentMap</dfn>() {}</td></tr>
+<tr><th id="77">77</th><td></td></tr>
+<tr><th id="78">78</th><td>  <i class="doc">/** Constructor from a range, passes through to base class */</i></td></tr>
+<tr><th id="79">79</th><td>  <b>template</b>&lt;<b>typename</b> INPUTITERATOR&gt;</td></tr>
+<tr><th id="80">80</th><td>  <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMapC1ETL0__S1_" title='gtsam::ConcurrentMap::ConcurrentMap&lt;KEY, VALUE&gt;' data-ref="_ZN5gtsam13ConcurrentMapC1ETL0__S1_">ConcurrentMap</dfn>(INPUTITERATOR <dfn class="local col5 decl" id="23285first" title='first' data-type='INPUTITERATOR' data-ref="23285first">first</dfn>, INPUTITERATOR <dfn class="local col6 decl" id="23286last" title='last' data-type='INPUTITERATOR' data-ref="23286last">last</dfn>) : <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>(<a class="local col5 ref" href="#23285first" title='first' data-ref="23285first">first</a>, <a class="local col6 ref" href="#23286last" title='last' data-ref="23286last">last</a>) {}</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>  <i class="doc">/** Copy constructor from another ConcurrentMap */</i></td></tr>
+<tr><th id="83">83</th><td>  <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMapC1ERKNS_13ConcurrentMapIT_T0_EE" title='gtsam::ConcurrentMap::ConcurrentMap&lt;KEY, VALUE&gt;' data-ref="_ZN5gtsam13ConcurrentMapC1ERKNS_13ConcurrentMapIT_T0_EE">ConcurrentMap</dfn>(<em>const</em> <a class="type" href="#gtsam::ConcurrentMap" title='gtsam::ConcurrentMap' data-ref="gtsam::ConcurrentMap">ConcurrentMap</a>&lt;KEY,VALUE&gt;&amp; <dfn class="local col7 decl" id="23287x" title='x' data-type='const ConcurrentMap&lt;KEY, VALUE&gt; &amp;' data-ref="23287x">x</dfn>) : <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>(<a class="local col7 ref" href="#23287x" title='x' data-ref="23287x">x</a>) {}</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>  <i class="doc">/** Copy constructor from the base map class */</i></td></tr>
+<tr><th id="86">86</th><td>  <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMapC1ERKNS_7FastMapIT_T0_EE" title='gtsam::ConcurrentMap::ConcurrentMap&lt;KEY, VALUE&gt;' data-ref="_ZN5gtsam13ConcurrentMapC1ERKNS_7FastMapIT_T0_EE">ConcurrentMap</dfn>(<em>const</em> <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>&amp; <dfn class="local col8 decl" id="23288x" title='x' data-type='const Base &amp;' data-ref="23288x">x</dfn>) : <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>(<a class="local col8 ref" href="#23288x" title='x' data-ref="23288x">x</a>) {}</td></tr>
+<tr><th id="87">87</th><td></td></tr>
+<tr><th id="88">88</th><td>  ConcurrentMap&amp; <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMapaSERKNS_13ConcurrentMapIT_T0_EE" title='gtsam::ConcurrentMap::operator=' data-ref="_ZN5gtsam13ConcurrentMapaSERKNS_13ConcurrentMapIT_T0_EE"><b>operator</b>=</dfn>(<em>const</em> ConcurrentMap&amp; <dfn class="local col9 decl" id="23289other" title='other' data-type='const ConcurrentMap&lt;KEY, VALUE&gt; &amp;' data-ref="23289other">other</dfn>) = <b>default</b>;</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>  <i class="doc">/** Handy 'exists' function */</i></td></tr>
+<tr><th id="91">91</th><td>  <em>bool</em> <dfn class="decl def fn" id="_ZNK5gtsam13ConcurrentMap6existsERKT_" title='gtsam::ConcurrentMap::exists' data-ref="_ZNK5gtsam13ConcurrentMap6existsERKT_">exists</dfn>(<em>const</em> KEY&amp; <dfn class="local col0 decl" id="23290e" title='e' data-type='const KEY &amp;' data-ref="23290e">e</dfn>) <em>const</em> { <b>return</b> <b>this</b>-&gt;count(<a class="local col0 ref" href="#23290e" title='e' data-ref="23290e">e</a>); }</td></tr>
+<tr><th id="92">92</th><td></td></tr>
+<tr><th id="93">93</th><td><u>#<span data-ppcond="93">ifndef</span> <span class="macro" data-ref="_M/GTSAM_USE_TBB">GTSAM_USE_TBB</span></u></td></tr>
+<tr><th id="94">94</th><td>  <i>// If we're not using TBB and this is actually a FastMap, we need to add these functions and hide</i></td></tr>
+<tr><th id="95">95</th><td><i>  // the original erase functions.</i></td></tr>
+<tr><th id="96">96</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMap12unsafe_eraseENS_7FastMapIT_T0_E8iteratorE" title='gtsam::ConcurrentMap::unsafe_erase' data-ref="_ZN5gtsam13ConcurrentMap12unsafe_eraseENS_7FastMapIT_T0_E8iteratorE">unsafe_erase</dfn>(<b>typename</b> <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>::iterator <dfn class="local col1 decl" id="23291position" title='position' data-type='typename Base::iterator' data-ref="23291position">position</dfn>) { ((<a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>*)<b>this</b>)-&gt;erase(<a class="local col1 ref" href="#23291position" title='position' data-ref="23291position">position</a>); }</td></tr>
+<tr><th id="97">97</th><td>  <b>typename</b> <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>::size_type <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMap12unsafe_eraseERKT_" title='gtsam::ConcurrentMap::unsafe_erase' data-ref="_ZN5gtsam13ConcurrentMap12unsafe_eraseERKT_">unsafe_erase</dfn>(<em>const</em> KEY&amp; <dfn class="local col2 decl" id="23292k" title='k' data-type='const KEY &amp;' data-ref="23292k">k</dfn>) { <b>return</b> ((<a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>*)<b>this</b>)-&gt;erase(<a class="local col2 ref" href="#23292k" title='k' data-ref="23292k">k</a>); }</td></tr>
+<tr><th id="98">98</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMap12unsafe_eraseENS_7FastMapIT_T0_E8iteratorES5_" title='gtsam::ConcurrentMap::unsafe_erase' data-ref="_ZN5gtsam13ConcurrentMap12unsafe_eraseENS_7FastMapIT_T0_E8iteratorES5_">unsafe_erase</dfn>(<b>typename</b> <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>::iterator <dfn class="local col3 decl" id="23293first" title='first' data-type='typename Base::iterator' data-ref="23293first">first</dfn>, <b>typename</b> <a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>::iterator <dfn class="local col4 decl" id="23294last" title='last' data-type='typename Base::iterator' data-ref="23294last">last</dfn>) {</td></tr>
+<tr><th id="99">99</th><td>    <b>return</b> ((<a class="typedef" href="#gtsam::ConcurrentMap::Base" title='gtsam::ConcurrentMap::Base' data-type='ConcurrentMapBase&lt;KEY, VALUE&gt;' data-ref="gtsam::ConcurrentMap::Base">Base</a>*)<b>this</b>)-&gt;erase(<a class="local col3 ref" href="#23293first" title='first' data-ref="23293first">first</a>, <a class="local col4 ref" href="#23294last" title='last' data-ref="23294last">last</a>); }</td></tr>
+<tr><th id="100">100</th><td><b>private</b>:</td></tr>
+<tr><th id="101">101</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMap5eraseEv" title='gtsam::ConcurrentMap::erase' data-ref="_ZN5gtsam13ConcurrentMap5eraseEv">erase</dfn>() {}</td></tr>
+<tr><th id="102">102</th><td><b>public</b>:</td></tr>
+<tr><th id="103">103</th><td><u>#<span data-ppcond="93">endif</span></u></td></tr>
+<tr><th id="104">104</th><td></td></tr>
+<tr><th id="105">105</th><td><b>private</b>:</td></tr>
+<tr><th id="106">106</th><td><u>#<span data-ppcond="106">if</span> <a class="macro" href="../../build/gtsam/config.h.html#101" title="1" data-ref="_M/GTSAM_ENABLE_BOOST_SERIALIZATION">GTSAM_ENABLE_BOOST_SERIALIZATION</a></u></td></tr>
+<tr><th id="107">107</th><td>  <i class="doc">/** Serialization function */</i></td></tr>
+<tr><th id="108">108</th><td>  <b>friend</b> <b>class</b> <span class="namespace">boost::serialization::</span><a class="type" href="../../../include/boost/serialization/access.hpp.html#boost::serialization::access" title='boost::serialization::access' data-ref="boost::serialization::access">access</a>;</td></tr>
+<tr><th id="109">109</th><td>  <b>template</b>&lt;<b>class</b> Archive&gt;</td></tr>
+<tr><th id="110">110</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZNK5gtsam13ConcurrentMap4saveERTL0__j" title='gtsam::ConcurrentMap::save' data-ref="_ZNK5gtsam13ConcurrentMap4saveERTL0__j">save</dfn>(Archive&amp; <dfn class="local col5 decl" id="23295ar" title='ar' data-type='Archive &amp;' data-ref="23295ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>) <em>const</em></td></tr>
+<tr><th id="111">111</th><td>  {</td></tr>
+<tr><th id="112">112</th><td>    <i>// Copy to an STL container and serialize that</i></td></tr>
+<tr><th id="113">113</th><td>    <a class="type" href="FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;KEY, VALUE&gt; &gt; <dfn class="local col6 decl" id="23296map" title='map' data-type='FastVector&lt;std::pair&lt;KEY, VALUE&gt;&gt;' data-ref="23296map">map</dfn>(<b>this</b>-&gt;size());</td></tr>
+<tr><th id="114">114</th><td>    <span class="namespace">std::</span>copy(<b>this</b>-&gt;begin(), <b>this</b>-&gt;end(), <a class="local col6 ref" href="#23296map" title='map' data-ref="23296map">map</a>.begin());</td></tr>
+<tr><th id="115">115</th><td>    <a class="local col5 ref" href="#23295ar" title='ar' data-ref="23295ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;map&quot;, map)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col6 ref" href="#23296map" title='map' data-ref="23296map">map</a>);</td></tr>
+<tr><th id="116">116</th><td>  }</td></tr>
+<tr><th id="117">117</th><td>  <b>template</b>&lt;<b>class</b> Archive&gt;</td></tr>
+<tr><th id="118">118</th><td>  <em>void</em> <dfn class="decl def fn" id="_ZN5gtsam13ConcurrentMap4loadERTL0__j" title='gtsam::ConcurrentMap::load' data-ref="_ZN5gtsam13ConcurrentMap4loadERTL0__j">load</dfn>(Archive&amp; <dfn class="local col7 decl" id="23297ar" title='ar' data-type='Archive &amp;' data-ref="23297ar">ar</dfn>, <em>const</em> <em>unsigned</em> <em>int</em> <i>/*version*/</i>)</td></tr>
+<tr><th id="119">119</th><td>  {</td></tr>
+<tr><th id="120">120</th><td>    <b>this</b>-&gt;clear();</td></tr>
+<tr><th id="121">121</th><td>    <i>// Load into STL container and then fill our map</i></td></tr>
+<tr><th id="122">122</th><td>    <a class="type" href="FastVector.h.html#gtsam::FastVector" title='gtsam::FastVector' data-ref="gtsam::FastVector">FastVector</a>&lt;<span class="namespace">std::</span><a class="type" href="../../../include/c++/13/bits/stl_pair.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;KEY, VALUE&gt; &gt; <dfn class="local col8 decl" id="23298map" title='map' data-type='FastVector&lt;std::pair&lt;KEY, VALUE&gt;&gt;' data-ref="23298map">map</dfn>;</td></tr>
+<tr><th id="123">123</th><td>    <a class="local col7 ref" href="#23297ar" title='ar' data-ref="23297ar">ar</a> &amp; <a class="macro" href="../../../include/boost/serialization/nvp.hpp.html#22" title="boost::serialization::make_nvp(&quot;map&quot;, map)" data-ref="_M/BOOST_SERIALIZATION_NVP">BOOST_SERIALIZATION_NVP</a>(<a class="local col8 ref" href="#23298map" title='map' data-ref="23298map">map</a>);</td></tr>
+<tr><th id="124">124</th><td>    <b>this</b>-&gt;insert(<a class="local col8 ref" href="#23298map" title='map' data-ref="23298map">map</a>.begin(), <a class="local col8 ref" href="#23298map" title='map' data-ref="23298map">map</a>.end());</td></tr>
+<tr><th id="125">125</th><td>  }</td></tr>
+<tr><th id="126">126</th><td>  <a class="macro" href="../../../include/boost/serialization/split_member.hpp.html#76" title="template&lt;class Archive&gt; void serialize( Archive &amp;ar, const unsigned int file_version ){ boost::serialization::split_member(ar, *this, file_version); }" data-ref="_M/BOOST_SERIALIZATION_SPLIT_MEMBER">BOOST_SERIALIZATION_SPLIT_MEMBER</a>()</td></tr>
+<tr><th id="127">127</th><td><u>#<span data-ppcond="106">endif</span></u></td></tr>
+<tr><th id="128">128</th><td>};</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>}</td></tr>
+<tr><th id="131">131</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

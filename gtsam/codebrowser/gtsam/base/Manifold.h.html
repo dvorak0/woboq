@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Manifold.h source code [codebrowser/gtsam/base/Manifold.h] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="gtsam::FixedDimension,gtsam::IsManifold,gtsam::internal::GetDimensionImpl,gtsam::internal::HasManifoldPrereqs,gtsam::internal::Manifold,gtsam::internal::ManifoldTraits,gtsam::manifold_tag "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/base/Manifold.h'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>codebrowser</a>/<a href='..'>gtsam</a>/<a href='./'>base</a>/<a href='Manifold.h.html'>Manifold.h</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/* ----------------------------------------------------------------------------</i></td></tr>
+<tr><th id="2">2</th><td><i></i></td></tr>
+<tr><th id="3">3</th><td><i> * GTSAM Copyright 2010, Georgia Tech Research Corporation,</i></td></tr>
+<tr><th id="4">4</th><td><i> * Atlanta, Georgia 30332-0415</i></td></tr>
+<tr><th id="5">5</th><td><i> * All Rights Reserved</i></td></tr>
+<tr><th id="6">6</th><td><i> * Authors: Frank Dellaert, et al. (see THANKS for the full author list)</i></td></tr>
+<tr><th id="7">7</th><td><i></i></td></tr>
+<tr><th id="8">8</th><td><i> * See LICENSE for the license information</i></td></tr>
+<tr><th id="9">9</th><td><i></i></td></tr>
+<tr><th id="10">10</th><td><i> * -------------------------------------------------------------------------- */</i></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="13">13</th><td><i class="doc"> * <span class="command">@file</span> <span class="verb">Manifold.h</span></i></td></tr>
+<tr><th id="14">14</th><td><i class="doc"> * <span class="command">@brief</span> Base class and basic functions for Manifold types</i></td></tr>
+<tr><th id="15">15</th><td><i class="doc"> * <span class="command">@author</span> Alex Cunningham</i></td></tr>
+<tr><th id="16">16</th><td><i class="doc"> * <span class="command">@author</span> Frank Dellaert</i></td></tr>
+<tr><th id="17">17</th><td><i class="doc"> * <span class="command">@author</span> Mike Bosse</i></td></tr>
+<tr><th id="18">18</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="19">19</th><td></td></tr>
+<tr><th id="20">20</th><td><u>#pragma once</u></td></tr>
+<tr><th id="21">21</th><td></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="Matrix.h.html">&lt;gtsam/base/Matrix.h&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="Testable.h.html">&lt;gtsam/base/Testable.h&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="OptionalJacobian.h.html">&lt;gtsam/base/OptionalJacobian.h&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="concepts.h.html">&lt;gtsam/base/concepts.h&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../../../include/c++/13/type_traits.html">&lt;type_traits&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td></td></tr>
+<tr><th id="29">29</th><td><b>namespace</b> <span class="namespace">gtsam</span> {</td></tr>
+<tr><th id="30">30</th><td></td></tr>
+<tr><th id="31">31</th><td><i class="doc">/// tag to assert a type is a manifold</i></td></tr>
+<tr><th id="32">32</th><td><b>struct</b> <dfn class="type def" id="gtsam::manifold_tag" title='gtsam::manifold_tag' data-ref="gtsam::manifold_tag">manifold_tag</dfn> {};</td></tr>
+<tr><th id="33">33</th><td></td></tr>
+<tr><th id="34">34</th><td><i class="doc">/**</i></td></tr>
+<tr><th id="35">35</th><td><i class="doc"> * A manifold defines a space in which there is a notion of a linear tangent space</i></td></tr>
+<tr><th id="36">36</th><td><i class="doc"> * that can be centered around a given point on the manifold.  These nonlinear</i></td></tr>
+<tr><th id="37">37</th><td><i class="doc"> * spaces may have such properties as wrapping around (as is the case with rotations),</i></td></tr>
+<tr><th id="38">38</th><td><i class="doc"> * which might make linear operations on parameters not return a viable element of</i></td></tr>
+<tr><th id="39">39</th><td><i class="doc"> * the manifold.</i></td></tr>
+<tr><th id="40">40</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="41">41</th><td><i class="doc"> * We perform optimization by computing a linear delta in the tangent space of the</i></td></tr>
+<tr><th id="42">42</th><td><i class="doc"> * current estimate, and then apply this change using a retraction operation, which</i></td></tr>
+<tr><th id="43">43</th><td><i class="doc"> * maps the change in tangent space back to the manifold itself.</i></td></tr>
+<tr><th id="44">44</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="45">45</th><td><i class="doc"> * There may be multiple possible retractions for a given manifold, which can be chosen</i></td></tr>
+<tr><th id="46">46</th><td><i class="doc"> * between depending on the computational complexity.  The important criteria for</i></td></tr>
+<tr><th id="47">47</th><td><i class="doc"> * the creation for the retract and localCoordinates functions is that they be</i></td></tr>
+<tr><th id="48">48</th><td><i class="doc"> * inverse operations.</i></td></tr>
+<tr><th id="49">49</th><td><i class="doc"> *</i></td></tr>
+<tr><th id="50">50</th><td><i class="doc"> */</i></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><b>template</b> &lt;<b>typename</b> T&gt; <b>struct</b> <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits" id="gtsam::traits">traits</a>;</td></tr>
+<tr><th id="53">53</th><td></td></tr>
+<tr><th id="54">54</th><td><b>namespace</b> <span class="namespace">internal</span> {</td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><i class="doc">/// Requirements on type to pass it to Manifold template below</i></td></tr>
+<tr><th id="57">57</th><td><b>template</b>&lt;<b>class</b> Class&gt;</td></tr>
+<tr><th id="58">58</th><td><b>struct</b> <dfn class="type def" id="gtsam::internal::HasManifoldPrereqs" title='gtsam::internal::HasManifoldPrereqs' data-ref="gtsam::internal::HasManifoldPrereqs">HasManifoldPrereqs</dfn> {</td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td>  <b>inline</b> <b>constexpr</b> <em>static</em> <em>auto</em> <dfn class="decl def" id="gtsam::internal::HasManifoldPrereqs::dim" title='gtsam::internal::HasManifoldPrereqs::dim' data-ref="gtsam::internal::HasManifoldPrereqs::dim">dim</dfn> = Class::dimension;</td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>  Class <dfn class="decl field" id="gtsam::internal::HasManifoldPrereqs::p" title='gtsam::internal::HasManifoldPrereqs::p' data-ref="gtsam::internal::HasManifoldPrereqs::p">p</dfn>, <dfn class="decl field" id="gtsam::internal::HasManifoldPrereqs::q" title='gtsam::internal::HasManifoldPrereqs::q' data-ref="gtsam::internal::HasManifoldPrereqs::q">q</dfn>;</td></tr>
+<tr><th id="63">63</th><td>  <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="ref" href="#gtsam::internal::HasManifoldPrereqs::dim" title='gtsam::internal::HasManifoldPrereqs::dim' data-ref="gtsam::internal::HasManifoldPrereqs::dim">dim</a>, <var>1</var>&gt; <dfn class="decl field" id="gtsam::internal::HasManifoldPrereqs::v" title='gtsam::internal::HasManifoldPrereqs::v' data-ref="gtsam::internal::HasManifoldPrereqs::v">v</dfn>;</td></tr>
+<tr><th id="64">64</th><td>  <a class="type" href="OptionalJacobian.h.html#gtsam::OptionalJacobian" title='gtsam::OptionalJacobian' data-ref="gtsam::OptionalJacobian">OptionalJacobian</a>&lt;<a class="ref" href="#gtsam::internal::HasManifoldPrereqs::dim" title='gtsam::internal::HasManifoldPrereqs::dim' data-ref="gtsam::internal::HasManifoldPrereqs::dim">dim</a>, <a class="ref" href="#gtsam::internal::HasManifoldPrereqs::dim" title='gtsam::internal::HasManifoldPrereqs::dim' data-ref="gtsam::internal::HasManifoldPrereqs::dim">dim</a>&gt; <dfn class="decl field" id="gtsam::internal::HasManifoldPrereqs::Hp" title='gtsam::internal::HasManifoldPrereqs::Hp' data-ref="gtsam::internal::HasManifoldPrereqs::Hp">Hp</dfn>, <dfn class="decl field" id="gtsam::internal::HasManifoldPrereqs::Hq" title='gtsam::internal::HasManifoldPrereqs::Hq' data-ref="gtsam::internal::HasManifoldPrereqs::Hq">Hq</dfn>, <dfn class="decl field" id="gtsam::internal::HasManifoldPrereqs::Hv" title='gtsam::internal::HasManifoldPrereqs::Hv' data-ref="gtsam::internal::HasManifoldPrereqs::Hv">Hv</dfn>;</td></tr>
+<tr><th id="65">65</th><td></td></tr>
+<tr><th id="66">66</th><td>  <a class="macro" href="concepts.h.html#20" title="BOOST_CONCEPT_USAGE" data-ref="_M/GTSAM_CONCEPT_USAGE">GTSAM_CONCEPT_USAGE</a>(HasManifoldPrereqs) {</td></tr>
+<tr><th id="67">67</th><td>    <a class="member field" href="#gtsam::internal::HasManifoldPrereqs::v" title='gtsam::internal::HasManifoldPrereqs::v' data-ref="gtsam::internal::HasManifoldPrereqs::v">v</a> = <a class="member field" href="#gtsam::internal::HasManifoldPrereqs::p" title='gtsam::internal::HasManifoldPrereqs::p' data-ref="gtsam::internal::HasManifoldPrereqs::p">p</a>.localCoordinates(<a class="member field" href="#gtsam::internal::HasManifoldPrereqs::q" title='gtsam::internal::HasManifoldPrereqs::q' data-ref="gtsam::internal::HasManifoldPrereqs::q">q</a>);</td></tr>
+<tr><th id="68">68</th><td>    <a class="member field" href="#gtsam::internal::HasManifoldPrereqs::q" title='gtsam::internal::HasManifoldPrereqs::q' data-ref="gtsam::internal::HasManifoldPrereqs::q">q</a> = <a class="member field" href="#gtsam::internal::HasManifoldPrereqs::p" title='gtsam::internal::HasManifoldPrereqs::p' data-ref="gtsam::internal::HasManifoldPrereqs::p">p</a>.retract(<a class="member field" href="#gtsam::internal::HasManifoldPrereqs::v" title='gtsam::internal::HasManifoldPrereqs::v' data-ref="gtsam::internal::HasManifoldPrereqs::v">v</a>);</td></tr>
+<tr><th id="69">69</th><td>  }</td></tr>
+<tr><th id="70">70</th><td>};</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><i class="doc">/// Traits to get dimension, supporting both fixed and dynamic</i></td></tr>
+<tr><th id="73">73</th><td><b>template</b>&lt;<b>class</b> Class, <em>int</em> N&gt;</td></tr>
+<tr><th id="74">74</th><td><b>struct</b> <dfn class="type def" id="gtsam::internal::GetDimensionImpl" title='gtsam::internal::GetDimensionImpl' data-ref="gtsam::internal::GetDimensionImpl">GetDimensionImpl</dfn> {</td></tr>
+<tr><th id="75">75</th><td>  <i>// Get dimension at compile-time for fixed-size manifolds, and at</i></td></tr>
+<tr><th id="76">76</th><td><i>  // run-time for dynamic-size manifolds.</i></td></tr>
+<tr><th id="77">77</th><td>  <em>static</em> <em>int</em> <dfn class="decl def fn" id="_ZN5gtsam8internal16GetDimensionImpl12GetDimensionERKT_" title='gtsam::internal::GetDimensionImpl::GetDimension' data-ref="_ZN5gtsam8internal16GetDimensionImpl12GetDimensionERKT_">GetDimension</dfn>(<em>const</em> Class&amp; <dfn class="local col2 decl" id="17362m" title='m' data-type='const Class &amp;' data-ref="17362m">m</dfn>) {</td></tr>
+<tr><th id="78">78</th><td>    <b>if</b> <b>constexpr</b> (<a class="tu member" href="#gtsam::internal::GetDimensionImpl::N" title='gtsam::internal::GetDimensionImpl::N' data-use='r' data-ref="gtsam::internal::GetDimensionImpl::N">N</a> == <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="79">79</th><td>      <b>return</b> <a class="local col2 ref" href="#17362m" title='m' data-ref="17362m">m</a>.dim();</td></tr>
+<tr><th id="80">80</th><td>    } <b>else</b> {</td></tr>
+<tr><th id="81">81</th><td>      <b>return</b> <a class="tu member" href="#gtsam::internal::GetDimensionImpl::N" title='gtsam::internal::GetDimensionImpl::N' data-use='r' data-ref="gtsam::internal::GetDimensionImpl::N">N</a>;</td></tr>
+<tr><th id="82">82</th><td>    }</td></tr>
+<tr><th id="83">83</th><td>  }</td></tr>
+<tr><th id="84">84</th><td>};</td></tr>
+<tr><th id="85">85</th><td></td></tr>
+<tr><th id="86">86</th><td><i class="doc">/// A helper that implements the traits interface for GTSAM manifolds.</i></td></tr>
+<tr><th id="87">87</th><td><i class="doc">/// To use this for your class type, define:</i></td></tr>
+<tr><th id="88">88</th><td><i class="doc">/// template&lt;&gt; struct traits&lt;Class&gt; : public internal::ManifoldTraits&lt;Class&gt; { };</i></td></tr>
+<tr><th id="89">89</th><td><b>template</b>&lt;<b>class</b> Class&gt;</td></tr>
+<tr><th id="90">90</th><td><b>struct</b> <dfn class="type def" id="gtsam::internal::ManifoldTraits" title='gtsam::internal::ManifoldTraits' data-ref="gtsam::internal::ManifoldTraits">ManifoldTraits</dfn>: <a class="type" href="#gtsam::internal::GetDimensionImpl" title='gtsam::internal::GetDimensionImpl' data-ref="gtsam::internal::GetDimensionImpl">GetDimensionImpl</a>&lt;Class, Class::dimension&gt; {</td></tr>
+<tr><th id="91">91</th><td></td></tr>
+<tr><th id="92">92</th><td>  <i>// Check that Class has the necessary machinery</i></td></tr>
+<tr><th id="93">93</th><td>  <a class="macro" href="concepts.h.html#18" title="typedef ::boost::concepts::detail::instantiate&lt; &amp;::boost::concepts::requirement_&lt;void(*)(HasManifoldPrereqs&lt;Class&gt;)&gt;::failed&gt; boost_concept_check93 __attribute__((__unused__))" data-ref="_M/GTSAM_CONCEPT_ASSERT">GTSAM_CONCEPT_ASSERT</a>(<a class="type" href="#gtsam::internal::HasManifoldPrereqs" title='gtsam::internal::HasManifoldPrereqs' data-ref="gtsam::internal::HasManifoldPrereqs">HasManifoldPrereqs</a>&lt;Class&gt;);</td></tr>
+<tr><th id="94">94</th><td></td></tr>
+<tr><th id="95">95</th><td>  <i>// Dimension of the manifold</i></td></tr>
+<tr><th id="96">96</th><td>  <b>inline</b> <b>constexpr</b> <em>static</em> <em>auto</em> <dfn class="decl def" id="gtsam::internal::ManifoldTraits::dimension" title='gtsam::internal::ManifoldTraits::dimension' data-ref="gtsam::internal::ManifoldTraits::dimension">dimension</dfn> = Class::dimension;</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>  <i>// Typedefs required by all manifold types.</i></td></tr>
+<tr><th id="99">99</th><td>  <b>typedef</b> Class <dfn class="typedef" id="gtsam::internal::ManifoldTraits::ManifoldType" title='gtsam::internal::ManifoldTraits::ManifoldType' data-type='Class' data-ref="gtsam::internal::ManifoldTraits::ManifoldType">ManifoldType</dfn>;</td></tr>
+<tr><th id="100">100</th><td>  <b>typedef</b> <a class="type" href="#gtsam::manifold_tag" title='gtsam::manifold_tag' data-ref="gtsam::manifold_tag">manifold_tag</a> <dfn class="typedef" id="gtsam::internal::ManifoldTraits::structure_category" title='gtsam::internal::ManifoldTraits::structure_category' data-type='manifold_tag' data-ref="gtsam::internal::ManifoldTraits::structure_category">structure_category</dfn>;</td></tr>
+<tr><th id="101">101</th><td>  <b>typedef</b> <span class="namespace">Eigen::</span><a class="type" href="../3rdparty/Eigen/Eigen/src/Core/util/ForwardDeclarations.h.html#Eigen::Matrix" title='Eigen::Matrix' data-ref="Eigen::Matrix">Matrix</a>&lt;<em>double</em>, <a class="ref" href="#gtsam::internal::ManifoldTraits::dimension" title='gtsam::internal::ManifoldTraits::dimension' data-ref="gtsam::internal::ManifoldTraits::dimension">dimension</a>, <var>1</var>&gt; <dfn class="typedef" id="gtsam::internal::ManifoldTraits::TangentVector" title='gtsam::internal::ManifoldTraits::TangentVector' data-type='Eigen::Matrix&lt;double, dimension, 1&gt;' data-ref="gtsam::internal::ManifoldTraits::TangentVector">TangentVector</dfn>;</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>  <i>// Local coordinates</i></td></tr>
+<tr><th id="104">104</th><td>  <em>static</em> <a class="typedef" href="#gtsam::internal::ManifoldTraits::TangentVector" title='gtsam::internal::ManifoldTraits::TangentVector' data-type='Eigen::Matrix&lt;double, dimension, 1&gt;' data-ref="gtsam::internal::ManifoldTraits::TangentVector">TangentVector</a> <dfn class="decl def fn" id="_ZN5gtsam8internal14ManifoldTraits5LocalERKT_S4_" title='gtsam::internal::ManifoldTraits::Local' data-ref="_ZN5gtsam8internal14ManifoldTraits5LocalERKT_S4_">Local</dfn>(<em>const</em> Class&amp; <dfn class="local col3 decl" id="17363origin" title='origin' data-type='const Class &amp;' data-ref="17363origin">origin</dfn>, <em>const</em> Class&amp; <dfn class="local col4 decl" id="17364other" title='other' data-type='const Class &amp;' data-ref="17364other">other</dfn>) {</td></tr>
+<tr><th id="105">105</th><td>    <b>return</b> <a class="local col3 ref" href="#17363origin" title='origin' data-ref="17363origin">origin</a>.localCoordinates(<a class="local col4 ref" href="#17364other" title='other' data-ref="17364other">other</a>);</td></tr>
+<tr><th id="106">106</th><td>  }</td></tr>
+<tr><th id="107">107</th><td></td></tr>
+<tr><th id="108">108</th><td>  <i>// Retraction back to manifold</i></td></tr>
+<tr><th id="109">109</th><td>  <em>static</em> Class <dfn class="decl def fn" id="_ZN5gtsam8internal14ManifoldTraits7RetractERKT_RKN5Eigen6MatrixIdL_ZNS1_9dimensionEELi1EXorLNS5_14StorageOptionsE0EquaaeqL_ZNS1_9dimensionEELi1EneLi1E4635331" title='gtsam::internal::ManifoldTraits::Retract' data-ref="_ZN5gtsam8internal14ManifoldTraits7RetractERKT_RKN5Eigen6MatrixIdL_ZNS1_9dimensionEELi1EXorLNS5_14StorageOptionsE0EquaaeqL_ZNS1_9dimensionEELi1EneLi1E4635331">Retract</dfn>(<em>const</em> Class&amp; <dfn class="local col5 decl" id="17365origin" title='origin' data-type='const Class &amp;' data-ref="17365origin">origin</dfn>, <em>const</em> <a class="typedef" href="#gtsam::internal::ManifoldTraits::TangentVector" title='gtsam::internal::ManifoldTraits::TangentVector' data-type='Eigen::Matrix&lt;double, dimension, 1&gt;' data-ref="gtsam::internal::ManifoldTraits::TangentVector">TangentVector</a>&amp; <dfn class="local col6 decl" id="17366v" title='v' data-type='const TangentVector &amp;' data-ref="17366v">v</dfn>) {</td></tr>
+<tr><th id="110">110</th><td>    <b>return</b> <a class="local col5 ref" href="#17365origin" title='origin' data-ref="17365origin">origin</a>.retract(<a class="local col6 ref" href="#17366v" title='v' data-ref="17366v">v</a>);</td></tr>
+<tr><th id="111">111</th><td>  }</td></tr>
+<tr><th id="112">112</th><td>};</td></tr>
+<tr><th id="113">113</th><td></td></tr>
+<tr><th id="114">114</th><td><i class="doc">/// Both ManifoldTraits and Testable</i></td></tr>
+<tr><th id="115">115</th><td><b>template</b>&lt;<b>class</b> Class&gt; <b>struct</b> <dfn class="type def" id="gtsam::internal::Manifold" title='gtsam::internal::Manifold' data-ref="gtsam::internal::Manifold">Manifold</dfn>: <a class="type" href="#gtsam::internal::ManifoldTraits" title='gtsam::internal::ManifoldTraits' data-ref="gtsam::internal::ManifoldTraits">ManifoldTraits</a>&lt;Class&gt;, <a class="type" href="Testable.h.html#gtsam::Testable" title='gtsam::Testable' data-ref="gtsam::Testable">Testable</a>&lt;Class&gt; {};</td></tr>
+<tr><th id="116">116</th><td></td></tr>
+<tr><th id="117">117</th><td>} <i>// \ namespace internal</i></td></tr>
+<tr><th id="118">118</th><td></td></tr>
+<tr><th id="119">119</th><td><i class="doc">/// Check invariants for Manifold type</i></td></tr>
+<tr><th id="120">120</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="121">121</th><td><a class="macro" href="concepts.h.html#19" title="typename ::boost::ccheck_aux::unaryfunptr_arg_type&lt;void(*)(bool)&gt;::type" data-ref="_M/GTSAM_CONCEPT_REQUIRES">GTSAM_CONCEPT_REQUIRES</a>(IsTestable&lt;T&gt;, <em>bool</em>) <i>//</i></td></tr>
+<tr><th id="122">122</th><td><dfn class="decl def fn" id="_ZN5gtsam25check_manifold_invariantsERKT_S2_d" title='gtsam::check_manifold_invariants' data-ref="_ZN5gtsam25check_manifold_invariantsERKT_S2_d">check_manifold_invariants</dfn>(<em>const</em> T&amp; <dfn class="local col7 decl" id="17367a" title='a' data-type='const T &amp;' data-ref="17367a">a</dfn>, <em>const</em> T&amp; <dfn class="local col8 decl" id="17368b" title='b' data-type='const T &amp;' data-ref="17368b">b</dfn>, <em>double</em> <dfn class="local col9 decl" id="17369tol" title='tol' data-type='double' data-ref="17369tol">tol</dfn>=<var>1e-9</var>) {</td></tr>
+<tr><th id="123">123</th><td>  <b>typename</b> <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::TangentVector <dfn class="local col0 decl" id="17370v0" title='v0' data-type='typename traits&lt;T&gt;::TangentVector' data-ref="17370v0">v0</dfn> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::Local(<a class="local col7 ref" href="#17367a" title='a' data-ref="17367a">a</a>,<a class="local col7 ref" href="#17367a" title='a' data-ref="17367a">a</a>);</td></tr>
+<tr><th id="124">124</th><td>  <b>typename</b> <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::TangentVector <dfn class="local col1 decl" id="17371v" title='v' data-type='typename traits&lt;T&gt;::TangentVector' data-ref="17371v">v</dfn> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::Local(<a class="local col7 ref" href="#17367a" title='a' data-ref="17367a">a</a>,<a class="local col8 ref" href="#17368b" title='b' data-ref="17368b">b</a>);</td></tr>
+<tr><th id="125">125</th><td>  T <dfn class="local col2 decl" id="17372c" title='c' data-type='T' data-ref="17372c">c</dfn> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::Retract(<a class="local col7 ref" href="#17367a" title='a' data-ref="17367a">a</a>,<a class="local col1 ref" href="#17371v" title='v' data-ref="17371v">v</a>);</td></tr>
+<tr><th id="126">126</th><td>  <b>return</b> <a class="local col0 ref" href="#17370v0" title='v0' data-ref="17370v0">v0</a>.norm() &lt; <a class="local col9 ref" href="#17369tol" title='tol' data-ref="17369tol">tol</a> &amp;&amp; <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::Equals(<a class="local col8 ref" href="#17368b" title='b' data-ref="17368b">b</a>,<a class="local col2 ref" href="#17372c" title='c' data-ref="17372c">c</a>,<a class="local col9 ref" href="#17369tol" title='tol' data-ref="17369tol">tol</a>);</td></tr>
+<tr><th id="127">127</th><td>}</td></tr>
+<tr><th id="128">128</th><td></td></tr>
+<tr><th id="129">129</th><td><i class="doc">/// Manifold concept</i></td></tr>
+<tr><th id="130">130</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="131">131</th><td><b>class</b> <dfn class="type def" id="gtsam::IsManifold" title='gtsam::IsManifold' data-ref="gtsam::IsManifold">IsManifold</dfn> {</td></tr>
+<tr><th id="132">132</th><td></td></tr>
+<tr><th id="133">133</th><td><b>public</b>:</td></tr>
+<tr><th id="134">134</th><td></td></tr>
+<tr><th id="135">135</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::IsManifold::structure_category_tag" title='gtsam::IsManifold::structure_category_tag' data-type='typename traits&lt;T&gt;::structure_category' data-ref="gtsam::IsManifold::structure_category_tag">structure_category_tag</dfn> = <b>typename</b> <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::structure_category;</td></tr>
+<tr><th id="136">136</th><td>  <em>static</em> <b>inline</b> <b>constexpr</b> <em>int</em> <dfn class="decl def" id="gtsam::IsManifold::dim" title='gtsam::IsManifold::dim' data-ref="gtsam::IsManifold::dim">dim</dfn> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::dimension;</td></tr>
+<tr><th id="137">137</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::IsManifold::ManifoldType" title='gtsam::IsManifold::ManifoldType' data-type='typename traits&lt;T&gt;::ManifoldType' data-ref="gtsam::IsManifold::ManifoldType">ManifoldType</dfn> = <b>typename</b> <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::ManifoldType;</td></tr>
+<tr><th id="138">138</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::IsManifold::TangentVector" title='gtsam::IsManifold::TangentVector' data-type='typename traits&lt;T&gt;::TangentVector' data-ref="gtsam::IsManifold::TangentVector">TangentVector</dfn> = <b>typename</b> <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::TangentVector;</td></tr>
+<tr><th id="139">139</th><td>  <i>// Concept marker: allows checking IsManifold&lt;T&gt;::value in templates</i></td></tr>
+<tr><th id="140">140</th><td>  <em>static</em> <b>constexpr</b> <em>bool</em> <dfn class="decl def" id="gtsam::IsManifold::value" title='gtsam::IsManifold::value' data-ref="gtsam::IsManifold::value">value</dfn> =</td></tr>
+<tr><th id="141">141</th><td>    <span class="namespace">std::</span>is_base_of_v&lt;<a class="type" href="#gtsam::manifold_tag" title='gtsam::manifold_tag' data-ref="gtsam::manifold_tag">manifold_tag</a>, <a class="typedef" href="#gtsam::IsManifold::structure_category_tag" title='gtsam::IsManifold::structure_category_tag' data-type='typename traits&lt;T&gt;::structure_category' data-ref="gtsam::IsManifold::structure_category_tag">structure_category_tag</a>&gt;;</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>  <a class="macro" href="concepts.h.html#20" title="BOOST_CONCEPT_USAGE" data-ref="_M/GTSAM_CONCEPT_USAGE">GTSAM_CONCEPT_USAGE</a>(IsManifold) {</td></tr>
+<tr><th id="144">144</th><td>    <b>static_assert</b>(</td></tr>
+<tr><th id="145">145</th><td>        <a class="member" href="#gtsam::IsManifold::value" title='gtsam::IsManifold::value' data-ref="gtsam::IsManifold::value">value</a>,</td></tr>
+<tr><th id="146">146</th><td>        <q>"This type's structure_category trait does not assert it as a manifold (or derived)"</q>);</td></tr>
+<tr><th id="147">147</th><td>    <b>if</b> <b>constexpr</b> (<a class="member" href="#gtsam::IsManifold::dim" title='gtsam::IsManifold::dim' data-ref="gtsam::IsManifold::dim">dim</a> != <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>) {</td></tr>
+<tr><th id="148">148</th><td>      <b>static_assert</b>(<a class="typedef" href="#gtsam::IsManifold::TangentVector" title='gtsam::IsManifold::TangentVector' data-type='typename traits&lt;T&gt;::TangentVector' data-ref="gtsam::IsManifold::TangentVector">TangentVector</a>::SizeAtCompileTime == <a class="member" href="#gtsam::IsManifold::dim" title='gtsam::IsManifold::dim' data-ref="gtsam::IsManifold::dim">dim</a>);</td></tr>
+<tr><th id="149">149</th><td>    }</td></tr>
+<tr><th id="150">150</th><td></td></tr>
+<tr><th id="151">151</th><td>    <i>// make sure Chart methods are defined</i></td></tr>
+<tr><th id="152">152</th><td>    <a class="member field" href="#gtsam::IsManifold::v" title='gtsam::IsManifold::v' data-ref="gtsam::IsManifold::v">v</a> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::Local(<a class="member field" href="#gtsam::IsManifold::p" title='gtsam::IsManifold::p' data-ref="gtsam::IsManifold::p">p</a>, <a class="member field" href="#gtsam::IsManifold::q" title='gtsam::IsManifold::q' data-ref="gtsam::IsManifold::q">q</a>);</td></tr>
+<tr><th id="153">153</th><td>    <a class="member field" href="#gtsam::IsManifold::q" title='gtsam::IsManifold::q' data-ref="gtsam::IsManifold::q">q</a> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::Retract(<a class="member field" href="#gtsam::IsManifold::p" title='gtsam::IsManifold::p' data-ref="gtsam::IsManifold::p">p</a>, <a class="member field" href="#gtsam::IsManifold::v" title='gtsam::IsManifold::v' data-ref="gtsam::IsManifold::v">v</a>);</td></tr>
+<tr><th id="154">154</th><td>  }</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td><b>private</b>:</td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>  <a class="typedef" href="#gtsam::IsManifold::TangentVector" title='gtsam::IsManifold::TangentVector' data-type='typename traits&lt;T&gt;::TangentVector' data-ref="gtsam::IsManifold::TangentVector">TangentVector</a> <dfn class="decl field" id="gtsam::IsManifold::v" title='gtsam::IsManifold::v' data-ref="gtsam::IsManifold::v">v</dfn>;</td></tr>
+<tr><th id="159">159</th><td>  <a class="typedef" href="#gtsam::IsManifold::ManifoldType" title='gtsam::IsManifold::ManifoldType' data-type='typename traits&lt;T&gt;::ManifoldType' data-ref="gtsam::IsManifold::ManifoldType">ManifoldType</a> <dfn class="decl field" id="gtsam::IsManifold::p" title='gtsam::IsManifold::p' data-ref="gtsam::IsManifold::p">p</dfn>, <dfn class="decl field" id="gtsam::IsManifold::q" title='gtsam::IsManifold::q' data-ref="gtsam::IsManifold::q">q</dfn>;</td></tr>
+<tr><th id="160">160</th><td>};</td></tr>
+<tr><th id="161">161</th><td></td></tr>
+<tr><th id="162">162</th><td><i class="doc">/// Give fixed size dimension of a type, fails at compile time if dynamic</i></td></tr>
+<tr><th id="163">163</th><td><b>template</b>&lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="164">164</th><td><b>struct</b> <dfn class="type def" id="gtsam::FixedDimension" title='gtsam::FixedDimension' data-ref="gtsam::FixedDimension">FixedDimension</dfn> {</td></tr>
+<tr><th id="165">165</th><td>  <b>using</b> <dfn class="typedef" id="gtsam::FixedDimension::value_type" title='gtsam::FixedDimension::value_type' data-type='const int' data-ref="gtsam::FixedDimension::value_type">value_type</dfn> = <em>const</em> <em>int</em>;</td></tr>
+<tr><th id="166">166</th><td>  <em>static</em> <b>inline</b> <b>constexpr</b> <em>int</em> <dfn class="decl def" id="gtsam::FixedDimension::value" title='gtsam::FixedDimension::value' data-ref="gtsam::FixedDimension::value">value</dfn> = <a class="type" href="OptionalJacobian.h.html#gtsam::traits" title='gtsam::traits' data-ref="gtsam::traits">traits</a>&lt;T&gt;::dimension;</td></tr>
+<tr><th id="167">167</th><td>  <b>static_assert</b>(<a class="ref" href="#gtsam::FixedDimension::value" title='gtsam::FixedDimension::value' data-ref="gtsam::FixedDimension::value">value</a> != <span class="namespace">Eigen::</span><a class="ref" href="../3rdparty/Eigen/Eigen/src/Core/util/Constants.h.html#Eigen::Dynamic" title='Eigen::Dynamic' data-ref="Eigen::Dynamic">Dynamic</a>,</td></tr>
+<tr><th id="168">168</th><td>      <q>"FixedDimension instantiated for dynamically-sized type."</q>);</td></tr>
+<tr><th id="169">169</th><td>};</td></tr>
+<tr><th id="170">170</th><td>} <i>// \ namespace gtsam</i></td></tr>
+<tr><th id="171">171</th><td></td></tr>
+<tr><th id="172">172</th><td><i class="doc">///**</i></td></tr>
+<tr><th id="173">173</th><td><i class="doc">// * Macros for using the ManifoldConcept</i></td></tr>
+<tr><th id="174">174</th><td><i class="doc">// *  - An instantiation for use inside unit tests</i></td></tr>
+<tr><th id="175">175</th><td><i class="doc">// *  - A typedef for use inside generic algorithms</i></td></tr>
+<tr><th id="176">176</th><td><i class="doc">// *</i></td></tr>
+<tr><th id="177">177</th><td><i class="doc">// * NOTE: intentionally not in the gtsam namespace to allow for classes not in</i></td></tr>
+<tr><th id="178">178</th><td><i class="doc">// * the gtsam namespace to be more easily enforced as testable</i></td></tr>
+<tr><th id="179">179</th><td><i class="doc">// */</i></td></tr>
+<tr><th id="180">180</th><td><u>#define <dfn class="macro" id="_M/GTSAM_CONCEPT_MANIFOLD_INST" data-ref="_M/GTSAM_CONCEPT_MANIFOLD_INST">GTSAM_CONCEPT_MANIFOLD_INST</dfn>(T) template class gtsam::IsManifold&lt;T&gt;;</u></td></tr>
+<tr><th id="181">181</th><td><u>#define <dfn class="macro" id="_M/GTSAM_CONCEPT_MANIFOLD_TYPE" data-ref="_M/GTSAM_CONCEPT_MANIFOLD_TYPE">GTSAM_CONCEPT_MANIFOLD_TYPE</dfn>(T) using _gtsam_IsManifold_##T = gtsam::IsManifold&lt;T&gt;;</u></td></tr>
+<tr><th id="182">182</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../examples/ABC_EQF_Demo.cpp.html'>codebrowser/examples/ABC_EQF_Demo.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

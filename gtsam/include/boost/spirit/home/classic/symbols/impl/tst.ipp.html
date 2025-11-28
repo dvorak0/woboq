@@ -1,0 +1,300 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>tst.ipp source code [include/boost/spirit/home/classic/symbols/impl/tst.ipp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::spirit::classic::impl::tst,boost::spirit::classic::impl::tst_node "/>
+<link rel="stylesheet" href="../../../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/spirit/home/classic/symbols/impl/tst.ipp'; var root_path = '../../../../../../..'; var data_path = '../../../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../../../..'>include</a>/<a href='../../../../..'>boost</a>/<a href='../../../..'>spirit</a>/<a href='../../..'>home</a>/<a href='../..'>classic</a>/<a href='..'>symbols</a>/<a href='./'>impl</a>/<a href='tst.ipp.html'>tst.ipp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*=============================================================================</i></td></tr>
+<tr><th id="2">2</th><td><i>    Copyright (c) 2001-2003 Joel de Guzman</i></td></tr>
+<tr><th id="3">3</th><td><i>    <a href="http://spirit.sourceforge.net/">http://spirit.sourceforge.net/</a></i></td></tr>
+<tr><th id="4">4</th><td><i></i></td></tr>
+<tr><th id="5">5</th><td><i>    Use, modification and distribution is subject to the Boost Software</i></td></tr>
+<tr><th id="6">6</th><td><i>    License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at</i></td></tr>
+<tr><th id="7">7</th><td><i>    <a href="http://www.boost.org/LICENSE_1_0.txt">http://www.boost.org/LICENSE_1_0.txt</a>)</i></td></tr>
+<tr><th id="8">8</th><td><i>=============================================================================*/</i></td></tr>
+<tr><th id="9">9</th><td><u>#<span data-ppcond="9">ifndef</span> <span class="macro" data-ref="_M/BOOST_SPIRIT_TST_IPP">BOOST_SPIRIT_TST_IPP</span></u></td></tr>
+<tr><th id="10">10</th><td><u>#define <dfn class="macro" id="_M/BOOST_SPIRIT_TST_IPP" data-ref="_M/BOOST_SPIRIT_TST_IPP">BOOST_SPIRIT_TST_IPP</dfn></u></td></tr>
+<tr><th id="11">11</th><td></td></tr>
+<tr><th id="12">12</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="13">13</th><td><u>#include <a href="../../../../../move/unique_ptr.hpp.html">&lt;boost/move/unique_ptr.hpp&gt;</a></u></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="../../core/assert.hpp.html">&lt;boost/spirit/home/classic/core/assert.hpp&gt;</a></u></td></tr>
+<tr><th id="15">15</th><td></td></tr>
+<tr><th id="16">16</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="17">17</th><td><b>namespace</b> <span class="namespace">boost</span> { <b>namespace</b> <span class="namespace">spirit</span> {</td></tr>
+<tr><th id="18">18</th><td></td></tr>
+<tr><th id="19">19</th><td><a class="macro" href="../../namespace.hpp.html#29" title="namespace classic {" data-ref="_M/BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN">BOOST_SPIRIT_CLASSIC_NAMESPACE_BEGIN</a></td></tr>
+<tr><th id="20">20</th><td></td></tr>
+<tr><th id="21">21</th><td>    <b>namespace</b> <span class="namespace">impl</span></td></tr>
+<tr><th id="22">22</th><td>    {</td></tr>
+<tr><th id="23">23</th><td></td></tr>
+<tr><th id="24">24</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="25">25</th><td><i>//</i></td></tr>
+<tr><th id="26">26</th><td><i>//  tst class</i></td></tr>
+<tr><th id="27">27</th><td><i>//</i></td></tr>
+<tr><th id="28">28</th><td><i>//      Ternary Search Tree implementation. The data structure is faster than</i></td></tr>
+<tr><th id="29">29</th><td><i>//      hashing for many typical search problems especially when the search</i></td></tr>
+<tr><th id="30">30</th><td><i>//      interface is iterator based. Searching for a string of length k in a</i></td></tr>
+<tr><th id="31">31</th><td><i>//      ternary search tree with n strings will require at most O(log n+k)</i></td></tr>
+<tr><th id="32">32</th><td><i>//      character comparisons. TSTs are many times faster than hash tables</i></td></tr>
+<tr><th id="33">33</th><td><i>//      for unsuccessful searches since mismatches are discovered earlier</i></td></tr>
+<tr><th id="34">34</th><td><i>//      after examining only a few characters. Hash tables always examine an</i></td></tr>
+<tr><th id="35">35</th><td><i>//      entire key when searching.</i></td></tr>
+<tr><th id="36">36</th><td><i>//</i></td></tr>
+<tr><th id="37">37</th><td><i>//      For details see <a href="http://www.cs.princeton.edu/~rs/strings/">http://www.cs.princeton.edu/~rs/strings/</a>.</i></td></tr>
+<tr><th id="38">38</th><td><i>//</i></td></tr>
+<tr><th id="39">39</th><td><i>//      *** This is a low level class and is</i></td></tr>
+<tr><th id="40">40</th><td><i>//          not meant for public consumption ***</i></td></tr>
+<tr><th id="41">41</th><td><i>//</i></td></tr>
+<tr><th id="42">42</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="43">43</th><td>    <b>template</b> &lt;<b>typename</b> T, <b>typename</b> CharT&gt;</td></tr>
+<tr><th id="44">44</th><td>    <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::tst_node" title='boost::spirit::classic::impl::tst_node' data-ref="boost::spirit::classic::impl::tst_node">tst_node</dfn></td></tr>
+<tr><th id="45">45</th><td>    {</td></tr>
+<tr><th id="46">46</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl8tst_nodeC1ET0_" title='boost::spirit::classic::impl::tst_node::tst_node&lt;T, CharT&gt;' data-ref="_ZN5boost6spirit7classic4impl8tst_nodeC1ET0_">tst_node</dfn>(CharT <dfn class="local col8 decl" id="5648value_" title='value_' data-type='CharT' data-ref="5648value_">value_</dfn>)</td></tr>
+<tr><th id="47">47</th><td>        : <a class="member field" href="#boost::spirit::classic::impl::tst_node::value" title='boost::spirit::classic::impl::tst_node::value' data-ref="boost::spirit::classic::impl::tst_node::value">value</a>(<a class="local col8 ref" href="#5648value_" title='value_' data-ref="5648value_">value_</a>)</td></tr>
+<tr><th id="48">48</th><td>        , <a class="member field" href="#boost::spirit::classic::impl::tst_node::left" title='boost::spirit::classic::impl::tst_node::left' data-ref="boost::spirit::classic::impl::tst_node::left">left</a>(<var>0</var>)</td></tr>
+<tr><th id="49">49</th><td>        , <a class="member field" href="#boost::spirit::classic::impl::tst_node::right" title='boost::spirit::classic::impl::tst_node::right' data-ref="boost::spirit::classic::impl::tst_node::right">right</a>(<var>0</var>)</td></tr>
+<tr><th id="50">50</th><td>        { <a class="member field" href="#boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</a>.link = <var>0</var>; }</td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl8tst_nodeD1Ev" title='boost::spirit::classic::impl::tst_node::~tst_node&lt;T, CharT&gt;' data-ref="_ZN5boost6spirit7classic4impl8tst_nodeD1Ev">~tst_node</dfn>()</td></tr>
+<tr><th id="53">53</th><td>        {</td></tr>
+<tr><th id="54">54</th><td>            <b>delete</b> <a class="member field" href="#boost::spirit::classic::impl::tst_node::left" title='boost::spirit::classic::impl::tst_node::left' data-ref="boost::spirit::classic::impl::tst_node::left">left</a>;</td></tr>
+<tr><th id="55">55</th><td>            <b>delete</b> <a class="member field" href="#boost::spirit::classic::impl::tst_node::right" title='boost::spirit::classic::impl::tst_node::right' data-ref="boost::spirit::classic::impl::tst_node::right">right</a>;</td></tr>
+<tr><th id="56">56</th><td>            <b>if</b> (<a class="member field" href="#boost::spirit::classic::impl::tst_node::value" title='boost::spirit::classic::impl::tst_node::value' data-ref="boost::spirit::classic::impl::tst_node::value">value</a>)</td></tr>
+<tr><th id="57">57</th><td>                <b>delete</b> <a class="member field" href="#boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</a>.link;</td></tr>
+<tr><th id="58">58</th><td>            <b>else</b></td></tr>
+<tr><th id="59">59</th><td>                <b>delete</b> <a class="member field" href="#boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</a>.data;</td></tr>
+<tr><th id="60">60</th><td>        }</td></tr>
+<tr><th id="61">61</th><td></td></tr>
+<tr><th id="62">62</th><td>        tst_node*</td></tr>
+<tr><th id="63">63</th><td>        <dfn class="decl def fn" id="_ZNK5boost6spirit7classic4impl8tst_node5cloneEv" title='boost::spirit::classic::impl::tst_node::clone' data-ref="_ZNK5boost6spirit7classic4impl8tst_node5cloneEv">clone</dfn>() <em>const</em></td></tr>
+<tr><th id="64">64</th><td>        {</td></tr>
+<tr><th id="65">65</th><td>            <span class="namespace">boost::movelib::</span><a class="type" href="../../../../../smart_ptr/detail/shared_count.hpp.html#boost::movelib::unique_ptr" title='boost::movelib::unique_ptr' data-ref="boost::movelib::unique_ptr">unique_ptr</a>&lt;tst_node&gt; <dfn class="local col9 decl" id="5649copy" title='copy' data-type='boost::movelib::unique_ptr&lt;tst_node&lt;T, CharT&gt;&gt;' data-ref="5649copy">copy</dfn>(<b>new</b> tst_node(<a class="member field" href="#boost::spirit::classic::impl::tst_node::value" title='boost::spirit::classic::impl::tst_node::value' data-ref="boost::spirit::classic::impl::tst_node::value">value</a>));</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td>            <b>if</b> (<a class="member field" href="#boost::spirit::classic::impl::tst_node::left" title='boost::spirit::classic::impl::tst_node::left' data-ref="boost::spirit::classic::impl::tst_node::left">left</a>)</td></tr>
+<tr><th id="68">68</th><td>                <a class="local col9 ref" href="#5649copy" title='copy' data-ref="5649copy">copy</a>-&gt;left = <a class="member field" href="#boost::spirit::classic::impl::tst_node::left" title='boost::spirit::classic::impl::tst_node::left' data-ref="boost::spirit::classic::impl::tst_node::left">left</a>-&gt;clone();</td></tr>
+<tr><th id="69">69</th><td>            <b>if</b> (<a class="member field" href="#boost::spirit::classic::impl::tst_node::right" title='boost::spirit::classic::impl::tst_node::right' data-ref="boost::spirit::classic::impl::tst_node::right">right</a>)</td></tr>
+<tr><th id="70">70</th><td>                <a class="local col9 ref" href="#5649copy" title='copy' data-ref="5649copy">copy</a>-&gt;right = <a class="member field" href="#boost::spirit::classic::impl::tst_node::right" title='boost::spirit::classic::impl::tst_node::right' data-ref="boost::spirit::classic::impl::tst_node::right">right</a>-&gt;clone();</td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td>            <b>if</b> (<a class="member field" href="#boost::spirit::classic::impl::tst_node::value" title='boost::spirit::classic::impl::tst_node::value' data-ref="boost::spirit::classic::impl::tst_node::value">value</a> &amp;&amp; <a class="member field" href="#boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</a>.link)</td></tr>
+<tr><th id="73">73</th><td>            {</td></tr>
+<tr><th id="74">74</th><td>                <a class="local col9 ref" href="#5649copy" title='copy' data-ref="5649copy">copy</a>-&gt;middle.link = <a class="member field" href="#boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</a>.link-&gt;clone();</td></tr>
+<tr><th id="75">75</th><td>            }</td></tr>
+<tr><th id="76">76</th><td>            <b>else</b></td></tr>
+<tr><th id="77">77</th><td>            {</td></tr>
+<tr><th id="78">78</th><td>                <span class="namespace">boost::movelib::</span><a class="type" href="../../../../../smart_ptr/detail/shared_count.hpp.html#boost::movelib::unique_ptr" title='boost::movelib::unique_ptr' data-ref="boost::movelib::unique_ptr">unique_ptr</a>&lt;T&gt; <dfn class="local col0 decl" id="5650mid_data" title='mid_data' data-type='boost::movelib::unique_ptr&lt;T&gt;' data-ref="5650mid_data">mid_data</dfn>(<b>new</b> T(*<a class="member field" href="#boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</a>.data));</td></tr>
+<tr><th id="79">79</th><td>                <a class="local col9 ref" href="#5649copy" title='copy' data-ref="5649copy">copy</a>-&gt;middle.data = <a class="local col0 ref" href="#5650mid_data" title='mid_data' data-ref="5650mid_data">mid_data</a>.release();</td></tr>
+<tr><th id="80">80</th><td>            }</td></tr>
+<tr><th id="81">81</th><td></td></tr>
+<tr><th id="82">82</th><td>            <b>return</b> <a class="local col9 ref" href="#5649copy" title='copy' data-ref="5649copy">copy</a>.release();</td></tr>
+<tr><th id="83">83</th><td>        }</td></tr>
+<tr><th id="84">84</th><td></td></tr>
+<tr><th id="85">85</th><td>        <b>union</b> <dfn class="type def" id="boost::spirit::classic::impl::tst_node::center" title='boost::spirit::classic::impl::tst_node::center' data-ref="boost::spirit::classic::impl::tst_node::center">center</dfn> {</td></tr>
+<tr><th id="86">86</th><td></td></tr>
+<tr><th id="87">87</th><td>            tst_node*   <dfn class="decl field" id="boost::spirit::classic::impl::tst_node::center::link" title='boost::spirit::classic::impl::tst_node::center::link' data-ref="boost::spirit::classic::impl::tst_node::center::link">link</dfn>;</td></tr>
+<tr><th id="88">88</th><td>            T*          <dfn class="decl field" id="boost::spirit::classic::impl::tst_node::center::data" title='boost::spirit::classic::impl::tst_node::center::data' data-ref="boost::spirit::classic::impl::tst_node::center::data">data</dfn>;</td></tr>
+<tr><th id="89">89</th><td>        };</td></tr>
+<tr><th id="90">90</th><td></td></tr>
+<tr><th id="91">91</th><td>        CharT       <dfn class="decl field" id="boost::spirit::classic::impl::tst_node::value" title='boost::spirit::classic::impl::tst_node::value' data-ref="boost::spirit::classic::impl::tst_node::value">value</dfn>;</td></tr>
+<tr><th id="92">92</th><td>        tst_node*   <dfn class="decl field" id="boost::spirit::classic::impl::tst_node::left" title='boost::spirit::classic::impl::tst_node::left' data-ref="boost::spirit::classic::impl::tst_node::left">left</dfn>;</td></tr>
+<tr><th id="93">93</th><td>        <a class="type" href="#boost::spirit::classic::impl::tst_node::center" title='boost::spirit::classic::impl::tst_node::center' data-ref="boost::spirit::classic::impl::tst_node::center">center</a>      <dfn class="decl field" id="boost::spirit::classic::impl::tst_node::middle" title='boost::spirit::classic::impl::tst_node::middle' data-ref="boost::spirit::classic::impl::tst_node::middle">middle</dfn>;</td></tr>
+<tr><th id="94">94</th><td>        tst_node*   <dfn class="decl field" id="boost::spirit::classic::impl::tst_node::right" title='boost::spirit::classic::impl::tst_node::right' data-ref="boost::spirit::classic::impl::tst_node::right">right</dfn>;</td></tr>
+<tr><th id="95">95</th><td>    };</td></tr>
+<tr><th id="96">96</th><td></td></tr>
+<tr><th id="97">97</th><td>    <i>///////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="98">98</th><td>    <b>template</b> &lt;<b>typename</b> T, <b>typename</b> CharT&gt;</td></tr>
+<tr><th id="99">99</th><td>    <b>class</b> <dfn class="type def" id="boost::spirit::classic::impl::tst" title='boost::spirit::classic::impl::tst' data-ref="boost::spirit::classic::impl::tst">tst</dfn></td></tr>
+<tr><th id="100">100</th><td>    {</td></tr>
+<tr><th id="101">101</th><td>    <b>public</b>:</td></tr>
+<tr><th id="102">102</th><td></td></tr>
+<tr><th id="103">103</th><td>        <b>struct</b> <dfn class="type def" id="boost::spirit::classic::impl::tst::search_info" title='boost::spirit::classic::impl::tst::search_info' data-ref="boost::spirit::classic::impl::tst::search_info">search_info</dfn></td></tr>
+<tr><th id="104">104</th><td>        {</td></tr>
+<tr><th id="105">105</th><td>            T*          <dfn class="decl field" id="boost::spirit::classic::impl::tst::search_info::data" title='boost::spirit::classic::impl::tst::search_info::data' data-ref="boost::spirit::classic::impl::tst::search_info::data">data</dfn>;</td></tr>
+<tr><th id="106">106</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../../../../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl field" id="boost::spirit::classic::impl::tst::search_info::length" title='boost::spirit::classic::impl::tst::search_info::length' data-ref="boost::spirit::classic::impl::tst::search_info::length">length</dfn>;</td></tr>
+<tr><th id="107">107</th><td>        };</td></tr>
+<tr><th id="108">108</th><td></td></tr>
+<tr><th id="109">109</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl3tstC1Ev" title='boost::spirit::classic::impl::tst::tst&lt;CharT, T&gt;' data-ref="_ZN5boost6spirit7classic4impl3tstC1Ev">tst</dfn>()</td></tr>
+<tr><th id="110">110</th><td>        : <a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a>(<var>0</var>) {}</td></tr>
+<tr><th id="111">111</th><td></td></tr>
+<tr><th id="112">112</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl3tstC1ERKNS2_3tstIT_T0_EE" title='boost::spirit::classic::impl::tst::tst&lt;CharT, T&gt;' data-ref="_ZN5boost6spirit7classic4impl3tstC1ERKNS2_3tstIT_T0_EE">tst</dfn>(tst <em>const</em>&amp; <dfn class="local col1 decl" id="5651other" title='other' data-type='const tst&lt;CharT, T&gt; &amp;' data-ref="5651other">other</dfn>)</td></tr>
+<tr><th id="113">113</th><td>        : <a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a>(<a class="local col1 ref" href="#5651other" title='other' data-ref="5651other">other</a>.root ? <a class="local col1 ref" href="#5651other" title='other' data-ref="5651other">other</a>.root-&gt;clone() : <var>0</var>) {}</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl3tstD1Ev" title='boost::spirit::classic::impl::tst::~tst&lt;CharT, T&gt;' data-ref="_ZN5boost6spirit7classic4impl3tstD1Ev">~tst</dfn>()</td></tr>
+<tr><th id="116">116</th><td>        { <b>delete</b> <a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a>; }</td></tr>
+<tr><th id="117">117</th><td></td></tr>
+<tr><th id="118">118</th><td>        tst&amp;</td></tr>
+<tr><th id="119">119</th><td>        <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl3tstaSERKNS2_3tstIT_T0_EE" title='boost::spirit::classic::impl::tst::operator=' data-ref="_ZN5boost6spirit7classic4impl3tstaSERKNS2_3tstIT_T0_EE"><b>operator</b>=</dfn>(tst <em>const</em>&amp; <dfn class="local col2 decl" id="5652other" title='other' data-type='const tst&lt;CharT, T&gt; &amp;' data-ref="5652other">other</dfn>)</td></tr>
+<tr><th id="120">120</th><td>        {</td></tr>
+<tr><th id="121">121</th><td>            <b>if</b> (<b>this</b> != &amp;<a class="local col2 ref" href="#5652other" title='other' data-ref="5652other">other</a>)</td></tr>
+<tr><th id="122">122</th><td>            {</td></tr>
+<tr><th id="123">123</th><td>                <a class="typedef" href="#boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</a>* <dfn class="local col3 decl" id="5653new_root" title='new_root' data-type='node_t *' data-ref="5653new_root">new_root</dfn> = <a class="local col2 ref" href="#5652other" title='other' data-ref="5652other">other</a>.root ? <a class="local col2 ref" href="#5652other" title='other' data-ref="5652other">other</a>.root-&gt;clone() : <var>0</var>;</td></tr>
+<tr><th id="124">124</th><td>                <b>delete</b> <a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a>;</td></tr>
+<tr><th id="125">125</th><td>                <a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a> = <a class="local col3 ref" href="#5653new_root" title='new_root' data-ref="5653new_root">new_root</a>;</td></tr>
+<tr><th id="126">126</th><td>            }</td></tr>
+<tr><th id="127">127</th><td>            <b>return</b> *<b>this</b>;</td></tr>
+<tr><th id="128">128</th><td>        }</td></tr>
+<tr><th id="129">129</th><td></td></tr>
+<tr><th id="130">130</th><td>        <b>template</b> &lt;<b>typename</b> IteratorT&gt;</td></tr>
+<tr><th id="131">131</th><td>        T* <dfn class="decl def fn" id="_ZN5boost6spirit7classic4impl3tst3addETL0__RKS4_RKT_" title='boost::spirit::classic::impl::tst::add' data-ref="_ZN5boost6spirit7classic4impl3tst3addETL0__RKS4_RKT_">add</dfn>(IteratorT <dfn class="local col4 decl" id="5654first" title='first' data-type='IteratorT' data-ref="5654first">first</dfn>, IteratorT <em>const</em>&amp; <dfn class="local col5 decl" id="5655last" title='last' data-type='const IteratorT &amp;' data-ref="5655last">last</dfn>, T <em>const</em>&amp; <dfn class="local col6 decl" id="5656data" title='data' data-type='const T &amp;' data-ref="5656data">data</dfn>)</td></tr>
+<tr><th id="132">132</th><td>        {</td></tr>
+<tr><th id="133">133</th><td>            <b>if</b> (<a class="local col4 ref" href="#5654first" title='first' data-ref="5654first">first</a> == <a class="local col5 ref" href="#5655last" title='last' data-ref="5655last">last</a>)</td></tr>
+<tr><th id="134">134</th><td>                <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="135">135</th><td></td></tr>
+<tr><th id="136">136</th><td>            <a class="typedef" href="#boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</a>**  <dfn class="local col7 decl" id="5657np" title='np' data-type='node_t **' data-ref="5657np">np</dfn> = &amp;<a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a>;</td></tr>
+<tr><th id="137">137</th><td>            CharT   <dfn class="local col8 decl" id="5658ch" title='ch' data-type='CharT' data-ref="5658ch">ch</dfn> = *<a class="local col4 ref" href="#5654first" title='first' data-ref="5654first">first</a>;</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>            <a class="macro" href="../../core/assert.hpp.html#22" title="" data-ref="_M/BOOST_SPIRIT_ASSERT">BOOST_SPIRIT_ASSERT</a>((first == last || ch != <var>0</var>)</td></tr>
+<tr><th id="140">140</th><td>                &amp;&amp; <q>"Won't add string containing null character"</q>);</td></tr>
+<tr><th id="141">141</th><td></td></tr>
+<tr><th id="142">142</th><td>            <b>for</b> (;;)</td></tr>
+<tr><th id="143">143</th><td>            {</td></tr>
+<tr><th id="144">144</th><td>                <b>if</b> (*<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a> == <var>0</var> || <a class="local col8 ref" href="#5658ch" title='ch' data-ref="5658ch">ch</a> == <var>0</var>)</td></tr>
+<tr><th id="145">145</th><td>                {</td></tr>
+<tr><th id="146">146</th><td>                    <a class="typedef" href="#boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</a>* <dfn class="local col9 decl" id="5659right" title='right' data-type='node_t *' data-ref="5659right">right</dfn> = <var>0</var>;</td></tr>
+<tr><th id="147">147</th><td>                    <b>if</b> (<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a> != <var>0</var>)</td></tr>
+<tr><th id="148">148</th><td>                        <a class="local col9 ref" href="#5659right" title='right' data-ref="5659right">right</a> = *<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>;</td></tr>
+<tr><th id="149">149</th><td>                    *<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a> = <b>new</b> <a class="typedef" href="#boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</a>(<a class="local col8 ref" href="#5658ch" title='ch' data-ref="5658ch">ch</a>);</td></tr>
+<tr><th id="150">150</th><td>                    <b>if</b> (<a class="local col9 ref" href="#5659right" title='right' data-ref="5659right">right</a>)</td></tr>
+<tr><th id="151">151</th><td>                        (**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).right = <a class="local col9 ref" href="#5659right" title='right' data-ref="5659right">right</a>;</td></tr>
+<tr><th id="152">152</th><td>                }</td></tr>
+<tr><th id="153">153</th><td></td></tr>
+<tr><th id="154">154</th><td>                <b>if</b> (<a class="local col8 ref" href="#5658ch" title='ch' data-ref="5658ch">ch</a> &lt; (**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).value)</td></tr>
+<tr><th id="155">155</th><td>                {</td></tr>
+<tr><th id="156">156</th><td>                    <a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a> = &amp;(**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).left;</td></tr>
+<tr><th id="157">157</th><td>                }</td></tr>
+<tr><th id="158">158</th><td>                <b>else</b></td></tr>
+<tr><th id="159">159</th><td>                {</td></tr>
+<tr><th id="160">160</th><td>                    <b>if</b> (<a class="local col8 ref" href="#5658ch" title='ch' data-ref="5658ch">ch</a> == (**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).value)</td></tr>
+<tr><th id="161">161</th><td>                    {</td></tr>
+<tr><th id="162">162</th><td>                        <b>if</b> (<a class="local col8 ref" href="#5658ch" title='ch' data-ref="5658ch">ch</a> == <var>0</var>)</td></tr>
+<tr><th id="163">163</th><td>                        {</td></tr>
+<tr><th id="164">164</th><td>                            <b>if</b> ((**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).middle.data == <var>0</var>)</td></tr>
+<tr><th id="165">165</th><td>                            {</td></tr>
+<tr><th id="166">166</th><td>                                (**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).middle.data = <b>new</b> T(<a class="local col6 ref" href="#5656data" title='data' data-ref="5656data">data</a>);</td></tr>
+<tr><th id="167">167</th><td>                                <b>return</b> (**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).middle.data;</td></tr>
+<tr><th id="168">168</th><td>                            }</td></tr>
+<tr><th id="169">169</th><td>                            <b>else</b></td></tr>
+<tr><th id="170">170</th><td>                            {</td></tr>
+<tr><th id="171">171</th><td>                                <i>//  re-addition is disallowed</i></td></tr>
+<tr><th id="172">172</th><td>                                <b>return</b> <var>0</var>;</td></tr>
+<tr><th id="173">173</th><td>                            }</td></tr>
+<tr><th id="174">174</th><td>                       }</td></tr>
+<tr><th id="175">175</th><td>                        ++<a class="local col4 ref" href="#5654first" title='first' data-ref="5654first">first</a>;</td></tr>
+<tr><th id="176">176</th><td>                        <a class="local col8 ref" href="#5658ch" title='ch' data-ref="5658ch">ch</a> = (<a class="local col4 ref" href="#5654first" title='first' data-ref="5654first">first</a> == <a class="local col5 ref" href="#5655last" title='last' data-ref="5655last">last</a>) ? CharT(<var>0</var>) : *<a class="local col4 ref" href="#5654first" title='first' data-ref="5654first">first</a>;</td></tr>
+<tr><th id="177">177</th><td>                        <a class="macro" href="../../core/assert.hpp.html#22" title="" data-ref="_M/BOOST_SPIRIT_ASSERT">BOOST_SPIRIT_ASSERT</a>((first == last || ch != <var>0</var>)</td></tr>
+<tr><th id="178">178</th><td>                            &amp;&amp; <q>"Won't add string containing null character"</q>);</td></tr>
+<tr><th id="179">179</th><td>                        <a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a> = &amp;(**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).middle.link;</td></tr>
+<tr><th id="180">180</th><td>                    }</td></tr>
+<tr><th id="181">181</th><td>                    <b>else</b></td></tr>
+<tr><th id="182">182</th><td>                    {</td></tr>
+<tr><th id="183">183</th><td>                        <a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a> = &amp;(**<a class="local col7 ref" href="#5657np" title='np' data-ref="5657np">np</a>).right;</td></tr>
+<tr><th id="184">184</th><td>                    }</td></tr>
+<tr><th id="185">185</th><td>                }</td></tr>
+<tr><th id="186">186</th><td>            }</td></tr>
+<tr><th id="187">187</th><td>        }</td></tr>
+<tr><th id="188">188</th><td></td></tr>
+<tr><th id="189">189</th><td>        <b>template</b> &lt;<b>typename</b> ScannerT&gt;</td></tr>
+<tr><th id="190">190</th><td>        <a class="type" href="#boost::spirit::classic::impl::tst::search_info" title='boost::spirit::classic::impl::tst::search_info' data-ref="boost::spirit::classic::impl::tst::search_info">search_info</a> <dfn class="decl def fn" id="_ZNK5boost6spirit7classic4impl3tst4findERKTL0__" title='boost::spirit::classic::impl::tst::find' data-ref="_ZNK5boost6spirit7classic4impl3tst4findERKTL0__">find</dfn>(ScannerT <em>const</em>&amp; <dfn class="local col0 decl" id="5660scan" title='scan' data-type='const ScannerT &amp;' data-ref="5660scan">scan</dfn>) <em>const</em></td></tr>
+<tr><th id="191">191</th><td>        {</td></tr>
+<tr><th id="192">192</th><td>            <a class="type" href="#boost::spirit::classic::impl::tst::search_info" title='boost::spirit::classic::impl::tst::search_info' data-ref="boost::spirit::classic::impl::tst::search_info">search_info</a> <dfn class="local col1 decl" id="5661result" title='result' data-type='search_info' data-ref="5661result">result</dfn> = { <var>0</var>, <var>0</var> };</td></tr>
+<tr><th id="193">193</th><td>            <b>if</b> (<a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.at_end()) {</td></tr>
+<tr><th id="194">194</th><td>                <b>return</b> <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>;</td></tr>
+<tr><th id="195">195</th><td>            }</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>            <b>typedef</b> <b>typename</b> ScannerT::iterator_t <dfn class="local col2 typedef" id="5662iterator_t" title='iterator_t' data-type='typename ScannerT::iterator_t' data-ref="5662iterator_t">iterator_t</dfn>;</td></tr>
+<tr><th id="198">198</th><td>            <a class="typedef" href="#boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</a>*     <dfn class="local col3 decl" id="5663np" title='np' data-type='node_t *' data-ref="5663np">np</dfn> = <a class="member field" href="#boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</a>;</td></tr>
+<tr><th id="199">199</th><td>            CharT       <dfn class="local col4 decl" id="5664ch" title='ch' data-type='CharT' data-ref="5664ch">ch</dfn> = *<a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>;</td></tr>
+<tr><th id="200">200</th><td>            <a class="local col2 typedef" href="#5662iterator_t" title='iterator_t' data-type='typename ScannerT::iterator_t' data-ref="5662iterator_t">iterator_t</a>  <dfn class="local col5 decl" id="5665save" title='save' data-type='iterator_t' data-ref="5665save">save</dfn> = <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first;</td></tr>
+<tr><th id="201">201</th><td>            <a class="local col2 typedef" href="#5662iterator_t" title='iterator_t' data-type='typename ScannerT::iterator_t' data-ref="5662iterator_t">iterator_t</a>  <dfn class="local col6 decl" id="5666latest" title='latest' data-type='iterator_t' data-ref="5666latest">latest</dfn> = <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first;</td></tr>
+<tr><th id="202">202</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../../../../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col7 decl" id="5667latest_len" title='latest_len' data-type='std::size_t' data-ref="5667latest_len">latest_len</dfn> = <var>0</var>;</td></tr>
+<tr><th id="203">203</th><td></td></tr>
+<tr><th id="204">204</th><td>            <b>while</b> (<a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>)</td></tr>
+<tr><th id="205">205</th><td>            {</td></tr>
+<tr><th id="206">206</th><td></td></tr>
+<tr><th id="207">207</th><td>                <b>if</b> (<a class="local col4 ref" href="#5664ch" title='ch' data-ref="5664ch">ch</a> &lt; <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;value) <i>// =&gt; go left!</i></td></tr>
+<tr><th id="208">208</th><td>                {</td></tr>
+<tr><th id="209">209</th><td>                    <b>if</b> (<a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;value == <var>0</var>)</td></tr>
+<tr><th id="210">210</th><td>                    {</td></tr>
+<tr><th id="211">211</th><td>                        <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data = <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;middle.data;</td></tr>
+<tr><th id="212">212</th><td>                        <b>if</b> (<a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data)</td></tr>
+<tr><th id="213">213</th><td>                        {</td></tr>
+<tr><th id="214">214</th><td>                            <a class="local col6 ref" href="#5666latest" title='latest' data-ref="5666latest">latest</a> = <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first;</td></tr>
+<tr><th id="215">215</th><td>                            <a class="local col7 ref" href="#5667latest_len" title='latest_len' data-ref="5667latest_len">latest_len</a> = <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.length;</td></tr>
+<tr><th id="216">216</th><td>                        }</td></tr>
+<tr><th id="217">217</th><td>                    }</td></tr>
+<tr><th id="218">218</th><td></td></tr>
+<tr><th id="219">219</th><td>                    <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a> = <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;left;</td></tr>
+<tr><th id="220">220</th><td>                }</td></tr>
+<tr><th id="221">221</th><td>                <b>else</b> <b>if</b> (<a class="local col4 ref" href="#5664ch" title='ch' data-ref="5664ch">ch</a> == <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;value) <i>// =&gt; go middle!</i></td></tr>
+<tr><th id="222">222</th><td>                {</td></tr>
+<tr><th id="223">223</th><td>                    <i>// Matching the null character is not allowed.</i></td></tr>
+<tr><th id="224">224</th><td>                    <b>if</b> (<a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;value == <var>0</var>)</td></tr>
+<tr><th id="225">225</th><td>                    {</td></tr>
+<tr><th id="226">226</th><td>                        <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data = <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;middle.data;</td></tr>
+<tr><th id="227">227</th><td>                        <b>if</b> (<a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data)</td></tr>
+<tr><th id="228">228</th><td>                        {</td></tr>
+<tr><th id="229">229</th><td>                            <a class="local col6 ref" href="#5666latest" title='latest' data-ref="5666latest">latest</a> = <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first;</td></tr>
+<tr><th id="230">230</th><td>                            <a class="local col7 ref" href="#5667latest_len" title='latest_len' data-ref="5667latest_len">latest_len</a> = <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.length;</td></tr>
+<tr><th id="231">231</th><td>                        }</td></tr>
+<tr><th id="232">232</th><td>                        <b>break</b>;</td></tr>
+<tr><th id="233">233</th><td>                    }</td></tr>
+<tr><th id="234">234</th><td></td></tr>
+<tr><th id="235">235</th><td>                    ++<a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>;</td></tr>
+<tr><th id="236">236</th><td>                    <a class="local col4 ref" href="#5664ch" title='ch' data-ref="5664ch">ch</a> = <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.at_end() ? CharT(<var>0</var>) : *<a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>;</td></tr>
+<tr><th id="237">237</th><td>                    <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a> = <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;middle.link;</td></tr>
+<tr><th id="238">238</th><td>                    ++<a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.length;</td></tr>
+<tr><th id="239">239</th><td>                }</td></tr>
+<tr><th id="240">240</th><td>                <b>else</b> <i>// (ch &gt; np-&gt;value) =&gt; go right!</i></td></tr>
+<tr><th id="241">241</th><td>                {</td></tr>
+<tr><th id="242">242</th><td>                    <b>if</b> (<a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;value == <var>0</var>)</td></tr>
+<tr><th id="243">243</th><td>                    {</td></tr>
+<tr><th id="244">244</th><td>                        <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data = <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;middle.data;</td></tr>
+<tr><th id="245">245</th><td>                        <b>if</b> (<a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data)</td></tr>
+<tr><th id="246">246</th><td>                        {</td></tr>
+<tr><th id="247">247</th><td>                            <a class="local col6 ref" href="#5666latest" title='latest' data-ref="5666latest">latest</a> = <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first;</td></tr>
+<tr><th id="248">248</th><td>                            <a class="local col7 ref" href="#5667latest_len" title='latest_len' data-ref="5667latest_len">latest_len</a> = <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.length;</td></tr>
+<tr><th id="249">249</th><td>                        }</td></tr>
+<tr><th id="250">250</th><td>                    }</td></tr>
+<tr><th id="251">251</th><td></td></tr>
+<tr><th id="252">252</th><td>                    <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a> = <a class="local col3 ref" href="#5663np" title='np' data-ref="5663np">np</a>-&gt;right;</td></tr>
+<tr><th id="253">253</th><td>                }</td></tr>
+<tr><th id="254">254</th><td>            }</td></tr>
+<tr><th id="255">255</th><td></td></tr>
+<tr><th id="256">256</th><td>            <b>if</b> (<a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.data == <var>0</var>)</td></tr>
+<tr><th id="257">257</th><td>            {</td></tr>
+<tr><th id="258">258</th><td>                <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first = <a class="local col5 ref" href="#5665save" title='save' data-ref="5665save">save</a>;</td></tr>
+<tr><th id="259">259</th><td>            }</td></tr>
+<tr><th id="260">260</th><td>            <b>else</b></td></tr>
+<tr><th id="261">261</th><td>            {</td></tr>
+<tr><th id="262">262</th><td>                <a class="local col0 ref" href="#5660scan" title='scan' data-ref="5660scan">scan</a>.first = <a class="local col6 ref" href="#5666latest" title='latest' data-ref="5666latest">latest</a>;</td></tr>
+<tr><th id="263">263</th><td>                <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>.length = <a class="local col7 ref" href="#5667latest_len" title='latest_len' data-ref="5667latest_len">latest_len</a>;</td></tr>
+<tr><th id="264">264</th><td>            }</td></tr>
+<tr><th id="265">265</th><td>            <b>return</b> <a class="local col1 ref" href="#5661result" title='result' data-ref="5661result">result</a>;</td></tr>
+<tr><th id="266">266</th><td>        }</td></tr>
+<tr><th id="267">267</th><td></td></tr>
+<tr><th id="268">268</th><td>    <b>private</b>:</td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td>        <b>typedef</b> <a class="type" href="#boost::spirit::classic::impl::tst_node" title='boost::spirit::classic::impl::tst_node' data-ref="boost::spirit::classic::impl::tst_node">tst_node</a>&lt;T, CharT&gt; <dfn class="typedef" id="boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</dfn>;</td></tr>
+<tr><th id="271">271</th><td>        <a class="typedef" href="#boost::spirit::classic::impl::tst::node_t" title='boost::spirit::classic::impl::tst::node_t' data-type='tst_node&lt;T, CharT&gt;' data-ref="boost::spirit::classic::impl::tst::node_t">node_t</a>* <dfn class="decl field" id="boost::spirit::classic::impl::tst::root" title='boost::spirit::classic::impl::tst::root' data-ref="boost::spirit::classic::impl::tst::root">root</dfn>;</td></tr>
+<tr><th id="272">272</th><td>    };</td></tr>
+<tr><th id="273">273</th><td></td></tr>
+<tr><th id="274">274</th><td><i>///////////////////////////////////////////////////////////////////////////////</i></td></tr>
+<tr><th id="275">275</th><td>    } <i>// namespace impl</i></td></tr>
+<tr><th id="276">276</th><td></td></tr>
+<tr><th id="277">277</th><td><a class="macro" href="../../namespace.hpp.html#31" title="}" data-ref="_M/BOOST_SPIRIT_CLASSIC_NAMESPACE_END">BOOST_SPIRIT_CLASSIC_NAMESPACE_END</a></td></tr>
+<tr><th id="278">278</th><td></td></tr>
+<tr><th id="279">279</th><td>}} <i>// namespace boost::spirit</i></td></tr>
+<tr><th id="280">280</th><td></td></tr>
+<tr><th id="281">281</th><td><u>#<span data-ppcond="9">endif</span></u></td></tr>
+<tr><th id="282">282</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../../../../../codebrowser/gtsam_unstable/linear/QPSParser.cpp.html'>codebrowser/gtsam_unstable/linear/QPSParser.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

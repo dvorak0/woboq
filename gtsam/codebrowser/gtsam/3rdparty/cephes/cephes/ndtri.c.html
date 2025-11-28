@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ndtri.c source code [codebrowser/gtsam/3rdparty/cephes/cephes/ndtri.c] - Woboq Code Browser</title>
+<link rel="stylesheet" href="../../../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'codebrowser/gtsam/3rdparty/cephes/cephes/ndtri.c'; var root_path = '../../../../..'; var data_path = '../../../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../../../..'>codebrowser</a>/<a href='../../..'>gtsam</a>/<a href='../..'>3rdparty</a>/<a href='..'>cephes</a>/<a href='./'>cephes</a>/<a href='ndtri.c.html'>ndtri.c</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>/*                                                     ndtri.c</i></td></tr>
+<tr><th id="2">2</th><td><i> *</i></td></tr>
+<tr><th id="3">3</th><td><i> *     Inverse of Normal distribution function</i></td></tr>
+<tr><th id="4">4</th><td><i> *</i></td></tr>
+<tr><th id="5">5</th><td><i> *</i></td></tr>
+<tr><th id="6">6</th><td><i> *</i></td></tr>
+<tr><th id="7">7</th><td><i> * SYNOPSIS:</i></td></tr>
+<tr><th id="8">8</th><td><i> *</i></td></tr>
+<tr><th id="9">9</th><td><i> * double x, y, ndtri();</i></td></tr>
+<tr><th id="10">10</th><td><i> *</i></td></tr>
+<tr><th id="11">11</th><td><i> * x = ndtri( y );</i></td></tr>
+<tr><th id="12">12</th><td><i> *</i></td></tr>
+<tr><th id="13">13</th><td><i> *</i></td></tr>
+<tr><th id="14">14</th><td><i> *</i></td></tr>
+<tr><th id="15">15</th><td><i> * DESCRIPTION:</i></td></tr>
+<tr><th id="16">16</th><td><i> *</i></td></tr>
+<tr><th id="17">17</th><td><i> * Returns the argument, x, for which the area under the</i></td></tr>
+<tr><th id="18">18</th><td><i> * Gaussian probability density function (integrated from</i></td></tr>
+<tr><th id="19">19</th><td><i> * minus infinity to x) is equal to y.</i></td></tr>
+<tr><th id="20">20</th><td><i> *</i></td></tr>
+<tr><th id="21">21</th><td><i> *</i></td></tr>
+<tr><th id="22">22</th><td><i> * For small arguments 0 &lt; y &lt; exp(-2), the program computes</i></td></tr>
+<tr><th id="23">23</th><td><i> * z = sqrt( -2.0 * log(y) );  then the approximation is</i></td></tr>
+<tr><th id="24">24</th><td><i> * x = z - log(z)/z  - (1/z) P(1/z) / Q(1/z).</i></td></tr>
+<tr><th id="25">25</th><td><i> * There are two rational functions P/Q, one for 0 &lt; y &lt; exp(-32)</i></td></tr>
+<tr><th id="26">26</th><td><i> * and the other for y up to exp(-2).  For larger arguments,</i></td></tr>
+<tr><th id="27">27</th><td><i> * w = y - 0.5, and  x/sqrt(2pi) = w + w**3 R(w**2)/S(w**2)).</i></td></tr>
+<tr><th id="28">28</th><td><i> *</i></td></tr>
+<tr><th id="29">29</th><td><i> *</i></td></tr>
+<tr><th id="30">30</th><td><i> * ACCURACY:</i></td></tr>
+<tr><th id="31">31</th><td><i> *</i></td></tr>
+<tr><th id="32">32</th><td><i> *                      Relative error:</i></td></tr>
+<tr><th id="33">33</th><td><i> * arithmetic   domain        # trials      peak         rms</i></td></tr>
+<tr><th id="34">34</th><td><i> *    IEEE     0.125, 1        20000       7.2e-16     1.3e-16</i></td></tr>
+<tr><th id="35">35</th><td><i> *    IEEE     3e-308, 0.135   50000       4.6e-16     9.8e-17</i></td></tr>
+<tr><th id="36">36</th><td><i> *</i></td></tr>
+<tr><th id="37">37</th><td><i> *</i></td></tr>
+<tr><th id="38">38</th><td><i> * ERROR MESSAGES:</i></td></tr>
+<tr><th id="39">39</th><td><i> *</i></td></tr>
+<tr><th id="40">40</th><td><i> *   message         condition    value returned</i></td></tr>
+<tr><th id="41">41</th><td><i> * ndtri domain       x &lt; 0        NAN</i></td></tr>
+<tr><th id="42">42</th><td><i> * ndtri domain       x &gt; 1        NAN</i></td></tr>
+<tr><th id="43">43</th><td><i> *</i></td></tr>
+<tr><th id="44">44</th><td><i> */</i></td></tr>
+<tr><th id="45">45</th><td></td></tr>
+<tr><th id="46">46</th><td></td></tr>
+<tr><th id="47">47</th><td><i>/*</i></td></tr>
+<tr><th id="48">48</th><td><i> * Cephes Math Library Release 2.1:  January, 1989</i></td></tr>
+<tr><th id="49">49</th><td><i> * Copyright 1984, 1987, 1989 by Stephen L. Moshier</i></td></tr>
+<tr><th id="50">50</th><td><i> * Direct inquiries to 30 Frost Street, Cambridge, MA 02140</i></td></tr>
+<tr><th id="51">51</th><td><i> */</i></td></tr>
+<tr><th id="52">52</th><td></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="mconf.h.html">"mconf.h"</a></u></td></tr>
+<tr><th id="54">54</th><td></td></tr>
+<tr><th id="55">55</th><td><i  data-doc="s2pi">/* sqrt(2pi) */</i></td></tr>
+<tr><th id="56">56</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="s2pi" title='s2pi' data-type='double' data-ref="s2pi">s2pi</dfn> = <var>2.50662827463100050242E0</var>;</td></tr>
+<tr><th id="57">57</th><td></td></tr>
+<tr><th id="58">58</th><td><i  data-doc="P0">/* approximation for 0 &lt;= |y - 0.5| &lt;= 3/8 */</i></td></tr>
+<tr><th id="59">59</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="P0" title='P0' data-type='double[5]' data-ref="P0">P0</dfn>[<var>5</var>] = {</td></tr>
+<tr><th id="60">60</th><td>    -<var>5.99633501014107895267E1</var>,</td></tr>
+<tr><th id="61">61</th><td>    <var>9.80010754185999661536E1</var>,</td></tr>
+<tr><th id="62">62</th><td>    -<var>5.66762857469070293439E1</var>,</td></tr>
+<tr><th id="63">63</th><td>    <var>1.39312609387279679503E1</var>,</td></tr>
+<tr><th id="64">64</th><td>    -<var>1.23916583867381258016E0</var>,</td></tr>
+<tr><th id="65">65</th><td>};</td></tr>
+<tr><th id="66">66</th><td></td></tr>
+<tr><th id="67">67</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="Q0" title='Q0' data-type='double[8]' data-ref="Q0">Q0</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="68">68</th><td>    <i>/* 1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="69">69</th><td>    <var>1.95448858338141759834E0</var>,</td></tr>
+<tr><th id="70">70</th><td>    <var>4.67627912898881538453E0</var>,</td></tr>
+<tr><th id="71">71</th><td>    <var>8.63602421390890590575E1</var>,</td></tr>
+<tr><th id="72">72</th><td>    -<var>2.25462687854119370527E2</var>,</td></tr>
+<tr><th id="73">73</th><td>    <var>2.00260212380060660359E2</var>,</td></tr>
+<tr><th id="74">74</th><td>    -<var>8.20372256168333339912E1</var>,</td></tr>
+<tr><th id="75">75</th><td>    <var>1.59056225126211695515E1</var>,</td></tr>
+<tr><th id="76">76</th><td>    -<var>1.18331621121330003142E0</var>,</td></tr>
+<tr><th id="77">77</th><td>};</td></tr>
+<tr><th id="78">78</th><td></td></tr>
+<tr><th id="79">79</th><td><i  data-doc="P1">/* Approximation for interval z = sqrt(-2 log y ) between 2 and 8</i></td></tr>
+<tr><th id="80">80</th><td><i  data-doc="P1"> * i.e., y between exp(-2) = .135 and exp(-32) = 1.27e-14.</i></td></tr>
+<tr><th id="81">81</th><td><i  data-doc="P1"> */</i></td></tr>
+<tr><th id="82">82</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="P1" title='P1' data-type='double[9]' data-ref="P1">P1</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="83">83</th><td>    <var>4.05544892305962419923E0</var>,</td></tr>
+<tr><th id="84">84</th><td>    <var>3.15251094599893866154E1</var>,</td></tr>
+<tr><th id="85">85</th><td>    <var>5.71628192246421288162E1</var>,</td></tr>
+<tr><th id="86">86</th><td>    <var>4.40805073893200834700E1</var>,</td></tr>
+<tr><th id="87">87</th><td>    <var>1.46849561928858024014E1</var>,</td></tr>
+<tr><th id="88">88</th><td>    <var>2.18663306850790267539E0</var>,</td></tr>
+<tr><th id="89">89</th><td>    -<var>1.40256079171354495875E-1</var>,</td></tr>
+<tr><th id="90">90</th><td>    -<var>3.50424626827848203418E-2</var>,</td></tr>
+<tr><th id="91">91</th><td>    -<var>8.57456785154685413611E-4</var>,</td></tr>
+<tr><th id="92">92</th><td>};</td></tr>
+<tr><th id="93">93</th><td></td></tr>
+<tr><th id="94">94</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="Q1" title='Q1' data-type='double[8]' data-ref="Q1">Q1</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="95">95</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="96">96</th><td>    <var>1.57799883256466749731E1</var>,</td></tr>
+<tr><th id="97">97</th><td>    <var>4.53907635128879210584E1</var>,</td></tr>
+<tr><th id="98">98</th><td>    <var>4.13172038254672030440E1</var>,</td></tr>
+<tr><th id="99">99</th><td>    <var>1.50425385692907503408E1</var>,</td></tr>
+<tr><th id="100">100</th><td>    <var>2.50464946208309415979E0</var>,</td></tr>
+<tr><th id="101">101</th><td>    -<var>1.42182922854787788574E-1</var>,</td></tr>
+<tr><th id="102">102</th><td>    -<var>3.80806407691578277194E-2</var>,</td></tr>
+<tr><th id="103">103</th><td>    -<var>9.33259480895457427372E-4</var>,</td></tr>
+<tr><th id="104">104</th><td>};</td></tr>
+<tr><th id="105">105</th><td></td></tr>
+<tr><th id="106">106</th><td><i  data-doc="P2">/* Approximation for interval z = sqrt(-2 log y ) between 8 and 64</i></td></tr>
+<tr><th id="107">107</th><td><i  data-doc="P2"> * i.e., y between exp(-32) = 1.27e-14 and exp(-2048) = 3.67e-890.</i></td></tr>
+<tr><th id="108">108</th><td><i  data-doc="P2"> */</i></td></tr>
+<tr><th id="109">109</th><td></td></tr>
+<tr><th id="110">110</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="P2" title='P2' data-type='double[9]' data-ref="P2">P2</dfn>[<var>9</var>] = {</td></tr>
+<tr><th id="111">111</th><td>    <var>3.23774891776946035970E0</var>,</td></tr>
+<tr><th id="112">112</th><td>    <var>6.91522889068984211695E0</var>,</td></tr>
+<tr><th id="113">113</th><td>    <var>3.93881025292474443415E0</var>,</td></tr>
+<tr><th id="114">114</th><td>    <var>1.33303460815807542389E0</var>,</td></tr>
+<tr><th id="115">115</th><td>    <var>2.01485389549179081538E-1</var>,</td></tr>
+<tr><th id="116">116</th><td>    <var>1.23716634817820021358E-2</var>,</td></tr>
+<tr><th id="117">117</th><td>    <var>3.01581553508235416007E-4</var>,</td></tr>
+<tr><th id="118">118</th><td>    <var>2.65806974686737550832E-6</var>,</td></tr>
+<tr><th id="119">119</th><td>    <var>6.23974539184983293730E-9</var>,</td></tr>
+<tr><th id="120">120</th><td>};</td></tr>
+<tr><th id="121">121</th><td></td></tr>
+<tr><th id="122">122</th><td><em>static</em> <em>double</em> <dfn class="tu decl def" id="Q2" title='Q2' data-type='double[8]' data-ref="Q2">Q2</dfn>[<var>8</var>] = {</td></tr>
+<tr><th id="123">123</th><td>    <i>/*  1.00000000000000000000E0, */</i></td></tr>
+<tr><th id="124">124</th><td>    <var>6.02427039364742014255E0</var>,</td></tr>
+<tr><th id="125">125</th><td>    <var>3.67983563856160859403E0</var>,</td></tr>
+<tr><th id="126">126</th><td>    <var>1.37702099489081330271E0</var>,</td></tr>
+<tr><th id="127">127</th><td>    <var>2.16236993594496635890E-1</var>,</td></tr>
+<tr><th id="128">128</th><td>    <var>1.34204006088543189037E-2</var>,</td></tr>
+<tr><th id="129">129</th><td>    <var>3.28014464682127739104E-4</var>,</td></tr>
+<tr><th id="130">130</th><td>    <var>2.89247864745380683936E-6</var>,</td></tr>
+<tr><th id="131">131</th><td>    <var>6.79019408009981274425E-9</var>,</td></tr>
+<tr><th id="132">132</th><td>};</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td><em>double</em> <dfn class="decl def fn" id="ndtri" title='ndtri' data-ref="ndtri">ndtri</dfn>(<em>double</em> <dfn class="local col1 decl" id="1y0" title='y0' data-type='double' data-ref="1y0">y0</dfn>)</td></tr>
+<tr><th id="135">135</th><td>{</td></tr>
+<tr><th id="136">136</th><td>    <em>double</em> <dfn class="local col2 decl" id="2x" title='x' data-type='double' data-ref="2x">x</dfn>, <dfn class="local col3 decl" id="3y" title='y' data-type='double' data-ref="3y">y</dfn>, <dfn class="local col4 decl" id="4z" title='z' data-type='double' data-ref="4z">z</dfn>, <dfn class="local col5 decl" id="5y2" title='y2' data-type='double' data-ref="5y2">y2</dfn>, <dfn class="local col6 decl" id="6x0" title='x0' data-type='double' data-ref="6x0">x0</dfn>, <dfn class="local col7 decl" id="7x1" title='x1' data-type='double' data-ref="7x1">x1</dfn>;</td></tr>
+<tr><th id="137">137</th><td>    <em>int</em> <dfn class="local col8 decl" id="8code" title='code' data-type='int' data-ref="8code">code</dfn>;</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>    <b>if</b> (<a class="local col1 ref" href="#1y0" title='y0' data-ref="1y0">y0</a> == <var>0.0</var>) {</td></tr>
+<tr><th id="140">140</th><td>	<b>return</b> -<a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="141">141</th><td>    }</td></tr>
+<tr><th id="142">142</th><td>    <b>if</b> (<a class="local col1 ref" href="#1y0" title='y0' data-ref="1y0">y0</a> == <var>1.0</var>) {</td></tr>
+<tr><th id="143">143</th><td>	<b>return</b> <a class="macro" href="../../../../../include/math.h.html#91" title="(__builtin_inff ())" data-ref="_M/INFINITY">INFINITY</a>;</td></tr>
+<tr><th id="144">144</th><td>    }</td></tr>
+<tr><th id="145">145</th><td>    <b>if</b> (<a class="local col1 ref" href="#1y0" title='y0' data-ref="1y0">y0</a> &lt; <var>0.0</var> || <a class="local col1 ref" href="#1y0" title='y0' data-ref="1y0">y0</a> &gt; <var>1.0</var>) {</td></tr>
+<tr><th id="146">146</th><td>	<a class="ref fn" href="sf_error.h.html#sf_error" title='sf_error' data-ref="sf_error">sf_error</a>(<span class='inlayHint'>func_name:&nbsp;</span><q>"ndtri"</q>, <span class='inlayHint'>code:&nbsp;</span><a class="enum" href="sf_error.h.html#SF_ERROR_DOMAIN" title='SF_ERROR_DOMAIN' data-ref="SF_ERROR_DOMAIN">SF_ERROR_DOMAIN</a>, <span class="macro" title="((void*)0)" data-ref="_M/NULL">NULL</span>);</td></tr>
+<tr><th id="147">147</th><td>	<b>return</b> <a class="macro" href="../../../../../include/math.h.html#98" title="(__builtin_nanf (&quot;&quot;))" data-ref="_M/NAN">NAN</a>;</td></tr>
+<tr><th id="148">148</th><td>    }</td></tr>
+<tr><th id="149">149</th><td>    <a class="local col8 ref" href="#8code" title='code' data-ref="8code">code</a> = <var>1</var>;</td></tr>
+<tr><th id="150">150</th><td>    <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <a class="local col1 ref" href="#1y0" title='y0' data-ref="1y0">y0</a>;</td></tr>
+<tr><th id="151">151</th><td>    <b>if</b> (<a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> &gt; (<var>1.0</var> - <var>0.13533528323661269189</var>)) {	<i>/* 0.135... = exp(-2) */</i></td></tr>
+<tr><th id="152">152</th><td>	<a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <var>1.0</var> - <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>;</td></tr>
+<tr><th id="153">153</th><td>	<a class="local col8 ref" href="#8code" title='code' data-ref="8code">code</a> = <var>0</var>;</td></tr>
+<tr><th id="154">154</th><td>    }</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>    <b>if</b> (<a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> &gt; <var>0.13533528323661269189</var>) {</td></tr>
+<tr><th id="157">157</th><td>	<a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> = <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> - <var>0.5</var>;</td></tr>
+<tr><th id="158">158</th><td>	<a class="local col5 ref" href="#5y2" title='y2' data-ref="5y2">y2</a> = <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> * <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>;</td></tr>
+<tr><th id="159">159</th><td>	<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> + <a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a> * (<a class="local col5 ref" href="#5y2" title='y2' data-ref="5y2">y2</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col5 ref" href="#5y2" title='y2' data-ref="5y2">y2</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#P0" title='P0' data-use='r' data-ref="P0">P0</a>, <span class='inlayHint'>N:&nbsp;</span><var>4</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col5 ref" href="#5y2" title='y2' data-ref="5y2">y2</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#Q0" title='Q0' data-use='r' data-ref="Q0">Q0</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>));</td></tr>
+<tr><th id="160">160</th><td>	<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> * <a class="tu ref" href="#s2pi" title='s2pi' data-use='r' data-ref="s2pi">s2pi</a>;</td></tr>
+<tr><th id="161">161</th><td>	<b>return</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="162">162</th><td>    }</td></tr>
+<tr><th id="163">163</th><td></td></tr>
+<tr><th id="164">164</th><td>    <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#143" title='sqrt' data-ref="sqrt">sqrt</a>(<span class='inlayHint'>x:&nbsp;</span>-<var>2.0</var> * <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#104" title='log' data-ref="log">log</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col3 ref" href="#3y" title='y' data-ref="3y">y</a>));</td></tr>
+<tr><th id="165">165</th><td>    <a class="local col6 ref" href="#6x0" title='x0' data-ref="6x0">x0</a> = <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> - <a class="ref fn" href="../../../../../include/x86_64-linux-gnu/bits/mathcalls.h.html#104" title='log' data-ref="log">log</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>) / <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>    <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> = <var>1.0</var> / <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="168">168</th><td>    <b>if</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> &lt; <var>8.0</var>)		<i>/* y &gt; exp(-32) = 1.2664165549e-14 */</i></td></tr>
+<tr><th id="169">169</th><td>	<a class="local col7 ref" href="#7x1" title='x1' data-ref="7x1">x1</a> = <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#P1" title='P1' data-use='r' data-ref="P1">P1</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#Q1" title='Q1' data-use='r' data-ref="Q1">Q1</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>);</td></tr>
+<tr><th id="170">170</th><td>    <b>else</b></td></tr>
+<tr><th id="171">171</th><td>	<a class="local col7 ref" href="#7x1" title='x1' data-ref="7x1">x1</a> = <a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a> * <a class="ref fn" href="polevl.h.html#polevl" title='polevl' data-ref="polevl">polevl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#P2" title='P2' data-use='r' data-ref="P2">P2</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>) / <a class="ref fn" href="polevl.h.html#p1evl" title='p1evl' data-ref="p1evl">p1evl</a>(<span class='inlayHint'>x:&nbsp;</span><a class="local col4 ref" href="#4z" title='z' data-ref="4z">z</a>, <span class='inlayHint'>coef:&nbsp;</span><a class="tu ref" href="#Q2" title='Q2' data-use='r' data-ref="Q2">Q2</a>, <span class='inlayHint'>N:&nbsp;</span><var>8</var>);</td></tr>
+<tr><th id="172">172</th><td>    <a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = <a class="local col6 ref" href="#6x0" title='x0' data-ref="6x0">x0</a> - <a class="local col7 ref" href="#7x1" title='x1' data-ref="7x1">x1</a>;</td></tr>
+<tr><th id="173">173</th><td>    <b>if</b> (<a class="local col8 ref" href="#8code" title='code' data-ref="8code">code</a> != <var>0</var>)</td></tr>
+<tr><th id="174">174</th><td>	<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a> = -<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>;</td></tr>
+<tr><th id="175">175</th><td>    <b>return</b> (<a class="local col2 ref" href="#2x" title='x' data-ref="2x">x</a>);</td></tr>
+<tr><th id="176">176</th><td>}</td></tr>
+<tr><th id="177">177</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated on <em>2025-Nov-28</em> from project codebrowser revision <em>4.2.0-ros-3988-g645c5741e</em><br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>

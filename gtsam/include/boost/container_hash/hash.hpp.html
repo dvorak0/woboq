@@ -1,0 +1,696 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>hash.hpp source code [include/boost/container_hash/hash.hpp] - Woboq Code Browser</title>
+<meta name="woboq:interestingDefinitions" content="boost::hash,boost::hash_detail::hash_float_impl,boost::hash_detail::hash_integral_impl,boost::unordered::hash_is_avalanching "/>
+<link rel="stylesheet" href="../../../../data/qtcreator.css" title="QtCreator"/>
+<link rel="alternate stylesheet" href="../../../../data/kdevelop.css" title="KDevelop"/>
+<script type="text/javascript" src="../../../../data/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../data/jquery/jquery-ui.min.js"></script>
+<script>var file = 'include/boost/container_hash/hash.hpp'; var root_path = '../../..'; var data_path = '../../../../data'; var ecma_script_api_version = 2;</script>
+<script src='../../../../data/codebrowser.js'></script>
+</head>
+<body><div id='header'><h1 id='breadcrumb'><span>Browse the source code of </span><a href='../..'>include</a>/<a href='..'>boost</a>/<a href='./'>container_hash</a>/<a href='hash.hpp.html'>hash.hpp</a></h1></div>
+<hr/><div id='content'><table class="code">
+<tr><th id="1">1</th><td><i>// Copyright 2005-2014 Daniel James.</i></td></tr>
+<tr><th id="2">2</th><td><i>// Copyright 2021, 2022 Peter Dimov.</i></td></tr>
+<tr><th id="3">3</th><td><i>// Distributed under the Boost Software License, Version 1.0.</i></td></tr>
+<tr><th id="4">4</th><td><i>// <a href="https://www.boost.org/LICENSE_1_0.txt">https://www.boost.org/LICENSE_1_0.txt</a></i></td></tr>
+<tr><th id="5">5</th><td><i></i></td></tr>
+<tr><th id="6">6</th><td><i>// Based on Peter Dimov's proposal</i></td></tr>
+<tr><th id="7">7</th><td><i>// <a href="http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf">http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf</a></i></td></tr>
+<tr><th id="8">8</th><td><i>// issue 6.18.</i></td></tr>
+<tr><th id="9">9</th><td></td></tr>
+<tr><th id="10">10</th><td><u>#<span data-ppcond="10">ifndef</span> <span class="macro" data-ref="_M/BOOST_FUNCTIONAL_HASH_HASH_HPP">BOOST_FUNCTIONAL_HASH_HASH_HPP</span></u></td></tr>
+<tr><th id="11">11</th><td><u>#define <dfn class="macro" id="_M/BOOST_FUNCTIONAL_HASH_HASH_HPP" data-ref="_M/BOOST_FUNCTIONAL_HASH_HASH_HPP">BOOST_FUNCTIONAL_HASH_HASH_HPP</dfn></u></td></tr>
+<tr><th id="12">12</th><td></td></tr>
+<tr><th id="13">13</th><td><u>#include <a href="hash_fwd.hpp.html">&lt;boost/container_hash/hash_fwd.hpp&gt;</a></u></td></tr>
+<tr><th id="14">14</th><td><u>#include <a href="detail/requires_cxx11.hpp.html">&lt;boost/container_hash/detail/requires_cxx11.hpp&gt;</a></u></td></tr>
+<tr><th id="15">15</th><td><u>#include <a href="is_range.hpp.html">&lt;boost/container_hash/is_range.hpp&gt;</a></u></td></tr>
+<tr><th id="16">16</th><td><u>#include <a href="is_contiguous_range.hpp.html">&lt;boost/container_hash/is_contiguous_range.hpp&gt;</a></u></td></tr>
+<tr><th id="17">17</th><td><u>#include <a href="is_unordered_range.hpp.html">&lt;boost/container_hash/is_unordered_range.hpp&gt;</a></u></td></tr>
+<tr><th id="18">18</th><td><u>#include <a href="is_described_class.hpp.html">&lt;boost/container_hash/is_described_class.hpp&gt;</a></u></td></tr>
+<tr><th id="19">19</th><td><u>#include <a href="detail/hash_tuple_like.hpp.html">&lt;boost/container_hash/detail/hash_tuple_like.hpp&gt;</a></u></td></tr>
+<tr><th id="20">20</th><td><u>#include <a href="detail/hash_mix.hpp.html">&lt;boost/container_hash/detail/hash_mix.hpp&gt;</a></u></td></tr>
+<tr><th id="21">21</th><td><u>#include <a href="detail/hash_range.hpp.html">&lt;boost/container_hash/detail/hash_range.hpp&gt;</a></u></td></tr>
+<tr><th id="22">22</th><td><u>#include <a href="../type_traits/is_enum.hpp.html">&lt;boost/type_traits/is_enum.hpp&gt;</a></u></td></tr>
+<tr><th id="23">23</th><td><u>#include <a href="../type_traits/is_integral.hpp.html">&lt;boost/type_traits/is_integral.hpp&gt;</a></u></td></tr>
+<tr><th id="24">24</th><td><u>#include <a href="../type_traits/is_floating_point.hpp.html">&lt;boost/type_traits/is_floating_point.hpp&gt;</a></u></td></tr>
+<tr><th id="25">25</th><td><u>#include <a href="../type_traits/is_signed.hpp.html">&lt;boost/type_traits/is_signed.hpp&gt;</a></u></td></tr>
+<tr><th id="26">26</th><td><u>#include <a href="../type_traits/is_unsigned.hpp.html">&lt;boost/type_traits/is_unsigned.hpp&gt;</a></u></td></tr>
+<tr><th id="27">27</th><td><u>#include <a href="../type_traits/make_unsigned.hpp.html">&lt;boost/type_traits/make_unsigned.hpp&gt;</a></u></td></tr>
+<tr><th id="28">28</th><td><u>#include <a href="../type_traits/enable_if.hpp.html">&lt;boost/type_traits/enable_if.hpp&gt;</a></u></td></tr>
+<tr><th id="29">29</th><td><u>#include <a href="../type_traits/conjunction.hpp.html">&lt;boost/type_traits/conjunction.hpp&gt;</a></u></td></tr>
+<tr><th id="30">30</th><td><u>#include <a href="../type_traits/is_union.hpp.html">&lt;boost/type_traits/is_union.hpp&gt;</a></u></td></tr>
+<tr><th id="31">31</th><td><u>#include <a href="../type_traits/is_same.hpp.html">&lt;boost/type_traits/is_same.hpp&gt;</a></u></td></tr>
+<tr><th id="32">32</th><td><u>#include <a href="../describe/bases.hpp.html">&lt;boost/describe/bases.hpp&gt;</a></u></td></tr>
+<tr><th id="33">33</th><td><u>#include <a href="../describe/members.hpp.html">&lt;boost/describe/members.hpp&gt;</a></u></td></tr>
+<tr><th id="34">34</th><td><u>#include <a href="../cstdint.hpp.html">&lt;boost/cstdint.hpp&gt;</a></u></td></tr>
+<tr><th id="35">35</th><td></td></tr>
+<tr><th id="36">36</th><td><u>#<span data-ppcond="36">if</span> defined(<a class="macro" href="../describe/detail/config.hpp.html#10" data-ref="_M/BOOST_DESCRIBE_CXX14">BOOST_DESCRIBE_CXX14</a>)</u></td></tr>
+<tr><th id="37">37</th><td><u># include <a href="../mp11/algorithm.hpp.html">&lt;boost/mp11/algorithm.hpp&gt;</a></u></td></tr>
+<tr><th id="38">38</th><td><u>#<span data-ppcond="36">endif</span></u></td></tr>
+<tr><th id="39">39</th><td></td></tr>
+<tr><th id="40">40</th><td><u>#include <a href="../../c++/13/string.html">&lt;string&gt;</a></u></td></tr>
+<tr><th id="41">41</th><td><u>#include <a href="../../c++/13/iterator.html">&lt;iterator&gt;</a></u></td></tr>
+<tr><th id="42">42</th><td><u>#include <a href="../../c++/13/complex.html">&lt;complex&gt;</a></u></td></tr>
+<tr><th id="43">43</th><td><u>#include <a href="../../c++/13/utility.html">&lt;utility&gt;</a></u></td></tr>
+<tr><th id="44">44</th><td><u>#include <a href="../../c++/13/limits.html">&lt;limits&gt;</a></u></td></tr>
+<tr><th id="45">45</th><td><u>#include <a href="../../c++/13/climits.html">&lt;climits&gt;</a></u></td></tr>
+<tr><th id="46">46</th><td><u>#include <a href="../../c++/13/cstring.html">&lt;cstring&gt;</a></u></td></tr>
+<tr><th id="47">47</th><td></td></tr>
+<tr><th id="48">48</th><td><u>#<span data-ppcond="48">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_SMART_PTR">BOOST_NO_CXX11_SMART_PTR</span>)</u></td></tr>
+<tr><th id="49">49</th><td><u># include <a href="../../c++/13/memory.html">&lt;memory&gt;</a></u></td></tr>
+<tr><th id="50">50</th><td><u>#<span data-ppcond="48">endif</span></u></td></tr>
+<tr><th id="51">51</th><td></td></tr>
+<tr><th id="52">52</th><td><u>#<span data-ppcond="52">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_HDR_TYPEINDEX">BOOST_NO_CXX11_HDR_TYPEINDEX</span>)</u></td></tr>
+<tr><th id="53">53</th><td><u>#include <a href="../../c++/13/typeindex.html">&lt;typeindex&gt;</a></u></td></tr>
+<tr><th id="54">54</th><td><u>#<span data-ppcond="52">endif</span></u></td></tr>
+<tr><th id="55">55</th><td></td></tr>
+<tr><th id="56">56</th><td><u>#<span data-ppcond="56">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_HDR_SYSTEM_ERROR">BOOST_NO_CXX11_HDR_SYSTEM_ERROR</span>)</u></td></tr>
+<tr><th id="57">57</th><td><u>#include <a href="../../c++/13/system_error.html">&lt;system_error&gt;</a></u></td></tr>
+<tr><th id="58">58</th><td><u>#<span data-ppcond="56">endif</span></u></td></tr>
+<tr><th id="59">59</th><td></td></tr>
+<tr><th id="60">60</th><td><u>#<span data-ppcond="60">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX17_HDR_OPTIONAL">BOOST_NO_CXX17_HDR_OPTIONAL</span>)</u></td></tr>
+<tr><th id="61">61</th><td><u>#include <a href="../../c++/13/optional.html">&lt;optional&gt;</a></u></td></tr>
+<tr><th id="62">62</th><td><u>#<span data-ppcond="60">endif</span></u></td></tr>
+<tr><th id="63">63</th><td></td></tr>
+<tr><th id="64">64</th><td><u>#<span data-ppcond="64">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX17_HDR_VARIANT">BOOST_NO_CXX17_HDR_VARIANT</span>)</u></td></tr>
+<tr><th id="65">65</th><td><u>#include <a href="../../c++/13/variant.html">&lt;variant&gt;</a></u></td></tr>
+<tr><th id="66">66</th><td><u>#<span data-ppcond="64">endif</span></u></td></tr>
+<tr><th id="67">67</th><td></td></tr>
+<tr><th id="68">68</th><td><u>#<span data-ppcond="68">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX17_HDR_STRING_VIEW">BOOST_NO_CXX17_HDR_STRING_VIEW</span>)</u></td></tr>
+<tr><th id="69">69</th><td><u># include <a href="../../c++/13/string_view.html">&lt;string_view&gt;</a></u></td></tr>
+<tr><th id="70">70</th><td><u>#<span data-ppcond="68">endif</span></u></td></tr>
+<tr><th id="71">71</th><td></td></tr>
+<tr><th id="72">72</th><td><b>namespace</b> <span class="namespace">boost</span></td></tr>
+<tr><th id="73">73</th><td>{</td></tr>
+<tr><th id="74">74</th><td></td></tr>
+<tr><th id="75">75</th><td>    <i>//</i></td></tr>
+<tr><th id="76">76</th><td><i>    // boost::hash_value</i></td></tr>
+<tr><th id="77">77</th><td><i>    //</i></td></tr>
+<tr><th id="78">78</th><td><i></i></td></tr>
+<tr><th id="79">79</th><td><i>    // integral types</i></td></tr>
+<tr><th id="80">80</th><td></td></tr>
+<tr><th id="81">81</th><td>    <b>namespace</b> <span class="namespace">hash_detail</span></td></tr>
+<tr><th id="82">82</th><td>    {</td></tr>
+<tr><th id="83">83</th><td>        <b>template</b>&lt;<b>class</b> T,</td></tr>
+<tr><th id="84">84</th><td>            <em>bool</em> bigger_than_size_t = (<b>sizeof</b>(T) &gt; <b>sizeof</b>(<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>)),</td></tr>
+<tr><th id="85">85</th><td>            <em>bool</em> is_unsigned = <span class="namespace">boost::</span><a class="type" href="../type_traits/is_unsigned.hpp.html#boost::is_unsigned" title='boost::is_unsigned' data-ref="boost::is_unsigned">is_unsigned</a>&lt;T&gt;::value,</td></tr>
+<tr><th id="86">86</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> size_t_bits = <b>sizeof</b>(<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>) * <span class="macro" title="8" data-ref="_M/CHAR_BIT">CHAR_BIT</span>,</td></tr>
+<tr><th id="87">87</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> type_bits = <b>sizeof</b>(T) * <span class="macro" title="8" data-ref="_M/CHAR_BIT">CHAR_BIT</span>&gt;</td></tr>
+<tr><th id="88">88</th><td>        <b>struct</b> <dfn class="type" id="boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</dfn>;</td></tr>
+<tr><th id="89">89</th><td></td></tr>
+<tr><th id="90">90</th><td>        <b>template</b>&lt;<b>class</b> T, <em>bool</em> is_unsigned, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> size_t_bits, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> type_bits&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</dfn>&lt;T, <b>false</b>, <a class="tu ref" href="#boost::hash_detail::hash_integral_impl{type-parameter-0-0,false,is_unsigned,size_t_bits,type_bits}::is_unsigned" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, false, is_unsigned, size_t_bits, type_bits&gt;::is_unsigned' data-ref="boost::hash_detail::hash_integral_impl{type-parameter-0-0,false,is_unsigned,size_t_bits,type_bits}::is_unsigned">is_unsigned</a>, <a class="tu ref" href="#boost::hash_detail::hash_integral_impl{type-parameter-0-0,false,is_unsigned,size_t_bits,type_bits}::size_t_bits" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, false, is_unsigned, size_t_bits, type_bits&gt;::size_t_bits' data-ref="boost::hash_detail::hash_integral_impl{type-parameter-0-0,false,is_unsigned,size_t_bits,type_bits}::size_t_bits">size_t_bits</a>, <a class="tu ref" href="#boost::hash_detail::hash_integral_impl{type-parameter-0-0,false,is_unsigned,size_t_bits,type_bits}::type_bits" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, false, is_unsigned, size_t_bits, type_bits&gt;::type_bits' data-ref="boost::hash_detail::hash_integral_impl{type-parameter-0-0,false,is_unsigned,size_t_bits,type_bits}::type_bits">type_bits</a>&gt;</td></tr>
+<tr><th id="91">91</th><td>        {</td></tr>
+<tr><th id="92">92</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail18hash_integral_implIT_Lb0EXT0_EXT1_EXT2_EE2fnES2_" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, false, is_unsigned, size_t_bits, type_bits&gt;::fn' data-ref="_ZN5boost11hash_detail18hash_integral_implIT_Lb0EXT0_EXT1_EXT2_EE2fnES2_">fn</dfn>( T <dfn class="local col8 decl" id="588v" title='v' data-type='T' data-ref="588v">v</dfn> )</td></tr>
+<tr><th id="93">93</th><td>            {</td></tr>
+<tr><th id="94">94</th><td>                <b>return</b> <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col8 ref" href="#588v" title='v' data-ref="588v">v</a> );</td></tr>
+<tr><th id="95">95</th><td>            }</td></tr>
+<tr><th id="96">96</th><td>        };</td></tr>
+<tr><th id="97">97</th><td></td></tr>
+<tr><th id="98">98</th><td>        <b>template</b>&lt;<b>class</b> T, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> size_t_bits, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> type_bits&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</dfn>&lt;T, <b>true</b>, <b>false</b>, <a class="tu ref" href="#boost::hash_detail::hash_integral_impl{type-parameter-0-0,true,false,size_t_bits,type_bits}::size_t_bits" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, true, false, size_t_bits, type_bits&gt;::size_t_bits' data-ref="boost::hash_detail::hash_integral_impl{type-parameter-0-0,true,false,size_t_bits,type_bits}::size_t_bits">size_t_bits</a>, <a class="tu ref" href="#boost::hash_detail::hash_integral_impl{type-parameter-0-0,true,false,size_t_bits,type_bits}::type_bits" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, true, false, size_t_bits, type_bits&gt;::type_bits' data-ref="boost::hash_detail::hash_integral_impl{type-parameter-0-0,true,false,size_t_bits,type_bits}::type_bits">type_bits</a>&gt;</td></tr>
+<tr><th id="99">99</th><td>        {</td></tr>
+<tr><th id="100">100</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb0EXT0_EXT1_EE2fnES2_" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, true, false, size_t_bits, type_bits&gt;::fn' data-ref="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb0EXT0_EXT1_EE2fnES2_">fn</dfn>( T <dfn class="local col9 decl" id="589v" title='v' data-type='T' data-ref="589v">v</dfn> )</td></tr>
+<tr><th id="101">101</th><td>            {</td></tr>
+<tr><th id="102">102</th><td>                <b>typedef</b> <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/make_unsigned.hpp.html#boost::make_unsigned" title='boost::make_unsigned' data-ref="boost::make_unsigned">make_unsigned</a>&lt;T&gt;::type <dfn class="local col0 typedef" id="590U" title='U' data-type='typename boost::make_unsigned&lt;T&gt;::type' data-ref="590U">U</dfn>;</td></tr>
+<tr><th id="103">103</th><td></td></tr>
+<tr><th id="104">104</th><td>                <b>if</b>( <a class="local col9 ref" href="#589v" title='v' data-ref="589v">v</a> &gt;= <var>0</var> )</td></tr>
+<tr><th id="105">105</th><td>                {</td></tr>
+<tr><th id="106">106</th><td>                    <b>return</b> <a class="type" href="#boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</a>&lt;<a class="local col0 typedef" href="#590U" title='U' data-type='typename boost::make_unsigned&lt;T&gt;::type' data-ref="590U">U</a>&gt;::fn( <b>static_cast</b>&lt;<a class="local col0 typedef" href="#590U" title='U' data-type='typename boost::make_unsigned&lt;T&gt;::type' data-ref="590U">U</a>&gt;( <a class="local col9 ref" href="#589v" title='v' data-ref="589v">v</a> ) );</td></tr>
+<tr><th id="107">107</th><td>                }</td></tr>
+<tr><th id="108">108</th><td>                <b>else</b></td></tr>
+<tr><th id="109">109</th><td>                {</td></tr>
+<tr><th id="110">110</th><td>                    <b>return</b> ~<a class="type" href="#boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</a>&lt;<a class="local col0 typedef" href="#590U" title='U' data-type='typename boost::make_unsigned&lt;T&gt;::type' data-ref="590U">U</a>&gt;::fn( <b>static_cast</b>&lt;<a class="local col0 typedef" href="#590U" title='U' data-type='typename boost::make_unsigned&lt;T&gt;::type' data-ref="590U">U</a>&gt;( ~<b>static_cast</b>&lt;<a class="local col0 typedef" href="#590U" title='U' data-type='typename boost::make_unsigned&lt;T&gt;::type' data-ref="590U">U</a>&gt;( <a class="local col9 ref" href="#589v" title='v' data-ref="589v">v</a> ) ) );</td></tr>
+<tr><th id="111">111</th><td>                }</td></tr>
+<tr><th id="112">112</th><td>            }</td></tr>
+<tr><th id="113">113</th><td>        };</td></tr>
+<tr><th id="114">114</th><td></td></tr>
+<tr><th id="115">115</th><td>        <b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</dfn>&lt;T, <b>true</b>, <b>true</b>, <var>32</var>, <var>64</var>&gt;</td></tr>
+<tr><th id="116">116</th><td>        {</td></tr>
+<tr><th id="117">117</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb1ELm32ELm64EE2fnES2_" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, true, true, 32, 64&gt;::fn' data-ref="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb1ELm32ELm64EE2fnES2_">fn</dfn>( T <dfn class="local col1 decl" id="591v" title='v' data-type='T' data-ref="591v">v</dfn> )</td></tr>
+<tr><th id="118">118</th><td>            {</td></tr>
+<tr><th id="119">119</th><td>                <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col2 decl" id="592seed" title='seed' data-type='std::size_t' data-ref="592seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="120">120</th><td></td></tr>
+<tr><th id="121">121</th><td>                <a class="local col2 ref" href="#592seed" title='seed' data-ref="592seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col1 ref" href="#591v" title='v' data-ref="591v">v</a> &gt;&gt; <var>32</var> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col2 ref" href="#592seed" title='seed' data-ref="592seed">seed</a> );</td></tr>
+<tr><th id="122">122</th><td>                <a class="local col2 ref" href="#592seed" title='seed' data-ref="592seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col1 ref" href="#591v" title='v' data-ref="591v">v</a>  &amp; <var>0xFFFFFFFF</var> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col2 ref" href="#592seed" title='seed' data-ref="592seed">seed</a> );</td></tr>
+<tr><th id="123">123</th><td></td></tr>
+<tr><th id="124">124</th><td>                <b>return</b> <a class="local col2 ref" href="#592seed" title='seed' data-ref="592seed">seed</a>;</td></tr>
+<tr><th id="125">125</th><td>            }</td></tr>
+<tr><th id="126">126</th><td>        };</td></tr>
+<tr><th id="127">127</th><td></td></tr>
+<tr><th id="128">128</th><td>        <b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</dfn>&lt;T, <b>true</b>, <b>true</b>, <var>32</var>, <var>128</var>&gt;</td></tr>
+<tr><th id="129">129</th><td>        {</td></tr>
+<tr><th id="130">130</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb1ELm32ELm128EE2fnES2_" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, true, true, 32, 128&gt;::fn' data-ref="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb1ELm32ELm128EE2fnES2_">fn</dfn>( T <dfn class="local col3 decl" id="593v" title='v' data-type='T' data-ref="593v">v</dfn> )</td></tr>
+<tr><th id="131">131</th><td>            {</td></tr>
+<tr><th id="132">132</th><td>                <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="594seed" title='seed' data-type='std::size_t' data-ref="594seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="133">133</th><td></td></tr>
+<tr><th id="134">134</th><td>                <a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col3 ref" href="#593v" title='v' data-ref="593v">v</a> &gt;&gt; <var>96</var> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> );</td></tr>
+<tr><th id="135">135</th><td>                <a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col3 ref" href="#593v" title='v' data-ref="593v">v</a> &gt;&gt; <var>64</var> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> );</td></tr>
+<tr><th id="136">136</th><td>                <a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col3 ref" href="#593v" title='v' data-ref="593v">v</a> &gt;&gt; <var>32</var> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> );</td></tr>
+<tr><th id="137">137</th><td>                <a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col3 ref" href="#593v" title='v' data-ref="593v">v</a> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a> );</td></tr>
+<tr><th id="138">138</th><td></td></tr>
+<tr><th id="139">139</th><td>                <b>return</b> <a class="local col4 ref" href="#594seed" title='seed' data-ref="594seed">seed</a>;</td></tr>
+<tr><th id="140">140</th><td>            }</td></tr>
+<tr><th id="141">141</th><td>        };</td></tr>
+<tr><th id="142">142</th><td></td></tr>
+<tr><th id="143">143</th><td>        <b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</dfn>&lt;T, <b>true</b>, <b>true</b>, <var>64</var>, <var>128</var>&gt;</td></tr>
+<tr><th id="144">144</th><td>        {</td></tr>
+<tr><th id="145">145</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb1ELm64ELm128EE2fnES2_" title='boost::hash_detail::hash_integral_impl&lt;type-parameter-0-0, true, true, 64, 128&gt;::fn' data-ref="_ZN5boost11hash_detail18hash_integral_implIT_Lb1ELb1ELm64ELm128EE2fnES2_">fn</dfn>( T <dfn class="local col5 decl" id="595v" title='v' data-type='T' data-ref="595v">v</dfn> )</td></tr>
+<tr><th id="146">146</th><td>            {</td></tr>
+<tr><th id="147">147</th><td>                <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="596seed" title='seed' data-type='std::size_t' data-ref="596seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="148">148</th><td></td></tr>
+<tr><th id="149">149</th><td>                <a class="local col6 ref" href="#596seed" title='seed' data-ref="596seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col5 ref" href="#595v" title='v' data-ref="595v">v</a> &gt;&gt; <var>64</var> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col6 ref" href="#596seed" title='seed' data-ref="596seed">seed</a> );</td></tr>
+<tr><th id="150">150</th><td>                <a class="local col6 ref" href="#596seed" title='seed' data-ref="596seed">seed</a> = <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col5 ref" href="#595v" title='v' data-ref="595v">v</a> ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col6 ref" href="#596seed" title='seed' data-ref="596seed">seed</a> );</td></tr>
+<tr><th id="151">151</th><td></td></tr>
+<tr><th id="152">152</th><td>                <b>return</b> <a class="local col6 ref" href="#596seed" title='seed' data-ref="596seed">seed</a>;</td></tr>
+<tr><th id="153">153</th><td>            }</td></tr>
+<tr><th id="154">154</th><td>        };</td></tr>
+<tr><th id="155">155</th><td></td></tr>
+<tr><th id="156">156</th><td>    } <i>// namespace hash_detail</i></td></tr>
+<tr><th id="157">157</th><td></td></tr>
+<tr><th id="158">158</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="159">159</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">boost::</span><a class="type" href="../type_traits/is_integral.hpp.html#boost::is_integral" title='boost::is_integral' data-ref="boost::is_integral">is_integral</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="160">160</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</dfn>( T <dfn class="local col7 decl" id="597v" title='v' data-type='T' data-ref="597v">v</dfn> )</td></tr>
+<tr><th id="161">161</th><td>    {</td></tr>
+<tr><th id="162">162</th><td>        <b>return</b> <span class="namespace">hash_detail::</span><a class="type" href="#boost::hash_detail::hash_integral_impl" title='boost::hash_detail::hash_integral_impl' data-ref="boost::hash_detail::hash_integral_impl">hash_integral_impl</a>&lt;T&gt;::fn( <a class="local col7 ref" href="#597v" title='v' data-ref="597v">v</a> );</td></tr>
+<tr><th id="163">163</th><td>    }</td></tr>
+<tr><th id="164">164</th><td></td></tr>
+<tr><th id="165">165</th><td>    <i>// enumeration types</i></td></tr>
+<tr><th id="166">166</th><td></td></tr>
+<tr><th id="167">167</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="168">168</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">boost::</span><a class="type" href="../type_traits/is_enum.hpp.html#boost::is_enum" title='boost::is_enum' data-ref="boost::is_enum">is_enum</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="169">169</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</dfn>( T <dfn class="local col8 decl" id="598v" title='v' data-type='T' data-ref="598v">v</dfn> )</td></tr>
+<tr><th id="170">170</th><td>    {</td></tr>
+<tr><th id="171">171</th><td>        <i>// This should in principle return the equivalent of</i></td></tr>
+<tr><th id="172">172</th><td><i>        //</i></td></tr>
+<tr><th id="173">173</th><td><i>        // boost::hash_value( to_underlying(v) );</i></td></tr>
+<tr><th id="174">174</th><td><i>        //</i></td></tr>
+<tr><th id="175">175</th><td><i>        // However, the C++03 implementation of underlying_type,</i></td></tr>
+<tr><th id="176">176</th><td><i>        //</i></td></tr>
+<tr><th id="177">177</th><td><i>        // conditional&lt;is_signed&lt;T&gt;, make_signed&lt;T&gt;, make_unsigned&lt;T&gt;&gt;::type::type</i></td></tr>
+<tr><th id="178">178</th><td><i>        //</i></td></tr>
+<tr><th id="179">179</th><td><i>        // generates a legitimate -Wconversion warning in is_signed,</i></td></tr>
+<tr><th id="180">180</th><td><i>        // because -1 is not a valid enum value when all the enumerators</i></td></tr>
+<tr><th id="181">181</th><td><i>        // are nonnegative.</i></td></tr>
+<tr><th id="182">182</th><td><i>        //</i></td></tr>
+<tr><th id="183">183</th><td><i>        // So the legacy implementation will have to do for now.</i></td></tr>
+<tr><th id="184">184</th><td></td></tr>
+<tr><th id="185">185</th><td>        <b>return</b> <b>static_cast</b>&lt;<span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;( <a class="local col8 ref" href="#598v" title='v' data-ref="598v">v</a> );</td></tr>
+<tr><th id="186">186</th><td>    }</td></tr>
+<tr><th id="187">187</th><td></td></tr>
+<tr><th id="188">188</th><td>    <i>// floating point types</i></td></tr>
+<tr><th id="189">189</th><td></td></tr>
+<tr><th id="190">190</th><td>    <b>namespace</b> <span class="namespace">hash_detail</span></td></tr>
+<tr><th id="191">191</th><td>    {</td></tr>
+<tr><th id="192">192</th><td>        <b>template</b>&lt;<b>class</b> T,</td></tr>
+<tr><th id="193">193</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> Bits = <b>sizeof</b>(T) * <span class="macro" title="8" data-ref="_M/CHAR_BIT">CHAR_BIT</span>,</td></tr>
+<tr><th id="194">194</th><td>            <em>int</em> Digits = <span class="namespace">std::</span><a class="type" href="../../c++/13/limits.html#std::numeric_limits" title='std::numeric_limits' data-ref="std::numeric_limits">numeric_limits</a>&lt;T&gt;::digits&gt;</td></tr>
+<tr><th id="195">195</th><td>        <b>struct</b> <dfn class="type" id="boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</dfn>;</td></tr>
+<tr><th id="196">196</th><td></td></tr>
+<tr><th id="197">197</th><td>        <i>// float</i></td></tr>
+<tr><th id="198">198</th><td>        <b>template</b>&lt;<b>class</b> T, <em>int</em> Digits&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</dfn>&lt;T, <var>32</var>, <a class="tu ref" href="#boost::hash_detail::hash_float_impl{type-parameter-0-0,32,Digits}::Digits" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 32, Digits&gt;::Digits' data-ref="boost::hash_detail::hash_float_impl{type-parameter-0-0,32,Digits}::Digits">Digits</a>&gt;</td></tr>
+<tr><th id="199">199</th><td>        {</td></tr>
+<tr><th id="200">200</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail15hash_float_implIT_Lm32EXT0_EE2fnES2_" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 32, Digits&gt;::fn' data-ref="_ZN5boost11hash_detail15hash_float_implIT_Lm32EXT0_EE2fnES2_">fn</dfn>( T <dfn class="local col9 decl" id="599v" title='v' data-type='T' data-ref="599v">v</dfn> )</td></tr>
+<tr><th id="201">201</th><td>            {</td></tr>
+<tr><th id="202">202</th><td>                <span class="namespace">boost::</span>uint32_t <dfn class="local col0 decl" id="600w" title='w' data-type='boost::uint32_t' data-ref="600w">w</dfn>;</td></tr>
+<tr><th id="203">203</th><td>                <span class="namespace">std::</span><a class="ref fn" href="../../string.h.html#memcpy" title='memcpy' data-ref="memcpy">memcpy</a>( <span class='inlayHint'>dest:&nbsp;</span>&amp;<a class="local col0 ref" href="#600w" title='w' data-ref="600w">w</a>, <span class='inlayHint'>src:&nbsp;</span>&amp;<a class="local col9 ref" href="#599v" title='v' data-ref="599v">v</a>, <span class='inlayHint'>n:&nbsp;</span><b>sizeof</b>( <a class="local col9 ref" href="#599v" title='v' data-ref="599v">v</a> ) );</td></tr>
+<tr><th id="204">204</th><td></td></tr>
+<tr><th id="205">205</th><td>                <b>return</b> <a class="local col0 ref" href="#600w" title='w' data-ref="600w">w</a>;</td></tr>
+<tr><th id="206">206</th><td>            }</td></tr>
+<tr><th id="207">207</th><td>        };</td></tr>
+<tr><th id="208">208</th><td></td></tr>
+<tr><th id="209">209</th><td>        <i>// double</i></td></tr>
+<tr><th id="210">210</th><td>        <b>template</b>&lt;<b>class</b> T, <em>int</em> Digits&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</dfn>&lt;T, <var>64</var>, <a class="tu ref" href="#boost::hash_detail::hash_float_impl{type-parameter-0-0,64,Digits}::Digits" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 64, Digits&gt;::Digits' data-ref="boost::hash_detail::hash_float_impl{type-parameter-0-0,64,Digits}::Digits">Digits</a>&gt;</td></tr>
+<tr><th id="211">211</th><td>        {</td></tr>
+<tr><th id="212">212</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail15hash_float_implIT_Lm64EXT0_EE2fnES2_" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 64, Digits&gt;::fn' data-ref="_ZN5boost11hash_detail15hash_float_implIT_Lm64EXT0_EE2fnES2_">fn</dfn>( T <dfn class="local col1 decl" id="601v" title='v' data-type='T' data-ref="601v">v</dfn> )</td></tr>
+<tr><th id="213">213</th><td>            {</td></tr>
+<tr><th id="214">214</th><td>                <span class="namespace">boost::</span>uint64_t <dfn class="local col2 decl" id="602w" title='w' data-type='boost::uint64_t' data-ref="602w">w</dfn>;</td></tr>
+<tr><th id="215">215</th><td>                <span class="namespace">std::</span><a class="ref fn" href="../../string.h.html#memcpy" title='memcpy' data-ref="memcpy">memcpy</a>( <span class='inlayHint'>dest:&nbsp;</span>&amp;<a class="local col2 ref" href="#602w" title='w' data-ref="602w">w</a>, <span class='inlayHint'>src:&nbsp;</span>&amp;<a class="local col1 ref" href="#601v" title='v' data-ref="601v">v</a>, <span class='inlayHint'>n:&nbsp;</span><b>sizeof</b>( <a class="local col1 ref" href="#601v" title='v' data-ref="601v">v</a> ) );</td></tr>
+<tr><th id="216">216</th><td></td></tr>
+<tr><th id="217">217</th><td>                <b>return</b> <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col2 ref" href="#602w" title='w' data-ref="602w">w</a> );</td></tr>
+<tr><th id="218">218</th><td>            }</td></tr>
+<tr><th id="219">219</th><td>        };</td></tr>
+<tr><th id="220">220</th><td></td></tr>
+<tr><th id="221">221</th><td>        <i>// 80 bit long double in 12 bytes</i></td></tr>
+<tr><th id="222">222</th><td>        <b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</dfn>&lt;T, <var>96</var>, <var>64</var>&gt;</td></tr>
+<tr><th id="223">223</th><td>        {</td></tr>
+<tr><th id="224">224</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail15hash_float_implIT_Lm96ELi64EE2fnES2_" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 96, 64&gt;::fn' data-ref="_ZN5boost11hash_detail15hash_float_implIT_Lm96ELi64EE2fnES2_">fn</dfn>( T <dfn class="local col3 decl" id="603v" title='v' data-type='T' data-ref="603v">v</dfn> )</td></tr>
+<tr><th id="225">225</th><td>            {</td></tr>
+<tr><th id="226">226</th><td>                <span class="namespace">boost::</span>uint64_t <dfn class="local col4 decl" id="604w" title='w' data-type='boost::uint64_t[2]' data-ref="604w">w</dfn>[ <var>2</var> ] = {};</td></tr>
+<tr><th id="227">227</th><td>                <span class="namespace">std::</span><a class="ref fn" href="../../string.h.html#memcpy" title='memcpy' data-ref="memcpy">memcpy</a>( <span class='inlayHint'>dest:&nbsp;</span>&amp;<a class="local col4 ref" href="#604w" title='w' data-ref="604w">w</a>, <span class='inlayHint'>src:&nbsp;</span>&amp;<a class="local col3 ref" href="#603v" title='v' data-ref="603v">v</a>, <span class='inlayHint'>n:&nbsp;</span><var>80</var> / <span class="macro" title="8" data-ref="_M/CHAR_BIT">CHAR_BIT</span> );</td></tr>
+<tr><th id="228">228</th><td></td></tr>
+<tr><th id="229">229</th><td>                <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col5 decl" id="605seed" title='seed' data-type='std::size_t' data-ref="605seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="230">230</th><td></td></tr>
+<tr><th id="231">231</th><td>                <a class="local col5 ref" href="#605seed" title='seed' data-ref="605seed">seed</a> = <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#604w" title='w' data-ref="604w">w</a>[<var>0</var>] ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col5 ref" href="#605seed" title='seed' data-ref="605seed">seed</a> );</td></tr>
+<tr><th id="232">232</th><td>                <a class="local col5 ref" href="#605seed" title='seed' data-ref="605seed">seed</a> = <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#604w" title='w' data-ref="604w">w</a>[<var>1</var>] ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col5 ref" href="#605seed" title='seed' data-ref="605seed">seed</a> );</td></tr>
+<tr><th id="233">233</th><td></td></tr>
+<tr><th id="234">234</th><td>                <b>return</b> <a class="local col5 ref" href="#605seed" title='seed' data-ref="605seed">seed</a>;</td></tr>
+<tr><th id="235">235</th><td>            }</td></tr>
+<tr><th id="236">236</th><td>        };</td></tr>
+<tr><th id="237">237</th><td></td></tr>
+<tr><th id="238">238</th><td>        <i>// 80 bit long double in 16 bytes</i></td></tr>
+<tr><th id="239">239</th><td>        <b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</dfn>&lt;T, <var>128</var>, <var>64</var>&gt;</td></tr>
+<tr><th id="240">240</th><td>        {</td></tr>
+<tr><th id="241">241</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail15hash_float_implIT_Lm128ELi64EE2fnES2_" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 128, 64&gt;::fn' data-ref="_ZN5boost11hash_detail15hash_float_implIT_Lm128ELi64EE2fnES2_">fn</dfn>( T <dfn class="local col6 decl" id="606v" title='v' data-type='T' data-ref="606v">v</dfn> )</td></tr>
+<tr><th id="242">242</th><td>            {</td></tr>
+<tr><th id="243">243</th><td>                <span class="namespace">boost::</span>uint64_t <dfn class="local col7 decl" id="607w" title='w' data-type='boost::uint64_t[2]' data-ref="607w">w</dfn>[ <var>2</var> ] = {};</td></tr>
+<tr><th id="244">244</th><td>                <span class="namespace">std::</span><a class="ref fn" href="../../string.h.html#memcpy" title='memcpy' data-ref="memcpy">memcpy</a>( <span class='inlayHint'>dest:&nbsp;</span>&amp;<a class="local col7 ref" href="#607w" title='w' data-ref="607w">w</a>, <span class='inlayHint'>src:&nbsp;</span>&amp;<a class="local col6 ref" href="#606v" title='v' data-ref="606v">v</a>, <span class='inlayHint'>n:&nbsp;</span><var>80</var> / <span class="macro" title="8" data-ref="_M/CHAR_BIT">CHAR_BIT</span> );</td></tr>
+<tr><th id="245">245</th><td></td></tr>
+<tr><th id="246">246</th><td>                <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col8 decl" id="608seed" title='seed' data-type='std::size_t' data-ref="608seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="247">247</th><td></td></tr>
+<tr><th id="248">248</th><td>                <a class="local col8 ref" href="#608seed" title='seed' data-ref="608seed">seed</a> = <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col7 ref" href="#607w" title='w' data-ref="607w">w</a>[<var>0</var>] ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col8 ref" href="#608seed" title='seed' data-ref="608seed">seed</a> );</td></tr>
+<tr><th id="249">249</th><td>                <a class="local col8 ref" href="#608seed" title='seed' data-ref="608seed">seed</a> = <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col7 ref" href="#607w" title='w' data-ref="607w">w</a>[<var>1</var>] ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col8 ref" href="#608seed" title='seed' data-ref="608seed">seed</a> );</td></tr>
+<tr><th id="250">250</th><td></td></tr>
+<tr><th id="251">251</th><td>                <b>return</b> <a class="local col8 ref" href="#608seed" title='seed' data-ref="608seed">seed</a>;</td></tr>
+<tr><th id="252">252</th><td>            }</td></tr>
+<tr><th id="253">253</th><td>        };</td></tr>
+<tr><th id="254">254</th><td></td></tr>
+<tr><th id="255">255</th><td>        <i>// 128 bit long double</i></td></tr>
+<tr><th id="256">256</th><td>        <b>template</b>&lt;<b>class</b> T, <em>int</em> Digits&gt; <b>struct</b> <dfn class="type def" id="boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</dfn>&lt;T, <var>128</var>, <a class="tu ref" href="#boost::hash_detail::hash_float_impl{type-parameter-0-0,128,Digits}::Digits" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 128, Digits&gt;::Digits' data-ref="boost::hash_detail::hash_float_impl{type-parameter-0-0,128,Digits}::Digits">Digits</a>&gt;</td></tr>
+<tr><th id="257">257</th><td>        {</td></tr>
+<tr><th id="258">258</th><td>            <em>static</em> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost11hash_detail15hash_float_implIT_Lm128EXT0_EE2fnES2_" title='boost::hash_detail::hash_float_impl&lt;type-parameter-0-0, 128, Digits&gt;::fn' data-ref="_ZN5boost11hash_detail15hash_float_implIT_Lm128EXT0_EE2fnES2_">fn</dfn>( T <dfn class="local col9 decl" id="609v" title='v' data-type='T' data-ref="609v">v</dfn> )</td></tr>
+<tr><th id="259">259</th><td>            {</td></tr>
+<tr><th id="260">260</th><td>                <span class="namespace">boost::</span>uint64_t <dfn class="local col0 decl" id="610w" title='w' data-type='boost::uint64_t[2]' data-ref="610w">w</dfn>[ <var>2</var> ];</td></tr>
+<tr><th id="261">261</th><td>                <span class="namespace">std::</span><a class="ref fn" href="../../string.h.html#memcpy" title='memcpy' data-ref="memcpy">memcpy</a>( <span class='inlayHint'>dest:&nbsp;</span>&amp;<a class="local col0 ref" href="#610w" title='w' data-ref="610w">w</a>, <span class='inlayHint'>src:&nbsp;</span>&amp;<a class="local col9 ref" href="#609v" title='v' data-ref="609v">v</a>, <span class='inlayHint'>n:&nbsp;</span><b>sizeof</b>( <a class="local col9 ref" href="#609v" title='v' data-ref="609v">v</a> ) );</td></tr>
+<tr><th id="262">262</th><td></td></tr>
+<tr><th id="263">263</th><td>                <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="611seed" title='seed' data-type='std::size_t' data-ref="611seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="264">264</th><td></td></tr>
+<tr><th id="265">265</th><td><u>#<span data-ppcond="265">if</span> defined(<span class="macro" data-ref="_M/__FLOAT_WORD_ORDER__">__FLOAT_WORD_ORDER__</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/__ORDER_BIG_ENDIAN__">__ORDER_BIG_ENDIAN__</span>) &amp;&amp; __FLOAT_WORD_ORDER__ == <span class="macro" title="4321" data-ref="_M/__ORDER_BIG_ENDIAN__">__ORDER_BIG_ENDIAN__</span></u></td></tr>
+<tr><th id="266">266</th><td></td></tr>
+<tr><th id="267">267</th><td>                seed = hash_value( w[<var>1</var>] ) + hash_detail::hash_mix( seed );</td></tr>
+<tr><th id="268">268</th><td>                seed = hash_value( w[<var>0</var>] ) + hash_detail::hash_mix( seed );</td></tr>
+<tr><th id="269">269</th><td></td></tr>
+<tr><th id="270">270</th><td><u>#<span data-ppcond="265">else</span></u></td></tr>
+<tr><th id="271">271</th><td></td></tr>
+<tr><th id="272">272</th><td>                <a class="local col1 ref" href="#611seed" title='seed' data-ref="611seed">seed</a> = <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col0 ref" href="#610w" title='w' data-ref="610w">w</a>[<var>0</var>] ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col1 ref" href="#611seed" title='seed' data-ref="611seed">seed</a> );</td></tr>
+<tr><th id="273">273</th><td>                <a class="local col1 ref" href="#611seed" title='seed' data-ref="611seed">seed</a> = <a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col0 ref" href="#610w" title='w' data-ref="610w">w</a>[<var>1</var>] ) + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col1 ref" href="#611seed" title='seed' data-ref="611seed">seed</a> );</td></tr>
+<tr><th id="274">274</th><td></td></tr>
+<tr><th id="275">275</th><td><u>#<span data-ppcond="265">endif</span></u></td></tr>
+<tr><th id="276">276</th><td>                <b>return</b> <a class="local col1 ref" href="#611seed" title='seed' data-ref="611seed">seed</a>;</td></tr>
+<tr><th id="277">277</th><td>            }</td></tr>
+<tr><th id="278">278</th><td>        };</td></tr>
+<tr><th id="279">279</th><td></td></tr>
+<tr><th id="280">280</th><td>    } <i>// namespace hash_detail</i></td></tr>
+<tr><th id="281">281</th><td></td></tr>
+<tr><th id="282">282</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="283">283</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">boost::</span><a class="type" href="../type_traits/is_floating_point.hpp.html#boost::is_floating_point" title='boost::is_floating_point' data-ref="boost::is_floating_point">is_floating_point</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="284">284</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</dfn>( T <dfn class="local col2 decl" id="612v" title='v' data-type='T' data-ref="612v">v</dfn> )</td></tr>
+<tr><th id="285">285</th><td>    {</td></tr>
+<tr><th id="286">286</th><td>        <b>return</b> <span class="namespace">boost::hash_detail::</span><a class="type" href="#boost::hash_detail::hash_float_impl" title='boost::hash_detail::hash_float_impl' data-ref="boost::hash_detail::hash_float_impl">hash_float_impl</a>&lt;T&gt;::fn( <a class="local col2 ref" href="#612v" title='v' data-ref="612v">v</a> + <var>0</var> );</td></tr>
+<tr><th id="287">287</th><td>    }</td></tr>
+<tr><th id="288">288</th><td></td></tr>
+<tr><th id="289">289</th><td>    <i>// pointer types</i></td></tr>
+<tr><th id="290">290</th><td><i></i></td></tr>
+<tr><th id="291">291</th><td><i>    // `x + (x &gt;&gt; 3)` adjustment by Alberto Barbati and Dave Harris.</i></td></tr>
+<tr><th id="292">292</th><td>    <b>template</b> &lt;<b>class</b> T&gt; <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKPT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKPT_">hash_value</dfn>( T* <em>const</em>&amp; <dfn class="local col3 decl" id="613v" title='v' data-type='T *const &amp;' data-ref="613v">v</dfn> )</td></tr>
+<tr><th id="293">293</th><td>    {</td></tr>
+<tr><th id="294">294</th><td>        <span class="namespace">boost::</span>uintptr_t <dfn class="local col4 decl" id="614x" title='x' data-type='boost::uintptr_t' data-ref="614x">x</dfn> = <b>reinterpret_cast</b>&lt;<span class="namespace">boost::</span>uintptr_t&gt;( <a class="local col3 ref" href="#613v" title='v' data-ref="613v">v</a> );</td></tr>
+<tr><th id="295">295</th><td>        <b>return</b> <span class="namespace">boost::</span><a class="ref fn" href="#_ZN5boost10hash_valueET_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueET_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col4 ref" href="#614x" title='x' data-ref="614x">x</a> + (<a class="local col4 ref" href="#614x" title='x' data-ref="614x">x</a> &gt;&gt; <var>3</var>) );</td></tr>
+<tr><th id="296">296</th><td>    }</td></tr>
+<tr><th id="297">297</th><td></td></tr>
+<tr><th id="298">298</th><td>    <i>// array types</i></td></tr>
+<tr><th id="299">299</th><td></td></tr>
+<tr><th id="300">300</th><td>    <b>template</b>&lt;<b>class</b> T, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> N&gt;</td></tr>
+<tr><th id="301">301</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERAT0__KT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERAT0__KT_">hash_value</dfn>( T <em>const</em> (&amp;<dfn class="local col5 decl" id="615x" title='x' data-type='const T (&amp;)[N]' data-ref="615x">x</dfn>)[ <a class="tu ref" href="#N" title='N' data-ref="N">N</a> ] )</td></tr>
+<tr><th id="302">302</th><td>    {</td></tr>
+<tr><th id="303">303</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_range( <a class="local col5 ref" href="#615x" title='x' data-ref="615x">x</a>, <a class="local col5 ref" href="#615x" title='x' data-ref="615x">x</a> + <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a> );</td></tr>
+<tr><th id="304">304</th><td>    }</td></tr>
+<tr><th id="305">305</th><td></td></tr>
+<tr><th id="306">306</th><td>    <b>template</b>&lt;<b>class</b> T, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> N&gt;</td></tr>
+<tr><th id="307">307</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERAT0__T_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERAT0__T_">hash_value</dfn>( T (&amp;<dfn class="local col6 decl" id="616x" title='x' data-type='T (&amp;)[N]' data-ref="616x">x</dfn>)[ <a class="tu ref" href="#N" title='N' data-ref="N">N</a> ] )</td></tr>
+<tr><th id="308">308</th><td>    {</td></tr>
+<tr><th id="309">309</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_range( <a class="local col6 ref" href="#616x" title='x' data-ref="616x">x</a>, <a class="local col6 ref" href="#616x" title='x' data-ref="616x">x</a> + <a class="tu ref" href="#N" title='N' data-use='r' data-ref="N">N</a> );</td></tr>
+<tr><th id="310">310</th><td>    }</td></tr>
+<tr><th id="311">311</th><td></td></tr>
+<tr><th id="312">312</th><td>    <i>// complex</i></td></tr>
+<tr><th id="313">313</th><td></td></tr>
+<tr><th id="314">314</th><td>    <b>template</b> &lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="315">315</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt7complexIT_E" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt7complexIT_E">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/complex.html#std::complex" title='std::complex' data-ref="std::complex">complex</a>&lt;T&gt; <em>const</em>&amp; <dfn class="local col7 decl" id="617v" title='v' data-type='const std::complex&lt;T&gt; &amp;' data-ref="617v">v</dfn> )</td></tr>
+<tr><th id="316">316</th><td>    {</td></tr>
+<tr><th id="317">317</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col8 decl" id="618re" title='re' data-type='std::size_t' data-ref="618re">re</dfn> = <span class="namespace">boost::</span><a class="type" href="hash_fwd.hpp.html#boost::hash" title='boost::hash' data-ref="boost::hash">hash</a>&lt;T&gt;()( <a class="local col7 ref" href="#617v" title='v' data-ref="617v">v</a>.real() );</td></tr>
+<tr><th id="318">318</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="619im" title='im' data-type='std::size_t' data-ref="619im">im</dfn> = <span class="namespace">boost::</span><a class="type" href="hash_fwd.hpp.html#boost::hash" title='boost::hash' data-ref="boost::hash">hash</a>&lt;T&gt;()( <a class="local col7 ref" href="#617v" title='v' data-ref="617v">v</a>.imag() );</td></tr>
+<tr><th id="319">319</th><td></td></tr>
+<tr><th id="320">320</th><td>        <b>return</b> <a class="local col8 ref" href="#618re" title='re' data-ref="618re">re</a> + <span class="namespace">hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col9 ref" href="#619im" title='im' data-ref="619im">im</a> );</td></tr>
+<tr><th id="321">321</th><td>    }</td></tr>
+<tr><th id="322">322</th><td></td></tr>
+<tr><th id="323">323</th><td>    <i>// pair</i></td></tr>
+<tr><th id="324">324</th><td></td></tr>
+<tr><th id="325">325</th><td>    <b>template</b> &lt;<b>class</b> A, <b>class</b> B&gt;</td></tr>
+<tr><th id="326">326</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt4pairIT_T0_E" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt4pairIT_T0_E">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/bits/stl_iterator.h.html#std::pair" title='std::pair' data-ref="std::pair">pair</a>&lt;A, B&gt; <em>const</em>&amp; <dfn class="local col0 decl" id="620v" title='v' data-type='const std::pair&lt;A, B&gt; &amp;' data-ref="620v">v</dfn> )</td></tr>
+<tr><th id="327">327</th><td>    {</td></tr>
+<tr><th id="328">328</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="621seed" title='seed' data-type='std::size_t' data-ref="621seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="329">329</th><td></td></tr>
+<tr><th id="330">330</th><td>        <span class="namespace">boost::</span>hash_combine( <a class="local col1 ref" href="#621seed" title='seed' data-ref="621seed">seed</a>, <a class="local col0 ref" href="#620v" title='v' data-ref="620v">v</a>.first );</td></tr>
+<tr><th id="331">331</th><td>        <span class="namespace">boost::</span>hash_combine( <a class="local col1 ref" href="#621seed" title='seed' data-ref="621seed">seed</a>, <a class="local col0 ref" href="#620v" title='v' data-ref="620v">v</a>.second );</td></tr>
+<tr><th id="332">332</th><td></td></tr>
+<tr><th id="333">333</th><td>        <b>return</b> <a class="local col1 ref" href="#621seed" title='seed' data-ref="621seed">seed</a>;</td></tr>
+<tr><th id="334">334</th><td>    }</td></tr>
+<tr><th id="335">335</th><td></td></tr>
+<tr><th id="336">336</th><td>    <i>// ranges (list, set, deque...)</i></td></tr>
+<tr><th id="337">337</th><td></td></tr>
+<tr><th id="338">338</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="339">339</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">container_hash::</span><a class="type" href="hash_fwd.hpp.html#boost::container_hash::is_range" title='boost::container_hash::is_range' data-ref="boost::container_hash::is_range">is_range</a>&lt;T&gt;::value &amp;&amp; !<span class="namespace">container_hash::</span><a class="type" href="hash_fwd.hpp.html#boost::container_hash::is_contiguous_range" title='boost::container_hash::is_contiguous_range' data-ref="boost::container_hash::is_contiguous_range">is_contiguous_range</a>&lt;T&gt;::value &amp;&amp; !<span class="namespace">container_hash::</span><a class="type" href="hash_fwd.hpp.html#boost::container_hash::is_unordered_range" title='boost::container_hash::is_unordered_range' data-ref="boost::container_hash::is_unordered_range">is_unordered_range</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="340">340</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueERKT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKT_">hash_value</dfn>( T <em>const</em>&amp; <dfn class="local col2 decl" id="622v" title='v' data-type='const T &amp;' data-ref="622v">v</dfn> )</td></tr>
+<tr><th id="341">341</th><td>    {</td></tr>
+<tr><th id="342">342</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_range( <a class="local col2 ref" href="#622v" title='v' data-ref="622v">v</a>.begin(), <a class="local col2 ref" href="#622v" title='v' data-ref="622v">v</a>.end() );</td></tr>
+<tr><th id="343">343</th><td>    }</td></tr>
+<tr><th id="344">344</th><td></td></tr>
+<tr><th id="345">345</th><td>    <i>// contiguous ranges (string, vector, array)</i></td></tr>
+<tr><th id="346">346</th><td></td></tr>
+<tr><th id="347">347</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="348">348</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">container_hash::</span><a class="type" href="hash_fwd.hpp.html#boost::container_hash::is_contiguous_range" title='boost::container_hash::is_contiguous_range' data-ref="boost::container_hash::is_contiguous_range">is_contiguous_range</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="349">349</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueERKT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKT_">hash_value</dfn>( T <em>const</em>&amp; <dfn class="local col3 decl" id="623v" title='v' data-type='const T &amp;' data-ref="623v">v</dfn> )</td></tr>
+<tr><th id="350">350</th><td>    {</td></tr>
+<tr><th id="351">351</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_range( <a class="local col3 ref" href="#623v" title='v' data-ref="623v">v</a>.data(), <a class="local col3 ref" href="#623v" title='v' data-ref="623v">v</a>.data() + <a class="local col3 ref" href="#623v" title='v' data-ref="623v">v</a>.size() );</td></tr>
+<tr><th id="352">352</th><td>    }</td></tr>
+<tr><th id="353">353</th><td></td></tr>
+<tr><th id="354">354</th><td>    <i>// unordered ranges (unordered_set, unordered_map)</i></td></tr>
+<tr><th id="355">355</th><td></td></tr>
+<tr><th id="356">356</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="357">357</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">container_hash::</span><a class="type" href="hash_fwd.hpp.html#boost::container_hash::is_unordered_range" title='boost::container_hash::is_unordered_range' data-ref="boost::container_hash::is_unordered_range">is_unordered_range</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="358">358</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueERKT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKT_">hash_value</dfn>( T <em>const</em>&amp; <dfn class="local col4 decl" id="624v" title='v' data-type='const T &amp;' data-ref="624v">v</dfn> )</td></tr>
+<tr><th id="359">359</th><td>    {</td></tr>
+<tr><th id="360">360</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_unordered_range( <a class="local col4 ref" href="#624v" title='v' data-ref="624v">v</a>.begin(), <a class="local col4 ref" href="#624v" title='v' data-ref="624v">v</a>.end() );</td></tr>
+<tr><th id="361">361</th><td>    }</td></tr>
+<tr><th id="362">362</th><td></td></tr>
+<tr><th id="363">363</th><td><u>#<span data-ppcond="363">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_VARIADIC_TEMPLATES">BOOST_NO_CXX11_VARIADIC_TEMPLATES</span>) &amp;&amp; ( \</u></td></tr>
+<tr><th id="364">364</th><td><u>    ( defined(<span class="macro" data-ref="_M/_MSVC_STL_VERSION">_MSVC_STL_VERSION</span>) &amp;&amp; _MSVC_STL_VERSION &lt; 142 ) || \</u></td></tr>
+<tr><th id="365">365</th><td><u>    ( !defined(<span class="macro" data-ref="_M/_MSVC_STL_VERSION">_MSVC_STL_VERSION</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/_CPPLIB_VER">_CPPLIB_VER</span>) &amp;&amp; _CPPLIB_VER &gt;= 520 ) )</u></td></tr>
+<tr><th id="366">366</th><td></td></tr>
+<tr><th id="367">367</th><td>    <i>// resolve ambiguity with unconstrained stdext::hash_value in &lt;xhash&gt; :-/</i></td></tr>
+<tr><th id="368">368</th><td></td></tr>
+<tr><th id="369">369</th><td>    <b>template</b>&lt;<b>template</b>&lt;<b>class</b>...&gt; <b>class</b> L, <b>class</b>... T&gt;</td></tr>
+<tr><th id="370">370</th><td>    <b>typename</b> boost::enable_if_&lt;container_hash::is_range&lt;L&lt;T...&gt;&gt;::value &amp;&amp; !container_hash::is_contiguous_range&lt;L&lt;T...&gt;&gt;::value &amp;&amp; !container_hash::is_unordered_range&lt;L&lt;T...&gt;&gt;::value, std::size_t&gt;::type</td></tr>
+<tr><th id="371">371</th><td>        hash_value( L&lt;T...&gt; <em>const</em>&amp; v )</td></tr>
+<tr><th id="372">372</th><td>    {</td></tr>
+<tr><th id="373">373</th><td>        <b>return</b> boost::hash_range( v.begin(), v.end() );</td></tr>
+<tr><th id="374">374</th><td>    }</td></tr>
+<tr><th id="375">375</th><td></td></tr>
+<tr><th id="376">376</th><td>    <i>// contiguous ranges (string, vector, array)</i></td></tr>
+<tr><th id="377">377</th><td></td></tr>
+<tr><th id="378">378</th><td>    <b>template</b>&lt;<b>template</b>&lt;<b>class</b>...&gt; <b>class</b> L, <b>class</b>... T&gt;</td></tr>
+<tr><th id="379">379</th><td>    <b>typename</b> boost::enable_if_&lt;container_hash::is_contiguous_range&lt;L&lt;T...&gt;&gt;::value, std::size_t&gt;::type</td></tr>
+<tr><th id="380">380</th><td>        hash_value( L&lt;T...&gt; <em>const</em>&amp; v )</td></tr>
+<tr><th id="381">381</th><td>    {</td></tr>
+<tr><th id="382">382</th><td>        <b>return</b> boost::hash_range( v.data(), v.data() + v.size() );</td></tr>
+<tr><th id="383">383</th><td>    }</td></tr>
+<tr><th id="384">384</th><td></td></tr>
+<tr><th id="385">385</th><td>    <b>template</b>&lt;<b>template</b>&lt;<b>class</b>, std::size_t&gt; <b>class</b> L, <b>class</b> T, std::size_t N&gt;</td></tr>
+<tr><th id="386">386</th><td>    <b>typename</b> boost::enable_if_&lt;container_hash::is_contiguous_range&lt;L&lt;T, N&gt;&gt;::value, std::size_t&gt;::type</td></tr>
+<tr><th id="387">387</th><td>        hash_value( L&lt;T, N&gt; <em>const</em>&amp; v )</td></tr>
+<tr><th id="388">388</th><td>    {</td></tr>
+<tr><th id="389">389</th><td>        <b>return</b> boost::hash_range( v.data(), v.data() + v.size() );</td></tr>
+<tr><th id="390">390</th><td>    }</td></tr>
+<tr><th id="391">391</th><td></td></tr>
+<tr><th id="392">392</th><td>    <i>// unordered ranges (unordered_set, unordered_map)</i></td></tr>
+<tr><th id="393">393</th><td></td></tr>
+<tr><th id="394">394</th><td>    <b>template</b>&lt;<b>template</b>&lt;<b>class</b>...&gt; <b>class</b> L, <b>class</b>... T&gt;</td></tr>
+<tr><th id="395">395</th><td>    <b>typename</b> boost::enable_if_&lt;container_hash::is_unordered_range&lt;L&lt;T...&gt;&gt;::value, std::size_t&gt;::type</td></tr>
+<tr><th id="396">396</th><td>        hash_value( L&lt;T...&gt; <em>const</em>&amp; v )</td></tr>
+<tr><th id="397">397</th><td>    {</td></tr>
+<tr><th id="398">398</th><td>        <b>return</b> boost::hash_unordered_range( v.begin(), v.end() );</td></tr>
+<tr><th id="399">399</th><td>    }</td></tr>
+<tr><th id="400">400</th><td></td></tr>
+<tr><th id="401">401</th><td><u>#<span data-ppcond="363">endif</span></u></td></tr>
+<tr><th id="402">402</th><td></td></tr>
+<tr><th id="403">403</th><td>    <i>// described classes</i></td></tr>
+<tr><th id="404">404</th><td></td></tr>
+<tr><th id="405">405</th><td><u>#<span data-ppcond="405">if</span> defined(<a class="macro" href="../describe/detail/config.hpp.html#10" data-ref="_M/BOOST_DESCRIBE_CXX14">BOOST_DESCRIBE_CXX14</a>)</u></td></tr>
+<tr><th id="406">406</th><td></td></tr>
+<tr><th id="407">407</th><td><u>#<span data-ppcond="407">if</span> defined(<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>) &amp;&amp; _MSC_VER == 1900</u></td></tr>
+<tr><th id="408">408</th><td><u># pragma warning(push)</u></td></tr>
+<tr><th id="409">409</th><td><u># pragma warning(disable: 4100) // unreferenced formal parameter</u></td></tr>
+<tr><th id="410">410</th><td><u>#<span data-ppcond="407">endif</span></u></td></tr>
+<tr><th id="411">411</th><td></td></tr>
+<tr><th id="412">412</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="413">413</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">container_hash::</span><a class="type" href="hash_fwd.hpp.html#boost::container_hash::is_described_class" title='boost::container_hash::is_described_class' data-ref="boost::container_hash::is_described_class">is_described_class</a>&lt;T&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="414">414</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueERKT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKT_">hash_value</dfn>( T <em>const</em>&amp; <dfn class="local col5 decl" id="625v" title='v' data-type='const T &amp;' data-ref="625v">v</dfn> )</td></tr>
+<tr><th id="415">415</th><td>    {</td></tr>
+<tr><th id="416">416</th><td>        <b>static_assert</b>( !<span class="namespace">boost::</span><a class="type" href="../type_traits/is_union.hpp.html#boost::is_union" title='boost::is_union' data-ref="boost::is_union">is_union</a>&lt;T&gt;::value, <q>"described unions are not supported"</q> );</td></tr>
+<tr><th id="417">417</th><td></td></tr>
+<tr><th id="418">418</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="626r" title='r' data-type='std::size_t' data-ref="626r">r</dfn> = <var>0</var>;</td></tr>
+<tr><th id="419">419</th><td></td></tr>
+<tr><th id="420">420</th><td>        <b>using</b> <dfn class="local col7 typedef" id="627Bd" title='Bd' data-type='describe::describe_bases&lt;T, describe::mod_any_access&gt;' data-ref="627Bd">Bd</dfn> = <span class="namespace">describe::</span><a class="type" href="../describe/bases.hpp.html#boost::describe::describe_bases" title='boost::describe::describe_bases' data-ref="boost::describe::describe_bases">describe_bases</a>&lt;T, <span class="namespace">describe::</span><a class="ref" href="../describe/modifiers.hpp.html#boost::describe::mod_any_access" title='boost::describe::mod_any_access' data-ref="boost::describe::mod_any_access">mod_any_access</a>&gt;;</td></tr>
+<tr><th id="421">421</th><td></td></tr>
+<tr><th id="422">422</th><td>        <span class="namespace">mp11::</span>mp_for_each&lt;<a class="local col7 typedef" href="#627Bd" title='Bd' data-type='describe::describe_bases&lt;T, describe::mod_any_access&gt;' data-ref="627Bd">Bd</a>&gt;([&amp;](<em>auto</em> <dfn class="local col8 decl" id="628D" title='D' data-type='auto' data-ref="628D">D</dfn>){</td></tr>
+<tr><th id="423">423</th><td></td></tr>
+<tr><th id="424">424</th><td>            <b>using</b> <dfn class="local col9 typedef" id="629B" title='B' data-type='typename decltype(D)::type' data-ref="629B">B</dfn> = <b>typename</b> <b>decltype</b>(<a class="local col8 ref" href="#628D" title='D' data-ref="628D">D</a>)::type;</td></tr>
+<tr><th id="425">425</th><td>            <span class="namespace">boost::</span>hash_combine( <a class="local col6 ref" href="#626r" title='r' data-ref="626r">r</a>, (<a class="local col9 typedef" href="#629B" title='B' data-type='typename decltype(D)::type' data-ref="629B">B</a> <em>const</em>&amp;)<a class="local col5 ref" href="#625v" title='v' data-ref="625v">v</a> );</td></tr>
+<tr><th id="426">426</th><td></td></tr>
+<tr><th id="427">427</th><td>        });</td></tr>
+<tr><th id="428">428</th><td></td></tr>
+<tr><th id="429">429</th><td>        <b>using</b> <dfn class="local col0 typedef" id="630Md" title='Md' data-type='describe::describe_members&lt;T, describe::mod_any_access&gt;' data-ref="630Md">Md</dfn> = <span class="namespace">describe::</span><a class="type" href="../describe/members.hpp.html#boost::describe::describe_members" title='boost::describe::describe_members' data-ref="boost::describe::describe_members">describe_members</a>&lt;T, <span class="namespace">describe::</span><a class="ref" href="../describe/modifiers.hpp.html#boost::describe::mod_any_access" title='boost::describe::mod_any_access' data-ref="boost::describe::mod_any_access">mod_any_access</a>&gt;;</td></tr>
+<tr><th id="430">430</th><td></td></tr>
+<tr><th id="431">431</th><td>        <span class="namespace">mp11::</span>mp_for_each&lt;<a class="local col0 typedef" href="#630Md" title='Md' data-type='describe::describe_members&lt;T, describe::mod_any_access&gt;' data-ref="630Md">Md</a>&gt;([&amp;](<em>auto</em> <dfn class="local col1 decl" id="631D" title='D' data-type='auto' data-ref="631D">D</dfn>){</td></tr>
+<tr><th id="432">432</th><td></td></tr>
+<tr><th id="433">433</th><td>            <span class="namespace">boost::</span>hash_combine( <a class="local col6 ref" href="#626r" title='r' data-ref="626r">r</a>, <a class="local col5 ref" href="#625v" title='v' data-ref="625v">v</a>.*<a class="local col1 ref" href="#631D" title='D' data-ref="631D">D</a>.pointer );</td></tr>
+<tr><th id="434">434</th><td></td></tr>
+<tr><th id="435">435</th><td>        });</td></tr>
+<tr><th id="436">436</th><td></td></tr>
+<tr><th id="437">437</th><td>        <b>return</b> <a class="local col6 ref" href="#626r" title='r' data-ref="626r">r</a>;</td></tr>
+<tr><th id="438">438</th><td>    }</td></tr>
+<tr><th id="439">439</th><td></td></tr>
+<tr><th id="440">440</th><td><u>#<span data-ppcond="440">if</span> defined(<span class="macro" data-ref="_M/_MSC_VER">_MSC_VER</span>) &amp;&amp; _MSC_VER == 1900</u></td></tr>
+<tr><th id="441">441</th><td><u># pragma warning(pop)</u></td></tr>
+<tr><th id="442">442</th><td><u>#<span data-ppcond="440">endif</span></u></td></tr>
+<tr><th id="443">443</th><td></td></tr>
+<tr><th id="444">444</th><td><u>#<span data-ppcond="405">endif</span></u></td></tr>
+<tr><th id="445">445</th><td></td></tr>
+<tr><th id="446">446</th><td>    <i>// std::unique_ptr, std::shared_ptr</i></td></tr>
+<tr><th id="447">447</th><td></td></tr>
+<tr><th id="448">448</th><td><u>#<span data-ppcond="448">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_SMART_PTR">BOOST_NO_CXX11_SMART_PTR</span>)</u></td></tr>
+<tr><th id="449">449</th><td></td></tr>
+<tr><th id="450">450</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="451">451</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt10shared_ptrIT_E" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt10shared_ptrIT_E">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/bits/shared_ptr_base.h.html#std::shared_ptr" title='std::shared_ptr' data-ref="std::shared_ptr">shared_ptr</a>&lt;T&gt; <em>const</em>&amp; <dfn class="local col2 decl" id="632x" title='x' data-type='const std::shared_ptr&lt;T&gt; &amp;' data-ref="632x">x</dfn> )</td></tr>
+<tr><th id="452">452</th><td>    {</td></tr>
+<tr><th id="453">453</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_value( <a class="local col2 ref" href="#632x" title='x' data-ref="632x">x</a>.get() );</td></tr>
+<tr><th id="454">454</th><td>    }</td></tr>
+<tr><th id="455">455</th><td></td></tr>
+<tr><th id="456">456</th><td>    <b>template</b> &lt;<b>typename</b> T, <b>typename</b> Deleter&gt;</td></tr>
+<tr><th id="457">457</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt10unique_ptrIT_T0_E" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt10unique_ptrIT_T0_E">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/bits/unique_ptr.h.html#std::unique_ptr" title='std::unique_ptr' data-ref="std::unique_ptr">unique_ptr</a>&lt;T, Deleter&gt; <em>const</em>&amp; <dfn class="local col3 decl" id="633x" title='x' data-type='const std::unique_ptr&lt;T, Deleter&gt; &amp;' data-ref="633x">x</dfn> )</td></tr>
+<tr><th id="458">458</th><td>    {</td></tr>
+<tr><th id="459">459</th><td>        <b>return</b> <span class="namespace">boost::</span>hash_value( <a class="local col3 ref" href="#633x" title='x' data-ref="633x">x</a>.get() );</td></tr>
+<tr><th id="460">460</th><td>    }</td></tr>
+<tr><th id="461">461</th><td></td></tr>
+<tr><th id="462">462</th><td><u>#<span data-ppcond="448">endif</span></u></td></tr>
+<tr><th id="463">463</th><td></td></tr>
+<tr><th id="464">464</th><td>    <i>// std::type_index</i></td></tr>
+<tr><th id="465">465</th><td></td></tr>
+<tr><th id="466">466</th><td><u>#<span data-ppcond="466">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_HDR_TYPEINDEX">BOOST_NO_CXX11_HDR_TYPEINDEX</span>)</u></td></tr>
+<tr><th id="467">467</th><td></td></tr>
+<tr><th id="468">468</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt10type_index" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt10type_index">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/typeindex.html#std::type_index" title='std::type_index' data-ref="std::type_index">type_index</a> <em>const</em>&amp; <dfn class="local col4 decl" id="634v" title='v' data-type='const std::type_index &amp;' data-ref="634v">v</dfn> )</td></tr>
+<tr><th id="469">469</th><td>    {</td></tr>
+<tr><th id="470">470</th><td>        <b>return</b> <a class="local col4 ref" href="#634v" title='v' data-ref="634v">v</a>.<a class="ref fn" href="../../c++/13/typeindex.html#_ZNKSt10type_index9hash_codeEv" title='std::type_index::hash_code' data-ref="_ZNKSt10type_index9hash_codeEv">hash_code</a>();</td></tr>
+<tr><th id="471">471</th><td>    }</td></tr>
+<tr><th id="472">472</th><td></td></tr>
+<tr><th id="473">473</th><td><u>#<span data-ppcond="466">endif</span></u></td></tr>
+<tr><th id="474">474</th><td></td></tr>
+<tr><th id="475">475</th><td>    <i>// std::error_code, std::error_condition</i></td></tr>
+<tr><th id="476">476</th><td></td></tr>
+<tr><th id="477">477</th><td><u>#<span data-ppcond="477">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_HDR_SYSTEM_ERROR">BOOST_NO_CXX11_HDR_SYSTEM_ERROR</span>)</u></td></tr>
+<tr><th id="478">478</th><td></td></tr>
+<tr><th id="479">479</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt10error_code" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt10error_code">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/system_error.html#std::error_code" title='std::error_code' data-ref="std::error_code">error_code</a> <em>const</em>&amp; <dfn class="local col5 decl" id="635v" title='v' data-type='const std::error_code &amp;' data-ref="635v">v</dfn> )</td></tr>
+<tr><th id="480">480</th><td>    {</td></tr>
+<tr><th id="481">481</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="636seed" title='seed' data-type='std::size_t' data-ref="636seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="482">482</th><td></td></tr>
+<tr><th id="483">483</th><td>        <span class="namespace">boost::</span><a class="ref fn" href="#_ZN5boost12hash_combineERmRKT_" title='boost::hash_combine' data-ref="_ZN5boost12hash_combineERmRKT_">hash_combine</a>( <span class='refarg'><a class="local col6 ref" href="#636seed" title='seed' data-ref="636seed">seed</a></span>, <span class='inlayHint'>v:&nbsp;</span><a class="local col5 ref" href="#635v" title='v' data-ref="635v">v</a>.<a class="ref fn" href="../../c++/13/system_error.html#_ZNKSt10error_code5valueEv" title='std::error_code::value' data-ref="_ZNKSt10error_code5valueEv">value</a>() );</td></tr>
+<tr><th id="484">484</th><td>        <span class="namespace">boost::</span><a class="ref fn" href="#_ZN5boost12hash_combineERmRKT_" title='boost::hash_combine' data-ref="_ZN5boost12hash_combineERmRKT_">hash_combine</a>( <span class='refarg'><a class="local col6 ref" href="#636seed" title='seed' data-ref="636seed">seed</a></span>, <span class='inlayHint'>v:&nbsp;</span>&amp;<a class="local col5 ref" href="#635v" title='v' data-ref="635v">v</a>.<a class="ref fn" href="../../c++/13/system_error.html#_ZNKSt10error_code8categoryEv" title='std::error_code::category' data-ref="_ZNKSt10error_code8categoryEv">category</a>() );</td></tr>
+<tr><th id="485">485</th><td></td></tr>
+<tr><th id="486">486</th><td>        <b>return</b> <a class="local col6 ref" href="#636seed" title='seed' data-ref="636seed">seed</a>;</td></tr>
+<tr><th id="487">487</th><td>    }</td></tr>
+<tr><th id="488">488</th><td></td></tr>
+<tr><th id="489">489</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt15error_condition" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt15error_condition">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/system_error.html#std::error_condition" title='std::error_condition' data-ref="std::error_condition">error_condition</a> <em>const</em>&amp; <dfn class="local col7 decl" id="637v" title='v' data-type='const std::error_condition &amp;' data-ref="637v">v</dfn> )</td></tr>
+<tr><th id="490">490</th><td>    {</td></tr>
+<tr><th id="491">491</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col8 decl" id="638seed" title='seed' data-type='std::size_t' data-ref="638seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="492">492</th><td></td></tr>
+<tr><th id="493">493</th><td>        <span class="namespace">boost::</span><a class="ref fn" href="#_ZN5boost12hash_combineERmRKT_" title='boost::hash_combine' data-ref="_ZN5boost12hash_combineERmRKT_">hash_combine</a>( <span class='refarg'><a class="local col8 ref" href="#638seed" title='seed' data-ref="638seed">seed</a></span>, <span class='inlayHint'>v:&nbsp;</span><a class="local col7 ref" href="#637v" title='v' data-ref="637v">v</a>.<a class="ref fn" href="../../c++/13/system_error.html#_ZNKSt15error_condition5valueEv" title='std::error_condition::value' data-ref="_ZNKSt15error_condition5valueEv">value</a>() );</td></tr>
+<tr><th id="494">494</th><td>        <span class="namespace">boost::</span><a class="ref fn" href="#_ZN5boost12hash_combineERmRKT_" title='boost::hash_combine' data-ref="_ZN5boost12hash_combineERmRKT_">hash_combine</a>( <span class='refarg'><a class="local col8 ref" href="#638seed" title='seed' data-ref="638seed">seed</a></span>, <span class='inlayHint'>v:&nbsp;</span>&amp;<a class="local col7 ref" href="#637v" title='v' data-ref="637v">v</a>.<a class="ref fn" href="../../c++/13/system_error.html#_ZNKSt15error_condition8categoryEv" title='std::error_condition::category' data-ref="_ZNKSt15error_condition8categoryEv">category</a>() );</td></tr>
+<tr><th id="495">495</th><td></td></tr>
+<tr><th id="496">496</th><td>        <b>return</b> <a class="local col8 ref" href="#638seed" title='seed' data-ref="638seed">seed</a>;</td></tr>
+<tr><th id="497">497</th><td>    }</td></tr>
+<tr><th id="498">498</th><td></td></tr>
+<tr><th id="499">499</th><td><u>#<span data-ppcond="477">endif</span></u></td></tr>
+<tr><th id="500">500</th><td></td></tr>
+<tr><th id="501">501</th><td>    <i>// std::nullptr_t</i></td></tr>
+<tr><th id="502">502</th><td></td></tr>
+<tr><th id="503">503</th><td><u>#<span data-ppcond="503">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_NULLPTR">BOOST_NO_CXX11_NULLPTR</span>)</u></td></tr>
+<tr><th id="504">504</th><td></td></tr>
+<tr><th id="505">505</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="506">506</th><td>    <b>typename</b> <span class="namespace">boost::</span><a class="type" href="../type_traits/enable_if.hpp.html#boost::enable_if_" title='boost::enable_if_' data-ref="boost::enable_if_">enable_if_</a>&lt;<span class="namespace">boost::</span><a class="type" href="../type_traits/is_same.hpp.html#boost::is_same" title='boost::is_same' data-ref="boost::is_same">is_same</a>&lt;T, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::nullptr_t" title='std::nullptr_t' data-type='decltype(nullptr)' data-ref="std::nullptr_t">nullptr_t</a>&gt;::value, <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&gt;::type</td></tr>
+<tr><th id="507">507</th><td>        <dfn class="decl def fn" id="_ZN5boost10hash_valueERKT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKT_">hash_value</dfn>( T <em>const</em>&amp; <i>/*v*/</i> )</td></tr>
+<tr><th id="508">508</th><td>    {</td></tr>
+<tr><th id="509">509</th><td>        <b>return</b> <span class="namespace">boost::</span><a class="ref fn" href="#_ZN5boost10hash_valueERKPT_" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKPT_">hash_value</a>( <span class='inlayHint'>v:&nbsp;</span><b>static_cast</b>&lt;<em>void</em>*&gt;( <b>nullptr</b> ) );</td></tr>
+<tr><th id="510">510</th><td>    }</td></tr>
+<tr><th id="511">511</th><td></td></tr>
+<tr><th id="512">512</th><td><u>#<span data-ppcond="503">endif</span></u></td></tr>
+<tr><th id="513">513</th><td></td></tr>
+<tr><th id="514">514</th><td>    <i>// std::optional</i></td></tr>
+<tr><th id="515">515</th><td></td></tr>
+<tr><th id="516">516</th><td><u>#<span data-ppcond="516">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX17_HDR_OPTIONAL">BOOST_NO_CXX17_HDR_OPTIONAL</span>)</u></td></tr>
+<tr><th id="517">517</th><td></td></tr>
+<tr><th id="518">518</th><td>    <b>template</b> &lt;<b>typename</b> T&gt;</td></tr>
+<tr><th id="519">519</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt8optionalIT_E" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt8optionalIT_E">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/optional.html#std::optional" title='std::optional' data-ref="std::optional">optional</a>&lt;T&gt; <em>const</em>&amp; <dfn class="local col9 decl" id="639v" title='v' data-type='const std::optional&lt;T&gt; &amp;' data-ref="639v">v</dfn> )</td></tr>
+<tr><th id="520">520</th><td>    {</td></tr>
+<tr><th id="521">521</th><td>        <b>if</b>( !<a class="local col9 ref" href="#639v" title='v' data-ref="639v">v</a> )</td></tr>
+<tr><th id="522">522</th><td>        {</td></tr>
+<tr><th id="523">523</th><td>            <i>// Arbitray value for empty optional.</i></td></tr>
+<tr><th id="524">524</th><td>            <b>return</b> <var>0x12345678</var>;</td></tr>
+<tr><th id="525">525</th><td>        }</td></tr>
+<tr><th id="526">526</th><td>        <b>else</b></td></tr>
+<tr><th id="527">527</th><td>        {</td></tr>
+<tr><th id="528">528</th><td>            <b>return</b> <span class="namespace">boost::</span><a class="type" href="hash_fwd.hpp.html#boost::hash" title='boost::hash' data-ref="boost::hash">hash</a>&lt;T&gt;()(*<a class="local col9 ref" href="#639v" title='v' data-ref="639v">v</a>);</td></tr>
+<tr><th id="529">529</th><td>        }</td></tr>
+<tr><th id="530">530</th><td>    }</td></tr>
+<tr><th id="531">531</th><td></td></tr>
+<tr><th id="532">532</th><td><u>#<span data-ppcond="516">endif</span></u></td></tr>
+<tr><th id="533">533</th><td></td></tr>
+<tr><th id="534">534</th><td>    <i>// std::variant</i></td></tr>
+<tr><th id="535">535</th><td></td></tr>
+<tr><th id="536">536</th><td><u>#<span data-ppcond="536">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX17_HDR_VARIANT">BOOST_NO_CXX17_HDR_VARIANT</span>)</u></td></tr>
+<tr><th id="537">537</th><td></td></tr>
+<tr><th id="538">538</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueESt9monostate" title='boost::hash_value' data-ref="_ZN5boost10hash_valueESt9monostate">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/variant.html#std::monostate" title='std::monostate' data-ref="std::monostate">monostate</a> )</td></tr>
+<tr><th id="539">539</th><td>    {</td></tr>
+<tr><th id="540">540</th><td>        <b>return</b> <var>0x87654321</var>;</td></tr>
+<tr><th id="541">541</th><td>    }</td></tr>
+<tr><th id="542">542</th><td></td></tr>
+<tr><th id="543">543</th><td>    <b>template</b> &lt;<b>typename</b>... Types&gt;</td></tr>
+<tr><th id="544">544</th><td>    <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_valueERKSt7variantIJDpT_EE" title='boost::hash_value' data-ref="_ZN5boost10hash_valueERKSt7variantIJDpT_EE">hash_value</dfn>( <span class="namespace">std::</span><a class="type" href="../../c++/13/variant.html#std::variant" title='std::variant' data-ref="std::variant">variant</a>&lt;Types...&gt; <em>const</em>&amp; <dfn class="local col0 decl" id="640v" title='v' data-type='const std::variant&lt;Types...&gt; &amp;' data-ref="640v">v</dfn> )</td></tr>
+<tr><th id="545">545</th><td>    {</td></tr>
+<tr><th id="546">546</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col1 decl" id="641seed" title='seed' data-type='std::size_t' data-ref="641seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="547">547</th><td></td></tr>
+<tr><th id="548">548</th><td>        hash_combine( <a class="local col1 ref" href="#641seed" title='seed' data-ref="641seed">seed</a>, <a class="local col0 ref" href="#640v" title='v' data-ref="640v">v</a>.index() );</td></tr>
+<tr><th id="549">549</th><td>        <span class="namespace">std::</span>visit( [&amp;<a class="local col1 ref" href="#641seed" title='seed' data-ref="641seed">seed</a>](<em>auto</em>&amp;&amp; <dfn class="local col2 decl" id="642x" title='x' data-type='auto &amp;&amp;' data-ref="642x">x</dfn>) { hash_combine(<a class="local col1 ref" href="#641seed" title='seed' data-ref="641seed">seed</a>, <a class="local col2 ref" href="#642x" title='x' data-ref="642x">x</a>); }, <a class="local col0 ref" href="#640v" title='v' data-ref="640v">v</a> );</td></tr>
+<tr><th id="550">550</th><td></td></tr>
+<tr><th id="551">551</th><td>        <b>return</b> <a class="local col1 ref" href="#641seed" title='seed' data-ref="641seed">seed</a>;</td></tr>
+<tr><th id="552">552</th><td>    }</td></tr>
+<tr><th id="553">553</th><td></td></tr>
+<tr><th id="554">554</th><td><u>#<span data-ppcond="536">endif</span></u></td></tr>
+<tr><th id="555">555</th><td></td></tr>
+<tr><th id="556">556</th><td>    <i>//</i></td></tr>
+<tr><th id="557">557</th><td><i>    // boost::hash_combine</i></td></tr>
+<tr><th id="558">558</th><td><i>    //</i></td></tr>
+<tr><th id="559">559</th><td></td></tr>
+<tr><th id="560">560</th><td>    <b>template</b> &lt;<b>class</b> T&gt;</td></tr>
+<tr><th id="561">561</th><td>    <b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5boost12hash_combineERmRKT_" title='boost::hash_combine' data-ref="_ZN5boost12hash_combineERmRKT_">hash_combine</dfn>( <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&amp; <dfn class="local col3 decl" id="643seed" title='seed' data-type='std::size_t &amp;' data-ref="643seed">seed</dfn>, T <em>const</em>&amp; <dfn class="local col4 decl" id="644v" title='v' data-type='const T &amp;' data-ref="644v">v</dfn> )</td></tr>
+<tr><th id="562">562</th><td>    {</td></tr>
+<tr><th id="563">563</th><td>        <a class="local col3 ref" href="#643seed" title='seed' data-ref="643seed">seed</a> = <span class="namespace">boost::hash_detail::</span><a class="ref fn" href="detail/hash_mix.hpp.html#_ZN5boost11hash_detail8hash_mixEm" title='boost::hash_detail::hash_mix' data-ref="_ZN5boost11hash_detail8hash_mixEm">hash_mix</a>( <span class='inlayHint'>v:&nbsp;</span><a class="local col3 ref" href="#643seed" title='seed' data-ref="643seed">seed</a> + <var>0x9e3779b9</var> + <span class="namespace">boost::</span><a class="type" href="hash_fwd.hpp.html#boost::hash" title='boost::hash' data-ref="boost::hash">hash</a>&lt;T&gt;()( <a class="local col4 ref" href="#644v" title='v' data-ref="644v">v</a> ) );</td></tr>
+<tr><th id="564">564</th><td>    }</td></tr>
+<tr><th id="565">565</th><td></td></tr>
+<tr><th id="566">566</th><td>    <i>//</i></td></tr>
+<tr><th id="567">567</th><td><i>    // boost::hash_range</i></td></tr>
+<tr><th id="568">568</th><td><i>    //</i></td></tr>
+<tr><th id="569">569</th><td></td></tr>
+<tr><th id="570">570</th><td>    <b>template</b> &lt;<b>class</b> It&gt;</td></tr>
+<tr><th id="571">571</th><td>    <b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5boost10hash_rangeERmT_S1_" title='boost::hash_range' data-ref="_ZN5boost10hash_rangeERmT_S1_">hash_range</dfn>( <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&amp; <dfn class="local col5 decl" id="645seed" title='seed' data-type='std::size_t &amp;' data-ref="645seed">seed</dfn>, It <dfn class="local col6 decl" id="646first" title='first' data-type='It' data-ref="646first">first</dfn>, It <dfn class="local col7 decl" id="647last" title='last' data-type='It' data-ref="647last">last</dfn> )</td></tr>
+<tr><th id="572">572</th><td>    {</td></tr>
+<tr><th id="573">573</th><td>        <a class="local col5 ref" href="#645seed" title='seed' data-ref="645seed">seed</a> = <span class="namespace">hash_detail::</span>hash_range( <a class="local col5 ref" href="#645seed" title='seed' data-ref="645seed">seed</a>, <a class="local col6 ref" href="#646first" title='first' data-ref="646first">first</a>, <a class="local col7 ref" href="#647last" title='last' data-ref="647last">last</a> );</td></tr>
+<tr><th id="574">574</th><td>    }</td></tr>
+<tr><th id="575">575</th><td></td></tr>
+<tr><th id="576">576</th><td>    <b>template</b> &lt;<b>class</b> It&gt;</td></tr>
+<tr><th id="577">577</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost10hash_rangeET_S0_" title='boost::hash_range' data-ref="_ZN5boost10hash_rangeET_S0_">hash_range</dfn>( It <dfn class="local col8 decl" id="648first" title='first' data-type='It' data-ref="648first">first</dfn>, It <dfn class="local col9 decl" id="649last" title='last' data-type='It' data-ref="649last">last</dfn> )</td></tr>
+<tr><th id="578">578</th><td>    {</td></tr>
+<tr><th id="579">579</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col0 decl" id="650seed" title='seed' data-type='std::size_t' data-ref="650seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="580">580</th><td></td></tr>
+<tr><th id="581">581</th><td>        hash_range( <a class="local col0 ref" href="#650seed" title='seed' data-ref="650seed">seed</a>, <a class="local col8 ref" href="#648first" title='first' data-ref="648first">first</a>, <a class="local col9 ref" href="#649last" title='last' data-ref="649last">last</a> );</td></tr>
+<tr><th id="582">582</th><td></td></tr>
+<tr><th id="583">583</th><td>        <b>return</b> <a class="local col0 ref" href="#650seed" title='seed' data-ref="650seed">seed</a>;</td></tr>
+<tr><th id="584">584</th><td>    }</td></tr>
+<tr><th id="585">585</th><td></td></tr>
+<tr><th id="586">586</th><td>    <i>//</i></td></tr>
+<tr><th id="587">587</th><td><i>    // boost::hash_unordered_range</i></td></tr>
+<tr><th id="588">588</th><td><i>    //</i></td></tr>
+<tr><th id="589">589</th><td></td></tr>
+<tr><th id="590">590</th><td>    <b>template</b> &lt;<b>class</b> It&gt;</td></tr>
+<tr><th id="591">591</th><td>    <b>inline</b> <em>void</em> <dfn class="decl def fn" id="_ZN5boost20hash_unordered_rangeERmT_S1_" title='boost::hash_unordered_range' data-ref="_ZN5boost20hash_unordered_rangeERmT_S1_">hash_unordered_range</dfn>( <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a>&amp; <dfn class="local col1 decl" id="651seed" title='seed' data-type='std::size_t &amp;' data-ref="651seed">seed</dfn>, It <dfn class="local col2 decl" id="652first" title='first' data-type='It' data-ref="652first">first</dfn>, It <dfn class="local col3 decl" id="653last" title='last' data-type='It' data-ref="653last">last</dfn> )</td></tr>
+<tr><th id="592">592</th><td>    {</td></tr>
+<tr><th id="593">593</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col4 decl" id="654r" title='r' data-type='std::size_t' data-ref="654r">r</dfn> = <var>0</var>;</td></tr>
+<tr><th id="594">594</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <em>const</em> <dfn class="local col5 decl" id="655s2" title='s2' data-type='const std::size_t' data-ref="655s2">s2</dfn>( <a class="local col1 ref" href="#651seed" title='seed' data-ref="651seed">seed</a> );</td></tr>
+<tr><th id="595">595</th><td></td></tr>
+<tr><th id="596">596</th><td>        <b>for</b>( ; <a class="local col2 ref" href="#652first" title='first' data-ref="652first">first</a> != <a class="local col3 ref" href="#653last" title='last' data-ref="653last">last</a>; ++<a class="local col2 ref" href="#652first" title='first' data-ref="652first">first</a> )</td></tr>
+<tr><th id="597">597</th><td>        {</td></tr>
+<tr><th id="598">598</th><td>            <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col6 decl" id="656s3" title='s3' data-type='std::size_t' data-ref="656s3">s3</dfn>( <a class="local col5 ref" href="#655s2" title='s2' data-ref="655s2">s2</a> );</td></tr>
+<tr><th id="599">599</th><td></td></tr>
+<tr><th id="600">600</th><td>            hash_combine&lt;<b>typename</b> <span class="namespace">std::</span><a class="type" href="../../c++/13/bits/cpp_type_traits.h.html#std::iterator_traits" title='std::iterator_traits' data-ref="std::iterator_traits">iterator_traits</a>&lt;It&gt;::value_type&gt;( <a class="local col6 ref" href="#656s3" title='s3' data-ref="656s3">s3</a>, *<a class="local col2 ref" href="#652first" title='first' data-ref="652first">first</a> );</td></tr>
+<tr><th id="601">601</th><td></td></tr>
+<tr><th id="602">602</th><td>            <a class="local col4 ref" href="#654r" title='r' data-ref="654r">r</a> += <a class="local col6 ref" href="#656s3" title='s3' data-ref="656s3">s3</a>;</td></tr>
+<tr><th id="603">603</th><td>        }</td></tr>
+<tr><th id="604">604</th><td></td></tr>
+<tr><th id="605">605</th><td>        <a class="local col1 ref" href="#651seed" title='seed' data-ref="651seed">seed</a> += <a class="local col4 ref" href="#654r" title='r' data-ref="654r">r</a>;</td></tr>
+<tr><th id="606">606</th><td>    }</td></tr>
+<tr><th id="607">607</th><td></td></tr>
+<tr><th id="608">608</th><td>    <b>template</b> &lt;<b>class</b> It&gt;</td></tr>
+<tr><th id="609">609</th><td>    <b>inline</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZN5boost20hash_unordered_rangeET_S0_" title='boost::hash_unordered_range' data-ref="_ZN5boost20hash_unordered_rangeET_S0_">hash_unordered_range</dfn>( It <dfn class="local col7 decl" id="657first" title='first' data-type='It' data-ref="657first">first</dfn>, It <dfn class="local col8 decl" id="658last" title='last' data-type='It' data-ref="658last">last</dfn> )</td></tr>
+<tr><th id="610">610</th><td>    {</td></tr>
+<tr><th id="611">611</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="local col9 decl" id="659seed" title='seed' data-type='std::size_t' data-ref="659seed">seed</dfn> = <var>0</var>;</td></tr>
+<tr><th id="612">612</th><td></td></tr>
+<tr><th id="613">613</th><td>        hash_unordered_range( <a class="local col9 ref" href="#659seed" title='seed' data-ref="659seed">seed</a>, <a class="local col7 ref" href="#657first" title='first' data-ref="657first">first</a>, <a class="local col8 ref" href="#658last" title='last' data-ref="658last">last</a> );</td></tr>
+<tr><th id="614">614</th><td></td></tr>
+<tr><th id="615">615</th><td>        <b>return</b> <a class="local col9 ref" href="#659seed" title='seed' data-ref="659seed">seed</a>;</td></tr>
+<tr><th id="616">616</th><td>    }</td></tr>
+<tr><th id="617">617</th><td></td></tr>
+<tr><th id="618">618</th><td>    <i>//</i></td></tr>
+<tr><th id="619">619</th><td><i>    // boost::hash</i></td></tr>
+<tr><th id="620">620</th><td><i>    //</i></td></tr>
+<tr><th id="621">621</th><td></td></tr>
+<tr><th id="622">622</th><td>    <b>template</b> &lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type def" id="boost::hash" title='boost::hash' data-ref="boost::hash">hash</dfn></td></tr>
+<tr><th id="623">623</th><td>    {</td></tr>
+<tr><th id="624">624</th><td>        <b>typedef</b> T <dfn class="typedef" id="boost::hash::argument_type" title='boost::hash::argument_type' data-type='T' data-ref="boost::hash::argument_type">argument_type</dfn>;</td></tr>
+<tr><th id="625">625</th><td>        <b>typedef</b> <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="typedef" id="boost::hash::result_type" title='boost::hash::result_type' data-type='std::size_t' data-ref="boost::hash::result_type">result_type</dfn>;</td></tr>
+<tr><th id="626">626</th><td></td></tr>
+<tr><th id="627">627</th><td>        <span class="namespace">std::</span><a class="typedef" href="../../x86_64-linux-gnu/c++/13/bits/c++config.h.html#std::size_t" title='std::size_t' data-type='unsigned long' data-ref="std::size_t">size_t</a> <dfn class="decl def fn" id="_ZNK5boost4hashclERKT_" title='boost::hash::operator()' data-ref="_ZNK5boost4hashclERKT_"><b>operator</b>()</dfn>( T <em>const</em>&amp; <dfn class="local col0 decl" id="660val" title='val' data-type='const T &amp;' data-ref="660val">val</dfn> ) <em>const</em></td></tr>
+<tr><th id="628">628</th><td>        {</td></tr>
+<tr><th id="629">629</th><td>            <b>return</b> hash_value( <a class="local col0 ref" href="#660val" title='val' data-ref="660val">val</a> );</td></tr>
+<tr><th id="630">630</th><td>        }</td></tr>
+<tr><th id="631">631</th><td>    };</td></tr>
+<tr><th id="632">632</th><td></td></tr>
+<tr><th id="633">633</th><td><u>#<span data-ppcond="633">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX11_VARIADIC_TEMPLATES">BOOST_NO_CXX11_VARIADIC_TEMPLATES</span>) &amp;&amp; ( \</u></td></tr>
+<tr><th id="634">634</th><td><u>    ( defined(<span class="macro" data-ref="_M/_MSVC_STL_VERSION">_MSVC_STL_VERSION</span>) &amp;&amp; _MSVC_STL_VERSION &lt; 142 ) || \</u></td></tr>
+<tr><th id="635">635</th><td><u>    ( !defined(<span class="macro" data-ref="_M/_MSVC_STL_VERSION">_MSVC_STL_VERSION</span>) &amp;&amp; defined(<span class="macro" data-ref="_M/_CPPLIB_VER">_CPPLIB_VER</span>) &amp;&amp; _CPPLIB_VER &gt;= 520 ) )</u></td></tr>
+<tr><th id="636">636</th><td></td></tr>
+<tr><th id="637">637</th><td>    <i>// Dinkumware has stdext::hash_value for basic_string in &lt;xhash&gt; :-/</i></td></tr>
+<tr><th id="638">638</th><td></td></tr>
+<tr><th id="639">639</th><td>    <b>template</b>&lt;<b>class</b> E, <b>class</b> T, <b>class</b> A&gt; <b>struct</b> hash&lt; std::basic_string&lt;E, T, A&gt; &gt;</td></tr>
+<tr><th id="640">640</th><td>    {</td></tr>
+<tr><th id="641">641</th><td>        <b>typedef</b> std::basic_string&lt;E, T, A&gt; argument_type;</td></tr>
+<tr><th id="642">642</th><td>        <b>typedef</b> std::size_t result_type;</td></tr>
+<tr><th id="643">643</th><td></td></tr>
+<tr><th id="644">644</th><td>        std::size_t <b>operator</b>()( std::basic_string&lt;E, T, A&gt; <em>const</em>&amp; val ) <em>const</em></td></tr>
+<tr><th id="645">645</th><td>        {</td></tr>
+<tr><th id="646">646</th><td>            <b>return</b> boost::hash_value( val );</td></tr>
+<tr><th id="647">647</th><td>        }</td></tr>
+<tr><th id="648">648</th><td>    };</td></tr>
+<tr><th id="649">649</th><td></td></tr>
+<tr><th id="650">650</th><td><u>#<span data-ppcond="633">endif</span></u></td></tr>
+<tr><th id="651">651</th><td></td></tr>
+<tr><th id="652">652</th><td>    <i>// boost::unordered::hash_is_avalanching</i></td></tr>
+<tr><th id="653">653</th><td></td></tr>
+<tr><th id="654">654</th><td>    <b>namespace</b> <span class="namespace">unordered</span></td></tr>
+<tr><th id="655">655</th><td>    {</td></tr>
+<tr><th id="656">656</th><td>        <b>template</b>&lt;<b>class</b> T&gt; <b>struct</b> <dfn class="type" id="boost::unordered::hash_is_avalanching" title='boost::unordered::hash_is_avalanching' data-ref="boost::unordered::hash_is_avalanching">hash_is_avalanching</dfn>;</td></tr>
+<tr><th id="657">657</th><td>        <b>template</b>&lt;<b>class</b> Ch&gt; <b>struct</b> <dfn class="type def" id="boost::unordered::hash_is_avalanching" title='boost::unordered::hash_is_avalanching' data-ref="boost::unordered::hash_is_avalanching">hash_is_avalanching</dfn>&lt; <span class="namespace">boost::</span><a class="type" href="hash_fwd.hpp.html#boost::hash" title='boost::hash' data-ref="boost::hash">hash</a>&lt; <span class="namespace">std::</span><a class="type" href="../../c++/13/bits/stringfwd.h.html#std::basic_string" title='std::basic_string' data-ref="std::basic_string">basic_string</a>&lt;Ch&gt; &gt; &gt;: <span class="namespace">boost::</span><a class="type" href="../type_traits/is_integral.hpp.html#boost::is_integral" title='boost::is_integral' data-ref="boost::is_integral">is_integral</a>&lt;Ch&gt; {};</td></tr>
+<tr><th id="658">658</th><td></td></tr>
+<tr><th id="659">659</th><td>        <i>// boost::is_integral&lt;char8_t&gt; is false, but should be true (<a href="https://github.com/boostorg/type_traits/issues/175">https://github.com/boostorg/type_traits/issues/175</a>)</i></td></tr>
+<tr><th id="660">660</th><td><u>#<span data-ppcond="660">if</span> defined(<span class="macro" data-ref="_M/__cpp_char8_t">__cpp_char8_t</span>) &amp;&amp; __cpp_char8_t &gt;= 201811L</u></td></tr>
+<tr><th id="661">661</th><td>        <b>template</b>&lt;&gt; <b>struct</b> hash_is_avalanching&lt; boost::hash&lt; std::basic_string&lt;char8_t&gt; &gt; &gt;: boost::true_type {};</td></tr>
+<tr><th id="662">662</th><td><u>#<span data-ppcond="660">endif</span></u></td></tr>
+<tr><th id="663">663</th><td></td></tr>
+<tr><th id="664">664</th><td><u>#<span data-ppcond="664">if</span> !defined(<span class="macro" data-ref="_M/BOOST_NO_CXX17_HDR_STRING_VIEW">BOOST_NO_CXX17_HDR_STRING_VIEW</span>)</u></td></tr>
+<tr><th id="665">665</th><td></td></tr>
+<tr><th id="666">666</th><td>        <b>template</b>&lt;<b>class</b> Ch&gt; <b>struct</b> <dfn class="type def" id="boost::unordered::hash_is_avalanching" title='boost::unordered::hash_is_avalanching' data-ref="boost::unordered::hash_is_avalanching">hash_is_avalanching</dfn>&lt; <span class="namespace">boost::</span><a class="type" href="hash_fwd.hpp.html#boost::hash" title='boost::hash' data-ref="boost::hash">hash</a>&lt; <span class="namespace">std::</span><a class="type" href="../../c++/13/string_view.html#std::basic_string_view" title='std::basic_string_view' data-ref="std::basic_string_view">basic_string_view</a>&lt;Ch&gt; &gt; &gt;: <span class="namespace">boost::</span><a class="type" href="../type_traits/is_integral.hpp.html#boost::is_integral" title='boost::is_integral' data-ref="boost::is_integral">is_integral</a>&lt;Ch&gt; {};</td></tr>
+<tr><th id="667">667</th><td></td></tr>
+<tr><th id="668">668</th><td><u>#<span data-ppcond="668">if</span> defined(<span class="macro" data-ref="_M/__cpp_char8_t">__cpp_char8_t</span>) &amp;&amp; __cpp_char8_t &gt;= 201811L</u></td></tr>
+<tr><th id="669">669</th><td>        <b>template</b>&lt;&gt; <b>struct</b> hash_is_avalanching&lt; boost::hash&lt; std::basic_string_view&lt;char8_t&gt; &gt; &gt;: boost::true_type {};</td></tr>
+<tr><th id="670">670</th><td><u>#<span data-ppcond="668">endif</span></u></td></tr>
+<tr><th id="671">671</th><td></td></tr>
+<tr><th id="672">672</th><td><u>#<span data-ppcond="664">endif</span></u></td></tr>
+<tr><th id="673">673</th><td>    } <i>// namespace unordered</i></td></tr>
+<tr><th id="674">674</th><td></td></tr>
+<tr><th id="675">675</th><td>} <i>// namespace boost</i></td></tr>
+<tr><th id="676">676</th><td></td></tr>
+<tr><th id="677">677</th><td><u>#<span data-ppcond="10">endif</span> // #ifndef BOOST_FUNCTIONAL_HASH_HASH_HPP</u></td></tr>
+<tr><th id="678">678</th><td></td></tr>
+</table><hr/><p id='footer'>
+Generated while processing <a href='../../../codebrowser/examples/CombinedImuFactorsExample.cpp.html'>codebrowser/examples/CombinedImuFactorsExample.cpp</a><br/>Generated on <em>2025-Nov-28</em> from project include<br />Powered by <a href='https://woboq.com'><img alt='Woboq' src='https://code.woboq.org/woboq-16.png' width='41' height='16' /></a> <a href='https://code.woboq.org'>Code Browser</a> 2.1
+<br/>Generator usage only permitted with license.</p>
+</div></body></html>
